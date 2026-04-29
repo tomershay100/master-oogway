@@ -1,0 +1,46 @@
+# ~/.zshrc — installed by appa-fino; this file is yours to edit freely.
+# Re-running install.sh will NOT overwrite this file.
+
+export ZSH="$HOME/.oh-my-zsh"
+
+ZSH_THEME="appa-fino"
+ZSH_CUSTOM="$HOME/.appa-fino/zsh-custom.d"
+
+HYPHEN_INSENSITIVE="true"
+COMPLETION_WAITING_DOTS="true"
+DISABLE_UNTRACKED_FILES_DIRTY="true"
+HIST_STAMPS="yyyy-mm-dd"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt SHARE_HISTORY
+
+# ── appa-fino theme config ─────────────────────────────────────────────────────
+# Sourced before oh-my-zsh so user vars win over theme defaults (set_if_unset).
+[[ -f "$HOME/.config/appa-fino/conf.zsh" ]] && source "$HOME/.config/appa-fino/conf.zsh"
+
+# ── plugins ────────────────────────────────────────────────────────────────────
+# gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info)
+source "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh"
+
+plugins=(zsh-autosuggestions zsh-syntax-highlighting sudo you-should-use
+         colored-man-pages colorize command-not-found fzf history-substring-search)
+
+source "$ZSH/oh-my-zsh.sh"
+
+# ── tool initializations ───────────────────────────────────────────────────────
+
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
+
+command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
+
+# history-substring-search: UP/DOWN arrows search by prefix
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+
+# ── PATH additions ─────────────────────────────────────────────────────────────
+
+[[ -d "$HOME/.npm-global/bin" ]] && export PATH="$HOME/.npm-global/bin:$PATH"
+
+# ── appa-fino update check ─────────────────────────────────────────────────────
+# Notifies when new theme variables are available after a repo update.
+source "$HOME/.appa-fino/appa-fino.zsh"

@@ -1,0 +1,12 @@
+[submodule "zsh-custom.d/plugins/gitstatus"]
+	path = zsh-custom.d/plugins/gitstatus
+	url = https://github.com/romkatv/gitstatus.git
+[submodule "zsh-custom.d/plugins/you-should-use"]
+	path = zsh-custom.d/plugins/you-should-use
+	url = https://github.com/MichaelAquilina/zsh-you-should-use.git
+[submodule "zsh-custom.d/plugins/zsh-autosuggestions"]
+	path = zsh-custom.d/plugins/zsh-autosuggestions
+	url = https://github.com/zsh-users/zsh-autosuggestions.git
+[submodule "zsh-custom.d/plugins/zsh-syntax-highlighting"]
+	path = zsh-custom.d/plugins/zsh-syntax-highlighting
+	url = https://github.com/zsh-users/zsh-syntax-highlighting.git

@@ -1,0 +1,20 @@
+[init]
+	defaultBranch = main
+
+[core]
+	autocrlf = input
+
+[diff]
+	tool = meld
+
+[difftool "meld"]
+	cmd = meld "$LOCAL" "$REMOTE"
+
+[merge]
+	tool = meld
+
+[mergetool "meld"]
+	cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
+
+[include]
+	path = ~/.gitconfig.local
