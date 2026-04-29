@@ -22,7 +22,7 @@ as a standalone git repo.
 ## Installation
 
 ```bash
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/tomershay100/appa-fino/main/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/tomershay100/appa-fino/main/install.sh)"
 ```
 
 oh-my-zsh must be installed first:
