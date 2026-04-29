@@ -226,32 +226,6 @@ copy_file "${INSTALL_DIR}/.zshenv" "${HOME}/.zshenv"
 
 copy_file "${INSTALL_DIR}/.gitconfig" "${HOME}/.gitconfig"
 
-# ── Git identity ───────────────────────────────────────────────────────────────
-
-_setup_git_identity() {
-    if [[ -f "${HOME}/.gitconfig.local" ]]; then
-        success "${HOME}/.gitconfig.local already exists — skipping"
-        return
-    fi
-    warn "${HOME}/.gitconfig.local not found — git user identity is not configured."
-    if confirm "Enter your git name and email now?"; then
-        local git_name git_email
-        _ask "git user.name:  "; read -r git_name  < /dev/tty
-        _ask "git user.email: "; read -r git_email < /dev/tty
-        mkdir -p "$(dirname "${HOME}/.gitconfig.local")"
-        cat > "${HOME}/.gitconfig.local" <<EOF
-[user]
-	name  = ${git_name}
-	email = ${git_email}
-EOF
-        success "Created ${HOME}/.gitconfig.local"
-    else
-        warn "Skipping. Create ${HOME}/.gitconfig.local manually with [user] name and email."
-    fi
-}
-
-_setup_git_identity
-
 # ── appa-fino theme: check for new variables ───────────────────────────────────
 
 _check_theme_vars() {
