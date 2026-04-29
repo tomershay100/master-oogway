@@ -14,7 +14,7 @@
 # ------------------------------------------------------------------------------
 set -Eeuo pipefail
 
-readonly REPO_URL="git@github.com:tomershay100/appa-fino.git"
+readonly REPO_URL="https://github.com/tomershay100/appa-fino.git"
 readonly INSTALL_DIR="${HOME}/.appa-fino"
 readonly CONF_DIR="${HOME}/.config/appa-fino"
 readonly STATE_FILE="${CONF_DIR}/state"
