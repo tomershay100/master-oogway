@@ -119,6 +119,7 @@ function serve() {
         echo "  port — port to listen on (default: 8000)"
         return
     fi
+    command -v python3 &>/dev/null || { echo "serve: python3 not installed" >&2; return 1; }
     local port="${1:-8000}"
     echo "Serving $(pwd) on http://localhost:$port"
     python3 -m http.server "$port"
@@ -231,4 +232,38 @@ function md2pdf() {
     done
 
     return $failed
+}
+
+############# tmpcd: create a temp dir and cd into it ##############
+function tmpcd() {
+    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+        echo "Usage: tmpcd"
+        echo "  Create a temporary directory and cd into it."
+        echo "  Prints the path so you know where you are."
+        return
+    fi
+    local d
+    d=$(mktemp -d) && cd "$d" && echo "$d"
+}
+
+############# bak: backup a file with a timestamp suffix ##############
+function bak() {
+    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+        echo "Usage: bak <file> [file ...]"
+        echo "  Copy each file to <file>.bak.YYYYMMDD_HHMMSS"
+        return
+    fi
+    local ts
+    ts=$(date +%Y%m%d_%H%M%S)
+    for f in "$@"; do cp -v "$f" "${f}.bak.${ts}"; done
+}
+
+############# psgrep: search running processes by name ##############
+function psgrep() {
+    if [[ "$1" == "-h" || "$1" == "--help" || $# -eq 0 ]]; then
+        echo "Usage: psgrep <name>"
+        echo "  Show running processes matching <name> (case-insensitive)."
+        return
+    fi
+    ps aux | grep -v grep | grep -i "$1"
 }

@@ -24,28 +24,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟡 Enhancements
 
-### New utility functions (utilities-functions.zsh)
-
-- [ ] **`tmpcd`** — create a temp dir and cd into it:
-  ```zsh
-  tmpcd() { local d; d=$(mktemp -d) && cd "$d" && echo "$d"; }
-  ```
-
-- [ ] **`bak`** — backup a file with a timestamp suffix:
-  ```zsh
-  bak() {
-      local ts; ts=$(date +%Y%m%d_%H%M%S)
-      for f in "$@"; do cp -v "$f" "${f}.bak.${ts}"; done
-  }
-  ```
-
-- [ ] **`psgrep`** — search running processes by name:
-  ```zsh
-  psgrep() { ps aux | grep -v grep | grep -i "$1"; }
-  ```
-
-- [ ] **`serve`** — add a `command -v python3` guard (currently assumes it exists)
-
 ### New aliases (utilities-aliases.zsh)
 
 - [ ] Add general quality-of-life aliases:
