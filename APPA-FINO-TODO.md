@@ -7,16 +7,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟠 Issues
 
-- [ ] **`calc` is unsafe with shell metacharacters**
-  `utilities-functions.zsh` line 174: `python3 -c "from math import *; print($*)"`.
-  A user typing `calc '$(rm -rf ~)'` would execute it. Safer — pipe the
-  expression as stdin so the shell never sees it:
-  ```zsh
-  python3 -c "from math import *; import sys; print(compile(sys.stdin.read(), '<calc>', 'eval'))" <<< "$*"
-  # or simply use bc for arithmetic-only expressions:
-  echo "$*" | bc -l
-  ```
-
 - [ ] **`appa-fino-conf.zsh` is a stale no-op, sourced every shell startup**
   Since this file lives in `ZSH_CUSTOM`, oh-my-zsh sources it on every shell
   start. It's ~267 lines of all-commented-out content — dead weight. The

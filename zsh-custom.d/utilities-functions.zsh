@@ -171,7 +171,7 @@ function calc() {
         echo "Usage: calc <expression>  (use -h for details)" >&2
         return 1
     fi
-    python3 -c "from math import *; print($*)"
+    python3 -c "from math import *; import sys; expr=sys.stdin.read(); print(eval(compile(expr,'<calc>','eval')))" <<< "$*"
 }
 
 ############# md2pdf: convert Markdown to PDF via pandoc ##############
