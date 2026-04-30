@@ -7,14 +7,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟠 Issues
 
-- [ ] **`appa-fino-conf.zsh` is a stale no-op, sourced every shell startup**
-  Since this file lives in `ZSH_CUSTOM`, oh-my-zsh sources it on every shell
-  start. It's ~267 lines of all-commented-out content — dead weight. The
-  configure wizard generates its own richer conf at
-  `~/.config/appa-fino/conf.zsh`. The preset blocks at the bottom duplicate
-  the wizard's preset system. Consider deleting this file and pointing users
-  to `appa-fino-configure`.
-
 - [ ] **`sshto` shows no error when `~/.ssh/config` is absent or empty**
   `fzf-functions.zsh` line 15: fzf opens an empty picker with no feedback.
   Add an early exit:
