@@ -24,53 +24,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟡 Enhancements
 
-### New fzf functions (fzf-functions.zsh)
-
-- [ ] **`fbranch`** — fuzzy git branch checkout (most-wanted missing function):
-  ```zsh
-  fbranch() {
-      local branch
-      branch=$(git branch -a --color=always \
-          | grep -v '\->' \
-          | fzf --ansi --height=40% --reverse \
-                --preview 'git log --oneline --color=always {-1} | head -20') \
-      && git switch "${branch##* }"
-  }
-  ```
-
-- [ ] **`fhist`** — fuzzy history: select a past command and put it in the buffer:
-  ```zsh
-  fhist() {
-      local cmd
-      cmd=$(fc -ln 1 | fzf --tac --height=40% --reverse --no-sort)
-      [[ -n "$cmd" ]] && print -z "$cmd"   # puts into readline buffer, not executed
-  }
-  ```
-
-- [ ] **`fman`** — fuzzy man page browser:
-  ```zsh
-  fman() {
-      local page
-      page=$(man -k '' 2>/dev/null \
-          | fzf --height=50% --reverse --preview 'man {1}' \
-          | awk '{print $1}')
-      [[ -n "$page" ]] && man "$page"
-  }
-  ```
-
-- [ ] **`frg`** — fuzzy ripgrep: search file contents and open in editor:
-  ```zsh
-  frg() {
-      command -v rg &>/dev/null || { echo "frg: rg not installed" >&2; return 1; }
-      local result
-      result=$(rg --color=always --line-number "" 2>/dev/null \
-          | fzf --ansi --height=60% --reverse \
-                --delimiter ':' --nth='1,3..' \
-                --preview 'bat --color=always --highlight-line {2} {1}')
-      [[ -n "$result" ]] && ${EDITOR:-vim} "$(cut -d: -f1 <<< "$result")" "+$(cut -d: -f2 <<< "$result")"
-  }
-  ```
-
 ### New utility functions (utilities-functions.zsh)
 
 - [ ] **`tmpcd`** — create a temp dir and cd into it:
