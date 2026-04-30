@@ -126,10 +126,3 @@ Requires [fzf](https://github.com/junegunn/fzf). All functions are silently skip
 | `fenv [-e\|-E]` | Fuzzy-search env vars — print, edit inline (`-e`), or edit in `$EDITOR` (`-E`) |
 
 All functions support `-h` / `--help` for usage info.
-
-### `venv-autoactivate.zsh`
-Automatically activates a Python virtualenv when entering a project directory, and deactivates it when leaving.
-
-- Searches for `.venv/` or `venv/` walking upward from `$PWD`, stopping at `$HOME`
-- Activates on `cd` and on shell startup
-- Deactivates automatically when navigating out of the project tree
