@@ -34,8 +34,8 @@ export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 
 # history-substring-search: UP/DOWN arrows search by prefix
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
+bindkey "${terminfo[kcuu1]}" history-substring-search-up
+bindkey "${terminfo[kcud1]}" history-substring-search-down
 
 # ── PATH additions ─────────────────────────────────────────────────────────────
 

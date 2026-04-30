@@ -7,14 +7,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟠 Issues
 
-- [ ] **Arrow key bindings fragile across terminals / tmux / SSH**
-  `zshrc.template` lines 37–38 bind raw VT100 escape codes `^[[A` / `^[[B`.
-  These break in tmux panes and some SSH sessions. Replace with:
-  ```zsh
-  bindkey "${terminfo[kcuu1]}" history-substring-search-up
-  bindkey "${terminfo[kcud1]}" history-substring-search-down
-  ```
-
 - [ ] **`~/.local/bin` missing from PATH**
   `zshrc.template` adds `~/.npm-global/bin` but not `~/.local/bin`. Ubuntu
   puts `pip install --user`, `pipx`, and many other user-installed tools there.
@@ -101,6 +93,19 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
   setopt HIST_FIND_NO_DUPS    # don't show duplicates in history search
   setopt AUTO_CD              # type dir name alone to cd into it
   ```
+
+### fzf Ctrl+T file preview (zshrc.template)
+
+- [ ] **Make `Ctrl+T` show file contents in a preview pane**
+  Add to `zshrc.template` after `FZF_DEFAULT_OPTS`:
+
+  ```zsh
+  export FZF_CTRL_T_OPTS="
+    --preview 'bat --color=always --style=plain {} 2>/dev/null || cat {}'
+    --preview-window=right:60%:wrap"
+  ```
+
+  Falls back to plain `cat` when `bat` is not installed.
 
 ### New fzf functions (fzf-functions.zsh)
 
