@@ -553,7 +553,7 @@ _af_read_key() {
 
 _af_render_preview() {
     # Flags: --ssh, --fail, --transient, --group=<name>
-    local ssh_mode=false fail_mode=false transient_mode=false group=""
+    local ssh_mode=false fail_mode=false transient_mode=false group="" _af_flag
     for _af_flag in "$@"; do
         [[ "$_af_flag" == "--ssh"       ]] && ssh_mode=true
         [[ "$_af_flag" == "--fail"      ]] && fail_mode=true

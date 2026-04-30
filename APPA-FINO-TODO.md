@@ -5,15 +5,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ---
 
-## 🔴 Bugs
-
-- [ ] **`_af_render_preview` leaks `_af_flag` into the shell namespace**
-  `appa-fino-configure.zsh` line 557: `for _af_flag in "$@"` — `_af_flag`
-  is not declared `local`, so it persists after `appa-fino-configure` returns.
-  Fix: add `local _af_flag` at the top of the function.
-
----
-
 ## 🟠 Issues
 
 - [ ] **Arrow key bindings fragile across terminals / tmux / SSH**
