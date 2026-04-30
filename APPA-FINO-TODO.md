@@ -7,12 +7,18 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟠 Issues
 
-- [ ] **`sshto` shows no error when `~/.ssh/config` is absent or empty**
-  `fzf-functions.zsh` line 15: fzf opens an empty picker with no feedback.
-  Add an early exit:
-  ```zsh
-  [[ -s "$HOME/.ssh/config" ]] || { echo "sshto: ~/.ssh/config is empty or missing" >&2; return 1; }
+- [ ] **SSH forwarding: add `SendEnv APPA_FINO__*` to `~/.ssh/config`**
+  The conf.zsh SSH guard is in place, but forwarding only works if the client
+  sends the vars. Add to the `Host *` block in `~/.ssh/config` (or create one):
+
+  ```sshconfig
+  Host *
+      SendEnv APPA_FINO__*
   ```
+
+  The remote sshd also needs `AcceptEnv APPA_FINO__*` — this requires root on
+  the remote, so document it rather than automate it.
+  Consider adding the `SendEnv` line automatically during `install.sh`.
 
 ---
 
