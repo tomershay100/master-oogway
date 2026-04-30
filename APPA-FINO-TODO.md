@@ -24,16 +24,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟡 Enhancements
 
-### zshrc.template — missing shell options
-
-- [ ] Add useful zsh options near the HISTSIZE block:
-  ```zsh
-  setopt HIST_IGNORE_DUPS     # don't record duplicate consecutive commands
-  setopt HIST_IGNORE_SPACE    # commands prefixed with space are not saved
-  setopt HIST_FIND_NO_DUPS    # don't show duplicates in history search
-  setopt AUTO_CD              # type dir name alone to cd into it
-  ```
-
 ### fzf Ctrl+T file preview (zshrc.template)
 
 - [ ] **Make `Ctrl+T` show file contents in a preview pane**
