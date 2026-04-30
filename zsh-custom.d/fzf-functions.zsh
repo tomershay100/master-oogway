@@ -29,6 +29,7 @@ fcd()
         echo "  Interactively select a directory and cd into it."
         echo "  base-dir — where to search (default: current directory)"
         echo "  Preview pane shows directory contents."
+        echo "  Tip: ALT+C (fzf plugin) does the same from any prompt."
         return
     fi
     local base="${1:-.}"
@@ -102,6 +103,7 @@ fpath()
         echo "  base-dir — where to search (default: current directory)"
         echo "  Preview pane shows file contents."
         echo "  Copies path to clipboard (xclip), or prints it if xclip is unavailable."
+        echo "  Tip: CTRL+T (fzf plugin) inserts a file path inline at the prompt."
         return
     fi
     local base="${1:-.}"
@@ -149,6 +151,7 @@ fhist()
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
         echo "Usage: fhist"
         echo "  Fuzzy-select a past command and put it in the readline buffer."
+        echo "  Tip: CTRL+R (fzf plugin) does the same from any prompt."
         return
     fi
     local cmd
