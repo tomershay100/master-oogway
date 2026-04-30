@@ -89,7 +89,7 @@ alias reboot="_confirm_reboot"
 
 alias natip="curl -s ifconfig.me"
 
-alias gnucash="WEBKIT_DISABLE_COMPOSITING_MODE=1 flatpak run org.gnucash.GnuCash"
+command -v flatpak &>/dev/null && alias gnucash="WEBKIT_DISABLE_COMPOSITING_MODE=1 flatpak run org.gnucash.GnuCash"
 
 ############# build ##############
 alias gmake="colormake -j$(nproc) && banner PASSED || (banner FAILED && return 1)"

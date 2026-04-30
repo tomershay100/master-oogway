@@ -7,13 +7,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟠 Issues
 
-- [ ] **`gnucash` alias is unconditional — loads on Pi and servers too**
-  `utilities-aliases.zsh` line 92: the alias is defined regardless of whether
-  `flatpak` is installed. Wrap it:
-  ```zsh
-  command -v flatpak &>/dev/null && alias gnucash="WEBKIT_DISABLE_COMPOSITING_MODE=1 flatpak run org.gnucash.GnuCash"
-  ```
-
 - [ ] **`gmake` alias requires `colormake` and `banner` with no fallback**
   `utilities-aliases.zsh` line 96: if `colormake` is not installed, `gmake`
   fails entirely instead of falling back to `make`. Guard or provide fallback:
