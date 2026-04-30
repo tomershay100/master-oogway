@@ -24,19 +24,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟡 Enhancements
 
-### fzf Ctrl+T file preview (zshrc.template)
-
-- [ ] **Make `Ctrl+T` show file contents in a preview pane**
-  Add to `zshrc.template` after `FZF_DEFAULT_OPTS`:
-
-  ```zsh
-  export FZF_CTRL_T_OPTS="
-    --preview 'bat --color=always --style=plain {} 2>/dev/null || cat {}'
-    --preview-window=right:60%:wrap"
-  ```
-
-  Falls back to plain `cat` when `bat` is not installed.
-
 ### New fzf functions (fzf-functions.zsh)
 
 - [ ] **`fbranch`** — fuzzy git branch checkout (most-wanted missing function):
