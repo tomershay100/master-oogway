@@ -16,5 +16,26 @@
 [mergetool "meld"]
 	cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
 
+[pull]
+	rebase = true
+
+[fetch]
+	prune = true
+
+[push]
+	autoSetupRemote = true
+
+[rerere]
+	enabled = true
+
+[branch]
+	sort = -committerdate
+
+[tag]
+	sort = version:refname
+
+[log]
+	date = iso
+
 [include]
 	path = ~/.gitconfig.local

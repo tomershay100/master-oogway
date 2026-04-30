@@ -24,26 +24,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟡 Enhancements
 
-### .gitconfig — many widely-adopted options are missing
-
-- [ ] Add quality-of-life options:
-  ```ini
-  [pull]
-      rebase = true           # no merge bubbles on pull
-  [fetch]
-      prune = true            # auto-delete stale remote refs
-  [push]
-      autoSetupRemote = true  # git 2.37+: auto-track on first push
-  [rerere]
-      enabled = true          # reuse recorded conflict resolutions
-  [branch]
-      sort = -committerdate   # most-recently-active branches first
-  [tag]
-      sort = version:refname  # semantic version sorting
-  [log]
-      date = iso              # consistent YYYY-MM-DD HH:MM everywhere
-  ```
-
 ### zshrc.template — missing shell options
 
 - [ ] Add useful zsh options near the HISTSIZE block:
