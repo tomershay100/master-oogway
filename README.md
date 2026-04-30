@@ -43,7 +43,11 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 |------|-----------|
 | `~/.zshrc` | first install |
 | `~/.config/appa-fino/conf.zsh` | `appa-fino-configure` wizard |
-| `~/.gitconfig.local` | identity prompt during install |
+
+`~/.gitconfig` is updated on every install run. Your `user.name` and `user.email`
+are read from the existing file before overwriting and written back automatically.
+If they are missing, the installer prompts for them. Use `~/.gitconfig.local`
+(included automatically) for any machine-specific overrides.
 
 ## appa-fino theme configurator
 

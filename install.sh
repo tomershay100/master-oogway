@@ -224,7 +224,30 @@ copy_file "${INSTALL_DIR}/.zshenv" "${HOME}/.zshenv"
 
 # ── .gitconfig ─────────────────────────────────────────────────────────────────
 
-copy_file "${INSTALL_DIR}/.gitconfig" "${HOME}/.gitconfig"
+_install_gitconfig() {
+    local git_name git_email
+    if [[ -f "${HOME}/.gitconfig" ]]; then
+        git_name=$(git config --file "${HOME}/.gitconfig" user.name  2>/dev/null || true)
+        git_email=$(git config --file "${HOME}/.gitconfig" user.email 2>/dev/null || true)
+    fi
+
+    if [[ -z "$git_name" ]]; then
+        _ask "Git user name: "
+        read -r git_name < /dev/tty
+    fi
+    if [[ -z "$git_email" ]]; then
+        _ask "Git email: "
+        read -r git_email < /dev/tty
+    fi
+
+    copy_file "${INSTALL_DIR}/.gitconfig" "${HOME}/.gitconfig"
+
+    git config --file "${HOME}/.gitconfig" user.name  "$git_name"
+    git config --file "${HOME}/.gitconfig" user.email "$git_email"
+    success "Git identity: ${git_name} <${git_email}>"
+}
+
+_install_gitconfig
 
 # ── appa-fino theme: check for new variables ───────────────────────────────────
 
