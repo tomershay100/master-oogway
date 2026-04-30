@@ -92,4 +92,9 @@ alias natip="curl -s ifconfig.me"
 command -v flatpak &>/dev/null && alias gnucash="WEBKIT_DISABLE_COMPOSITING_MODE=1 flatpak run org.gnucash.GnuCash"
 
 ############# build ##############
-alias gmake="colormake -j$(nproc) && banner PASSED || (banner FAILED && return 1)"
+if command -v colormake &>/dev/null && command -v banner &>/dev/null; then
+    alias m="colormake -j\$(nproc) && banner PASSED || (banner FAILED; false)"
+else
+    alias m="make -j\$(nproc)"
+fi
+alias mc="make clean"

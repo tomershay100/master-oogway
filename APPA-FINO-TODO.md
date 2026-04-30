@@ -7,19 +7,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟠 Issues
 
-- [ ] **`gmake` alias requires `colormake` and `banner` with no fallback**
-  `utilities-aliases.zsh` line 96: if `colormake` is not installed, `gmake`
-  fails entirely instead of falling back to `make`. Guard or provide fallback:
-  ```zsh
-  if command -v colormake &>/dev/null && command -v banner &>/dev/null; then
-      alias gmake="colormake -j$(nproc) && banner PASSED || (banner FAILED; false)"
-  else
-      alias gmake="make -j$(nproc)"
-  fi
-  ```
-  Also note: `return 1` inside `(...)` is meaningless for the outer shell — use
-  `false` or `exit 1` in the subshell instead.
-
 - [ ] **`calc` is unsafe with shell metacharacters**
   `utilities-functions.zsh` line 174: `python3 -c "from math import *; print($*)"`.
   A user typing `calc '$(rm -rf ~)'` would execute it. Safer — pipe the
