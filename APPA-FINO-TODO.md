@@ -24,18 +24,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟡 Enhancements
 
-### New git aliases (git-aliases.zsh)
-
-- [ ] Add missing git workflow aliases:
-  ```zsh
-  alias grpo="git remote prune origin"    # clean stale remote branches
-  alias gclean="git clean -fd"            # remove untracked files/dirs
-  alias gwip="git add -A && git commit -m 'WIP'"
-  alias gdiff="git diff"                  # inline diff without opening difftool
-  alias gtag="git tag"
-  alias gwtl="git worktree list"
-  ```
-
 ### Plugin suggestions (zshrc.template)
 
 - [ ] **zoxide** — frecency-based smart `cd` replacement. Far better than manual

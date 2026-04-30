@@ -27,6 +27,7 @@ alias glog="git log --oneline --decorate --graph"
 
 ############# gundo: undo last commit, keep changes staged ##############
 alias gundo="git reset --soft HEAD~1"
+alias gclean="git clean -fd"
 
 ############# gsum: git repo summary ##############
 function gsum() {
