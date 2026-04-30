@@ -240,7 +240,7 @@ _install_gitconfig() {
         read -r git_email < /dev/tty
     fi
 
-    copy_file "${INSTALL_DIR}/.gitconfig" "${HOME}/.gitconfig"
+    copy_file "${INSTALL_DIR}/gitconfig" "${HOME}/.gitconfig"
 
     git config --file "${HOME}/.gitconfig" user.name  "$git_name"
     git config --file "${HOME}/.gitconfig" user.email "$git_email"
