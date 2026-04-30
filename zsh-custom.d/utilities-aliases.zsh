@@ -98,3 +98,11 @@ else
     alias m="make -j\$(nproc)"
 fi
 alias mc="make clean"
+
+############# general quality-of-life ##############
+alias cp="cp -i"              # prompt before overwrite
+alias mv="mv -i"              # prompt before overwrite
+alias mkdir="mkdir -pv"       # create parents silently, print each new dir
+alias ip="ip --color=auto"    # colorize ip addr / ip route output
+alias diff="diff --color=auto"
+alias h="history 50"

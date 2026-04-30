@@ -24,22 +24,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟡 Enhancements
 
-### New aliases (utilities-aliases.zsh)
-
-- [ ] Add general quality-of-life aliases:
-  ```zsh
-  alias df="df -h"
-  alias free="free -h"
-  alias ..="cd .."
-  alias ...="cd ../.."
-  alias cp="cp -i"              # prompt before overwrite
-  alias mv="mv -i"
-  alias mkdir="mkdir -pv"       # always create parents, always verbose
-  alias ip="ip --color=auto"    # Ubuntu 20.04+ colored ip output
-  alias diff="diff --color=auto"
-  alias h="history 50"          # quick recent history
-  ```
-
 ### New git aliases (git-aliases.zsh)
 
 - [ ] Add missing git workflow aliases:
