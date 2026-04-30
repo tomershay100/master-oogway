@@ -146,11 +146,11 @@ function set_if_unset {
 # set_if_unset APPA_FINO__GIT_BRANCH_SUFFIX ""
 
 # ## git stash count — set ENABLE to false to hide
-# set_if_unset APPA_FINO__ENABLE_GIT_STASH_COUNT true
+# set_if_unset APPA_FINO__ENABLE_GIT_STASH_COUNT false
 # set_if_unset APPA_FINO__GIT_STASH_SYMBOL "⚑"
 
 # ## git remote tracking state (ahead/behind/synced) — set ENABLE to false to hide
-# set_if_unset APPA_FINO__ENABLE_GIT_REMOTE_STATE true
+# set_if_unset APPA_FINO__ENABLE_GIT_REMOTE_STATE false
 # set_if_unset APPA_FINO__GIT_REMOTE_AHEAD_SYMBOL "↑"
 # set_if_unset APPA_FINO__GIT_REMOTE_BEHIND_SYMBOL "↓"
 # set_if_unset APPA_FINO__GIT_REMOTE_SYNCED_SYMBOL "≡"
@@ -188,7 +188,7 @@ function set_if_unset {
 # set_if_unset APPA_FINO__EXEC_TIMER_THRESHOLD 2
 
 # ## background jobs count in rprompt
-#set_if_unset APPA_FINO__ENABLE_JOB_COUNT false
+# set_if_unset APPA_FINO__ENABLE_JOB_COUNT false
 # set_if_unset APPA_FINO__JOB_COUNT_FOREGROUND_COLOR "black"
 # set_if_unset APPA_FINO__JOB_COUNT_BACKGROUND_COLOR "blue"
 # set_if_unset APPA_FINO__JOB_COUNT_BOLD false

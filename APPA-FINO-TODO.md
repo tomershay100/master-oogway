@@ -7,20 +7,10 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🔴 Bugs
 
-- [ ] **`appa-fino-conf.zsh` default values contradict the configure wizard**
-  `zsh-custom.d/appa-fino-conf.zsh` lines 149–150 document
-  `ENABLE_GIT_STASH_COUNT` and `ENABLE_GIT_REMOTE_STATE` as `true`, but
-  `appa-fino-configure.zsh:_af_init_defaults` sets both to `"false"`. All
-  commented out so no runtime impact, but it gives readers wrong information.
-
 - [ ] **`_af_render_preview` leaks `_af_flag` into the shell namespace**
   `appa-fino-configure.zsh` line 557: `for _af_flag in "$@"` — `_af_flag`
   is not declared `local`, so it persists after `appa-fino-configure` returns.
   Fix: add `local _af_flag` at the top of the function.
-
-- [ ] **`appa-fino-conf.zsh` line 191: missing space after `#`**
-  `#set_if_unset APPA_FINO__ENABLE_JOB_COUNT false` — should be
-  `# set_if_unset ...` for consistency with every other commented line.
 
 ---
 
