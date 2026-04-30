@@ -7,14 +7,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟠 Issues
 
-- [ ] **`~/.local/bin` missing from PATH**
-  `zshrc.template` adds `~/.npm-global/bin` but not `~/.local/bin`. Ubuntu
-  puts `pip install --user`, `pipx`, and many other user-installed tools there.
-  Add after the npm PATH block:
-  ```zsh
-  [[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
-  ```
-
 - [ ] **`gnucash` alias is unconditional — loads on Pi and servers too**
   `utilities-aliases.zsh` line 92: the alias is defined regardless of whether
   `flatpak` is installed. Wrap it:

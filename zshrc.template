@@ -1,6 +1,12 @@
 # ~/.zshrc — installed by appa-fino; this file is yours to edit freely.
 # Re-running install.sh will NOT overwrite this file.
 
+# ── PATH additions ─────────────────────────────────────────────────────────────
+# pip --user, pipx, and other user-installed tools
+[[ -d "$HOME/.local/bin" ]]      && export PATH="$HOME/.local/bin:$PATH"
+# npm global installs without sudo (npm config set prefix ~/.npm-global)
+[[ -d "$HOME/.npm-global/bin" ]] && export PATH="$HOME/.npm-global/bin:$PATH"
+
 export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="appa-fino"
@@ -36,10 +42,6 @@ command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 # history-substring-search: UP/DOWN arrows search by prefix
 bindkey "${terminfo[kcuu1]}" history-substring-search-up
 bindkey "${terminfo[kcud1]}" history-substring-search-down
-
-# ── PATH additions ─────────────────────────────────────────────────────────────
-
-[[ -d "$HOME/.npm-global/bin" ]] && export PATH="$HOME/.npm-global/bin:$PATH"
 
 # ── appa-fino update check ─────────────────────────────────────────────────────
 # Notifies when new theme variables are available after a repo update.
