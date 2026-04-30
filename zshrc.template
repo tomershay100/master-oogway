@@ -33,7 +33,8 @@ setopt AUTO_CD             # type a directory name alone to cd into it
 source "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh"
 
 plugins=(zsh-autosuggestions zsh-syntax-highlighting sudo you-should-use
-         colored-man-pages colorize command-not-found fzf history-substring-search)
+         colored-man-pages colorize command-not-found fzf history-substring-search
+         docker)
 
 source "$ZSH/oh-my-zsh.sh"
 
@@ -45,6 +46,7 @@ export FZF_CTRL_T_OPTS="
   --preview-window=right:60%:wrap"
 
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 
 # history-substring-search: UP/DOWN arrows search by prefix
 bindkey "${terminfo[kcuu1]}" history-substring-search-up
