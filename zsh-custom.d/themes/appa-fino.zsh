@@ -1096,11 +1096,11 @@ if (( ! ${precmd_functions[(Ie)__reset_timer]} )); then
 	add-zsh-hook precmd __reset_timer
 fi
 
-if (( ! ${chpwd_functions[(Ie)__update_prompt]} )); then
+if (( ! ${chpwd_functions[(Ie)__update_prompt]:-0} )); then
 	add-zsh-hook chpwd __update_prompt
 fi
 
-if (( ! ${chpwd_functions[(Ie)__appa_fino_track_chpwd]} )); then
+if (( ! ${chpwd_functions[(Ie)__appa_fino_track_chpwd]:-0} )); then
 	add-zsh-hook chpwd __appa_fino_track_chpwd
 fi
 
