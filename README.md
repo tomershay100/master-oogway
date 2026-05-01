@@ -96,6 +96,120 @@ These only add new commands and never change existing behavior.
 > **Load order:** override plugins must appear before additive plugins in
 > `~/.zshrc` so additive plugins inherit the overridden commands.
 
+## Command reference
+
+### af-git — git shortcuts
+
+| Command | Description |
+|---------|-------------|
+| `ga` | `git add` |
+| `gaa` | `git add --all` |
+| `gs` | `git status` |
+| `gd` | `git difftool -y` |
+| `gds` | `gd --staged` |
+| `gl` | pretty graph log (all branches) |
+| `glc` | pretty graph log (current branch) |
+| `gls` | `glc --stat` |
+| `glog` | compact one-line graph log |
+| `gcm` / `gc` | `git commit -m` |
+| `gco` | `git checkout` |
+| `gcb` | `git checkout -b` |
+| `gsw` | `git switch` |
+| `gswc` | `git switch -c` |
+| `grs` | `git restore` |
+| `grss` | `git restore --staged` |
+| `gb` | `git branch` |
+| `gbd` | `git branch -d` |
+| `gp` | `git push` |
+| `gpl` | `git pull` |
+| `gf` | `git fetch` |
+| `gst` | `git stash` |
+| `grb` | `git rebase` |
+| `gcp` | `git cherry-pick` |
+| `gundo` | undo last commit (keep changes staged) |
+| `gclean` | remove untracked files and dirs |
+| `gsum` | print branch + staged/unstaged summary |
+| `fbranch` | fuzzy-select a branch and switch to it |
+| `flog` | fuzzy-browse git log and show diff |
+
+### af-navigation — directory movement
+
+| Command | Description |
+|---------|-------------|
+| `mkcd <dir>` | `mkdir -p` then `cd` into it |
+| `up [n]` | go up `n` directory levels (default 1) |
+| `tmpcd` | create a temp dir and `cd` into it |
+| `fcd [dir]` | fuzzy-select a subdirectory and `cd` into it |
+
+### af-files — file management
+
+| Command | Description |
+|---------|-------------|
+| `extract <file>` | extract any archive format |
+| `bak <file>` | copy file to `<file>.bak.YYYYMMDD_HHMMSS` |
+| `sizeof <path>` | disk usage of paths, sorted by size |
+| `fpath [dir]` | fuzzy-select a file and copy its full path to clipboard |
+
+### af-search — search and fuzzy pickers
+
+| Command | Description |
+|---------|-------------|
+| `grep` / `grepi` | colorized grep (case-sensitive / case-insensitive) |
+| `f <pattern>` | `find . \| grepi <pattern>` |
+| `fhist` | fuzzy-select a past command and load it into the prompt |
+| `fman` | fuzzy-select and open a man page |
+| `frg` | fuzzy ripgrep across file contents, open result in `$EDITOR` |
+
+### af-process — process management
+
+| Command | Description |
+|---------|-------------|
+| `psgrep <name>` | list running processes matching name (case-insensitive) |
+| `port <n>` | show which process is listening on port `n` |
+| `fkill [signal]` | fuzzy-select processes to kill (TAB for multi-select) |
+
+### af-dev — developer utilities
+
+| Command | Description |
+|---------|-------------|
+| `calc <expr>` | evaluate a math expression (`bc -l`; supports sqrt, s, c, l, e) |
+| `epoch [ts]` | convert unix timestamp ↔ human date; no arg = current timestamp |
+| `serve [port]` | start a local HTTP file server (default port 8000) |
+| `md2pdf <file>` | convert Markdown to PDF via pandoc + xelatex |
+
+### af-shell-tools — shell introspection
+
+| Command | Description |
+|---------|-------------|
+| `h` | last 50 history entries |
+| `?` | print exit code of the last command |
+| `cwhich <cmd>` | cat the source of a command |
+| `vwhich <cmd>` | open the source of a command in vim |
+| `vizsh` | open `~/.zshrc` in vim |
+| `soursh` | reload `~/.zshrc` |
+
+### af-network — network helpers
+
+| Command | Description |
+|---------|-------------|
+| `natip` | print your public IP address |
+| `sshto` | fuzzy-select an SSH host and connect |
+
+### af-env — environment
+
+| Command | Description |
+|---------|-------------|
+| `fenv` | fuzzy-browse and copy an environment variable value |
+
+### af-build — build helpers
+
+| Command | Description |
+|---------|-------------|
+| `m` | `make -j$(nproc)` (with colormake + banner if installed) |
+| `mc` | `make clean` |
+
+---
+
 ## Theme configurator
 
 Interactive wizard that steps through every theme feature group and writes
