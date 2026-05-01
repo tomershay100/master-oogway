@@ -306,7 +306,7 @@ _install_sshd_acceptenv() {
     fi
 
     info "Adding AcceptEnv APPA_FINO__* to /etc/ssh/sshd_config (sudo required)..."
-    sudo sh -c "echo '$accept_line' >> '$sshd_config'"
+    printf '%s\n' "$accept_line" | sudo tee -a "$sshd_config" >/dev/null
     sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
     success "Added AcceptEnv APPA_FINO__* and reloaded sshd"
 }
