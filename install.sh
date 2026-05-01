@@ -106,7 +106,10 @@ _running_via_pipe() {
 }
 
 _script_dir() {
-    cd "$(dirname "${_SCRIPT_SOURCE}")" 2>/dev/null && pwd
+    local dir
+    dir=$(cd "$(dirname "${_SCRIPT_SOURCE}")" 2>/dev/null && pwd)
+    [[ -n "$dir" ]] || { echo "error: cannot resolve script directory" >&2; return 1; }
+    echo "$dir"
 }
 
 _running_from_install_dir() {
