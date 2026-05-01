@@ -305,7 +305,11 @@ _install_sshd_acceptenv() {
         return
     fi
 
-    info "Adding AcceptEnv APPA_FINO__* to /etc/ssh/sshd_config (sudo required)..."
+    info "SSH theme forwarding requires adding AcceptEnv APPA_FINO__* to /etc/ssh/sshd_config."
+    if ! confirm "Modify /etc/ssh/sshd_config and reload sshd? (sudo required)"; then
+        info "Skipped — run install.sh again to configure later, or add manually."
+        return
+    fi
     printf '%s\n' "$accept_line" | sudo tee -a "$sshd_config" >/dev/null
     sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
     success "Added AcceptEnv APPA_FINO__* and reloaded sshd"
