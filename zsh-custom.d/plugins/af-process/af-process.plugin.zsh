@@ -7,7 +7,7 @@ function psgrep() {
         echo "  Show running processes matching <name> (case-insensitive)."
         return
     fi
-    ps aux | grep -v grep | grep -i "$1"
+    ps aux | grep -i "[${1:0:1}]${1:1}"
 }
 
 function port() {

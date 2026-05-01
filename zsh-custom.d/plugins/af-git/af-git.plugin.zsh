@@ -53,11 +53,10 @@ fbranch() {
     fi
     command -v fzf &>/dev/null || { echo "fbranch: fzf not installed" >&2; return 1; }
     local branch
-    branch=$(git branch -a --color=always 2>/dev/null \
-        | grep -v '\->' \
-        | fzf --ansi --height=40% --reverse \
-              --preview 'git log --oneline --color=always {-1} | head -20') \
-    && git switch "${branch##* }"
+    branch=$(git branch --format='%(refname:short)' 2>/dev/null \
+        | fzf --height=40% --reverse \
+              --preview 'git log --oneline --color=always {} | head -20') \
+    && git switch "$branch"
 }
 
 flog() {
