@@ -23,8 +23,9 @@ _af_vars_hash() {
 _af_read_state() {
     typeset -gA _AF_STATE=()
     [[ -f "${_AF_STATE_FILE}" ]] || return
-    while IFS='=' read -r key val; do
-        [[ "$key" == '#'* || -z "$key" ]] && continue
+    while IFS= read -r line; do
+        [[ "$line" == '#'* || -z "$line" ]] && continue
+        local key="${line%%=*}" val="${line#*=}"
         _AF_STATE[$key]="$val"
     done < "${_AF_STATE_FILE}"
 }
