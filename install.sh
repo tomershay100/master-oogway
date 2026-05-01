@@ -23,10 +23,10 @@ readonly ZSHRC="${HOME}/.zshrc"
 # ── Colors & logging ───────────────────────────────────────────────────────────
 
 if [[ -t 1 ]] && [[ "${NO_COLOR:-}" == "" ]] && [[ "${TERM:-}" != "dumb" ]]; then
-    COLOR_RESET='\033[0m' COLOR_BOLD='\033[1m'
+    COLOR_RESET='\033[0m'
     COLOR_GREEN='\033[0;32m' COLOR_YELLOW='\033[1;33m' COLOR_RED='\033[0;31m' COLOR_CYAN='\033[0;36m' COLOR_MAGENTA='\033[0;35m'
 else
-    COLOR_RESET='' COLOR_BOLD='' COLOR_GREEN='' COLOR_YELLOW='' COLOR_RED='' COLOR_CYAN='' COLOR_MAGENTA=''
+    COLOR_RESET='' COLOR_GREEN='' COLOR_YELLOW='' COLOR_RED='' COLOR_CYAN='' COLOR_MAGENTA=''
 fi
 
 success() { echo -e "${COLOR_GREEN}[OK ]${COLOR_RESET} $*"; }
