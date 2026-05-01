@@ -260,8 +260,8 @@ __appa_fino__show()
 	local var_is_underline="REAL_APPA_FINO__${name}_UNDERLINE"
 
 	local curr_content="${(P)var_content}"
-	local curr_prefix="${(P)var_prefix}"
-	local curr_suffix="${(P)var_suffix}"
+	local curr_prefix="${${(P)var_prefix}//\%/%%}"
+	local curr_suffix="${${(P)var_suffix}//\%/%%}"
 
 	local curr_fg_color="${(P)var_fg_color}"
 	local curr_bg_color="${(P)var_bg_color}"
