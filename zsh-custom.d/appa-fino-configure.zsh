@@ -542,9 +542,11 @@ _af_apply_preset() {
 _af_read_key() {
     local _af_stty
     _af_stty=$(stty -g 2>/dev/null)
+    trap 'stty "$_af_stty" 2>/dev/null' EXIT INT TERM
     stty -echo -icanon min 1 time 0 2>/dev/null
     read -rk1 "$1"
     stty "$_af_stty" 2>/dev/null
+    trap - EXIT INT TERM
 }
 
 _af_render_preview() {
