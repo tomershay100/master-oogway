@@ -47,7 +47,10 @@ function bak() {
     fi
     local ts
     ts=$(date +%Y%m%d_%H%M%S)
-    for f in "$@"; do cp -v "$f" "${f}.bak.${ts}"; done
+    for f in "$@"; do
+        [[ -e "$f" ]] || { echo "bak: not found: $f" >&2; continue; }
+        cp -v "$f" "${f}.bak.${ts}"
+    done
 }
 
 function sizeof() {

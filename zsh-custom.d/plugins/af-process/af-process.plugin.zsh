@@ -52,5 +52,8 @@ fkill() {
         | fzf -m --height=40% --reverse --header='Select process(es) to kill  [TAB = multi-select]' \
         | awk '{print $2}')
     [[ -z "$pids" ]] && return
-    echo "$pids" | xargs kill "$sig"
+    while IFS= read -r pid; do
+        kill -0 "$pid" 2>/dev/null || { echo "fkill: process $pid no longer exists" >&2; continue; }
+        kill "$sig" "$pid"
+    done <<< "$pids"
 }
