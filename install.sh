@@ -123,7 +123,7 @@ if _running_via_pipe; then
     require_cmd git
     if [[ -d "${INSTALL_DIR}/.git" ]]; then
         info "Updating ${INSTALL_DIR}..."
-        git -C "${INSTALL_DIR}" pull --ff-only
+        git -C "${INSTALL_DIR}" pull --ff-only || die "git pull failed — resolve conflicts or re-clone"
         git -C "${INSTALL_DIR}" submodule update --init --recursive
     else
         [[ -e "${INSTALL_DIR}" ]] && die "${INSTALL_DIR} exists but is not a git repo. Remove it and retry."
@@ -137,7 +137,7 @@ fi
 
 if _running_from_install_dir; then
     info "Updating ${INSTALL_DIR}..."
-    git -C "${INSTALL_DIR}" pull --ff-only
+    git -C "${INSTALL_DIR}" pull --ff-only || die "git pull failed — resolve conflicts or re-clone"
     git -C "${INSTALL_DIR}" submodule update --init --recursive
     success "Repository up-to-date"
 fi
@@ -175,7 +175,9 @@ if ! _running_from_install_dir; then
         done
         if [[ ${#missing[@]} -gt 0 ]]; then
             info "Initializing missing plugin submodules: ${missing[*]}"
-            git -C "${local_dir}/../.." submodule update --init --recursive "${missing[@]}"
+            local repo_root
+            repo_root="$(git -C "${local_dir}" rev-parse --show-toplevel)"
+            git -C "${repo_root}" submodule update --init --recursive "${missing[@]}"
         else
             success "Plugin submodules already initialized"
         fi
@@ -188,7 +190,7 @@ fi
 require_cmd zsh
 require_cmd git
 
-if [[ ! -d "${HOME}/.oh-my-zsh" ]]; then
+if [[ ! -f "${HOME}/.oh-my-zsh/oh-my-zsh.sh" ]]; then
     die "oh-my-zsh not found. Install first:\n  sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
 fi
 
