@@ -6,10 +6,10 @@
 
 # ── File-level constants ──────────────────────────────────────────────────────
 
-typeset -g _AF_CONF_FILE="${HOME}/.config/appa-fino/conf.zsh"
-typeset -g _AF_THEME_FILE="${HOME}/.appa-fino/zsh-custom.d/themes/dragon.zsh"
-typeset -g _AF_STATE_DIR="${HOME}/.config/appa-fino"
-typeset -g _AF_STATE_FILE="${_AF_STATE_DIR}/state"
+typeset -g _DRAGON_CONF_FILE="${HOME}/.config/appa-fino/conf.zsh"
+typeset -g _DRAGON_THEME_FILE="${HOME}/.appa-fino/zsh-custom.d/themes/dragon.zsh"
+typeset -g _DRAGON_STATE_DIR="${HOME}/.config/appa-fino"
+typeset -g _DRAGON_STATE_FILE="${_DRAGON_STATE_DIR}/state"
 
 # ── Schema (defaults, types, hints, groups) ──────────────────────────────────
 
@@ -19,46 +19,46 @@ source "${0:a:h}/themes/schema.zsh"
 # State management
 # ─────────────────────────────────────────────────────────────────────────────
 
-_af_vars_hash() {
-    grep -o 'APPA_FINO__[A-Z_]*' "${_AF_THEME_FILE}" 2>/dev/null \
+_dragon_vars_hash() {
+    grep -o 'APPA_FINO__[A-Z_]*' "${_DRAGON_THEME_FILE}" 2>/dev/null \
         | sort -u | md5sum | cut -d' ' -f1
 }
 
-_af_read_state() {
-    typeset -gA _AF_STATE=()
-    [[ -f "${_AF_STATE_FILE}" ]] || return
+_dragon_read_state() {
+    typeset -gA _DRAGON_STATE=()
+    [[ -f "${_DRAGON_STATE_FILE}" ]] || return
     while IFS= read -r line; do
         [[ "$line" == '#'* || -z "$line" ]] && continue
         local key="${line%%=*}" val="${line#*=}"
-        _AF_STATE[$key]="$val"
-    done < "${_AF_STATE_FILE}"
+        _DRAGON_STATE[$key]="$val"
+    done < "${_DRAGON_STATE_FILE}"
 }
 
-_af_write_state() {
+_dragon_write_state() {
     local preset="${1:-default}"
     local hash
-    hash=$(_af_vars_hash)
-    mkdir -p "${_AF_STATE_DIR}"
+    hash=$(_dragon_vars_hash)
+    mkdir -p "${_DRAGON_STATE_DIR}"
     {
         echo "configured=true"
         echo "preset=${preset}"
         echo "vars_hash=${hash}"
-    } > "${_AF_STATE_FILE}"
+    } > "${_DRAGON_STATE_FILE}"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Conf file loader — fills _AF_CURRENT from existing conf
+# Conf file loader — fills _DRAGON_CURRENT from existing conf
 # ─────────────────────────────────────────────────────────────────────────────
 
-_af_load_current_conf() {
+_dragon_load_current_conf() {
     # Start from defaults
-    typeset -gA _AF_CURRENT=()
+    typeset -gA _DRAGON_CURRENT=()
     local var
-    for var in "${(@k)_AF_DEFAULTS}"; do
-        _AF_CURRENT[$var]="${_AF_DEFAULTS[$var]}"
+    for var in "${(@k)_DRAGON_DEFAULTS}"; do
+        _DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
     done
 
-    [[ -f "${_AF_CONF_FILE}" ]] || return
+    [[ -f "${_DRAGON_CONF_FILE}" ]] || return
 
     # Override with any active (uncommented) settings from the conf file
     local line
@@ -69,79 +69,79 @@ _af_load_current_conf() {
             local raw="${match[2]%%\" #*}"  # strip closing " and trailing comment
             raw="${raw//\\\"/\"}"           # unescape \" → "
             raw="${raw//\\\\/\\}"           # unescape \\ → \
-            _AF_CURRENT[$varname]="$raw"
+            _DRAGON_CURRENT[$varname]="$raw"
         fi
-    done < "${_AF_CONF_FILE}"
+    done < "${_DRAGON_CONF_FILE}"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Presets
 # ─────────────────────────────────────────────────────────────────────────────
 
-_af_apply_preset() {
+_dragon_apply_preset() {
     local preset="$1"
     # Reset to pure defaults first
     local var
-    for var in "${(@k)_AF_DEFAULTS}"; do
-        _AF_CURRENT[$var]="${_AF_DEFAULTS[$var]}"
+    for var in "${(@k)_DRAGON_DEFAULTS}"; do
+        _DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
     done
 
     case "$preset" in
         short)
-            _AF_CURRENT[LEFT_SEGMENT_SEPARATOR]=""
-            _AF_CURRENT[LEFT_SEGMENT_SEPARATOR_SAME_COLOR]=""
-            _AF_CURRENT[RIGHT_SEGMENT_SEPARATOR]=""
-            _AF_CURRENT[RIGHT_SEGMENT_SEPARATOR_SAME_COLOR]=""
-            _AF_CURRENT[ENABLE_USERNAME]="false"
-            _AF_CURRENT[DIRECTORY_FORMAT]="short"
-            _AF_CURRENT[PROMPT_CHAR]='$'
-            _AF_CURRENT[GIT_PROMPT_CHAR]='$'
-            _AF_CURRENT[ENABLE_SSH_PREFIX]="false"
-            _AF_CURRENT[USER_HOST_SEPARATOR]=""
-            _AF_CURRENT[HOST_DIR_SEPARATOR]=":"
-            _AF_CURRENT[ENABLE_MULTILINE]="false"
-            _AF_CURRENT[GIT_STATUS_ON_NEW_LINE]="never"
-            _AF_CURRENT[GIT_STATUS_PREFIX]=""
-            _AF_CURRENT[GIT_STATUS_SUFFIX]=" "
-            _AF_CURRENT[GIT_BRANCH_PREFIX]=""
-            _AF_CURRENT[GIT_BRANCH_SUFFIX]=""
-            _AF_CURRENT[GIT_CLEAN_SUFFIX]=""
-            _AF_CURRENT[GIT_CLEAN_FOREGROUND_COLOR]="navy"
-            _AF_CURRENT[GIT_CLEAN_BACKGROUND_COLOR]=""
-            _AF_CURRENT[GIT_DIRTY_SUFFIX]="*"
-            _AF_CURRENT[GIT_DIRTY_FOREGROUND_COLOR]="navy"
-            _AF_CURRENT[GIT_DIRTY_BACKGROUND_COLOR]=""
-            _AF_CURRENT[ENABLE_DATE_TIME]="false"
-            _AF_CURRENT[ENABLE_EXEC_TIMER]="false"
-            _AF_CURRENT[ENABLE_JOB_COUNT]="false"
-            _AF_CURRENT[ENABLE_EXIT_STATUS]="false"
+            _DRAGON_CURRENT[LEFT_SEGMENT_SEPARATOR]=""
+            _DRAGON_CURRENT[LEFT_SEGMENT_SEPARATOR_SAME_COLOR]=""
+            _DRAGON_CURRENT[RIGHT_SEGMENT_SEPARATOR]=""
+            _DRAGON_CURRENT[RIGHT_SEGMENT_SEPARATOR_SAME_COLOR]=""
+            _DRAGON_CURRENT[ENABLE_USERNAME]="false"
+            _DRAGON_CURRENT[DIRECTORY_FORMAT]="short"
+            _DRAGON_CURRENT[PROMPT_CHAR]='$'
+            _DRAGON_CURRENT[GIT_PROMPT_CHAR]='$'
+            _DRAGON_CURRENT[ENABLE_SSH_PREFIX]="false"
+            _DRAGON_CURRENT[USER_HOST_SEPARATOR]=""
+            _DRAGON_CURRENT[HOST_DIR_SEPARATOR]=":"
+            _DRAGON_CURRENT[ENABLE_MULTILINE]="false"
+            _DRAGON_CURRENT[GIT_STATUS_ON_NEW_LINE]="never"
+            _DRAGON_CURRENT[GIT_STATUS_PREFIX]=""
+            _DRAGON_CURRENT[GIT_STATUS_SUFFIX]=" "
+            _DRAGON_CURRENT[GIT_BRANCH_PREFIX]=""
+            _DRAGON_CURRENT[GIT_BRANCH_SUFFIX]=""
+            _DRAGON_CURRENT[GIT_CLEAN_SUFFIX]=""
+            _DRAGON_CURRENT[GIT_CLEAN_FOREGROUND_COLOR]="navy"
+            _DRAGON_CURRENT[GIT_CLEAN_BACKGROUND_COLOR]=""
+            _DRAGON_CURRENT[GIT_DIRTY_SUFFIX]="*"
+            _DRAGON_CURRENT[GIT_DIRTY_FOREGROUND_COLOR]="navy"
+            _DRAGON_CURRENT[GIT_DIRTY_BACKGROUND_COLOR]=""
+            _DRAGON_CURRENT[ENABLE_DATE_TIME]="false"
+            _DRAGON_CURRENT[ENABLE_EXEC_TIMER]="false"
+            _DRAGON_CURRENT[ENABLE_JOB_COUNT]="false"
+            _DRAGON_CURRENT[ENABLE_EXIT_STATUS]="false"
             ;;
         verbose)
-            _AF_CURRENT[DIRECTORY_FORMAT]="full"
-            _AF_CURRENT[USER_HOST_SEPARATOR]=" at "
-            _AF_CURRENT[HOST_DIR_SEPARATOR]=" in "
-            _AF_CURRENT[FIRST_LINE_SEPARATOR_CHAR]="╭ "
-            _AF_CURRENT[NEW_LINE_SEPARATOR_CHAR]="│"
-            _AF_CURRENT[LAST_LINE_SEPARATOR_CHAR]="╰╴"
-            _AF_CURRENT[ENABLE_MULTILINE]="true"
-            _AF_CURRENT[GIT_STATUS_ON_NEW_LINE]="always"
-            _AF_CURRENT[GIT_STATUS_PREFIX]=" on "
-            _AF_CURRENT[GIT_BRANCH_PREFIX]="‹"
-            _AF_CURRENT[GIT_BRANCH_SUFFIX]="›"
-            _AF_CURRENT[GIT_CLEAN_SUFFIX]="✔"
-            _AF_CURRENT[GIT_DIRTY_SUFFIX]="✘"
-            _AF_CURRENT[ENABLE_DATE_TIME]="true"
-            _AF_CURRENT[DATE_TIME_FORMAT]='%D{%d/%m/%y | %H:%M:%S}'
-            _AF_CURRENT[DATE_TIME_PREFIX]=" at "
-            _AF_CURRENT[ENABLE_EXEC_TIMER]="true"
-            _AF_CURRENT[EXEC_TIMER_PREFIX]=" took "
-            _AF_CURRENT[EXEC_TIMER_THRESHOLD]="2"
-            _AF_CURRENT[ENABLE_JOB_COUNT]="true"
-            _AF_CURRENT[JOB_COUNT_SUFFIX]=" jobs "
-            _AF_CURRENT[ENABLE_EXIT_STATUS]="true"
-            _AF_CURRENT[EXIT_STATUS_PREFIX]=" code:"
+            _DRAGON_CURRENT[DIRECTORY_FORMAT]="full"
+            _DRAGON_CURRENT[USER_HOST_SEPARATOR]=" at "
+            _DRAGON_CURRENT[HOST_DIR_SEPARATOR]=" in "
+            _DRAGON_CURRENT[FIRST_LINE_SEPARATOR_CHAR]="╭ "
+            _DRAGON_CURRENT[NEW_LINE_SEPARATOR_CHAR]="│"
+            _DRAGON_CURRENT[LAST_LINE_SEPARATOR_CHAR]="╰╴"
+            _DRAGON_CURRENT[ENABLE_MULTILINE]="true"
+            _DRAGON_CURRENT[GIT_STATUS_ON_NEW_LINE]="always"
+            _DRAGON_CURRENT[GIT_STATUS_PREFIX]=" on "
+            _DRAGON_CURRENT[GIT_BRANCH_PREFIX]="‹"
+            _DRAGON_CURRENT[GIT_BRANCH_SUFFIX]="›"
+            _DRAGON_CURRENT[GIT_CLEAN_SUFFIX]="✔"
+            _DRAGON_CURRENT[GIT_DIRTY_SUFFIX]="✘"
+            _DRAGON_CURRENT[ENABLE_DATE_TIME]="true"
+            _DRAGON_CURRENT[DATE_TIME_FORMAT]='%D{%d/%m/%y | %H:%M:%S}'
+            _DRAGON_CURRENT[DATE_TIME_PREFIX]=" at "
+            _DRAGON_CURRENT[ENABLE_EXEC_TIMER]="true"
+            _DRAGON_CURRENT[EXEC_TIMER_PREFIX]=" took "
+            _DRAGON_CURRENT[EXEC_TIMER_THRESHOLD]="2"
+            _DRAGON_CURRENT[ENABLE_JOB_COUNT]="true"
+            _DRAGON_CURRENT[JOB_COUNT_SUFFIX]=" jobs "
+            _DRAGON_CURRENT[ENABLE_EXIT_STATUS]="true"
+            _DRAGON_CURRENT[EXIT_STATUS_PREFIX]=" code:"
             ;;
-        # default: nothing extra — all set to _AF_DEFAULTS above
+        # default: nothing extra — all set to _DRAGON_DEFAULTS above
     esac
 }
 
@@ -151,31 +151,31 @@ _af_apply_preset() {
 
 # Read a single keypress without echoing it to the terminal.
 # Uses stty to disable echo at the TTY driver level (more reliable than read -s).
-_af_read_key() {
-    local _af_stty
-    _af_stty=$(stty -g 2>/dev/null)
-    trap 'stty "$_af_stty" 2>/dev/null' EXIT INT TERM
+_dragon_read_key() {
+    local _dragon_stty
+    _dragon_stty=$(stty -g 2>/dev/null)
+    trap 'stty "$_dragon_stty" 2>/dev/null' EXIT INT TERM
     stty -echo -icanon min 1 time 0 2>/dev/null
     read -rk1 "$1"
-    stty "$_af_stty" 2>/dev/null
+    stty "$_dragon_stty" 2>/dev/null
     trap - EXIT INT TERM
 }
 
-_af_render_preview() {
+_dragon_render_preview() {
     # Flags: --ssh, --fail, --transient, --group=<name>
-    local ssh_mode=false fail_mode=false transient_mode=false group="" _af_flag
-    for _af_flag in "$@"; do
-        [[ "$_af_flag" == "--ssh"       ]] && ssh_mode=true
-        [[ "$_af_flag" == "--fail"      ]] && fail_mode=true
-        [[ "$_af_flag" == "--transient" ]] && transient_mode=true
-        [[ "$_af_flag" == --group=*     ]] && group="${_af_flag#--group=}"
+    local ssh_mode=false fail_mode=false transient_mode=false group="" _dragon_flag
+    for _dragon_flag in "$@"; do
+        [[ "$_dragon_flag" == "--ssh"       ]] && ssh_mode=true
+        [[ "$_dragon_flag" == "--fail"      ]] && fail_mode=true
+        [[ "$_dragon_flag" == "--transient" ]] && transient_mode=true
+        [[ "$_dragon_flag" == --group=*     ]] && group="${_dragon_flag#--group=}"
     done
 
     # Export all current APPA_FINO__ vars so the subshell inherits them.
     # The theme's set_if_unset only sets vars that are NOT already set,
     # so pre-exported vars act as overrides.
     local var val
-    for var val in "${(@kv)_AF_CURRENT}"; do
+    for var val in "${(@kv)_DRAGON_CURRENT}"; do
         export "APPA_FINO__${var}=${val}"
     done
 
@@ -243,7 +243,7 @@ _af_render_preview() {
         VCS_STATUS_REMOTE_NAME='origin'
         exit_code=${preview_exit_code}
         __LAST_EXIT_CODE=${preview_exit_code}
-        source '${_AF_THEME_FILE}' 2>/dev/null
+        source '${_DRAGON_THEME_FILE}' 2>/dev/null
         ${group_inject}
         dragon__update_zsh_prompt 2>/dev/null
         if [[ '${transient_mode}' == true ]]; then
@@ -273,12 +273,12 @@ _af_render_preview() {
 # Variable editor
 # ─────────────────────────────────────────────────────────────────────────────
 
-_af_edit_var() {
+_dragon_edit_var() {
     local var="$1"
-    local type="${_AF_TYPE[$var]:-string}"
-    local current="${_AF_CURRENT[$var]}"
-    local default="${_AF_DEFAULTS[$var]:-}"
-    local hint="${_AF_HINT[$var]:-}"
+    local type="${_DRAGON_TYPE[$var]:-string}"
+    local current="${_DRAGON_CURRENT[$var]}"
+    local default="${_DRAGON_DEFAULTS[$var]:-}"
+    local hint="${_DRAGON_HINT[$var]:-}"
     local current_display="${current:-(empty string)}"
 
     print ""
@@ -294,11 +294,11 @@ _af_edit_var() {
             local key
             while true; do
                 printf "  > "
-                _af_read_key key
+                _dragon_read_key key
                 case "$key" in
-                    t|T) _AF_CURRENT[$var]="true";     return ;;
-                    f|F) _AF_CURRENT[$var]="false";    return ;;
-                    d|D) _AF_CURRENT[$var]="$default"; return ;;
+                    t|T) _DRAGON_CURRENT[$var]="true";     return ;;
+                    f|F) _DRAGON_CURRENT[$var]="false";    return ;;
+                    d|D) _DRAGON_CURRENT[$var]="$default"; return ;;
                     c|C|$'\e'|$'\n') return ;;
                 esac
             done
@@ -316,13 +316,13 @@ _af_edit_var() {
             print -P "  [d] reset to default (${default})   [c] cancel"
             printf "  > "
             local key
-            _af_read_key key
+            _dragon_read_key key
             case "$key" in
                 [1-9])
                     local idx=$(( key ))
-                    (( idx >= 1 && idx <= ${#options} )) && _AF_CURRENT[$var]="${options[$idx]}"
+                    (( idx >= 1 && idx <= ${#options} )) && _DRAGON_CURRENT[$var]="${options[$idx]}"
                     ;;
-                d|D) _AF_CURRENT[$var]="$default" ;;
+                d|D) _DRAGON_CURRENT[$var]="$default" ;;
             esac
             ;;
         color)
@@ -341,9 +341,9 @@ _af_edit_var() {
             local val
             read -r val
             if [[ "$val" == e || "$val" == E ]]; then
-                _AF_CURRENT[$var]=""
+                _DRAGON_CURRENT[$var]=""
             elif [[ -n "$val" ]]; then
-                _AF_CURRENT[$var]="$val"
+                _DRAGON_CURRENT[$var]="$val"
             fi
             ;;
         string)
@@ -356,9 +356,9 @@ _af_edit_var() {
             local val
             read -r val
             if [[ "$val" == e || "$val" == E ]]; then
-                _AF_CURRENT[$var]=""
+                _DRAGON_CURRENT[$var]=""
             elif [[ -n "$val" ]]; then
-                _AF_CURRENT[$var]="$val"
+                _DRAGON_CURRENT[$var]="$val"
             fi
             ;;
     esac
@@ -368,36 +368,36 @@ _af_edit_var() {
 # Step renderer — returns 0=next, 1=back, 2=quit+save
 # ─────────────────────────────────────────────────────────────────────────────
 
-_af_run_step() {
+_dragon_run_step() {
     local group="$1"
     local step_num="$2"
     local total="$3"
     local vars
-    vars=( ${(z)_AF_GROUP_VARS[$group]} )
+    vars=( ${(z)_DRAGON_GROUP_VARS[$group]} )
 
     while true; do
         clear
 
         # ── Header
-        local title="${_AF_GROUP_TITLE[$group]}"
+        local title="${_DRAGON_GROUP_TITLE[$group]}"
         local pad_len=$(( 72 - 4 - ${#title} - 1 ))
         (( pad_len < 2 )) && pad_len=2
         local dashes="${(r:$pad_len::─:):-}"
         print -P "%B%F{cyan}── Step ${step_num}/${total}: ${title} ${dashes}%f%b"
-        print -P "   %F{245}${_AF_GROUP_DESC[$group]}%f"
+        print -P "   %F{245}${_DRAGON_GROUP_DESC[$group]}%f"
         print ""
 
         # ── Preview
         print -P "  %BPrompt preview%b (git: main ✔  exit: 0):"
-        _af_render_preview --group="${group}"
+        _dragon_render_preview --group="${group}"
         # Show a second contextual preview where relevant.
         case "$group" in
             username_ssh|hostname_ssh|ssh_prefix)
-                _af_render_preview --ssh --group="${group}" ;;
+                _dragon_render_preview --ssh --group="${group}" ;;
             prompt_char_exit|exit_status)
-                _af_render_preview --fail --group="${group}" ;;
+                _dragon_render_preview --fail --group="${group}" ;;
             transient)
-                _af_render_preview --transient --group="${group}" ;;
+                _dragon_render_preview --transient --group="${group}" ;;
         esac
         print ""
 
@@ -405,8 +405,8 @@ _af_run_step() {
         print -P "  %BVariables:%b"
         local i=1
         for var in "${vars[@]}"; do
-            local val="${_AF_CURRENT[$var]}"
-            local default="${_AF_DEFAULTS[$var]:-}"
+            local val="${_DRAGON_CURRENT[$var]}"
+            local default="${_DRAGON_DEFAULTS[$var]:-}"
             # Show quoted form for values with leading/trailing whitespace so they're visible.
             local val_trimmed="${${val#"${val%%[! ]*}"}%"${val##*[! ]}"}"
             local val_display="${val:-(empty)}"
@@ -416,7 +416,7 @@ _af_run_step() {
                 marker=" %B%F{yellow}★%f%b"
             fi
             local type_hint=""
-            local vtype="${_AF_TYPE[$var]:-string}"
+            local vtype="${_DRAGON_TYPE[$var]:-string}"
             [[ "$vtype" == enum:* ]] && type_hint=" %F{245}[${vtype#enum:}]%f"
             printf "  %3d. %-52s" "$i" "APPA_FINO__${var}"
             print -P "%F{yellow}${val_display}%f${marker}${type_hint}"
@@ -428,7 +428,7 @@ _af_run_step() {
         print -P "  %F{245}[number] edit var   [b] back   [Enter/n] next   [q] save & quit   [d] reset group to defaults%f"
         printf "  > "
         local key
-        _af_read_key key
+        _dragon_read_key key
 
         case "$key" in
             ''|$'\n'|n|N) return 0 ;;
@@ -436,13 +436,13 @@ _af_run_step() {
             q|Q)           return 2 ;;
             d|D)
                 for var in "${vars[@]}"; do
-                    _AF_CURRENT[$var]="${_AF_DEFAULTS[$var]:-}"
+                    _DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]:-}"
                 done
                 ;;
             [1-9])
                 local idx=$(( key ))
                 if (( idx >= 1 && idx <= ${#vars} )); then
-                    _af_edit_var "${vars[$idx]}"
+                    _dragon_edit_var "${vars[$idx]}"
                 fi
                 ;;
         esac
@@ -453,7 +453,7 @@ _af_run_step() {
 # Preset selector
 # ─────────────────────────────────────────────────────────────────────────────
 
-_af_select_preset() {
+_dragon_select_preset() {
     clear
     print -P "%B%F{cyan}── appa-fino Theme Configurator ────────────────────────────────────────%f%b"
     print ""
@@ -477,7 +477,7 @@ _af_select_preset() {
     printf "  Choice [1/2/3, default=2]: "
 
     local key
-    _af_read_key key
+    _dragon_read_key key
 
     local chosen_preset
     case "$key" in
@@ -486,8 +486,8 @@ _af_select_preset() {
         *) chosen_preset="default"; print -P "\n  %F{green}✓ Starting from default preset%f" ;;
     esac
 
-    _AF_CHOSEN_PRESET="$chosen_preset"
-    _af_apply_preset "$chosen_preset"
+    _DRAGON_CHOSEN_PRESET="$chosen_preset"
+    _dragon_apply_preset "$chosen_preset"
     sleep 0.6
 }
 
@@ -495,8 +495,8 @@ _af_select_preset() {
 # Conf file writer
 # ─────────────────────────────────────────────────────────────────────────────
 
-_af_write_conf() {
-    local tmp_file="${_AF_CONF_FILE}.wizard.tmp"
+_dragon_write_conf() {
+    local tmp_file="${_DRAGON_CONF_FILE}.wizard.tmp"
 
     {
         cat <<'HEADER'
@@ -529,21 +529,21 @@ _af_write_conf() {
 HEADER
 
         # Write each group
-        for group in "${_AF_GROUPS[@]}"; do
-            local title="${_AF_GROUP_TITLE[$group]}"
+        for group in "${_DRAGON_GROUPS[@]}"; do
+            local title="${_DRAGON_GROUP_TITLE[$group]}"
             local pad_len=$(( 76 - 4 - ${#title} - 1 ))
             (( pad_len < 2 )) && pad_len=2
             local dashes="${(r:$pad_len::─:):-}"
             printf '# ── %s %s\n' "$title" "$dashes"
-            printf '# %s\n' "${_AF_GROUP_DESC[$group]}"
+            printf '# %s\n' "${_DRAGON_GROUP_DESC[$group]}"
 
             local vars
-            vars=( ${(z)_AF_GROUP_VARS[$group]} )
+            vars=( ${(z)_DRAGON_GROUP_VARS[$group]} )
             for var in "${vars[@]}"; do
-                local val="${_AF_CURRENT[$var]}"
-                local default="${_AF_DEFAULTS[$var]:-}"
-                local hint="${_AF_HINT[$var]:-}"
-                local vtype="${_AF_TYPE[$var]:-string}"
+                local val="${_DRAGON_CURRENT[$var]}"
+                local default="${_DRAGON_DEFAULTS[$var]:-}"
+                local hint="${_DRAGON_HINT[$var]:-}"
+                local vtype="${_DRAGON_TYPE[$var]:-string}"
                 local safe_val="${val//\\/\\\\}"
                 safe_val="${safe_val//\"/\\\"}"
 
@@ -564,33 +564,33 @@ HEADER
         done
     } > "$tmp_file"
 
-    mv "$tmp_file" "${_AF_CONF_FILE}"
+    mv "$tmp_file" "${_DRAGON_CONF_FILE}"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Start menu — shown when conf file already exists
 # ─────────────────────────────────────────────────────────────────────────────
 
-_af_filter_changed_groups() {
+_dragon_filter_changed_groups() {
     local -a changed=()
     local group var
-    for group in "${_AF_GROUPS[@]}"; do
-        local vars=( ${(z)_AF_GROUP_VARS[$group]} )
+    for group in "${_DRAGON_GROUPS[@]}"; do
+        local vars=( ${(z)_DRAGON_GROUP_VARS[$group]} )
         for var in "${vars[@]}"; do
-            if [[ "${_AF_CURRENT[$var]}" != "${_AF_DEFAULTS[$var]:-}" ]]; then
+            if [[ "${_DRAGON_CURRENT[$var]}" != "${_DRAGON_DEFAULTS[$var]:-}" ]]; then
                 changed+=("$group")
                 break
             fi
         done
     done
-    _AF_GROUPS=("${changed[@]}")
+    _DRAGON_GROUPS=("${changed[@]}")
 }
 
-_af_show_start_menu() {
+_dragon_show_start_menu() {
     clear
     print -P "%B%F{cyan}── appa-fino Theme Configurator ────────────────────────────────────────%f%b"
     print ""
-    print -P "  Config found at %B${_AF_CONF_FILE}%b"
+    print -P "  Config found at %B${_DRAGON_CONF_FILE}%b"
     print ""
     print -P "  %B[1]%b Edit current config  — step through your non-default settings only"
     print -P "  %B[2]%b Full wizard          — step through all variable groups"
@@ -600,43 +600,43 @@ _af_show_start_menu() {
     printf "  Choice [1/2/3/4, default=1]: "
 
     local key
-    _af_read_key key
+    _dragon_read_key key
     print ""
 
     case "$key" in
         2)
             print -P "  %F{green}✓ Full wizard%f"
             sleep 0.4
-            _af_select_preset
+            _dragon_select_preset
             ;;
         3)
             print -P "  %F{green}✓ Reset to preset%f"
             sleep 0.4
-            _af_select_preset
+            _dragon_select_preset
             ;;
         4)
             print -P "  %F{green}✓ Opening in ${EDITOR:-nano}...%f"
             sleep 0.4
-            ${EDITOR:-nano} "${_AF_CONF_FILE}"
-            _af_cleanup
+            ${EDITOR:-nano} "${_DRAGON_CONF_FILE}"
+            _dragon_cleanup
             return 1  # signal caller to exit without running wizard
             ;;
         *)
             # 1 or Enter — edit current (changed groups only)
             print -P "  %F{green}✓ Editing current config%f"
             sleep 0.4
-            _af_filter_changed_groups
-            if (( ${#_AF_GROUPS} == 0 )); then
+            _dragon_filter_changed_groups
+            if (( ${#_DRAGON_GROUPS} == 0 )); then
                 clear
                 print -P "  %F{245}All settings are at their defaults — nothing to edit.%f"
                 print -P "  Run with %B[2]%b Full wizard to review everything."
                 print ""
                 printf "  Press any key to exit... "
-                _af_read_key _af_any
-                _af_cleanup
+                _dragon_read_key _dragon_any
+                _dragon_cleanup
                 return 1
             fi
-            _AF_CHOSEN_PRESET="${_AF_STATE[preset]:-default}"
+            _DRAGON_CHOSEN_PRESET="${_DRAGON_STATE[preset]:-default}"
             ;;
     esac
     return 0
@@ -659,26 +659,26 @@ appa-fino-configure() {
     [[ "${1-}" == "--new-only" ]] && new_only=true
 
     # Init all data
-    _af_init_defaults
-    _af_init_types
-    _af_init_hints
-    _af_init_groups
-    typeset -g _AF_CHOSEN_PRESET="default"
-    typeset -gA _AF_STATE=()
+    _dragon_init_defaults
+    _dragon_init_types
+    _dragon_init_hints
+    _dragon_init_groups
+    typeset -g _DRAGON_CHOSEN_PRESET="default"
+    typeset -gA _DRAGON_STATE=()
 
-    # Load existing conf (sets _AF_CURRENT from defaults + active conf values)
-    _af_load_current_conf
+    # Load existing conf (sets _DRAGON_CURRENT from defaults + active conf values)
+    _dragon_load_current_conf
 
     # ── New-only mode: check for new vars
     if $new_only; then
-        _af_read_state
-        local stored_hash="${_AF_STATE[vars_hash]:-}"
+        _dragon_read_state
+        local stored_hash="${_DRAGON_STATE[vars_hash]:-}"
         local current_hash
-        current_hash=$(_af_vars_hash)
+        current_hash=$(_dragon_vars_hash)
         if [[ "$stored_hash" == "$current_hash" ]]; then
             print -P "%F{green}✓ No new appa-fino theme variables detected.%f"
             print -P "  Run %Bappa-fino-configure%b (without --new-only) to reconfigure everything."
-            _af_cleanup
+            _dragon_cleanup
             return 0
         fi
         clear
@@ -689,21 +689,21 @@ appa-fino-configure() {
         print -P "  Stepping through all groups — your existing settings are preserved."
         print ""
         print -P "  %F{245}Press any key to start...%f"
-        _af_read_key _af_any
-        _AF_CHOSEN_PRESET="${_AF_STATE[preset]:-default}"
-    elif [[ -f "${_AF_CONF_FILE}" ]]; then
-        _af_read_state
-        _af_show_start_menu || return 0
+        _dragon_read_key _dragon_any
+        _DRAGON_CHOSEN_PRESET="${_DRAGON_STATE[preset]:-default}"
+    elif [[ -f "${_DRAGON_CONF_FILE}" ]]; then
+        _dragon_read_state
+        _dragon_show_start_menu || return 0
     else
         # No conf yet — preset selection
-        _af_select_preset
+        _dragon_select_preset
     fi
 
     # ── Step through all groups
     local step=0
-    local total=${#_AF_GROUPS}
+    local total=${#_DRAGON_GROUPS}
     while (( step < total )); do
-        _af_run_step "${_AF_GROUPS[$((step + 1))]}" $((step + 1)) $total
+        _dragon_run_step "${_DRAGON_GROUPS[$((step + 1))]}" $((step + 1)) $total
         local rc=$?
         case $rc in
             0) (( step++ )) ;;
@@ -717,38 +717,38 @@ appa-fino-configure() {
     print -P "%B%F{cyan}── Final Result ─────────────────────────────────────────────────────────%f%b"
     print ""
     print -P "  Your configured prompt:"
-    _af_render_preview
+    _dragon_render_preview
     print ""
     printf "  Save configuration? [Y/n]: "
     local confirm
     read -r confirm
     if [[ "$confirm" == n* || "$confirm" == N* ]]; then
         print -P "  %F{yellow}Discarded. No changes were saved.%f"
-        _af_cleanup
+        _dragon_cleanup
         return 0
     fi
 
     # ── Write conf and state
-    _af_write_conf
-    _af_write_state "${_AF_CHOSEN_PRESET}"
+    _dragon_write_conf
+    _dragon_write_state "${_DRAGON_CHOSEN_PRESET}"
 
     # Apply directly to the current shell — export every chosen value so the
     # already-set APPA_FINO__ vars are overwritten (set_if_unset won't help here).
     local var val
-    for var val in "${(@kv)_AF_CURRENT}"; do
+    for var val in "${(@kv)_DRAGON_CURRENT}"; do
         export "APPA_FINO__${var}=${val}"
     done
     dragon__update_zsh_prompt 2>/dev/null
 
     print ""
-    print -P "  %F{green}✓ Saved to %B${_AF_CONF_FILE}%b%F{green} — prompt updated immediately.%f"
+    print -P "  %F{green}✓ Saved to %B${_DRAGON_CONF_FILE}%b%F{green} — prompt updated immediately.%f"
     print -P "  %F{245}Edit that file directly to change individual settings without re-running the wizard.%f"
     print ""
 
-    _af_cleanup
+    _dragon_cleanup
 }
 
-_af_cleanup() {
-    unset _AF_DEFAULTS _AF_CURRENT _AF_TYPE _AF_HINT _AF_STATE _AF_CHOSEN_PRESET
-    unset _AF_GROUP_TITLE _AF_GROUP_DESC _AF_GROUP_VARS _AF_GROUPS
+_dragon_cleanup() {
+    unset _DRAGON_DEFAULTS _DRAGON_CURRENT _DRAGON_TYPE _DRAGON_HINT _DRAGON_STATE _DRAGON_CHOSEN_PRESET
+    unset _DRAGON_GROUP_TITLE _DRAGON_GROUP_DESC _DRAGON_GROUP_VARS _DRAGON_GROUPS
 }

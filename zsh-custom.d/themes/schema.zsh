@@ -2,8 +2,8 @@
 # Contains defaults, types, hints, and group definitions for every
 # APPA_FINO__* variable. No side effects at top level.
 
-_af_init_defaults() {
-    typeset -gA _AF_DEFAULTS=(
+_dragon_init_defaults() {
+    typeset -gA _DRAGON_DEFAULTS=(
         # separators
         [LEFT_SEGMENT_SEPARATOR]=$'\uE0B0'
         [LEFT_SEGMENT_SEPARATOR_SAME_COLOR]=$'\uE0B1'
@@ -156,8 +156,8 @@ _af_init_defaults() {
     )
 }
 
-_af_init_types() {
-    typeset -gA _AF_TYPE=(
+_dragon_init_types() {
+    typeset -gA _DRAGON_TYPE=(
         [USE_NERD_FONT]="bool"
         [LEFT_SEGMENT_SEPARATOR]="string"
         [LEFT_SEGMENT_SEPARATOR_SAME_COLOR]="string"
@@ -294,8 +294,8 @@ _af_init_types() {
     )
 }
 
-_af_init_hints() {
-    typeset -gA _AF_HINT=(
+_dragon_init_hints() {
+    typeset -gA _DRAGON_HINT=(
         [DIRECTORY_FORMAT]="Values: 'regular' → ~/projects/foo  |  'short' → foo (last dir only)  |  'full' → /home/user/projects/foo"
         [DATE_TIME_FORMAT]="strftime format string, e.g. '%D{%H:%M:%S}' or '%D{%d/%m/%y | %H:%M}'"
         [GIT_STATUS_ON_NEW_LINE]="'auto': new line when prompt is too wide  |  'always'  |  'never': inline"
@@ -311,8 +311,8 @@ _af_init_hints() {
     )
 }
 
-_af_init_groups() {
-    typeset -ga _AF_GROUPS=(
+_dragon_init_groups() {
+    typeset -ga _DRAGON_GROUPS=(
         nerd_font username username_ssh hostname hostname_ssh
         directory separators multiline
         prompt_char prompt_char_exit transient ssh_prefix
@@ -320,7 +320,7 @@ _af_init_groups() {
         datetime exec_timer ssh_conn_count job_count exit_status
     )
 
-    typeset -gA _AF_GROUP_TITLE=(
+    typeset -gA _DRAGON_GROUP_TITLE=(
         [nerd_font]="Nerd Font & Segment Separators"
         [username]="Username"
         [username_ssh]="Username — SSH Override Colors"
@@ -343,7 +343,7 @@ _af_init_groups() {
         [exit_status]="Exit Status (rprompt)"
     )
 
-    typeset -gA _AF_GROUP_DESC=(
+    typeset -gA _DRAGON_GROUP_DESC=(
         [nerd_font]="Powerline background-colored segments use Nerd Font glyphs as separators."
         [username]="Current user shown in the left prompt."
         [username_ssh]="Override username colors when connecting via SSH. Enable to see the SSH preview differ from normal."
@@ -366,7 +366,7 @@ _af_init_groups() {
         [exit_status]="Show the exit code when the last command failed."
     )
 
-    typeset -gA _AF_GROUP_VARS=(
+    typeset -gA _DRAGON_GROUP_VARS=(
         [nerd_font]="USE_NERD_FONT LEFT_SEGMENT_SEPARATOR LEFT_SEGMENT_SEPARATOR_SAME_COLOR RIGHT_SEGMENT_SEPARATOR RIGHT_SEGMENT_SEPARATOR_SAME_COLOR"
         [username]="ENABLE_USERNAME USERNAME_FOREGROUND_COLOR USERNAME_BACKGROUND_COLOR USERNAME_BOLD USERNAME_UNDERLINE USERNAME_PREFIX USERNAME_SUFFIX"
         [username_ssh]="ENABLE_USERNAME_COLORING_VIA_SSH USERNAME_VIA_SSH_FOREGROUND_COLOR USERNAME_VIA_SSH_BACKGROUND_COLOR USERNAME_VIA_SSH_BOLD USERNAME_VIA_SSH_UNDERLINE"
