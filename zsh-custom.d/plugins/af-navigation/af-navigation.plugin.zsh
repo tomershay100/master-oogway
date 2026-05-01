@@ -24,7 +24,7 @@ function up() {
     fi
     if [[ "$1" =~ '^[0-9]+$' ]]; then
         local uppath=""
-        for i in {1..$1}; do uppath+="../"; done
+        for (( i = 0; i < $1; i++ )); do uppath+="../"; done
         cd "$uppath"
         return
     fi
