@@ -1080,29 +1080,12 @@ if (( ! ${preexec_functions[(Ie)__set_timer]} )); then
 	add-zsh-hook preexec __set_timer
 fi
 
-if (( ! ${preexec_functions[(Ie)__mark_cmd_ran]} )); then
-	add-zsh-hook preexec __mark_cmd_ran
-fi
-
-if (( ! ${precmd_functions[(Ie)__save_exit_code]} )); then
-	add-zsh-hook precmd __save_exit_code
-fi
-
-if (( ! ${precmd_functions[(Ie)__update_prompt]} )); then
-	add-zsh-hook precmd __update_prompt
-fi
-
-if (( ! ${precmd_functions[(Ie)__reset_timer]} )); then
-	add-zsh-hook precmd __reset_timer
-fi
-
-if (( ! ${chpwd_functions[(Ie)__update_prompt]:-0} )); then
-	add-zsh-hook chpwd __update_prompt
-fi
-
-if (( ! ${chpwd_functions[(Ie)__appa_fino_track_chpwd]:-0} )); then
-	add-zsh-hook chpwd __appa_fino_track_chpwd
-fi
+add-zsh-hook preexec __mark_cmd_ran
+add-zsh-hook precmd  __save_exit_code
+add-zsh-hook precmd  __update_prompt
+add-zsh-hook precmd  __reset_timer
+add-zsh-hook chpwd   __update_prompt
+add-zsh-hook chpwd   __appa_fino_track_chpwd
 
 trap '__reset_prompt' WINCH
 
