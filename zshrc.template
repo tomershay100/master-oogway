@@ -3,6 +3,7 @@
 
 # ── PATH additions ─────────────────────────────────────────────────────────────
 # Add directories to PATH only if they exist (avoids warnings on missing dirs).
+typeset -U path   # keep $path array deduplicated; prevents growth on re-source
 
 # pip --user installs (pip install --user) and pipx-managed tools land here.
 [[ -d "$HOME/.local/bin" ]]      && export PATH="$HOME/.local/bin:$PATH"
