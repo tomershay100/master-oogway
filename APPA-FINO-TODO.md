@@ -9,25 +9,6 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟡 Enhancements
 
-### aliases — split into focused, opt-in files
-
-- [ ] **Split aliases into per-topic files in `zsh-custom.d/`** so users can
-  remove any group they don't want by deleting a single file. Suggested split:
-
-  | File | Contents |
-  |---|---|
-  | `aliases-git.zsh` | all `g*` git aliases + `gsum` function |
-  | `aliases-nav.zsh` | `ls`/`eza`, `cat`/`bat`, `less`/`bat`, `cd`-related |
-  | `aliases-tools.zsh` | `grep`, `find`, `diff`, `ip`, `vim`/`nvim`, `mkdir`, `cp`, `mv` |
-  | `aliases-safe.zsh` | `cp -i`, `mv -i`, safety-focused overrides |
-  | `aliases-build.zsh` | `m`, `mc` (make / colormake) |
-  | `aliases-misc.zsh` | `natip`, `gnucash`, `h`, `?`, `reboot`, `vizsh`, `soursh`, `cwhich`, `vwhich` |
-
-  Current files `git-aliases.zsh` and `utilities-aliases.zsh` are merged into
-  these. The **override aliases** (ones that shadow system commands like `cat`,
-  `ls`, `vim`, `cp`, `mv`, `diff`, `ip`) should be clearly marked and easy to
-  remove as a group.
-
 ### atuin — SQLite shell history (future)
 
 - [ ] **atuin** — replaces `HISTFILE` with a SQLite database. Every command gets
