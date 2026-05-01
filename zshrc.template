@@ -124,6 +124,6 @@ command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 bindkey "${terminfo[kcuu1]}" history-substring-search-up
 bindkey "${terminfo[kcud1]}" history-substring-search-down
 
-# ── appa-fino update check ─────────────────────────────────────────────────────
+# ── dragon update check ─────────────────────────────────────────────────────
 # Notifies when new theme variables are available after a repo update.
-source "$HOME/.appa-fino/appa-fino.zsh"
+source "$HOME/.appa-fino/dragon-notifier.zsh"

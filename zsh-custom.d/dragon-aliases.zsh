@@ -1,8 +1,8 @@
-# appa-fino theme aliases
+# dragon theme aliases
 
 function reset_theme_variables {
     for var in "${(@k)_AF_DEFAULTS}"; do
-        unset "APPA_FINO__${var}"
+        unset "DRAGON__${var}"
     done
 }
 

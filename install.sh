@@ -272,7 +272,7 @@ _install_gitconfig
 
 _install_ssh_sendenv() {
     local ssh_config="${HOME}/.ssh/config"
-    local send_line="    SendEnv APPA_FINO__*"
+    local send_line="    SendEnv DRAGON__*"
 
     mkdir -p "${HOME}/.ssh"
     chmod 700 "${HOME}/.ssh"
@@ -280,24 +280,24 @@ _install_ssh_sendenv() {
     if [[ ! -f "$ssh_config" ]]; then
         printf 'Host *\n%s\n' "$send_line" >> "$ssh_config"
         chmod 600 "$ssh_config"
-        success "Created ~/.ssh/config with SendEnv APPA_FINO__*"
+        success "Created ~/.ssh/config with SendEnv DRAGON__*"
         return
     fi
 
     # Already present anywhere in the file — nothing to do.
-    if grep -qF "SendEnv APPA_FINO__*" "$ssh_config"; then
-        success "SendEnv APPA_FINO__* already in ~/.ssh/config"
+    if grep -qF "SendEnv DRAGON__*" "$ssh_config"; then
+        success "SendEnv DRAGON__* already in ~/.ssh/config"
         return
     fi
 
     # Insert SendEnv on the line after the first 'Host *' stanza header.
     if grep -qE '^Host \*[[:space:]]*$' "$ssh_config"; then
         sed -i "/^Host \*[[:space:]]*$/a\\${send_line}" "$ssh_config"
-        success "Added SendEnv APPA_FINO__* to existing Host * block in ~/.ssh/config"
+        success "Added SendEnv DRAGON__* to existing Host * block in ~/.ssh/config"
     else
         # No Host * block — append one.
         printf '\nHost *\n%s\n' "$send_line" >> "$ssh_config"
-        success "Appended Host * block with SendEnv APPA_FINO__* to ~/.ssh/config"
+        success "Appended Host * block with SendEnv DRAGON__* to ~/.ssh/config"
     fi
 }
 
@@ -307,7 +307,7 @@ _install_ssh_sendenv
 
 _install_sshd_acceptenv() {
     local sshd_config="/etc/ssh/sshd_config"
-    local accept_line="AcceptEnv APPA_FINO__*"
+    local accept_line="AcceptEnv DRAGON__*"
 
     if [[ ! -f "$sshd_config" ]]; then
         info "sshd not found — skipping AcceptEnv (not a server or sshd not installed)"
@@ -315,41 +315,41 @@ _install_sshd_acceptenv() {
     fi
 
     if grep -qF "$accept_line" "$sshd_config"; then
-        success "AcceptEnv APPA_FINO__* already in /etc/ssh/sshd_config"
+        success "AcceptEnv DRAGON__* already in /etc/ssh/sshd_config"
         return
     fi
 
-    info "SSH theme forwarding requires adding AcceptEnv APPA_FINO__* to /etc/ssh/sshd_config."
+    info "SSH theme forwarding requires adding AcceptEnv DRAGON__* to /etc/ssh/sshd_config."
     if ! confirm "Modify /etc/ssh/sshd_config and reload sshd? (sudo required)"; then
         info "Skipped — run install.sh again to configure later, or add manually."
         return
     fi
     printf '%s\n' "$accept_line" | sudo tee -a "$sshd_config" >/dev/null
     sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
-    success "Added AcceptEnv APPA_FINO__* and reloaded sshd"
+    success "Added AcceptEnv DRAGON__* and reloaded sshd"
 }
 
 _install_sshd_acceptenv
 
-# ── appa-fino theme: check for new variables ───────────────────────────────────
+# ── dragon theme: check for new variables ───────────────────────────────────
 
 _check_theme_vars() {
     local theme_file="${INSTALL_DIR}/zsh-custom.d/themes/dragon.zsh"
     local current_hash
-    current_hash=$(grep -o 'APPA_FINO__[A-Z_]*' "${theme_file}" 2>/dev/null \
+    current_hash=$(grep -o 'DRAGON__[A-Z_]*' "${theme_file}" 2>/dev/null \
         | sort -u | md5sum | cut -d' ' -f1)
 
     if [[ ! -f "${STATE_FILE}" ]]; then
-        todo_item "Configure your prompt: open a new terminal and run 'appa-fino-configure'"
+        todo_item "Configure your prompt: open a new terminal and run 'dragon-configure'"
         return
     fi
 
     local stored_hash
     stored_hash=$(grep '^vars_hash=' "${STATE_FILE}" 2>/dev/null | cut -d= -f2)
     if [[ "${current_hash}" != "${stored_hash}" ]]; then
-        todo_item "New appa-fino theme options available: run 'appa-fino-configure --new-only'"
+        todo_item "New dragon theme options available: run 'dragon-configure --new-only'"
     else
-        success "appa-fino theme already configured"
+        success "dragon theme already configured"
     fi
 }
 

@@ -1,14 +1,14 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# appa-fino-configure.zsh
-# Provides `appa-fino-configure [--new-only]` — interactive theme wizard.
+# dragon-configure.zsh
+# Provides `dragon-configure [--new-only]` — interactive theme wizard.
 # Sourced by oh-my-zsh via ZSH_CUSTOM; no side effects at top level.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── File-level constants ──────────────────────────────────────────────────────
 
-typeset -g _DRAGON_CONF_FILE="${HOME}/.config/appa-fino/conf.zsh"
-typeset -g _DRAGON_THEME_FILE="${HOME}/.appa-fino/zsh-custom.d/themes/dragon.zsh"
-typeset -g _DRAGON_STATE_DIR="${HOME}/.config/appa-fino"
+typeset -g _DRAGON_CONF_FILE="${HOME}/.config/dragon/conf.zsh"
+typeset -g _DRAGON_THEME_FILE="${HOME}/.dragon/zsh-custom.d/themes/dragon.zsh"
+typeset -g _DRAGON_STATE_DIR="${HOME}/.config/dragon"
 typeset -g _DRAGON_STATE_FILE="${_DRAGON_STATE_DIR}/state"
 
 # ── Schema (defaults, types, hints, groups) ──────────────────────────────────
@@ -20,7 +20,7 @@ source "${0:a:h}/themes/schema.zsh"
 # ─────────────────────────────────────────────────────────────────────────────
 
 _dragon_vars_hash() {
-    grep -o 'APPA_FINO__[A-Z_]*' "${_DRAGON_THEME_FILE}" 2>/dev/null \
+    grep -o 'DRAGON__[A-Z_]*' "${_DRAGON_THEME_FILE}" 2>/dev/null \
         | sort -u | md5sum | cut -d' ' -f1
 }
 
@@ -64,7 +64,7 @@ _dragon_load_current_conf() {
     local line
     while IFS= read -r line; do
         [[ "$line" == '#'* || "$line" =~ ^[[:space:]]*$ ]] && continue
-        if [[ "$line" =~ ^[[:space:]]*'export APPA_FINO__'([A-Z_]+)'="'(.*) ]]; then
+        if [[ "$line" =~ ^[[:space:]]*'export DRAGON__'([A-Z_]+)'="'(.*) ]]; then
             local varname="${match[1]}"
             local raw="${match[2]%%\" #*}"  # strip closing " and trailing comment
             raw="${raw//\\\"/\"}"           # unescape \" → "
@@ -171,12 +171,12 @@ _dragon_render_preview() {
         [[ "$_dragon_flag" == --group=*     ]] && group="${_dragon_flag#--group=}"
     done
 
-    # Export all current APPA_FINO__ vars so the subshell inherits them.
+    # Export all current DRAGON__ vars so the subshell inherits them.
     # The theme's set_if_unset only sets vars that are NOT already set,
     # so pre-exported vars act as overrides.
     local var val
     for var val in "${(@kv)_DRAGON_CURRENT}"; do
-        export "APPA_FINO__${var}=${val}"
+        export "DRAGON__${var}=${val}"
     done
 
     local ssh_inject="" preview_exit_code=0
@@ -192,23 +192,23 @@ _dragon_render_preview() {
         job_count)
             # Override job count function to inject 2 fake background jobs.
             group_inject="dragon__set_job_count() {
-                FINAL_APPA_FINO__JOB_COUNT_CONTENT=''
-                ! \$APPA_FINO__ENABLE_JOB_COUNT && return
+                FINAL_DRAGON__JOB_COUNT_CONTENT=''
+                ! \$DRAGON__ENABLE_JOB_COUNT && return
                 local jobs_count=2
-                REAL_APPA_FINO__JOB_COUNT_CONTENT=2
+                REAL_DRAGON__JOB_COUNT_CONTENT=2
                 __set_job_count_prefix_and_suffix
-                REAL_APPA_FINO__JOB_COUNT_FOREGROUND_COLOR=\"\$APPA_FINO__JOB_COUNT_FOREGROUND_COLOR\"
-                REAL_APPA_FINO__JOB_COUNT_BACKGROUND_COLOR=\"\$APPA_FINO__JOB_COUNT_BACKGROUND_COLOR\"
-                REAL_APPA_FINO__JOB_COUNT_BOLD=\"\$APPA_FINO__JOB_COUNT_BOLD\"
-                REAL_APPA_FINO__JOB_COUNT_UNDERLINE=\"\$APPA_FINO__JOB_COUNT_UNDERLINE\"
+                REAL_DRAGON__JOB_COUNT_FOREGROUND_COLOR=\"\$DRAGON__JOB_COUNT_FOREGROUND_COLOR\"
+                REAL_DRAGON__JOB_COUNT_BACKGROUND_COLOR=\"\$DRAGON__JOB_COUNT_BACKGROUND_COLOR\"
+                REAL_DRAGON__JOB_COUNT_BOLD=\"\$DRAGON__JOB_COUNT_BOLD\"
+                REAL_DRAGON__JOB_COUNT_UNDERLINE=\"\$DRAGON__JOB_COUNT_UNDERLINE\"
                 __dragon__show JOB_COUNT
-                FINAL_APPA_FINO__JOB_COUNT_CONTENT=\"\$SHOW_RESULT\"
+                FINAL_DRAGON__JOB_COUNT_CONTENT=\"\$SHOW_RESULT\"
             }" ;;
         ssh_conn_count)
             # Fake 2 incoming SSH connections (SSH_TTY not needed here — this is about
             # connections TO this machine, not whether we ourselves are on SSH).
             group_inject="__set_ssh_connection_count_content() {
-                REAL_APPA_FINO__SSH_CONNECTION_COUNT_CONTENT=2
+                REAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT=2
             }" ;;
         exit_status)
             # The --fail flag already sets exit_code=1; nothing extra needed.
@@ -282,7 +282,7 @@ _dragon_edit_var() {
     local current_display="${current:-(empty string)}"
 
     print ""
-    print -P "  %BEditing%b: APPA_FINO__${var}"
+    print -P "  %BEditing%b: DRAGON__${var}"
     [[ -n "$hint" ]] && print -P "  %F{245}${hint}%f"
     print -P "  %F{yellow}Current value%f: ${current_display}"
     print -P "  %F{245}Default%f: ${default:-(empty string)}"
@@ -418,7 +418,7 @@ _dragon_run_step() {
             local type_hint=""
             local vtype="${_DRAGON_TYPE[$var]:-string}"
             [[ "$vtype" == enum:* ]] && type_hint=" %F{245}[${vtype#enum:}]%f"
-            printf "  %3d. %-52s" "$i" "APPA_FINO__${var}"
+            printf "  %3d. %-52s" "$i" "DRAGON__${var}"
             print -P "%F{yellow}${val_display}%f${marker}${type_hint}"
             (( i++ ))
         done
@@ -455,7 +455,7 @@ _dragon_run_step() {
 
 _dragon_select_preset() {
     clear
-    print -P "%B%F{cyan}── appa-fino Theme Configurator ────────────────────────────────────────%f%b"
+    print -P "%B%F{cyan}── dragon Theme Configurator ────────────────────────────────────────%f%b"
     print ""
     print -P "  Welcome! Choose a %Bstarting point%b for your prompt:"
     print ""
@@ -501,25 +501,25 @@ _dragon_write_conf() {
     {
         cat <<'HEADER'
 ##########################################
-#### Theme configuration: appa-fino #####
+#### Theme configuration: dragon #####
 ##########################################
-# Generated by appa-fino-configure. Edit freely, or re-run it to reconfigure.
+# Generated by dragon-configure. Edit freely, or re-run it to reconfigure.
 # Uncommented lines (export ...) override theme defaults.
 # Commented-out lines (# export ...) show all available options at their defaults.
 #
-# SSH forwarding: add 'SendEnv APPA_FINO__*' to ~/.ssh/config to carry your
-# theme to remote machines running appa-fino. The guard below ensures forwarded
+# SSH forwarding: add 'SendEnv DRAGON__*' to ~/.ssh/config to carry your
+# theme to remote machines running dragon. The guard below ensures forwarded
 # values are never overwritten by the remote's copy of this file.
-[[ -v APPA_FINO__ENABLE_USERNAME ]] && return
+[[ -v DRAGON__ENABLE_USERNAME ]] && return
 #
 # Variable naming convention:
-#   APPA_FINO__ENABLE_{FEATURE}           — bool: true / false
-#   APPA_FINO__{FEATURE}_FOREGROUND_COLOR — color name or 0-255
-#   APPA_FINO__{FEATURE}_BACKGROUND_COLOR — color name or 0-255, empty = no color
-#   APPA_FINO__{FEATURE}_BOLD             — bool
-#   APPA_FINO__{FEATURE}_UNDERLINE        — bool
-#   APPA_FINO__{FEATURE}_PREFIX           — string prepended before the segment
-#   APPA_FINO__{FEATURE}_SUFFIX           — string appended after the segment
+#   DRAGON__ENABLE_{FEATURE}           — bool: true / false
+#   DRAGON__{FEATURE}_FOREGROUND_COLOR — color name or 0-255
+#   DRAGON__{FEATURE}_BACKGROUND_COLOR — color name or 0-255, empty = no color
+#   DRAGON__{FEATURE}_BOLD             — bool
+#   DRAGON__{FEATURE}_UNDERLINE        — bool
+#   DRAGON__{FEATURE}_PREFIX           — string prepended before the segment
+#   DRAGON__{FEATURE}_SUFFIX           — string appended after the segment
 #
 # Color values: name (black red green yellow blue magenta cyan white
 #   grey maroon lime olive navy fuchsia aqua silver) or numeric 0-255.
@@ -555,9 +555,9 @@ HEADER
                 fi
 
                 if [[ "$val" == "$default" ]]; then
-                    printf '# export APPA_FINO__%s="%s"  # default\n' "$var" "$safe_val"
+                    printf '# export DRAGON__%s="%s"  # default\n' "$var" "$safe_val"
                 else
-                    printf 'export APPA_FINO__%s="%s"\n' "$var" "$safe_val"
+                    printf 'export DRAGON__%s="%s"\n' "$var" "$safe_val"
                 fi
             done
             printf '\n'
@@ -588,7 +588,7 @@ _dragon_filter_changed_groups() {
 
 _dragon_show_start_menu() {
     clear
-    print -P "%B%F{cyan}── appa-fino Theme Configurator ────────────────────────────────────────%f%b"
+    print -P "%B%F{cyan}── dragon Theme Configurator ────────────────────────────────────────%f%b"
     print ""
     print -P "  Config found at %B${_DRAGON_CONF_FILE}%b"
     print ""
@@ -646,12 +646,12 @@ _dragon_show_start_menu() {
 # Main function
 # ─────────────────────────────────────────────────────────────────────────────
 
-appa-fino-configure() {
+dragon-configure() {
     if [[ "${1-}" == "--version" || "${1-}" == "-v" ]]; then
         local version
-        version=$(git -C "${HOME}/.appa-fino" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
+        version=$(git -C "${HOME}/.dragon" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
             || echo "unknown")
-        echo "appa-fino ${version}"
+        echo "dragon ${version}"
         return 0
     fi
 
@@ -676,13 +676,13 @@ appa-fino-configure() {
         local current_hash
         current_hash=$(_dragon_vars_hash)
         if [[ "$stored_hash" == "$current_hash" ]]; then
-            print -P "%F{green}✓ No new appa-fino theme variables detected.%f"
-            print -P "  Run %Bappa-fino-configure%b (without --new-only) to reconfigure everything."
+            print -P "%F{green}✓ No new dragon theme variables detected.%f"
+            print -P "  Run %Bdragon-configure%b (without --new-only) to reconfigure everything."
             _dragon_cleanup
             return 0
         fi
         clear
-        print -P "%B%F{cyan}── appa-fino: New Theme Features ───────────────────────────────────────%f%b"
+        print -P "%B%F{cyan}── dragon: New Theme Features ───────────────────────────────────────%f%b"
         print ""
         print -P "  New theme variables have been added since you last configured."
         print -P "  Default values have been applied for them."
@@ -733,10 +733,10 @@ appa-fino-configure() {
     _dragon_write_state "${_DRAGON_CHOSEN_PRESET}"
 
     # Apply directly to the current shell — export every chosen value so the
-    # already-set APPA_FINO__ vars are overwritten (set_if_unset won't help here).
+    # already-set DRAGON__ vars are overwritten (set_if_unset won't help here).
     local var val
     for var val in "${(@kv)_DRAGON_CURRENT}"; do
-        export "APPA_FINO__${var}=${val}"
+        export "DRAGON__${var}=${val}"
     done
     dragon__update_zsh_prompt 2>/dev/null
 

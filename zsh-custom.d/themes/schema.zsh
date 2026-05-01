@@ -1,6 +1,6 @@
-# dragon theme schema — pure data sourced by appa-fino-configure.zsh.
+# dragon theme schema — pure data sourced by dragon-configure.zsh.
 # Contains defaults, types, hints, and group definitions for every
-# APPA_FINO__* variable. No side effects at top level.
+# DRAGON__* variable. No side effects at top level.
 
 _dragon_init_defaults() {
     typeset -gA _DRAGON_DEFAULTS=(
