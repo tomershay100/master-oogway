@@ -23,17 +23,17 @@ readonly ZSHRC="${HOME}/.zshrc"
 # ── Colors & logging ───────────────────────────────────────────────────────────
 
 if [[ -t 1 ]] && [[ "${NO_COLOR:-}" == "" ]] && [[ "${TERM:-}" != "dumb" ]]; then
-    _C='\033[0m' _BOLD='\033[1m'
-    _GREEN='\033[0;32m' _YELLOW='\033[1;33m' _RED='\033[0;31m' _CYAN='\033[0;36m' _MAGENTA='\033[0;35m'
+    COLOR_RESET='\033[0m' COLOR_BOLD='\033[1m'
+    COLOR_GREEN='\033[0;32m' COLOR_YELLOW='\033[1;33m' COLOR_RED='\033[0;31m' COLOR_CYAN='\033[0;36m' COLOR_MAGENTA='\033[0;35m'
 else
-    _C='' _BOLD='' _GREEN='' _YELLOW='' _RED='' _CYAN='' _MAGENTA=''
+    COLOR_RESET='' COLOR_BOLD='' COLOR_GREEN='' COLOR_YELLOW='' COLOR_RED='' COLOR_CYAN='' COLOR_MAGENTA=''
 fi
 
-success() { echo -e "${_GREEN}[OK ]${_C} $*"; }
-info()    { echo -e "${_CYAN}[INF]${_C} $*"; }
-warn()    { echo -e "${_YELLOW}[WRN]${_C} $*" >&2; }
-die()     { echo -e "${_RED}[ERR]${_C} $*" >&2; exit 1; }
-_ask()    { echo -en "${_MAGENTA}[ASK]${_C} $*" > /dev/tty; }
+success() { echo -e "${COLOR_GREEN}[OK ]${COLOR_RESET} $*"; }
+info()    { echo -e "${COLOR_CYAN}[INF]${COLOR_RESET} $*"; }
+warn()    { echo -e "${COLOR_YELLOW}[WRN]${COLOR_RESET} $*" >&2; }
+die()     { echo -e "${COLOR_RED}[ERR]${COLOR_RESET} $*" >&2; exit 1; }
+_ask()    { echo -en "${COLOR_MAGENTA}[ASK]${COLOR_RESET} $*" > /dev/tty; }
 
 # ── Error handling ─────────────────────────────────────────────────────────────
 
@@ -86,12 +86,12 @@ todo_item()  { _TODO_ITEMS+=("$*"); }
 print_todos() {
     [[ ${#_TODO_ITEMS[@]} -eq 0 ]] && return 0
     echo ""
-    echo -e "${_YELLOW}┌─────────────────────────────────────────────────────┐${_C}"
-    echo -e "${_YELLOW}│  Manual steps required after install                │${_C}"
-    echo -e "${_YELLOW}└─────────────────────────────────────────────────────┘${_C}"
+    echo -e "${COLOR_YELLOW}┌─────────────────────────────────────────────────────┐${COLOR_RESET}"
+    echo -e "${COLOR_YELLOW}│  Manual steps required after install                │${COLOR_RESET}"
+    echo -e "${COLOR_YELLOW}└─────────────────────────────────────────────────────┘${COLOR_RESET}"
     local i=1
     for item in "${_TODO_ITEMS[@]}"; do
-        echo -e "${_YELLOW}  ${i}. ${item}${_C}"
+        echo -e "${COLOR_YELLOW}  ${i}. ${item}${COLOR_RESET}"
         (( i++ ))
     done
     echo ""
