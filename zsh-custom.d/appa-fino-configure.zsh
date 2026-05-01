@@ -647,6 +647,14 @@ _af_show_start_menu() {
 # ─────────────────────────────────────────────────────────────────────────────
 
 appa-fino-configure() {
+    if [[ "${1-}" == "--version" || "${1-}" == "-v" ]]; then
+        local version
+        version=$(git -C "${HOME}/.appa-fino" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
+            || echo "unknown")
+        echo "appa-fino ${version}"
+        return 0
+    fi
+
     local new_only=false
     [[ "${1-}" == "--new-only" ]] && new_only=true
 

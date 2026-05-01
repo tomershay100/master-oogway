@@ -185,6 +185,20 @@ if ! _running_from_install_dir; then
     _init_plugins
 fi
 
+# ── Version ────────────────────────────────────────────────────────────────────
+
+_print_version() {
+    local version
+    version=$(git -C "${INSTALL_DIR}" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
+        || echo "unknown")
+    echo "appa-fino ${version}"
+}
+
+if [[ "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
+    _print_version
+    exit 0
+fi
+
 # ── Pre-flight ─────────────────────────────────────────────────────────────────
 
 require_cmd zsh
