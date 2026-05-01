@@ -2,7 +2,9 @@
 # Requires: fhist, fman, frg also require fzf (skipped with an error if not installed).
 # frg also requires rg (ripgrep).
 
-alias grep="grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} --exclude={'*.so','*.apd','*.pd'}"
+alias grep="grep --color=auto \
+    --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} \
+    --exclude={'*.so','*.apd','*.pd'}"
 alias grepi="grep -i"
 alias f="find . | grepi"
 
