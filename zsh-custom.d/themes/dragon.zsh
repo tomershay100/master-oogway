@@ -1,4 +1,4 @@
-# appa-fino.zsh-theme
+# dragon.zsh-theme
 
 set_if_unset()
 {
@@ -246,7 +246,7 @@ __get_xterm_style_format()
 	fi
 }
 
-__appa_fino__show()
+__dragon__show()
 {
 	local name="$1"
 
@@ -287,7 +287,7 @@ __set_username_color()
 	fi
 }
 
-appa_fino__set_username()
+dragon__set_username()
 {
 	FINAL_APPA_FINO__USERNAME_CONTENT=""
 	! $APPA_FINO__ENABLE_USERNAME && return
@@ -299,7 +299,7 @@ appa_fino__set_username()
 
 	__set_username_color
 
-	__appa_fino__show "USERNAME"
+	__dragon__show "USERNAME"
 	FINAL_APPA_FINO__USERNAME_CONTENT="$SHOW_RESULT"
 }
 
@@ -317,7 +317,7 @@ __set_hostname_color()
 	fi
 }
 
-appa_fino__set_hostname()
+dragon__set_hostname()
 {
 	FINAL_APPA_FINO__HOSTNAME_CONTENT=""
 	! $APPA_FINO__ENABLE_HOSTNAME && return
@@ -329,7 +329,7 @@ appa_fino__set_hostname()
 
 	__set_hostname_color
 
-	__appa_fino__show "HOSTNAME"
+	__dragon__show "HOSTNAME"
 	FINAL_APPA_FINO__HOSTNAME_CONTENT="$SHOW_RESULT"
 }
 
@@ -343,7 +343,7 @@ __set_directory_content()
 	fi
 }
 
-appa_fino__set_directory()
+dragon__set_directory()
 {
 	FINAL_APPA_FINO__DIRECTORY_CONTENT=""
 	! $APPA_FINO__ENABLE_DIRECTORY && return
@@ -358,7 +358,7 @@ appa_fino__set_directory()
 	REAL_APPA_FINO__DIRECTORY_BOLD="$APPA_FINO__DIRECTORY_BOLD"
 	REAL_APPA_FINO__DIRECTORY_UNDERLINE="$APPA_FINO__DIRECTORY_UNDERLINE"
 
-	__appa_fino__show "DIRECTORY"
+	__dragon__show "DIRECTORY"
 	FINAL_APPA_FINO__DIRECTORY_CONTENT="$SHOW_RESULT"
 }
 
@@ -393,7 +393,7 @@ __set_prompt_char_color()
 	fi
 }
 
-appa_fino__set_prompt_char()
+dragon__set_prompt_char()
 {
 	FINAL_PROMPT_CHAR_CONTENT=""
 	[[ -z $APPA_FINO__PROMPT_CHAR ]] && return
@@ -405,11 +405,11 @@ appa_fino__set_prompt_char()
 
 	__set_prompt_char_color
 
-	__appa_fino__show "PROMPT_CHAR"
+	__dragon__show "PROMPT_CHAR"
 	FINAL_PROMPT_CHAR_CONTENT="$SHOW_RESULT"
 }
 
-appa_fino__set_ssh_prefix()
+dragon__set_ssh_prefix()
 {
 	FINAL_APPA_FINO__SSH_PREFIX_CONTENT=""
 	! $APPA_FINO__ENABLE_SSH_PREFIX && return
@@ -426,7 +426,7 @@ appa_fino__set_ssh_prefix()
 	REAL_APPA_FINO__SSH_PREFIX_BOLD="$APPA_FINO__SSH_PREFIX_BOLD"
 	REAL_APPA_FINO__SSH_PREFIX_UNDERLINE="$APPA_FINO__SSH_PREFIX_UNDERLINE"
 
-	__appa_fino__show "SSH_PREFIX"
+	__dragon__show "SSH_PREFIX"
 	FINAL_APPA_FINO__SSH_PREFIX_CONTENT="$SHOW_RESULT"
 }
 
@@ -440,7 +440,7 @@ __set_separator_parameters()
 	REAL_APPA_FINO__PROMPT_SEPARATOR_UNDERLINE="$APPA_FINO__PROMPT_SEPARATOR_UNDERLINE"
 }
 
-appa_fino__set_user_host_separator()
+dragon__set_user_host_separator()
 {
 	FINAL_APPA_FINO__USER_HOST_SEPARATOR_CONTENT=""
 	[[ -z $APPA_FINO__USER_HOST_SEPARATOR ]] && return
@@ -448,11 +448,11 @@ appa_fino__set_user_host_separator()
 	REAL_APPA_FINO__PROMPT_SEPARATOR_CONTENT="$APPA_FINO__USER_HOST_SEPARATOR"
 	__set_separator_parameters
 
-	__appa_fino__show "PROMPT_SEPARATOR"
+	__dragon__show "PROMPT_SEPARATOR"
 	FINAL_APPA_FINO__USER_HOST_SEPARATOR_CONTENT="$SHOW_RESULT"
 }
 
-appa_fino__set_host_dir_separator()
+dragon__set_host_dir_separator()
 {
 	FINAL_APPA_FINO__HOST_DIR_SEPARATOR_CONTENT=""
 	[[ -z $APPA_FINO__HOST_DIR_SEPARATOR ]] && return
@@ -460,11 +460,11 @@ appa_fino__set_host_dir_separator()
 	REAL_APPA_FINO__PROMPT_SEPARATOR_CONTENT="$APPA_FINO__HOST_DIR_SEPARATOR"
 	__set_separator_parameters
 
-	__appa_fino__show "PROMPT_SEPARATOR"
+	__dragon__show "PROMPT_SEPARATOR"
 	FINAL_APPA_FINO__HOST_DIR_SEPARATOR_CONTENT="$SHOW_RESULT"
 }
 
-appa_fino__set_multiline_first_line_prompt()
+dragon__set_multiline_first_line_prompt()
 {
 	FINAL_APPA_FINO__MULTILINE_FIRST_LINE_SEPARATOR_CONTENT=""
 	[[ -z $APPA_FINO__FIRST_LINE_SEPARATOR_CHAR ]] && return
@@ -472,11 +472,11 @@ appa_fino__set_multiline_first_line_prompt()
 	REAL_APPA_FINO__PROMPT_SEPARATOR_CONTENT="$APPA_FINO__FIRST_LINE_SEPARATOR_CHAR"
 	__set_separator_parameters
 
-	__appa_fino__show "PROMPT_SEPARATOR"
+	__dragon__show "PROMPT_SEPARATOR"
 	FINAL_APPA_FINO__MULTILINE_FIRST_LINE_SEPARATOR_CONTENT="$SHOW_RESULT"
 }
 
-appa_fino__set_multiline_new_line_prompt()
+dragon__set_multiline_new_line_prompt()
 {
 	FINAL_APPA_FINO__MULTILINE_NEW_LINE_SEPARATOR_CONTENT=""
 	[[ -z $APPA_FINO__NEW_LINE_SEPARATOR_CHAR ]] && return
@@ -484,11 +484,11 @@ appa_fino__set_multiline_new_line_prompt()
 	REAL_APPA_FINO__PROMPT_SEPARATOR_CONTENT="$APPA_FINO__NEW_LINE_SEPARATOR_CHAR"
 	__set_separator_parameters
 
-	__appa_fino__show "PROMPT_SEPARATOR"
+	__dragon__show "PROMPT_SEPARATOR"
 	FINAL_APPA_FINO__MULTILINE_NEW_LINE_SEPARATOR_CONTENT="$SHOW_RESULT"
 }
 
-appa_fino__set_multiline_last_line_prompt()
+dragon__set_multiline_last_line_prompt()
 {
 	FINAL_APPA_FINO__MULTILINE_LAST_LINE_SEPARATOR_CONTENT=""
 	[[ -z $APPA_FINO__LAST_LINE_SEPARATOR_CHAR ]] && return
@@ -496,7 +496,7 @@ appa_fino__set_multiline_last_line_prompt()
 	REAL_APPA_FINO__PROMPT_SEPARATOR_CONTENT="$APPA_FINO__LAST_LINE_SEPARATOR_CHAR"
 	__set_separator_parameters
 
-	__appa_fino__show "PROMPT_SEPARATOR"
+	__dragon__show "PROMPT_SEPARATOR"
 	FINAL_APPA_FINO__MULTILINE_LAST_LINE_SEPARATOR_CONTENT="$SHOW_RESULT"
 }
 
@@ -625,7 +625,7 @@ __set_git_status_prefix_and_suffix()
 	fi
 }
 
-appa_fino__set_git_prompt()
+dragon__set_git_prompt()
 {
 	FINAL_GIT_STATUS_CONTENT=""
 	! $APPA_FINO__ENABLE_GIT_STATUS && return
@@ -635,7 +635,7 @@ appa_fino__set_git_prompt()
 	__set_git_status_color
 	__set_git_status_prefix_and_suffix
 
-	__appa_fino__show "GIT_STATUS"
+	__dragon__show "GIT_STATUS"
 	FINAL_GIT_STATUS_CONTENT="$SHOW_RESULT"
 
 	if [[ $APPA_FINO__GIT_STATUS_ON_NEW_LINE == "never" ]] || ! $APPA_FINO__ENABLE_MULTILINE; then
@@ -652,7 +652,7 @@ appa_fino__set_git_prompt()
 	fi
 }
 
-appa_fino__set_lprompt()
+dragon__set_lprompt()
 {
 	typeset -g left_segment_right_bg_color="$TERMINAL_BACKGROUND_COLOR" # static variable that 'remembers' the previous color
 	GIT_SHOULD_BE_ON_NEW_LINE=false
@@ -660,42 +660,42 @@ appa_fino__set_lprompt()
 	local curr_content
 
 	if $APPA_FINO__ENABLE_MULTILINE; then
-		appa_fino__set_multiline_first_line_prompt
+		dragon__set_multiline_first_line_prompt
 		__add_separator_between_left_segments "$FINAL_APPA_FINO__MULTILINE_FIRST_LINE_SEPARATOR_CONTENT" "$APPA_FINO__PROMPT_SEPARATOR_BACKGROUND_COLOR"
 		left_prompt+="$FINAL_APPA_FINO__MULTILINE_FIRST_LINE_SEPARATOR_CONTENT"
 	fi
 
-	appa_fino__set_ssh_prefix
+	dragon__set_ssh_prefix
 	__add_separator_between_left_segments "$FINAL_APPA_FINO__SSH_PREFIX_CONTENT" "$APPA_FINO__SSH_PREFIX_BACKGROUND_COLOR"
 	left_prompt+="$FINAL_APPA_FINO__SSH_PREFIX_CONTENT"
 
-	appa_fino__set_username
+	dragon__set_username
 	__add_separator_between_left_segments "$FINAL_APPA_FINO__USERNAME_CONTENT" "$APPA_FINO__USERNAME_BACKGROUND_COLOR"
 	left_prompt+="$FINAL_APPA_FINO__USERNAME_CONTENT"
 
-	appa_fino__set_user_host_separator
+	dragon__set_user_host_separator
 	__add_separator_between_left_segments "$FINAL_APPA_FINO__USER_HOST_SEPARATOR_CONTENT" "$APPA_FINO__PROMPT_SEPARATOR_BACKGROUND_COLOR"
 	left_prompt+="$FINAL_APPA_FINO__USER_HOST_SEPARATOR_CONTENT"
 
-	appa_fino__set_hostname
+	dragon__set_hostname
 	__add_separator_between_left_segments "$FINAL_APPA_FINO__HOSTNAME_CONTENT" "$APPA_FINO__HOSTNAME_BACKGROUND_COLOR"
 	left_prompt+="$FINAL_APPA_FINO__HOSTNAME_CONTENT"
 
-	appa_fino__set_host_dir_separator
+	dragon__set_host_dir_separator
 	__add_separator_between_left_segments "$FINAL_APPA_FINO__HOST_DIR_SEPARATOR_CONTENT" "$APPA_FINO__PROMPT_SEPARATOR_BACKGROUND_COLOR"
 	left_prompt+="$FINAL_APPA_FINO__HOST_DIR_SEPARATOR_CONTENT"
 
-	appa_fino__set_directory
+	dragon__set_directory
 	__add_separator_between_left_segments "$FINAL_APPA_FINO__DIRECTORY_CONTENT" "$APPA_FINO__DIRECTORY_BACKGROUND_COLOR"
 	left_prompt+="$FINAL_APPA_FINO__DIRECTORY_CONTENT"
 
 	PROMPT="$left_prompt"
 	left_prompt=""
 
-	appa_fino__set_git_prompt
+	dragon__set_git_prompt
 
 	if [[ -n $FINAL_GIT_STATUS_CONTENT ]] && $APPA_FINO__ENABLE_MULTILINE && $GIT_SHOULD_BE_ON_NEW_LINE; then
-		appa_fino__set_multiline_new_line_prompt
+		dragon__set_multiline_new_line_prompt
 		curr_content="$FINAL_APPA_FINO__MULTILINE_NEW_LINE_SEPARATOR_CONTENT"
 		if [[ -n $curr_content ]]; then
 			__add_separator_between_left_segments " " "$TERMINAL_BACKGROUND_COLOR"
@@ -718,7 +718,7 @@ $left_prompt$curr_content"
 	left_prompt=""
 	
 	if $APPA_FINO__ENABLE_MULTILINE; then
-		appa_fino__set_multiline_last_line_prompt
+		dragon__set_multiline_last_line_prompt
 		curr_content="$FINAL_APPA_FINO__MULTILINE_LAST_LINE_SEPARATOR_CONTENT"
 		if [[ -n $curr_content ]]; then
 			__add_separator_between_left_segments " " "$TERMINAL_BACKGROUND_COLOR"
@@ -736,7 +736,7 @@ $left_prompt$curr_content"
 		fi
 	fi
 
-	appa_fino__set_prompt_char
+	dragon__set_prompt_char
 	__add_separator_between_left_segments "$FINAL_PROMPT_CHAR_CONTENT" "$REAL_APPA_FINO__PROMPT_CHAR_BACKGROUND_COLOR"
 	left_prompt+="$FINAL_PROMPT_CHAR_CONTENT"
 
@@ -746,7 +746,7 @@ $left_prompt$curr_content"
 	left_prompt=""
 }
 
-appa_fino__set_date_time()
+dragon__set_date_time()
 {
 	FINAL_APPA_FINO__DATE_TIME_CONTENT=""
 	! $APPA_FINO__ENABLE_DATE_TIME && return
@@ -762,7 +762,7 @@ appa_fino__set_date_time()
 	REAL_APPA_FINO__DATE_TIME_BOLD="$APPA_FINO__DATE_TIME_BOLD"
 	REAL_APPA_FINO__DATE_TIME_UNDERLINE="$APPA_FINO__DATE_TIME_UNDERLINE"
 
-	__appa_fino__show "DATE_TIME"
+	__dragon__show "DATE_TIME"
 	FINAL_APPA_FINO__DATE_TIME_CONTENT="$SHOW_RESULT"
 }
 
@@ -798,7 +798,7 @@ __get_readable_time()
 	echo -n "${seconds}s"
 }
 
-appa_fino__set_execution_time()
+dragon__set_execution_time()
 {
 	FINAL_APPA_FINO__EXEC_TIMER_CONTENT=""
 	! $APPA_FINO__ENABLE_EXEC_TIMER && return
@@ -817,7 +817,7 @@ appa_fino__set_execution_time()
 	REAL_APPA_FINO__EXEC_TIMER_BOLD="$APPA_FINO__EXEC_TIMER_BOLD"
 	REAL_APPA_FINO__EXEC_TIMER_UNDERLINE="$APPA_FINO__EXEC_TIMER_UNDERLINE"
 
-	__appa_fino__show "EXEC_TIMER"
+	__dragon__show "EXEC_TIMER"
 	FINAL_APPA_FINO__EXEC_TIMER_CONTENT="$SHOW_RESULT"
 }
 
@@ -831,7 +831,7 @@ __set_job_count_prefix_and_suffix()
 	fi
 }
 
-appa_fino__set_job_count()
+dragon__set_job_count()
 {
 	FINAL_APPA_FINO__JOB_COUNT_CONTENT=""
 	! $APPA_FINO__ENABLE_JOB_COUNT && return
@@ -848,7 +848,7 @@ appa_fino__set_job_count()
 	REAL_APPA_FINO__JOB_COUNT_BOLD="$APPA_FINO__JOB_COUNT_BOLD"
 	REAL_APPA_FINO__JOB_COUNT_UNDERLINE="$APPA_FINO__JOB_COUNT_UNDERLINE"
 
-	__appa_fino__show "JOB_COUNT"
+	__dragon__show "JOB_COUNT"
 	FINAL_APPA_FINO__JOB_COUNT_CONTENT="$SHOW_RESULT"
 }
 
@@ -869,7 +869,7 @@ __set_ssh_connection_count_content()
 	REAL_APPA_FINO__SSH_CONNECTION_COUNT_CONTENT="$connection_count"
 }
 
-appa_fino__set_ssh_connection_count()
+dragon__set_ssh_connection_count()
 {
 	FINAL_APPA_FINO__SSH_CONNECTION_COUNT_CONTENT=""
 	! $APPA_FINO__ENABLE_SSH_CONNECTION_COUNT && return
@@ -884,7 +884,7 @@ appa_fino__set_ssh_connection_count()
 	REAL_APPA_FINO__SSH_CONNECTION_COUNT_BOLD="$APPA_FINO__SSH_CONNECTION_COUNT_BOLD"
 	REAL_APPA_FINO__SSH_CONNECTION_COUNT_UNDERLINE="$APPA_FINO__SSH_CONNECTION_COUNT_UNDERLINE"
 
-	__appa_fino__show "SSH_CONNECTION_COUNT"
+	__dragon__show "SSH_CONNECTION_COUNT"
 	FINAL_APPA_FINO__SSH_CONNECTION_COUNT_CONTENT="$SHOW_RESULT"
 }
 
@@ -922,7 +922,7 @@ __get_exit_status_content()
 	fi
 }
 
-appa_fino__set_exit_status()
+dragon__set_exit_status()
 {
 	FINAL_APPA_FINO__EXIT_STATUS_CONTENT=""
 	! "$APPA_FINO__ENABLE_EXIT_STATUS" && return
@@ -938,32 +938,32 @@ appa_fino__set_exit_status()
 	REAL_APPA_FINO__EXIT_STATUS_BOLD="$APPA_FINO__EXIT_STATUS_BOLD"
 	REAL_APPA_FINO__EXIT_STATUS_UNDERLINE="$APPA_FINO__EXIT_STATUS_UNDERLINE"
 
-	__appa_fino__show "EXIT_STATUS"
+	__dragon__show "EXIT_STATUS"
 	FINAL_APPA_FINO__EXIT_STATUS_CONTENT="$SHOW_RESULT"
 }
 
-appa_fino__set_rprompt()
+dragon__set_rprompt()
 {
 	typeset -g right_segment_left_bg_color="$TERMINAL_BACKGROUND_COLOR" # static variable that 'remembers' the previous color
 	right_prompt=""
 
-	appa_fino__set_exit_status
+	dragon__set_exit_status
 	__add_separator_between_right_segments "$FINAL_APPA_FINO__EXIT_STATUS_CONTENT" "$APPA_FINO__EXIT_STATUS_BACKGROUND_COLOR"
 	right_prompt+="$FINAL_APPA_FINO__EXIT_STATUS_CONTENT"
 
-	appa_fino__set_ssh_connection_count
+	dragon__set_ssh_connection_count
 	__add_separator_between_right_segments "$FINAL_APPA_FINO__SSH_CONNECTION_COUNT_CONTENT" "$APPA_FINO__SSH_CONNECTION_COUNT_BACKGROUND_COLOR"
 	right_prompt+="$FINAL_APPA_FINO__SSH_CONNECTION_COUNT_CONTENT"
 
-	appa_fino__set_job_count
+	dragon__set_job_count
 	__add_separator_between_right_segments "$FINAL_APPA_FINO__JOB_COUNT_CONTENT" "$APPA_FINO__JOB_COUNT_BACKGROUND_COLOR"
 	right_prompt+="$FINAL_APPA_FINO__JOB_COUNT_CONTENT"
 
-	appa_fino__set_execution_time
+	dragon__set_execution_time
 	__add_separator_between_right_segments "$FINAL_APPA_FINO__EXEC_TIMER_CONTENT" "$APPA_FINO__EXEC_TIMER_BACKGROUND_COLOR"
 	right_prompt+="$FINAL_APPA_FINO__EXEC_TIMER_CONTENT"
 
-	appa_fino__set_date_time
+	dragon__set_date_time
 	__add_separator_between_right_segments "$FINAL_APPA_FINO__DATE_TIME_CONTENT" "$APPA_FINO__DATE_TIME_BACKGROUND_COLOR"
 	right_prompt+="$FINAL_APPA_FINO__DATE_TIME_CONTENT"
 
@@ -973,12 +973,12 @@ appa_fino__set_rprompt()
 
 _APPA_FINO_JUST_CHANGED_DIR=false
 
-__appa_fino_track_chpwd()
+__dragon_track_chpwd()
 {
 	_APPA_FINO_JUST_CHANGED_DIR=true
 }
 
-__appa_fino_zle_line_finish()
+__dragon_zle_line_finish()
 {
 	local mode="$APPA_FINO__ENABLE_TRANSIENT_PROMPT"
 	[[ "$mode" == "false" ]] && return
@@ -1029,10 +1029,10 @@ __appa_fino_zle_line_finish()
 	zle reset-prompt
 }
 
-appa_fino__update_zsh_prompt()
+dragon__update_zsh_prompt()
 {
-	appa_fino__set_lprompt
-	appa_fino__set_rprompt
+	dragon__set_lprompt
+	dragon__set_rprompt
 }
 
 _GITSTATUS_NEEDS_REFRESH=false
@@ -1060,12 +1060,12 @@ __update_gitstatusd()
 __update_prompt()
 {
 	$APPA_FINO__ENABLE_GIT_STATUS && __update_gitstatusd
-	appa_fino__update_zsh_prompt
+	dragon__update_zsh_prompt
 }
 
 __reset_prompt()
 {
-	appa_fino__set_lprompt
+	dragon__set_lprompt
 	if [[ -o zle ]] && $_GITSTATUS_NEEDS_REFRESH; then
 		_GITSTATUS_NEEDS_REFRESH=false
 		zle reset-prompt 2> /dev/null
@@ -1085,8 +1085,8 @@ add-zsh-hook precmd  __save_exit_code
 add-zsh-hook precmd  __update_prompt
 add-zsh-hook precmd  __reset_timer
 add-zsh-hook chpwd   __update_prompt
-add-zsh-hook chpwd   __appa_fino_track_chpwd
+add-zsh-hook chpwd   __dragon_track_chpwd
 
 trap '__reset_prompt' WINCH
 
-zle -N zle-line-finish __appa_fino_zle_line_finish
+zle -N zle-line-finish __dragon_zle_line_finish

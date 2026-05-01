@@ -334,7 +334,7 @@ _install_sshd_acceptenv
 # ── appa-fino theme: check for new variables ───────────────────────────────────
 
 _check_theme_vars() {
-    local theme_file="${INSTALL_DIR}/zsh-custom.d/themes/appa-fino.zsh"
+    local theme_file="${INSTALL_DIR}/zsh-custom.d/themes/dragon.zsh"
     local current_hash
     current_hash=$(grep -o 'APPA_FINO__[A-Z_]*' "${theme_file}" 2>/dev/null \
         | sort -u | md5sum | cut -d' ' -f1)

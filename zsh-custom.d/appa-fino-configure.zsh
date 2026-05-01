@@ -7,7 +7,7 @@
 # ── File-level constants ──────────────────────────────────────────────────────
 
 typeset -g _AF_CONF_FILE="${HOME}/.config/appa-fino/conf.zsh"
-typeset -g _AF_THEME_FILE="${HOME}/.appa-fino/zsh-custom.d/themes/appa-fino.zsh"
+typeset -g _AF_THEME_FILE="${HOME}/.appa-fino/zsh-custom.d/themes/dragon.zsh"
 typeset -g _AF_STATE_DIR="${HOME}/.config/appa-fino"
 typeset -g _AF_STATE_FILE="${_AF_STATE_DIR}/state"
 
@@ -191,7 +191,7 @@ _af_render_preview() {
             group_inject="timer=-65" ;;
         job_count)
             # Override job count function to inject 2 fake background jobs.
-            group_inject="appa_fino__set_job_count() {
+            group_inject="dragon__set_job_count() {
                 FINAL_APPA_FINO__JOB_COUNT_CONTENT=''
                 ! \$APPA_FINO__ENABLE_JOB_COUNT && return
                 local jobs_count=2
@@ -201,7 +201,7 @@ _af_render_preview() {
                 REAL_APPA_FINO__JOB_COUNT_BACKGROUND_COLOR=\"\$APPA_FINO__JOB_COUNT_BACKGROUND_COLOR\"
                 REAL_APPA_FINO__JOB_COUNT_BOLD=\"\$APPA_FINO__JOB_COUNT_BOLD\"
                 REAL_APPA_FINO__JOB_COUNT_UNDERLINE=\"\$APPA_FINO__JOB_COUNT_UNDERLINE\"
-                __appa_fino__show JOB_COUNT
+                __dragon__show JOB_COUNT
                 FINAL_APPA_FINO__JOB_COUNT_CONTENT=\"\$SHOW_RESULT\"
             }" ;;
         ssh_conn_count)
@@ -245,9 +245,9 @@ _af_render_preview() {
         __LAST_EXIT_CODE=${preview_exit_code}
         source '${_AF_THEME_FILE}' 2>/dev/null
         ${group_inject}
-        appa_fino__update_zsh_prompt 2>/dev/null
+        dragon__update_zsh_prompt 2>/dev/null
         if [[ '${transient_mode}' == true ]]; then
-            __appa_fino_zle_line_finish 2>/dev/null
+            __dragon_zle_line_finish 2>/dev/null
         fi
         print -rP -- \"\${PROMPT}\"
         [[ -n \"\${RPROMPT}\" ]] && printf 'RPROMPT: ' && print -rP -- \"\${RPROMPT}\"
@@ -738,7 +738,7 @@ appa-fino-configure() {
     for var val in "${(@kv)_AF_CURRENT}"; do
         export "APPA_FINO__${var}=${val}"
     done
-    appa_fino__update_zsh_prompt 2>/dev/null
+    dragon__update_zsh_prompt 2>/dev/null
 
     print ""
     print -P "  %F{green}✓ Saved to %B${_AF_CONF_FILE}%b%F{green} — prompt updated immediately.%f"

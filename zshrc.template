@@ -24,7 +24,7 @@ setopt AUTO_CD              # type a directory name alone to cd into it (no need
 # ── oh-my-zsh setup ────────────────────────────────────────────────────────────
 export ZSH="$HOME/.oh-my-zsh"
 
-ZSH_THEME="appa-fino"   # the theme installed by appa-fino; change to any oh-my-zsh theme name
+ZSH_THEME="dragon"   # the theme installed by appa-fino; change to any oh-my-zsh theme name
 ZSH_CUSTOM="$HOME/.appa-fino/zsh-custom.d"  # where appa-fino stores its plugins and theme files
 
 HYPHEN_INSENSITIVE="true"        # treat - and _ as identical in tab-completion (e.g. my-cmd = my_cmd)

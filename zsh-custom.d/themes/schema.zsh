@@ -1,4 +1,4 @@
-# appa-fino theme schema — pure data sourced by appa-fino-configure.zsh.
+# dragon theme schema — pure data sourced by appa-fino-configure.zsh.
 # Contains defaults, types, hints, and group definitions for every
 # APPA_FINO__* variable. No side effects at top level.
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# check_schema.sh - Verify schema.zsh and appa-fino.zsh define the same vars
+# check_schema.sh - Verify schema.zsh and dragon.zsh define the same vars
 # ------------------------------------------------------------------------------
 set -Eeuo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-THEME="${REPO_ROOT}/zsh-custom.d/themes/appa-fino.zsh"
+THEME="${REPO_ROOT}/zsh-custom.d/themes/dragon.zsh"
 SCHEMA="${REPO_ROOT}/zsh-custom.d/themes/schema.zsh"
 
 # Extract APPA_FINO__* names from set_if_unset calls in the theme (skip the
