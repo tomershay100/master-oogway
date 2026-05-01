@@ -284,6 +284,30 @@ _install_ssh_sendenv() {
 
 _install_ssh_sendenv
 
+# ── /etc/ssh/sshd_config — AcceptEnv for appa-fino theme forwarding ───────────
+
+_install_sshd_acceptenv() {
+    local sshd_config="/etc/ssh/sshd_config"
+    local accept_line="AcceptEnv APPA_FINO__*"
+
+    if [[ ! -f "$sshd_config" ]]; then
+        info "sshd not found — skipping AcceptEnv (not a server or sshd not installed)"
+        return
+    fi
+
+    if grep -qF "$accept_line" "$sshd_config"; then
+        success "AcceptEnv APPA_FINO__* already in /etc/ssh/sshd_config"
+        return
+    fi
+
+    info "Adding AcceptEnv APPA_FINO__* to /etc/ssh/sshd_config (sudo required)..."
+    sudo sh -c "echo '$accept_line' >> '$sshd_config'"
+    sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
+    success "Added AcceptEnv APPA_FINO__* and reloaded sshd"
+}
+
+_install_sshd_acceptenv
+
 # ── appa-fino theme: check for new variables ───────────────────────────────────
 
 _check_theme_vars() {
