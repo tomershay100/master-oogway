@@ -1,5 +1,5 @@
-# Provides: file management helpers — extract, bak, sizeof, fpath.
-# Requires: fpath also requires fzf (skipped with an error if not installed).
+# Provides: file management helpers — extract, bak, sizeof, fp.
+# Requires: fp also requires fzf (skipped with an error if not installed).
 
 function extract() {
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -66,16 +66,16 @@ function sizeof() {
     du -sh "$@" | sort -h
 }
 
-fpath() {
+fp() {
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-        echo "Usage: fpath [base-dir]"
+        echo "Usage: fp [base-dir]"
         echo "  Interactively select a file and copy its full path to clipboard."
         echo "  base-dir — where to search (default: current directory)"
         echo "  Copies path to clipboard (xclip), or prints it if xclip is unavailable."
         echo "  Tip: CTRL+T (fzf plugin) inserts a file path inline at the prompt."
         return
     fi
-    command -v fzf &>/dev/null || { echo "fpath: fzf not installed" >&2; return 1; }
+    command -v fzf &>/dev/null || { echo "fp: fzf not installed" >&2; return 1; }
     local base="${1:-.}"
     local preview_cmd
     if command -v bat &>/dev/null; then
