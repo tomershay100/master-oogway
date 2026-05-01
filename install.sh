@@ -249,6 +249,41 @@ _install_gitconfig() {
 
 _install_gitconfig
 
+# ── ~/.ssh/config — SendEnv for appa-fino theme forwarding ────────────────────
+
+_install_ssh_sendenv() {
+    local ssh_config="${HOME}/.ssh/config"
+    local send_line="    SendEnv APPA_FINO__*"
+
+    mkdir -p "${HOME}/.ssh"
+    chmod 700 "${HOME}/.ssh"
+
+    if [[ ! -f "$ssh_config" ]]; then
+        printf 'Host *\n%s\n' "$send_line" >> "$ssh_config"
+        chmod 600 "$ssh_config"
+        success "Created ~/.ssh/config with SendEnv APPA_FINO__*"
+        return
+    fi
+
+    # Already present anywhere in the file — nothing to do.
+    if grep -qF "SendEnv APPA_FINO__*" "$ssh_config"; then
+        success "SendEnv APPA_FINO__* already in ~/.ssh/config"
+        return
+    fi
+
+    # Insert SendEnv on the line after the first 'Host *' stanza header.
+    if grep -qE '^Host \*[[:space:]]*$' "$ssh_config"; then
+        sed -i "/^Host \*[[:space:]]*$/a\\${send_line}" "$ssh_config"
+        success "Added SendEnv APPA_FINO__* to existing Host * block in ~/.ssh/config"
+    else
+        # No Host * block — append one.
+        printf '\nHost *\n%s\n' "$send_line" >> "$ssh_config"
+        success "Appended Host * block with SendEnv APPA_FINO__* to ~/.ssh/config"
+    fi
+}
+
+_install_ssh_sendenv
+
 # ── appa-fino theme: check for new variables ───────────────────────────────────
 
 _check_theme_vars() {
