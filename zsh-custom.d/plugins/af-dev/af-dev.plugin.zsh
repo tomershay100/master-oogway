@@ -1,21 +1,29 @@
 # Provides: calc, epoch, serve, md2pdf — developer utility functions.
-# Requires: python3 for calc and serve. pandoc + xelatex for md2pdf.
+# Requires: python3 for serve. bc for calc. pandoc + xelatex for md2pdf.
 
 function calc() {
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
         echo "Usage: calc <expression>"
-        echo "  Evaluate a math expression. Supports Python math functions."
+        echo "  Evaluate a math expression using bc -l."
         echo "  Examples:"
-        echo "    calc '2 ** 10'"
+        echo "    calc '2 ^ 10'"
         echo "    calc 'sqrt(2)'"
-        echo "    calc 'sin(pi / 4)'"
+        echo "    calc 's(3.14159/4)'   # sin"
         return
     fi
     if [[ $# -eq 0 ]]; then
         echo "Usage: calc <expression>  (use -h for details)" >&2
         return 1
     fi
-    python3 -c "from math import *; import sys; expr=sys.stdin.read(); print(eval(compile(expr,'<calc>','eval')))" <<< "$*"
+    command -v bc &>/dev/null || { echo "calc: bc not installed" >&2; return 1; }
+    local expr="$*"
+    # Whitelist: digits, math operators, parens, bc function names (a-z_), spaces.
+    # Blocks bc's system() and shell metacharacters.
+    if [[ ! "$expr" =~ ^[0-9a-z_\ \+\-\*/\^\(\)\.\,\%]+$ ]]; then
+        echo "calc: expression contains invalid characters" >&2
+        return 1
+    fi
+    bc -l <<< "$expr"
 }
 
 function epoch() {
