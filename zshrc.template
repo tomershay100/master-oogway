@@ -40,6 +40,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"  # don't mark the prompt dirty for untracke
 source "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh"
 
 plugins=(
+    # ── oh-my-zsh plugins ──────────────────────────────────────────────────────
     zsh-autosuggestions       # suggests commands as you type based on history (→ to accept)
     zsh-syntax-highlighting   # colors valid commands green and invalid ones red while typing
     sudo                      # press Esc twice to prepend sudo to the current command
@@ -50,6 +51,30 @@ plugins=(
     fzf                       # enables Ctrl+R (history), Ctrl+T (file), Alt+C (cd) fuzzy finders
     history-substring-search  # Up/Down arrows search history by the prefix you've already typed
     docker                    # tab-completion for docker commands and flags
+
+    # ── appa-fino override plugins ─────────────────────────────────────────────
+    # These replace system commands with enhanced alternatives.
+    # Comment out any line to restore the original system command behavior.
+    af-eza-override            # ls/ll/l/la/tree → eza + auto-ls on cd
+    af-bat-override            # cat/less         → bat (syntax-highlighted viewer)
+    af-nvim-override           # vim              → nvim
+    af-safety-override         # cp/mv/mkdir/reboot with confirmation prompts
+    af-colorize-override       # ip/diff          → colorized output
+
+    # ── appa-fino additive plugins ─────────────────────────────────────────────
+    # These add new commands and never change existing behavior.
+    # Safe to comment out any you don't use.
+    af-git                     # git aliases (ga, gs, gp, ...) + gsum, fbranch, flog
+    af-navigation              # mkcd, up, tmpcd, fcd (fuzzy cd)
+    af-files                   # extract, bak, sizeof, fpath (fuzzy file picker)
+    af-search                  # grep aliases, f (find shortcut), fhist, fman, frg
+    af-network                 # natip (public IP), sshto (fuzzy SSH picker)
+    af-process                 # psgrep, port, fkill (fuzzy process kill)
+    af-build                   # m (parallel make), mc (make clean)
+    af-dev                     # calc, epoch, serve (HTTP server), md2pdf
+    af-env                     # fenv (fuzzy environment variable browser)
+    af-shell-tools             # h, ?, cwhich, vwhich, vizsh, soursh
+    af-apps                    # GUI app launchers (gnucash via flatpak)
 )
 
 source "$ZSH/oh-my-zsh.sh"
