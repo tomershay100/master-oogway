@@ -36,6 +36,14 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"  # don't mark the prompt dirty for untracke
 # Edit with: appa-fino-configure
 [[ -f "$HOME/.config/appa-fino/conf.zsh" ]] && source "$HOME/.config/appa-fino/conf.zsh"
 
+# ── user pre-plugin extensions ─────────────────────────────────────────────────
+# Drop *.zsh files in ~/.config/appa-fino/custom-pre-zsh/ to source them here,
+# before plugins and oh-my-zsh (good for PATH changes, env vars, early overrides).
+for __af_file in "$HOME/.config/appa-fino/custom-pre-zsh/"*.zsh(N); do
+    source "$__af_file"
+done
+unset __af_file
+
 # ── plugins ────────────────────────────────────────────────────────────────────
 # gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info).
 source "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh"
@@ -71,7 +79,7 @@ plugins=(
     af-auto-ls                 # run ls automatically after every cd
     af-git                     # git aliases (ga, gs, gp, ...) + gsum, fbranch, flog
     af-navigation              # mkcd, up, tmpcd, fcd (fuzzy cd)
-    af-files                   # extract, bak, sizeof, fpath (fuzzy file picker)
+    af-files                   # extract, bak, sizeof, fp (fuzzy file picker)
     af-search                  # grep aliases, f (find shortcut), fhist, fman, frg
     af-network                 # natip (public IP), sshto (fuzzy SSH picker)
     af-process                 # psgrep, port, fkill (fuzzy process kill)
@@ -83,6 +91,14 @@ plugins=(
 )
 
 source "$ZSH/oh-my-zsh.sh"
+
+# ── user post-plugin extensions ────────────────────────────────────────────────
+# Drop *.zsh files in ~/.config/appa-fino/custom-zsh/ to source them here,
+# after plugins and oh-my-zsh (good for aliases, functions, prompt tweaks).
+for __af_file in "$HOME/.config/appa-fino/custom-zsh/"*.zsh(N); do
+    source "$__af_file"
+done
+unset __af_file
 
 # ── tool initializations ───────────────────────────────────────────────────────
 # Each block is guarded: if the tool isn't installed it is silently skipped.

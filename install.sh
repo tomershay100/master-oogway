@@ -341,6 +341,23 @@ _check_theme_vars() {
 
 _check_theme_vars
 
+# ── User extension directories ─────────────────────────────────────────────────
+
+_install_user_ext_dirs() {
+    local pre_dir="${CONF_DIR}/custom-pre-zsh"
+    local post_dir="${CONF_DIR}/custom-zsh"
+    mkdir -p "$pre_dir" "$post_dir"
+    [[ -f "${pre_dir}/README" ]] || \
+        echo "# Drop *.zsh files here; sourced before plugins on shell startup." \
+        > "${pre_dir}/README"
+    [[ -f "${post_dir}/README" ]] || \
+        echo "# Drop *.zsh files here; sourced after plugins on shell startup." \
+        > "${post_dir}/README"
+    success "User extension dirs ready: custom-pre-zsh/ and custom-zsh/ in ${CONF_DIR}"
+}
+
+_install_user_ext_dirs
+
 # ── Done ───────────────────────────────────────────────────────────────────────
 
 print_todos
