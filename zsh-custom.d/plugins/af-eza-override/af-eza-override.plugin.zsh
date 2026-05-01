@@ -1,4 +1,4 @@
-# Provides: eza as ls/ll/l/la/lsa/tree replacement, auto-ls on directory change.
+# Provides: eza as ls/ll/l/la/lsa/tree replacement.
 # Requires: eza (optional — falls back to ls --color if not installed)
 # Remove this file to use the system ls as-is.
 
@@ -19,6 +19,3 @@ else
     alias la="l -A"
     alias ll="lsa -lth --time-style=long-iso"
 fi
-
-_ls_after_cd() { ls; }
-[[ ${chpwd_functions[(Ie)_ls_after_cd]:-0} -eq 0 ]] && chpwd_functions+=(_ls_after_cd)
