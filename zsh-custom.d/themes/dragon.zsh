@@ -18,183 +18,22 @@ __is_via_ssh()
 TERMINAL_BACKGROUND_COLOR="black"
 RESET_FORMAT="%f%k%b%u"
 
-## background color segments separators
-set_if_unset APPA_FINO__LEFT_SEGMENT_SEPARATOR $'\uE0B0'
-set_if_unset APPA_FINO__LEFT_SEGMENT_SEPARATOR_SAME_COLOR $'\uE0B1'
-
-set_if_unset APPA_FINO__RIGHT_SEGMENT_SEPARATOR $'\uE0B2'
-set_if_unset APPA_FINO__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR $'\uE0B3'
-
+# Load defaults from schema and apply them via set_if_unset.
+# set_if_unset only sets vars not already exported — SSH-forwarded vars win.
+# USE_NERD_FONT is handled separately: its default depends on SSH context.
+source "${0:a:h}/schema.zsh"
+_dragon_init_defaults
 if __is_via_ssh; then
 	set_if_unset APPA_FINO__USE_NERD_FONT false
 else
 	set_if_unset APPA_FINO__USE_NERD_FONT true
 fi
-
-## username in lprompt
-set_if_unset APPA_FINO__ENABLE_USERNAME true
-set_if_unset APPA_FINO__USERNAME_FOREGROUND_COLOR "navy"
-set_if_unset APPA_FINO__USERNAME_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__USERNAME_BOLD false
-set_if_unset APPA_FINO__USERNAME_UNDERLINE false
-set_if_unset APPA_FINO__USERNAME_PREFIX ""
-set_if_unset APPA_FINO__USERNAME_SUFFIX ""
-set_if_unset APPA_FINO__ENABLE_USERNAME_COLORING_VIA_SSH false
-set_if_unset APPA_FINO__USERNAME_VIA_SSH_FOREGROUND_COLOR ""
-set_if_unset APPA_FINO__USERNAME_VIA_SSH_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__USERNAME_VIA_SSH_BOLD false
-set_if_unset APPA_FINO__USERNAME_VIA_SSH_UNDERLINE false
-
-## hostname in lprompt
-set_if_unset APPA_FINO__ENABLE_HOSTNAME true
-set_if_unset APPA_FINO__HOSTNAME_FOREGROUND_COLOR "fuchsia"
-set_if_unset APPA_FINO__HOSTNAME_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__HOSTNAME_BOLD false
-set_if_unset APPA_FINO__HOSTNAME_UNDERLINE false
-set_if_unset APPA_FINO__HOSTNAME_PREFIX ""
-set_if_unset APPA_FINO__HOSTNAME_SUFFIX ""
-set_if_unset APPA_FINO__ENABLE_HOSTNAME_COLORING_VIA_SSH true
-set_if_unset APPA_FINO__HOSTNAME_VIA_SSH_FOREGROUND_COLOR "maroon"
-set_if_unset APPA_FINO__HOSTNAME_VIA_SSH_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__HOSTNAME_VIA_SSH_BOLD false
-set_if_unset APPA_FINO__HOSTNAME_VIA_SSH_UNDERLINE false
-
-## directory in lprompt
-set_if_unset APPA_FINO__ENABLE_DIRECTORY true
-set_if_unset APPA_FINO__DIRECTORY_FOREGROUND_COLOR "olive"
-set_if_unset APPA_FINO__DIRECTORY_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__DIRECTORY_BOLD false
-set_if_unset APPA_FINO__DIRECTORY_UNDERLINE false
-set_if_unset APPA_FINO__DIRECTORY_PREFIX ""
-set_if_unset APPA_FINO__DIRECTORY_SUFFIX " "
-set_if_unset APPA_FINO__DIRECTORY_FORMAT "regular"
-
-## prompt character settings 
-set_if_unset APPA_FINO__PROMPT_CHAR "❯"
-set_if_unset APPA_FINO__GIT_PROMPT_CHAR "❯"
-set_if_unset APPA_FINO__PROMPT_CHAR_DEFAULT_FOREGROUND_COLOR "silver"
-set_if_unset APPA_FINO__PROMPT_CHAR_DEFAULT_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__PROMPT_CHAR_DEFAULT_BOLD false
-set_if_unset APPA_FINO__PROMPT_CHAR_DEFAULT_UNDERLINE false
-set_if_unset APPA_FINO__PROMPT_CHAR_PREFIX ""
-set_if_unset APPA_FINO__PROMPT_CHAR_SUFFIX " "
-
-set_if_unset APPA_FINO__ENABLE_EXIT_STATUS_PROMPT_COLORING true
-set_if_unset APPA_FINO__PROMPT_CHAR_SUCCESS_FOREGROUND_COLOR "lime"
-set_if_unset APPA_FINO__PROMPT_CHAR_SUCCESS_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__PROMPT_CHAR_SUCCESS_BOLD false
-set_if_unset APPA_FINO__PROMPT_CHAR_SUCCESS_UNDERLINE false
-set_if_unset APPA_FINO__PROMPT_CHAR_FAILURE_FOREGROUND_COLOR "maroon"
-set_if_unset APPA_FINO__PROMPT_CHAR_FAILURE_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__PROMPT_CHAR_FAILURE_BOLD false
-set_if_unset APPA_FINO__PROMPT_CHAR_FAILURE_UNDERLINE false
-
-## transient prompt — collapse previous prompt to a single char after execution
-## values: true (always), false (never), per-dir (only within the same directory)
-set_if_unset APPA_FINO__ENABLE_TRANSIENT_PROMPT "per-dir"
-set_if_unset APPA_FINO__TRANSIENT_PROMPT_CHAR ""  # empty = use APPA_FINO__PROMPT_CHAR
-## verbose transient — when true, keeps rprompt (exit code, jobs, timer, time) on collapsed lines
-set_if_unset APPA_FINO__TRANSIENT_PROMPT_VERBOSE true
-
-## lprompt prefix when ssh
-set_if_unset APPA_FINO__ENABLE_SSH_PREFIX true
-set_if_unset APPA_FINO__SSH_PREFIX "via ssh:"
-set_if_unset APPA_FINO__SSH_PREFIX_FOREGROUND_COLOR "red"
-set_if_unset APPA_FINO__SSH_PREFIX_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__SSH_PREFIX_BOLD false
-set_if_unset APPA_FINO__SSH_PREFIX_UNDERLINE false
-
-## git status in lprompt
-set_if_unset APPA_FINO__ENABLE_GIT_STATUS true
-set_if_unset APPA_FINO__GIT_STATUS_ON_NEW_LINE "auto"
-set_if_unset APPA_FINO__GIT_STATUS_PREFIX " on "
-set_if_unset APPA_FINO__GIT_STATUS_SUFFIX " "
-set_if_unset APPA_FINO__GIT_BRANCH_PREFIX ""
-set_if_unset APPA_FINO__GIT_BRANCH_SUFFIX ""
-
-## git stash count
-set_if_unset APPA_FINO__ENABLE_GIT_STASH_COUNT false
-set_if_unset APPA_FINO__GIT_STASH_SYMBOL "⚑"
-
-## git remote tracking state (ahead/behind/synced)
-set_if_unset APPA_FINO__ENABLE_GIT_REMOTE_STATE false
-set_if_unset APPA_FINO__GIT_REMOTE_AHEAD_SYMBOL "↑"
-set_if_unset APPA_FINO__GIT_REMOTE_BEHIND_SYMBOL "↓"
-set_if_unset APPA_FINO__GIT_REMOTE_SYNCED_SYMBOL "≡"
-
-set_if_unset APPA_FINO__GIT_CLEAN_SUFFIX ""
-set_if_unset APPA_FINO__GIT_CLEAN_FOREGROUND_COLOR "black"
-set_if_unset APPA_FINO__GIT_CLEAN_BACKGROUND_COLOR "green"
-set_if_unset APPA_FINO__GIT_CLEAN_BOLD false
-set_if_unset APPA_FINO__GIT_CLEAN_UNDERLINE false
-
-set_if_unset APPA_FINO__GIT_DIRTY_SUFFIX "*"
-set_if_unset APPA_FINO__GIT_DIRTY_FOREGROUND_COLOR "black"
-set_if_unset APPA_FINO__GIT_DIRTY_BACKGROUND_COLOR "aqua"
-set_if_unset APPA_FINO__GIT_DIRTY_BOLD false
-set_if_unset APPA_FINO__GIT_DIRTY_UNDERLINE false
-
-## prompt separators color
-set_if_unset APPA_FINO__PROMPT_SEPARATOR_FOREGROUND_COLOR "white"
-set_if_unset APPA_FINO__PROMPT_SEPARATOR_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__PROMPT_SEPARATOR_BOLD false
-set_if_unset APPA_FINO__PROMPT_SEPARATOR_UNDERLINE false
-set_if_unset APPA_FINO__USER_HOST_SEPARATOR "@"
-set_if_unset APPA_FINO__HOST_DIR_SEPARATOR ":"
-
-set_if_unset APPA_FINO__ENABLE_MULTILINE true
-set_if_unset APPA_FINO__FIRST_LINE_SEPARATOR_CHAR ""
-set_if_unset APPA_FINO__NEW_LINE_SEPARATOR_CHAR ""
-set_if_unset APPA_FINO__LAST_LINE_SEPARATOR_CHAR ""
-
-## date and time in rprompt
-set_if_unset APPA_FINO__ENABLE_DATE_TIME true
-set_if_unset APPA_FINO__DATE_TIME_FORMAT "%D{%H:%M:%S}"
-set_if_unset APPA_FINO__DATE_TIME_FOREGROUND_COLOR "white"
-set_if_unset APPA_FINO__DATE_TIME_BACKGROUND_COLOR ""
-set_if_unset APPA_FINO__DATE_TIME_BOLD false
-set_if_unset APPA_FINO__DATE_TIME_UNDERLINE false
-set_if_unset APPA_FINO__DATE_TIME_PREFIX " "
-set_if_unset APPA_FINO__DATE_TIME_SUFFIX ""
-
-## execution timer in rprompt
-set_if_unset APPA_FINO__ENABLE_EXEC_TIMER true
-set_if_unset APPA_FINO__EXEC_TIMER_FOREGROUND_COLOR "black"
-set_if_unset APPA_FINO__EXEC_TIMER_BACKGROUND_COLOR "olive"
-set_if_unset APPA_FINO__EXEC_TIMER_BOLD false
-set_if_unset APPA_FINO__EXEC_TIMER_UNDERLINE false
-set_if_unset APPA_FINO__EXEC_TIMER_PREFIX " took "
-set_if_unset APPA_FINO__EXEC_TIMER_SUFFIX " "
-set_if_unset APPA_FINO__EXEC_TIMER_THRESHOLD 2
-
-## incoming SSH connection count in rprompt
-set_if_unset APPA_FINO__ENABLE_SSH_CONNECTION_COUNT true
-set_if_unset APPA_FINO__SSH_CONNECTION_COUNT_FOREGROUND_COLOR "black"
-set_if_unset APPA_FINO__SSH_CONNECTION_COUNT_BACKGROUND_COLOR "fuchsia"
-set_if_unset APPA_FINO__SSH_CONNECTION_COUNT_BOLD false
-set_if_unset APPA_FINO__SSH_CONNECTION_COUNT_UNDERLINE false
-set_if_unset APPA_FINO__SSH_CONNECTION_COUNT_PREFIX " conn="
-set_if_unset APPA_FINO__SSH_CONNECTION_COUNT_SUFFIX " "
-
-## background jobs count in rprompt
-set_if_unset APPA_FINO__ENABLE_JOB_COUNT true
-set_if_unset APPA_FINO__JOB_COUNT_FOREGROUND_COLOR "black"
-set_if_unset APPA_FINO__JOB_COUNT_BACKGROUND_COLOR "blue"
-set_if_unset APPA_FINO__JOB_COUNT_BOLD false
-set_if_unset APPA_FINO__JOB_COUNT_UNDERLINE false
-set_if_unset APPA_FINO__JOB_COUNT_PREFIX " "
-set_if_unset APPA_FINO__JOB_COUNT_SUFFIX " jobs "
-
-## exit status in rprompt
-set_if_unset APPA_FINO__ENABLE_EXIT_STATUS true
-set_if_unset APPA_FINO__ENABLE_FULL_EXIT_STATUS true
-set_if_unset APPA_FINO__EXIT_STATUS_FOREGROUND_COLOR "black"
-set_if_unset APPA_FINO__EXIT_STATUS_BACKGROUND_COLOR "red"
-set_if_unset APPA_FINO__EXIT_STATUS_BOLD false
-set_if_unset APPA_FINO__EXIT_STATUS_UNDERLINE false
-set_if_unset APPA_FINO__EXIT_STATUS_PREFIX " "
-set_if_unset APPA_FINO__EXIT_STATUS_SUFFIX " "
-
+local _dragon_k _dragon_v
+for _dragon_k _dragon_v in "${(@kv)_DRAGON_DEFAULTS}"; do
+	[[ "$_dragon_k" == "USE_NERD_FONT" ]] && continue
+	set_if_unset "APPA_FINO__${_dragon_k}" "$_dragon_v"
+done
+unset _dragon_k _dragon_v
 declare -A COLORS=(
 	[black]=000 [red]=001 [green]=002 [yellow]=003
 	[blue]=004 [magenta]=005 [cyan]=006 [white]=007

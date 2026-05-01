@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# check_schema.sh - Verify schema.zsh and dragon.zsh define the same vars
+# check_schema.sh - Verify dragon.zsh sources schema.zsh for its defaults
 # ------------------------------------------------------------------------------
 set -Eeuo pipefail
 
@@ -8,27 +8,17 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 THEME="${REPO_ROOT}/zsh-custom.d/themes/dragon.zsh"
 SCHEMA="${REPO_ROOT}/zsh-custom.d/themes/schema.zsh"
 
-# Extract APPA_FINO__* names from set_if_unset calls in the theme (skip the
-# function definition line itself and the nerd-font conditional duplicate).
-theme_vars=$(grep -oP '(?<=set_if_unset )(APPA_FINO__\S+)' "$THEME" | sort -u)
-
-# Extract keys from _AF_DEFAULTS associative array in schema.zsh.
-schema_vars=$(grep -oP '(?<=\[)([A-Z_]+)(?=\])' "$SCHEMA" \
-    | sed 's/^/APPA_FINO__/' | sort -u)
-
-diff_output=$(diff \
-    <(echo "$theme_vars") \
-    <(echo "$schema_vars") || true)
-
-if [[ -z "$diff_output" ]]; then
-    echo "ok: schema and theme are in sync ($(echo "$theme_vars" | wc -l | tr -d ' ') variables)"
-    exit 0
+# Verify theme sources schema rather than duplicating defaults inline.
+if ! grep -q 'source.*schema\.zsh' "$THEME"; then
+    echo "ERROR: dragon.zsh does not source schema.zsh" >&2
+    exit 1
 fi
 
-echo "ERROR: schema/theme drift detected" >&2
-echo "" >&2
-echo "Lines prefixed with '<' are in the theme but missing from schema." >&2
-echo "Lines prefixed with '>' are in schema but missing from the theme." >&2
-echo "" >&2
-echo "$diff_output" >&2
-exit 1
+# Verify schema defines _DRAGON_DEFAULTS.
+if ! grep -q '_DRAGON_DEFAULTS' "$SCHEMA"; then
+    echo "ERROR: schema.zsh does not define _DRAGON_DEFAULTS" >&2
+    exit 1
+fi
+
+var_count=$(grep -oP '(?<=\[)([A-Z_]+)(?=\])' "$SCHEMA" | sort -u | wc -l | tr -d ' ')
+echo "ok: schema has ${var_count} variables; dragon.zsh sources schema.zsh"
