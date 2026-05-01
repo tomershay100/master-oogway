@@ -21,9 +21,13 @@ function port() {
         echo "Usage: port <number>  (use -h for details)" >&2
         return 1
     fi
-    local out
-    out=$(lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN -P -n 2>/dev/null)
-    if [[ -z "$out" ]]; then
+    if [[ ! "$1" =~ ^[0-9]+$ ]] || (( $1 < 1 || $1 > 65535 )); then
+        echo "port: invalid port '$1' (must be 1–65535)" >&2
+        return 1
+    fi
+    local out lsof_rc
+    out=$(lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN -P -n 2>/dev/null); lsof_rc=$?
+    if [[ -z "$out" && $lsof_rc -ne 0 ]]; then
         out=$(sudo lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN -P -n 2>/dev/null)
     fi
     if [[ -z "$out" ]]; then
