@@ -70,26 +70,26 @@ plugins=(
 
     # Override plugins replace system commands with enhanced alternatives.
     # Comment out any line to restore the original system command behavior.
-    af-eza-override            # ls/ll/l/la/tree  → eza
-    af-bat-override            # cat/less          → bat (syntax-highlighted viewer)
-    af-nvim-override           # vim               → nvim
-    af-safety-override         # cp/mv/mkdir/reboot with confirmation prompts
-    af-colorize-override       # ip/diff           → colorized output
+    mo-eza-override            # ls/ll/l/la/tree  → eza
+    mo-bat-override            # cat/less          → bat (syntax-highlighted viewer)
+    mo-nvim-override           # vim               → nvim
+    mo-safety-override         # cp/mv/mkdir/reboot with confirmation prompts
+    mo-colorize-override       # ip/diff           → colorized output
 
     # Additive plugins add new commands and never change existing behavior.
     # Safe to comment out any you don't use.
-    af-auto-ls                 # run ls automatically after every cd
-    af-git                     # git aliases (ga, gs, gp, ...) + gsum, fbranch, flog
-    af-navigation              # mkcd, up, tmpcd, fcd (fuzzy cd)
-    af-files                   # extract, bak, sizeof, fp (fuzzy file picker)
-    af-search                  # grep aliases, f (find shortcut), fhist, fman, frg
-    af-network                 # natip (public IP), sshto (fuzzy SSH picker)
-    af-process                 # psgrep, port, fkill (fuzzy process kill)
-    af-build                   # m (parallel make), mc (make clean)
-    af-dev                     # calc, epoch, serve (HTTP server), md2pdf
-    af-env                     # fenv (fuzzy environment variable browser)
-    af-shell-tools             # h, ?, cwhich, vwhich, vizsh, soursh
-    af-apps                    # GUI app launchers (gnucash via flatpak)
+    mo-auto-ls                 # run ls automatically after every cd
+    mo-git                     # git aliases (ga, gs, gp, ...) + gsum, fbranch, flog
+    mo-navigation              # mkcd, up, tmpcd, fcd (fuzzy cd)
+    mo-files                   # extract, bak, sizeof, fp (fuzzy file picker)
+    mo-search                  # grep aliases, f (find shortcut), fhist, fman, frg
+    mo-network                 # natip (public IP), sshto (fuzzy SSH picker)
+    mo-process                 # psgrep, port, fkill (fuzzy process kill)
+    mo-build                   # m (parallel make), mc (make clean)
+    mo-dev                     # calc, epoch, serve (HTTP server), md2pdf
+    mo-env                     # fenv (fuzzy environment variable browser)
+    mo-shell-tools             # h, ?, cwhich, vwhich, vizsh, soursh
+    mo-apps                    # GUI app launchers (gnucash via flatpak)
 )
 
 source "$ZSH/oh-my-zsh.sh"

@@ -64,11 +64,11 @@ These shadow existing commands. Remove any you don't want.
 
 | Plugin | What it overrides |
 |--------|------------------|
-| `af-eza-override` | `ls/ll/l/la/tree` → eza |
-| `af-bat-override` | `cat/less` → bat (syntax highlighting) |
-| `af-nvim-override` | `vim` → nvim |
-| `af-safety-override` | `cp/mv/mkdir/reboot` with confirmation prompts |
-| `af-colorize-override` | `ip/diff` → colorized output |
+| `mo-eza-override` | `ls/ll/l/la/tree` → eza |
+| `mo-bat-override` | `cat/less` → bat (syntax highlighting) |
+| `mo-nvim-override` | `vim` → nvim |
+| `mo-safety-override` | `cp/mv/mkdir/reboot` with confirmation prompts |
+| `mo-colorize-override` | `ip/diff` → colorized output |
 
 Each override provides an escape hatch alias (`rls`, `rcat`, `rless`, `rvim`)
 that bypasses the override and calls the original binary directly.
@@ -79,25 +79,25 @@ These only add new commands and never change existing behavior.
 
 | Plugin | Provides |
 |--------|---------|
-| `af-auto-ls` | run `ls` automatically after every `cd` |
-| `af-git` | git aliases (`ga`, `gs`, `gp`, ...), `gsum`, `fbranch`, `flog` |
-| `af-navigation` | `mkcd`, `up`, `tmpcd`, `fcd` (fuzzy cd) |
-| `af-files` | `extract`, `bak`, `sizeof`, `fpath` (fuzzy file picker) |
-| `af-search` | `grep`/`grepi` aliases, `f` (find shortcut), `fhist`, `fman`, `frg` |
-| `af-network` | `natip` (public IP), `sshto` (fuzzy SSH host picker) |
-| `af-process` | `psgrep`, `port`, `fkill` (fuzzy process kill) |
-| `af-build` | `m` (parallel make), `mc` (make clean) |
-| `af-dev` | `calc`, `epoch`, `serve` (HTTP server), `md2pdf` |
-| `af-env` | `fenv` (fuzzy environment variable browser) |
-| `af-shell-tools` | `h`, `?`, `cwhich`, `vwhich`, `vizsh`, `soursh` |
-| `af-apps` | GUI app launchers (`gnucash` via flatpak) |
+| `mo-auto-ls` | run `ls` automatically after every `cd` |
+| `mo-git` | git aliases (`ga`, `gs`, `gp`, ...), `gsum`, `fbranch`, `flog` |
+| `mo-navigation` | `mkcd`, `up`, `tmpcd`, `fcd` (fuzzy cd) |
+| `mo-files` | `extract`, `bak`, `sizeof`, `fpath` (fuzzy file picker) |
+| `mo-search` | `grep`/`grepi` aliases, `f` (find shortcut), `fhist`, `fman`, `frg` |
+| `mo-network` | `natip` (public IP), `sshto` (fuzzy SSH host picker) |
+| `mo-process` | `psgrep`, `port`, `fkill` (fuzzy process kill) |
+| `mo-build` | `m` (parallel make), `mc` (make clean) |
+| `mo-dev` | `calc`, `epoch`, `serve` (HTTP server), `md2pdf` |
+| `mo-env` | `fenv` (fuzzy environment variable browser) |
+| `mo-shell-tools` | `h`, `?`, `cwhich`, `vwhich`, `vizsh`, `soursh` |
+| `mo-apps` | GUI app launchers (`gnucash` via flatpak) |
 
 > **Load order:** override plugins must appear before additive plugins in
 > `~/.zshrc` so additive plugins inherit the overridden commands.
 
 ## Command reference
 
-### af-git — git shortcuts
+### mo-git — git shortcuts
 
 | Command | Description |
 |---------|-------------|
@@ -131,7 +131,7 @@ These only add new commands and never change existing behavior.
 | `fbranch` | fuzzy-select a branch and switch to it |
 | `flog` | fuzzy-browse git log and show diff |
 
-### af-navigation — directory movement
+### mo-navigation — directory movement
 
 | Command | Description |
 |---------|-------------|
@@ -140,7 +140,7 @@ These only add new commands and never change existing behavior.
 | `tmpcd` | create a temp dir and `cd` into it |
 | `fcd [dir]` | fuzzy-select a subdirectory and `cd` into it |
 
-### af-files — file management
+### mo-files — file management
 
 | Command | Description |
 |---------|-------------|
@@ -149,7 +149,7 @@ These only add new commands and never change existing behavior.
 | `sizeof <path>` | disk usage of paths, sorted by size |
 | `fpath [dir]` | fuzzy-select a file and copy its full path to clipboard |
 
-### af-search — search and fuzzy pickers
+### mo-search — search and fuzzy pickers
 
 | Command | Description |
 |---------|-------------|
@@ -159,7 +159,7 @@ These only add new commands and never change existing behavior.
 | `fman` | fuzzy-select and open a man page |
 | `frg` | fuzzy ripgrep across file contents, open result in `$EDITOR` |
 
-### af-process — process management
+### mo-process — process management
 
 | Command | Description |
 |---------|-------------|
@@ -167,7 +167,7 @@ These only add new commands and never change existing behavior.
 | `port <n>` | show which process is listening on port `n` |
 | `fkill [signal]` | fuzzy-select processes to kill (TAB for multi-select) |
 
-### af-dev — developer utilities
+### mo-dev — developer utilities
 
 | Command | Description |
 |---------|-------------|
@@ -176,7 +176,7 @@ These only add new commands and never change existing behavior.
 | `serve [port]` | start a local HTTP file server (default port 8000) |
 | `md2pdf <file>` | convert Markdown to PDF via pandoc + xelatex |
 
-### af-shell-tools — shell introspection
+### mo-shell-tools — shell introspection
 
 | Command | Description |
 |---------|-------------|
@@ -187,20 +187,20 @@ These only add new commands and never change existing behavior.
 | `vizsh` | open `~/.zshrc` in vim |
 | `soursh` | reload `~/.zshrc` |
 
-### af-network — network helpers
+### mo-network — network helpers
 
 | Command | Description |
 |---------|-------------|
 | `natip` | print your public IP address |
 | `sshto` | fuzzy-select an SSH host and connect |
 
-### af-env — environment
+### mo-env — environment
 
 | Command | Description |
 |---------|-------------|
 | `fenv` | fuzzy-browse and copy an environment variable value |
 
-### af-build — build helpers
+### mo-build — build helpers
 
 | Command | Description |
 |---------|-------------|

@@ -1,6 +1,6 @@
 .PHONY: lint test check
 
-PLUGIN_ZSH := $(wildcard zsh-custom.d/plugins/af-*/**.plugin.zsh)
+PLUGIN_ZSH := $(wildcard zsh-custom.d/plugins/mo-*/**.plugin.zsh)
 THEME_ZSH  := zsh-custom.d/themes/dragon.zsh-theme \
               $(wildcard zsh-custom.d/themes/*.zsh) \
               $(wildcard zsh-custom.d/themes/parts/*.zsh)

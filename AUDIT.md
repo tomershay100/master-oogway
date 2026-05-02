@@ -30,7 +30,7 @@ zsh-custom.d/                          ── ZSH_CUSTOM (sourced by oh-my-zsh)
   ├─ themes/schema.zsh                   391 lines — defaults/types/groups
   ├─ dragon-configure.zsh                746 lines — interactive wizard
   ├─ dragon-aliases.zsh                    8 lines — `rezsh` reset
-  └─ plugins/af-*/                      17 OMZ plugins (override + additive)
+  └─ plugins/mo-*/                      17 OMZ plugins (override + additive)
 ```
 
 Total in-scope code: ~3 700 lines. Non-vendored, mostly mature, generally
@@ -232,7 +232,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ### 2.9 Plugin loading is eager   🔴
 
-- **What:** All 17 af-* plugins source on shell startup, even ones rarely
+- **What:** All 17 mo-* plugins source on shell startup, even ones rarely
   invoked (`md2pdf`, `serve`, `frg`).
 - **Fix:** zsh-defer + lazy alias trick. Only worth it if startup time is
   actually measured as a problem.
@@ -254,7 +254,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 ### 2.12 Bundle name = theme name → can't switch theme cleanly   🟡
 
 - **What:** "master-oogway" is the bundle name, "dragon" is the theme. These are now separate — the bundle rename is deferred. the bundle and the OMZ theme. A user who
-  wants the af-* plugins but a different prompt is stuck.
+  wants the mo-* plugins but a different prompt is stuck.
 - **Fix:** Rename the theme file to `fino.zsh-theme` (suggested name: `fino`).
   Keep all bundle paths, env-var prefix, and plugin names as `master-oogway`.
   Add a compat symlink for one release cycle; `install.sh` migrates existing
