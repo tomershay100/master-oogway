@@ -1,5 +1,6 @@
 __calc_prompt_length()
 {
+	setopt local_options extended_glob
 	local expanded_zsh_prompt="${(%)PROMPT}"
 	local stripped_zsh_prompt="${expanded_zsh_prompt//$'\e['[0-9;]#m/}"
 	local zsh_prompt_length=${#stripped_zsh_prompt}
