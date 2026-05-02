@@ -320,14 +320,26 @@ _dragon_edit_var() {
             else
                 print -P "  %F{245}[Enter] keep empty   or type new value%f"
             fi
-            printf "  New value (Enter = keep '%s'): " "${current:-(empty)}"
+            local _valid_color_names=(
+                black red green yellow blue magenta cyan white
+                gray grey maroon lime olive navy fuchsia aqua silver
+            )
             local val
-            read -r val
-            if [[ "$val" == e || "$val" == E ]]; then
-                _DRAGON_CURRENT[$var]=""
-            elif [[ -n "$val" ]]; then
-                _DRAGON_CURRENT[$var]="$val"
-            fi
+            while true; do
+                printf "  New value (Enter = keep '%s'): " "${current:-(empty)}"
+                read -r val
+                if [[ "$val" == e || "$val" == E ]]; then
+                    _DRAGON_CURRENT[$var]=""; break
+                elif [[ -z "$val" ]]; then
+                    break  # keep current
+                elif [[ "$val" =~ '^[0-9]+$' && 10#$val -le 255 ]]; then
+                    _DRAGON_CURRENT[$var]="$val"; break
+                elif (( ${_valid_color_names[(Ie)${(L)val}]} )); then
+                    _DRAGON_CURRENT[$var]="${(L)val}"; break
+                else
+                    print -P "  %F{red}Invalid color '%F{white}${val}%F{red}' — enter a name or 0-255.%f"
+                fi
+            done
             ;;
         string)
             if [[ -n "$current" ]]; then
