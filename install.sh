@@ -9,8 +9,8 @@
 #   update      ~/.master-oogway/install.sh
 #               git pull + submodule update, then re-applies dotfiles.
 #
-#   dev         shared/shell/install.sh  (inside the dotfiles repo)
-#               Symlinks shared/shell/ → ~/.master-oogway/, then applies dotfiles.
+#   dev         shared/master-oogway/install.sh  (inside the dotfiles repo)
+#               Symlinks shared/master-oogway/ → ~/.master-oogway/, then applies dotfiles.
 # ------------------------------------------------------------------------------
 set -Eeuo pipefail
 
