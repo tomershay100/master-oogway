@@ -339,7 +339,7 @@ regression.
 | F6 | **VCS abstraction** — generalise git segment to jj / hg / fossil | Nice to have for jj users | 🔴 |
 | F7 | **Theme switcher** — multiple themes selectable via `ZSH_THEME=` | Natural after 2.12 lands | 🔴 |
 | F8 | **Public IP cache for `natip`** (kept as-is — fine as a one-liner) | — | — |
-| F9 | **`fbranch` show recent activity in preview** rather than `git log` | Helpful UX | 🟢 |
+| F9 | ✅ **`fbranch` show recent activity in preview** rather than `git log` | Helpful UX | 🟢 |
 | F10 | **First-run "guided tour"** in `dragon-configure` | Walks through what segments mean | 🟡 |
 
 ---

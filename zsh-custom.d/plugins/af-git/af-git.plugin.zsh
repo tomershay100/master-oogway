@@ -49,13 +49,27 @@ fbranch() {
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
         echo "Usage: fbranch"
         echo "  Fuzzy-select a git branch and switch to it."
+        echo "  Preview shows commits ahead of main and the diff stat."
         return
     fi
     command -v fzf &>/dev/null || { echo "fbranch: fzf not installed" >&2; return 1; }
+    local default_branch
+    default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
+        | sed 's|refs/remotes/origin/||') || default_branch="main"
     local branch
     branch=$(git branch --format='%(refname:short)' 2>/dev/null \
-        | fzf --height=40% --reverse \
-              --preview 'git log --oneline --color=always {} | head -20') \
+        | fzf --height=60% --reverse \
+              --preview-window=right:60%:wrap \
+              --preview "
+                  commits=\$(git log --oneline --color=always ${default_branch}..{} 2>/dev/null | head -15)
+                  stat=\$(git diff --stat --color=always ${default_branch}...{} 2>/dev/null)
+                  if [[ -n \"\$commits\" ]]; then
+                      printf '%s\n' \"\$commits\"
+                      [[ -n \"\$stat\" ]] && printf '\n─────────────────────────\n%s\n' \"\$stat\"
+                  else
+                      git log --oneline --color=always {} 2>/dev/null | head -20
+                  fi
+              ") \
     && git switch "$branch"
 }
 
