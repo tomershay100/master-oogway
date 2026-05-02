@@ -57,7 +57,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 - **Decision:** Kept as-is — the GnuCash flatpak alias and workaround are
   intentional for this setup.
 
-### 1.4 SSH theme-forwarding canary is fragile (single var)   🟡
+### 1.4 ✅ SSH theme-forwarding canary is fragile (single var)
 
 - **What:** `conf.zsh` short-circuits with
   `[[ -v DRAGON__ENABLE_USERNAME ]] && return`. If a partial-forward

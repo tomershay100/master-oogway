@@ -488,9 +488,12 @@ _dragon_write_conf() {
 # Commented-out lines (# export ...) show all available options at their defaults.
 #
 # SSH forwarding: add 'SendEnv DRAGON__*' to ~/.ssh/config to carry your
-# theme to remote machines running dragon. The guard below ensures forwarded
-# values are never overwritten by the remote's copy of this file.
-[[ -v DRAGON__ENABLE_USERNAME ]] && return
+# theme to remote machines running dragon. On the sending machine, conf.zsh
+# exports DRAGON__FORWARDED=1 so it travels with the wildcard SendEnv.
+# On the receiving machine, conf.zsh sees DRAGON__FORWARDED already set and
+# returns immediately — forwarded values are never overwritten.
+[[ "${DRAGON__FORWARDED:-}" == "1" ]] && return
+export DRAGON__FORWARDED=1
 #
 # Variable naming convention:
 #   DRAGON__ENABLE_{FEATURE}           — bool: true / false
