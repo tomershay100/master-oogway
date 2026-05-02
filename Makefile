@@ -1,7 +1,9 @@
 .PHONY: lint test check
 
 PLUGIN_ZSH := $(wildcard zsh-custom.d/plugins/af-*/**.plugin.zsh)
-THEME_ZSH  := $(wildcard zsh-custom.d/themes/*.zsh)
+THEME_ZSH  := zsh-custom.d/themes/dragon.zsh-theme \
+              $(wildcard zsh-custom.d/themes/*.zsh) \
+              $(wildcard zsh-custom.d/themes/parts/*.zsh)
 CONFIGURE  := zsh-custom.d/dragon-configure.zsh
 NOTIFIER   := dragon-notifier.zsh
 

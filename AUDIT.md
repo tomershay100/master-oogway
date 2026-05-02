@@ -42,20 +42,11 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ## 1. 🔴 Bugs & correctness
 
-### 1.1 OMZ theme loading depends on an untracked-feeling symlink   🟢
+### 1.1 ✅ OMZ theme loading depended on a symlink
 
-- **What:** `themes/dragon.zsh-theme` is a symlink to `dragon.zsh`. OMZ's
-  loader only finds themes via the `.zsh-theme` extension. The symlink IS
-  tracked (`git ls-files` confirms), but it's invisible in normal listings
-  and easy to break on filesystems that don't preserve symlinks (Windows,
-  some zip archives).
-- **Why:** A user who downloads the repo as a zip, or copies it to a remote
-  via `scp` without `-r -p`, gets a dangling symlink and a silent "[oh-my-zsh]
-  theme 'dragon' not found" message — followed by the default OMZ prompt.
-- **Fix:** Either rename `dragon.zsh` → `dragon.zsh-theme` (drop the symlink),
-  or have `install.sh` re-create the symlink defensively after clone.
-  Renaming is cleaner — symlinks in dotfiles are a portability hazard.
-- **Effort:** 🟢
+- **Done:** Renamed `dragon.zsh` → `dragon.zsh-theme` (real file, not symlink).
+  No more portability hazard for users on filesystems that don't preserve
+  symlinks (Windows, some zip archives).
 
 ### 1.2 ✅ No automated guard against schema/theme drift
 
@@ -157,27 +148,18 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
   `USE_NERD_FONT` kept explicit (SSH-conditional default). ~133 hardcoded
   lines collapsed to a 5-line loop.
 
-### 2.2 Theme is one 1 092-line file   🟡
+### 2.2 ✅ Theme split into `parts/`
 
-- **What:** Segments, separator math, hooks, gitstatus glue, transient
-  prompt — all in `themes/dragon.zsh`.
-- **Why:** Large vertical scrolling, hard to test segments in isolation,
-  hard for new contributors.
-- **Fix:** Split by responsibility:
-  ```
-  themes/
-    dragon.zsh-theme        # entry point: defaults + hooks + render loop
-    parts/
-      colors.zsh               # COLORS map + __get_xterm_*
-      segments_left.zsh        # username, hostname, directory, prompt_char, ssh_prefix, multiline
-      segments_right.zsh       # date_time, exec_timer, ssh_conn, job_count, exit_status
-      git.zsh                  # gitstatus integration + git segment
-      transient.zsh            # zle-line-finish + chpwd tracking
-      separators.zsh           # __add_separator_between_*
-  ```
-  Each file ~100–150 lines; the entry point is ~50 lines orchestrating them.
-- **Effort:** 🟡 (mechanical, but touches everything — needs a snapshot test
-  before/after to prove pixel-equivalence)
+- **Done:** `themes/dragon.zsh-theme` (~80 lines: defaults loop, hook
+  registration) sources 7 part files in `themes/parts/`:
+  - `helpers.zsh` (~70 lines) — `__get_xterm_*`, `__dragon__show`
+  - `segments_left.zsh` (~155 lines) — username, hostname, directory, prompt_char, ssh_prefix
+  - `separators.zsh` (~125 lines) — segment separators, multiline prompts
+  - `git.zsh` (~80 lines) — gitstatus integration + git segment
+  - `segments_right.zsh` (~200 lines) — date_time, exec_timer, ssh_conn, jobs, exit_status
+  - `prompt.zsh` (~135 lines) — `__calc_prompt_length`, `dragon__set_lprompt`/`set_rprompt`
+  - `transient.zsh` (~100 lines) — zle hooks, gitstatus glue, prompt refresh
+  All 53 functions verified present after split. `make check` clean.
 
 ### 2.3 Preview "group_inject" code is brittle inline shell   🟡
 
@@ -371,11 +353,12 @@ regression.
 1. ~~**2.12** Theme rename~~ ✅ done: bundle=master-oogway, theme=dragon
 2. ~~**2.1** Single source of truth for defaults~~ ✅ done
 3. ~~**1.5 + 1.6** Prompt-time pipeline removal~~ ✅ done
-4. **2.2** Split the theme into `parts/`
-5. **2.3** Replace preview `group_inject` with hooks
-6. **2.4** Bats test suite + GH Actions
-7. **F1** `dragon-doctor`
-8. **2.6** Uninstall script
+4. ~~**1.1** Drop the .zsh-theme symlink~~ ✅ done
+5. ~~**2.2** Split the theme into `parts/`~~ ✅ done
+6. **2.3** Replace preview `group_inject` with hooks
+7. **2.4** Bats test suite + GH Actions
+8. **F1** `dragon-doctor`
+9. **2.6** Uninstall script
 
 ## 8. Long-term track
 
