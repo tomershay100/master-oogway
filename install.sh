@@ -191,7 +191,7 @@ _print_version() {
     local version
     version=$(git -C "${INSTALL_DIR}" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
         || echo "unknown")
-    echo "dragon ${version}"
+    echo "master-oogway ${version}"
 }
 
 if [[ "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
@@ -205,15 +205,15 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     info "Uninstalling dragon (master-oogway)..."
 
     # .zshrc
-    _uninstall_zshrc_backup="${ZSHRC}.pre-dragon"
+    _uninstall_zshrc_backup="${ZSHRC}.pre-master-oogway"
     if [[ -f "$_uninstall_zshrc_backup" ]]; then
         cp "$_uninstall_zshrc_backup" "${ZSHRC}"
         success "Restored ${ZSHRC} from ${_uninstall_zshrc_backup}"
-    elif grep -qF '# dragon:managed' "${ZSHRC}" 2>/dev/null; then
+    elif grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
         rm -f "${ZSHRC}"
         warn "Removed managed ${ZSHRC} — no backup found. Recreate it manually."
     else
-        success "${ZSHRC} not managed by dragon — left untouched"
+        success "${ZSHRC} not managed by master-oogway — left untouched"
     fi
 
     # .gitconfig
@@ -312,7 +312,7 @@ fi
 
 _install_zshrc() {
     if [[ -f "${ZSHRC}" ]]; then
-        local backup="${ZSHRC}.pre-dragon"
+        local backup="${ZSHRC}.pre-master-oogway"
         cp "${ZSHRC}" "${backup}"
         info "Backed up ${ZSHRC} → ${backup}"
     fi
@@ -332,8 +332,8 @@ _check_zshrc_drift() {
 
 if [[ ! -f "${ZSHRC}" ]]; then
     _install_zshrc
-elif grep -qF '# dragon:managed' "${ZSHRC}" 2>/dev/null; then
-    success "${ZSHRC} already managed by dragon — not overwritten"
+elif grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
+    success "${ZSHRC} already managed by master-oogway — not overwritten"
     _check_zshrc_drift
 elif grep -q '\.master-oogway' "${ZSHRC}" 2>/dev/null; then
     success "${ZSHRC} already configured for dragon — not overwritten"

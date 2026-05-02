@@ -242,7 +242,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 - **What:** Subsequent runs back off if `.master-oogway` appears anywhere in
   `~/.zshrc` — including in a comment.
-- **Fix:** Use a structured marker `# dragon:managed` so detection is exact.
+- **Fix:** Use a structured marker `# master-oogway:managed` so detection is exact.
 - **Effort:** 🟢
 
 ### 2.11 ✅ No drop-in directory for user aliases / zsh extensions
