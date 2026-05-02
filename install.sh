@@ -191,6 +191,28 @@ _print_version() {
     echo "master-oogway ${version}"
 }
 
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    cat <<'EOF'
+Usage: install.sh [--help | --version | --uninstall]
+
+Modes (auto-detected from where you run the script):
+  curl pipe   bash -c "$(curl -fsSL <url>/install.sh)"
+              Clones the repo to ~/.master-oogway/ then re-execs from there.
+
+  update      ~/.master-oogway/install.sh
+              Runs git pull + submodule update, then re-applies dotfiles.
+
+  dev         /path/to/local/clone/install.sh
+              Symlinks ~/.master-oogway → local clone for live development.
+
+Options:
+  --help       Show this message and exit
+  --version    Print the installed version (date + git hash) and exit
+  --uninstall  Remove all master-oogway files, config, and dotfile changes
+EOF
+    exit 0
+fi
+
 if [[ "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
     _print_version
     exit 0

@@ -17,8 +17,9 @@ function calc() {
     fi
     command -v bc &>/dev/null || { echo "calc: bc not installed" >&2; return 1; }
     local expr="$*"
-    # Whitelist: digits, math operators, parens, bc function names (a-z_), spaces.
-    # Blocks bc's system() and shell metacharacters.
+    # Whitelist: digits, math ops, parens, bc names (lowercase a-z, _), spaces.
+    # system("cmd") is blocked — " is not in the whitelist.
+    # system(bare) passes but bc treats bare identifiers as variables, not shell commands.
     if [[ ! "$expr" =~ ^[0-9a-z_\ \+\-\*/\^\(\)\.\,\%]+$ ]]; then
         echo "calc: expression contains invalid characters" >&2
         return 1
@@ -48,12 +49,17 @@ function serve() {
         echo "Usage: serve [port]"
         echo "  Start an HTTP server in the current directory."
         echo "  port — port to listen on (default: 8000)"
+        echo ""
+        echo "  Binds to 127.0.0.1 by default (localhost only)."
+        echo "  Set SERVE_BIND=0.0.0.0 to expose to the local network."
         return
     fi
     command -v python3 &>/dev/null || { echo "serve: python3 not installed" >&2; return 1; }
     local port="${1:-8000}"
-    echo "Serving $(pwd) on http://localhost:$port"
-    python3 -m http.server "$port"
+    local bind="${SERVE_BIND:-127.0.0.1}"
+    echo "Serving $(pwd) on http://${bind}:${port}"
+    [[ "$bind" != "127.0.0.1" ]] && echo "  WARNING: exposed to all network interfaces on ${bind}"
+    python3 -m http.server "$port" --bind "$bind"
 }
 
 function md2pdf() {

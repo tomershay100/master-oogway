@@ -44,10 +44,12 @@ __get_readable_time()
 	local minutes=$(( total % 3600 / 60 ))
 	local secs=$(( total % 60 ))
 
-	(( days > 0 ))    && print -n "${days}d "
-	(( hours > 0 ))   && print -n "${hours}h "
-	(( minutes > 0 )) && print -n "${minutes}m "
-	print -n "${secs}s"
+	# Write to a global to avoid a subshell at call sites
+	_DRAGON_READABLE_TIME=""
+	(( days > 0 ))    && _DRAGON_READABLE_TIME+="${days}d "
+	(( hours > 0 ))   && _DRAGON_READABLE_TIME+="${hours}h "
+	(( minutes > 0 )) && _DRAGON_READABLE_TIME+="${minutes}m "
+	_DRAGON_READABLE_TIME+="${secs}s"
 }
 
 dragon__set_execution_time()
@@ -60,7 +62,9 @@ dragon__set_execution_time()
 	elif ((timer == -1 || SECONDS - timer < $DRAGON__EXEC_TIMER_THRESHOLD)); then
 		return
 	else
-		REAL_DRAGON__EXEC_TIMER_CONTENT="$(__get_readable_time $((SECONDS - timer)))"
+		# Call without $() to avoid a subshell — result written to _DRAGON_READABLE_TIME
+		__get_readable_time $((SECONDS - timer))
+		REAL_DRAGON__EXEC_TIMER_CONTENT="${_DRAGON_READABLE_TIME}"
 	fi
 
 	REAL_DRAGON__EXEC_TIMER_PREFIX="$DRAGON__EXEC_TIMER_PREFIX"
