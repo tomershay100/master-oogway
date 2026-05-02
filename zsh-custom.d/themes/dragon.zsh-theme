@@ -74,3 +74,5 @@ add-zsh-hook precmd  __reset_timer
 add-zsh-hook chpwd   __update_prompt
 add-zsh-hook chpwd   __dragon_track_chpwd
 
+zle -N zle-line-finish __dragon_zle_line_finish
+

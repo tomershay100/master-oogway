@@ -59,19 +59,9 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ### 1.4 ✅ SSH theme-forwarding canary is fragile (single var)
 
-- **What:** `conf.zsh` short-circuits with
-  `[[ -v DRAGON__ENABLE_USERNAME ]] && return`. If a partial-forward
-  happens (e.g. you `SendEnv` only colour vars but not ENABLE_USERNAME),
-  the remote `conf.zsh` still applies for everything else — colours collide,
-  partial config wins.
-- **Why:** SSH `SendEnv DRAGON__*` is all-or-nothing in the wildcard form,
-  but if a user customises SendEnv to a subset (or runs `ssh -o
-  SendEnv=DRAGON__USERNAME_*`), the canary lies.
-- **Fix:** Set a dedicated marker `DRAGON__FORWARDED=1` in the user's
-  shell init (not in conf.zsh — in the theme or `~/.zshenv`-equivalent for
-  interactive shells), and gate on that. Or: gate per-variable in conf.zsh
-  via `[[ ! -v DRAGON__X ]] && export DRAGON__X=...`.
-- **Effort:** 🟡
+- **Done:** `conf.zsh` now gates on `DRAGON__FORWARDED=1` (a dedicated
+  marker) instead of checking for a random theme var. `dragon-configure.zsh`
+  exports `DRAGON__FORWARDED=1` so it travels with `SendEnv DRAGON__*`.
 
 ### 1.5 ✅ `__set_ssh_connection_count_content` ran a 5-stage pipeline per prompt
 
@@ -114,16 +104,10 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ### 1.14 ✅ Theme uses `kill -WINCH "$$"` to refresh on async git update
 
-- **What:** `__refresh_prompt` posts a SIGWINCH to itself; a `trap WINCH`
-  rebuilds the prompt.
-- **Why:** Works, but breaks two things:
-  (a) any user `trap` on WINCH is overwritten;
-  (b) terminals with custom window-resize logic (some terminals send WINCH
-  on tab switch) double-refresh.
-- **Fix:** Use zsh's `zle reset-prompt` directly from the gitstatus callback
-  (it's already inside zle context inside `__reset_prompt`). The signal
-  detour is legacy.
-- **Effort:** 🟡
+- **Done:** `__refresh_prompt` now calls `zle reset-prompt` directly.
+  `kill -WINCH` and the WINCH trap are gone entirely. Transient prompt
+  wired via `zle -N zle-line-finish __dragon_zle_line_finish` (was missing
+  after the parts/ split — fixed).
 
 ### 1.15 ✅ Prefix/suffix strings aren't `%`-escaped before going to PROMPT
 
