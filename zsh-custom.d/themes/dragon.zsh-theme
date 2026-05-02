@@ -74,4 +74,3 @@ add-zsh-hook precmd  __reset_timer
 add-zsh-hook chpwd   __update_prompt
 add-zsh-hook chpwd   __dragon_track_chpwd
 
-trap '__reset_prompt' WINCH

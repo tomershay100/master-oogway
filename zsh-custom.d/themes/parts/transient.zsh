@@ -62,11 +62,11 @@ dragon__update_zsh_prompt()
 	dragon__set_rprompt
 }
 
-_GITSTATUS_NEEDS_REFRESH=false
 __refresh_prompt()
 {
-	_GITSTATUS_NEEDS_REFRESH=true
-	kill -WINCH "$$"
+	dragon__set_lprompt
+	dragon__set_rprompt
+	zle reset-prompt 2>/dev/null
 }
 
 _IS_GITSTATUS_RUNNING=false
@@ -90,11 +90,3 @@ __update_prompt()
 	dragon__update_zsh_prompt
 }
 
-__reset_prompt()
-{
-	dragon__set_lprompt
-	if [[ -o zle ]] && $_GITSTATUS_NEEDS_REFRESH; then
-		_GITSTATUS_NEEDS_REFRESH=false
-		zle reset-prompt 2> /dev/null
-	fi
-}

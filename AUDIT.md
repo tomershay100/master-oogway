@@ -119,7 +119,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 - **Done:** Renamed to `fp`.
 
-### 1.14 Theme uses `kill -WINCH "$$"` to refresh on async git update   🟡
+### 1.14 ✅ Theme uses `kill -WINCH "$$"` to refresh on async git update
 
 - **What:** `__refresh_prompt` posts a SIGWINCH to itself; a `trap WINCH`
   rebuilds the prompt.
