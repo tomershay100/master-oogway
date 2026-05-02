@@ -564,6 +564,12 @@ HEADER
         done
     } > "$tmp_file"
 
+    if ! zsh -n "$tmp_file" 2>/dev/null; then
+        print -P "%F{red}[dragon]%f Internal error: generated conf.zsh failed syntax check — not saved." >&2
+        rm -f "$tmp_file"
+        return 1
+    fi
+
     mv "$tmp_file" "${_DRAGON_CONF_FILE}"
 }
 
@@ -649,9 +655,20 @@ _dragon_show_start_menu() {
 dragon-configure() {
     if [[ "${1-}" == "--version" || "${1-}" == "-v" ]]; then
         local version
-        version=$(git -C "${HOME}/.dragon" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
+        version=$(git -C "${HOME}/.appa-fino" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
             || echo "unknown")
         echo "dragon ${version}"
+        return 0
+    fi
+
+    if [[ "${1-}" == "--dismiss" ]]; then
+        local themes_dir="${_DRAGON_THEMES_DIR}"
+        local current_hash
+        current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
+            | sort -u | md5sum | cut -d' ' -f1)
+        mkdir -p "${_DRAGON_STATE_DIR}"
+        printf '\ndismissed_hash=%s\n' "${current_hash}" >> "${_DRAGON_STATE_FILE}"
+        print -P "%F{green}✓%f Dragon notifier dismissed until next update."
         return 0
     fi
 

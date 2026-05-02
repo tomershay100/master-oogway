@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# install.sh - appa-fino zsh environment installer
+# install.sh - dragon/appa-fino zsh environment installer
 #
 # Three modes (auto-detected):
 #   curl pipe   curl -fsSL <url>/install.sh | bash
@@ -191,7 +191,7 @@ _print_version() {
     local version
     version=$(git -C "${INSTALL_DIR}" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
         || echo "unknown")
-    echo "appa-fino ${version}"
+    echo "dragon ${version}"
 }
 
 if [[ "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
@@ -222,17 +222,32 @@ fi
 
 _install_zshrc() {
     if [[ -f "${ZSHRC}" ]]; then
-        local backup="${ZSHRC}.pre-appa-fino"
+        local backup="${ZSHRC}.pre-dragon"
         cp "${ZSHRC}" "${backup}"
         info "Backed up ${ZSHRC} → ${backup}"
     fi
     copy_file "${INSTALL_DIR}/zshrc.template" "${ZSHRC}"
 }
 
+_check_zshrc_drift() {
+    local template="${INSTALL_DIR}/zshrc.template"
+    [[ -f "${template}" ]] || return
+    if ! diff -q "${template}" "${ZSHRC}" &>/dev/null; then
+        warn "Your ~/.zshrc differs from the current template."
+        warn "New features may have been added. To review:"
+        warn "  diff ${ZSHRC} ${template}"
+        warn "Apply any changes you want manually — your file is never auto-overwritten."
+    fi
+}
+
 if [[ ! -f "${ZSHRC}" ]]; then
     _install_zshrc
+elif grep -qF '# dragon:managed' "${ZSHRC}" 2>/dev/null; then
+    success "${ZSHRC} already managed by dragon — not overwritten"
+    _check_zshrc_drift
 elif grep -q '\.appa-fino' "${ZSHRC}" 2>/dev/null; then
-    success "${ZSHRC} already configured for appa-fino — not overwritten"
+    success "${ZSHRC} already configured for dragon — not overwritten"
+    _check_zshrc_drift
 else
     _install_zshrc
 fi
@@ -268,7 +283,7 @@ _install_gitconfig() {
 
 _install_gitconfig
 
-# ── ~/.ssh/config — SendEnv for appa-fino theme forwarding ────────────────────
+# ── ~/.ssh/config — SendEnv for dragon theme forwarding ───────────────────────
 
 _install_ssh_sendenv() {
     local ssh_config="${HOME}/.ssh/config"
@@ -303,7 +318,7 @@ _install_ssh_sendenv() {
 
 _install_ssh_sendenv
 
-# ── /etc/ssh/sshd_config — AcceptEnv for appa-fino theme forwarding ───────────
+# ── /etc/ssh/sshd_config — AcceptEnv for dragon theme forwarding ──────────────
 
 _install_sshd_acceptenv() {
     local sshd_config="/etc/ssh/sshd_config"
@@ -375,4 +390,4 @@ _install_user_ext_dirs
 # ── Done ───────────────────────────────────────────────────────────────────────
 
 print_todos
-success "appa-fino installation complete. Open a new terminal to apply changes."
+success "dragon installation complete. Open a new terminal to apply changes."

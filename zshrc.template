@@ -1,4 +1,4 @@
-# ~/.zshrc — installed by appa-fino; this file is yours to edit freely.
+# dragon:managed — installed by dragon/appa-fino; this file is yours to edit freely.
 # Re-running install.sh will NOT overwrite this file.
 
 # ── PATH additions ─────────────────────────────────────────────────────────────
@@ -31,10 +31,12 @@ HYPHEN_INSENSITIVE="true"        # treat - and _ as identical in tab-completion 
 COMPLETION_WAITING_DOTS="true"   # show ... while tab-completion is computing
 DISABLE_UNTRACKED_FILES_DIRTY="true"  # don't mark the prompt dirty for untracked files (faster in large repos)
 
-# ── appa-fino theme config ─────────────────────────────────────────────────────
+# ── dragon theme config ────────────────────────────────────────────────────────
 # Sourced before oh-my-zsh so your overrides win over theme defaults.
 # Edit with: dragon-configure
-[[ -f "$HOME/.config/appa-fino/conf.zsh" ]] && source "$HOME/.config/appa-fino/conf.zsh"
+[[ -f "$HOME/.config/appa-fino/conf.zsh" ]] \
+    && { source "$HOME/.config/appa-fino/conf.zsh" \
+        || print -P "%F{yellow}[dragon]%f conf.zsh has a syntax error — run dragon-configure to fix it"; }
 
 # ── user pre-plugin extensions ─────────────────────────────────────────────────
 # Drop *.zsh files in ~/.config/appa-fino/custom-pre-zsh/ to source them here,

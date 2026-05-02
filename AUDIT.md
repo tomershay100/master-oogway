@@ -212,7 +212,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
     `confirm`)
 - **Effort:** 🟡
 
-### 2.7 New-vars notifier nags forever   🟢
+### 2.7 ✅ New-vars notifier nags forever
 
 - **What:** The notifier runs on every shell start and nags until the user
   runs `dragon-configure --new-only`.
@@ -221,7 +221,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
   hash. User can run `dragon-configure --dismiss` if they don't care.
 - **Effort:** 🟢
 
-### 2.8 No defensive sourcing of `conf.zsh`   🟢
+### 2.8 ✅ No defensive sourcing of `conf.zsh`
 
 - **What:** `zshrc.template` does `[[ -f … ]] && source conf.zsh`. If the
   user hand-edits and breaks it (unmatched quote), the whole shell startup
@@ -238,7 +238,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
   actually measured as a problem.
 - **Effort:** 🔴
 
-### 2.10 `_install_zshrc` detection is fragile   🟢
+### 2.10 ✅ `_install_zshrc` detection is fragile
 
 - **What:** Subsequent runs back off if `.appa-fino` appears anywhere in
   `~/.zshrc` — including in a comment.
