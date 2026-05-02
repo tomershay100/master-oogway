@@ -58,10 +58,6 @@ source "${0:a:h}/parts/segments_right.zsh"   # date, exec_timer, ssh_conn, jobs,
 source "${0:a:h}/parts/prompt.zsh"           # __calc_prompt_length, lprompt + rprompt builders
 source "${0:a:h}/parts/transient.zsh"        # zle hooks, gitstatus glue, prompt refresh
 
-# ── Source dragon tools (auto-sourcing from ZSH_CUSTOM root is bypassed) ──────
-source "${0:a:h}/configure.zsh"
-source "${0:a:h}/aliases.zsh"
-
 # ── Initial render + hook registration ────────────────────────────────────────
 
 __update_prompt
