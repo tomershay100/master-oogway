@@ -295,19 +295,15 @@ regression.
 
 - Already correct; the whitelist blocks bc's `system()` and shell metacharacters.
 
-### 4.2 `install.sh` git pull is unauthenticated over HTTPS   🟢
+### 4.2 `install.sh` git pull is unauthenticated over HTTPS   (kept intentionally)
 
-- **Fix:** Document a SHA-pinning install (`INSTALL_REF=<sha> bash …`) for
-  reproducible, attestable installs.
-- **Effort:** 🟢
+- **Decision:** main branch is always production-ready; no SHA-pinning needed.
 
-### 4.3 `~/.gitconfig` is fully replaced on update   🟢
+### 4.3 ✅ `~/.gitconfig` is fully replaced on update
 
-- **What:** `_install_gitconfig` `cp`s the repo's `gitconfig` over
-  `~/.gitconfig` every time, preserving only `user.name`/`user.email`.
-- **Fix:** Write the appa-fino gitconfig as `~/.gitconfig.master-oogway` and have
-  `~/.gitconfig` `[include]` it — symmetric with `.gitconfig.local`.
-- **Effort:** 🟢 (if accepting breakage), 🟡 (if migrating existing users)
+- **Done:** Bundle settings live in `~/.gitconfig.master-oogway` (always
+  updated). `~/.gitconfig` is created once with `[user]` + `[include]` and
+  never overwritten. Migration backs up the old file to `.pre-master-oogway`.
 
 ---
 

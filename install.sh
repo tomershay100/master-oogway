@@ -259,13 +259,21 @@ fi
 copy_file "${INSTALL_DIR}/.zshenv" "${HOME}/.zshenv"
 
 # ── .gitconfig ─────────────────────────────────────────────────────────────────
+# ~/.gitconfig.master-oogway  — bundle-managed settings (always updated)
+# ~/.gitconfig                — user-owned; created once, never overwritten
+#                               contains [user] + [include] pointing to both files
+
+readonly GITCONFIG="${HOME}/.gitconfig"
+readonly GITCONFIG_BUNDLE="${HOME}/.gitconfig.master-oogway"
 
 _install_gitconfig() {
+    # Always update the bundle-managed file.
+    copy_file "${INSTALL_DIR}/gitconfig.master-oogway" "${GITCONFIG_BUNDLE}"
+
+    # Resolve git identity: prefer existing ~/.gitconfig, then ask.
     local git_name git_email
-    if [[ -f "${HOME}/.gitconfig" ]]; then
-        git_name=$(git config --file "${HOME}/.gitconfig" user.name  2>/dev/null || true)
-        git_email=$(git config --file "${HOME}/.gitconfig" user.email 2>/dev/null || true)
-    fi
+    git_name=$(git config --file "${GITCONFIG}" user.name  2>/dev/null || true)
+    git_email=$(git config --file "${GITCONFIG}" user.email 2>/dev/null || true)
 
     if [[ -z "$git_name" ]]; then
         _ask "Git user name: "
@@ -276,10 +284,31 @@ _install_gitconfig() {
         read -r git_email < /dev/tty
     fi
 
-    copy_file "${INSTALL_DIR}/gitconfig" "${HOME}/.gitconfig"
+    # If ~/.gitconfig already includes the bundle, leave it alone.
+    if grep -qF 'gitconfig.master-oogway' "${GITCONFIG}" 2>/dev/null; then
+        success "${GITCONFIG} already includes gitconfig.master-oogway — not overwritten"
+    else
+        # Migrate: back up existing file, write a fresh minimal one.
+        if [[ -f "${GITCONFIG}" ]]; then
+            local backup="${GITCONFIG}.pre-master-oogway"
+            cp "${GITCONFIG}" "${backup}"
+            info "Backed up ${GITCONFIG} → ${backup}"
+            info "Review ${backup} and move any personal settings to ${GITCONFIG}"
+        fi
+        cat > "${GITCONFIG}" <<EOF
+[user]
+	name = ${git_name}
+	email = ${git_email}
 
-    git config --file "${HOME}/.gitconfig" user.name  "$git_name"
-    git config --file "${HOME}/.gitconfig" user.email "$git_email"
+[include]
+	path = ~/.gitconfig.master-oogway
+EOF
+        success "Created ${GITCONFIG} with identity and bundle include"
+        return
+    fi
+
+    git config --file "${GITCONFIG}" user.name  "$git_name"
+    git config --file "${GITCONFIG}" user.email "$git_email"
     success "Git identity: ${git_name} <${git_email}>"
 }
 
