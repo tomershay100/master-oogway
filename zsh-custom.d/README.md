@@ -4,7 +4,7 @@ oh-my-zsh custom directory. All `*.zsh` files here are sourced automatically on 
 
 ---
 
-## Theme — appa-fino
+## Theme — dragon
 
 A fully hand-rolled zsh theme. No framework dependency.
 
@@ -35,31 +35,31 @@ A fully hand-rolled zsh theme. No framework dependency.
 - Aqua background — dirty
 
 ### Configuration
-All settings are exposed as environment variables with the `APPA_FINO__` prefix.
-See [`appa-fino-conf.zsh`](appa-fino-conf.zsh) for the full reference with all defaults documented.
+All settings are exposed as environment variables with the `DRAGON__` prefix.
+See [`dragon-configure`](dragon-configure.zsh) or `dragon-configure --help` for the full reference.
 
 To override a setting, set it before the theme loads (e.g. in `~/.zshrc`):
 ```zsh
-APPA_FINO__ENABLE_USERNAME=false
-APPA_FINO__DIRECTORY_FORMAT="short"
-APPA_FINO__ENABLE_GIT_REMOTE_STATE=false
+DRAGON__ENABLE_USERNAME=false
+DRAGON__DIRECTORY_FORMAT="short"
+DRAGON__ENABLE_GIT_REMOTE_STATE=false
 ```
 
 ### Multiline separators (optional)
 ```zsh
-APPA_FINO__FIRST_LINE_SEPARATOR_CHAR="╭ "
-APPA_FINO__NEW_LINE_SEPARATOR_CHAR="│"
-APPA_FINO__LAST_LINE_SEPARATOR_CHAR="╰╴"
+DRAGON__FIRST_LINE_SEPARATOR_CHAR="╭ "
+DRAGON__NEW_LINE_SEPARATOR_CHAR="│"
+DRAGON__LAST_LINE_SEPARATOR_CHAR="╰╴"
 ```
 
 ---
 
 ## Aliases
 
-### `appa-fino-aliases.zsh`
+### `dragon-aliases.zsh`
 | Alias / Function | Description |
 |---|---|
-| `reset_theme_variables` | Unset all `APPA_FINO__*` variables (resets to defaults) |
+| `reset_theme_variables` | Unset all `DRAGON__*` variables (resets to defaults) |
 | `rezsh` | Reset theme variables and re-source `~/.zshrc` |
 
 ### `git-aliases.zsh`

@@ -1,4 +1,4 @@
-# dragon:managed — installed by dragon/appa-fino; this file is yours to edit freely.
+# dragon:managed — installed by dragon (master-oogway); this file is yours to edit freely.
 # Re-running install.sh will NOT overwrite this file.
 
 # ── PATH additions ─────────────────────────────────────────────────────────────
@@ -24,8 +24,8 @@ setopt AUTO_CD              # type a directory name alone to cd into it (no need
 # ── oh-my-zsh setup ────────────────────────────────────────────────────────────
 export ZSH="$HOME/.oh-my-zsh"
 
-ZSH_THEME="dragon"   # the theme installed by appa-fino; change to any oh-my-zsh theme name
-ZSH_CUSTOM="$HOME/.appa-fino/zsh-custom.d"  # where appa-fino stores its plugins and theme files
+ZSH_THEME="dragon"   # the theme installed by master-oogway; change to any oh-my-zsh theme name
+ZSH_CUSTOM="$HOME/.master-oogway/zsh-custom.d"  # where master-oogway stores its plugins and theme files
 
 HYPHEN_INSENSITIVE="true"        # treat - and _ as identical in tab-completion (e.g. my-cmd = my_cmd)
 COMPLETION_WAITING_DOTS="true"   # show ... while tab-completion is computing
@@ -34,17 +34,17 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"  # don't mark the prompt dirty for untracke
 # ── dragon theme config ────────────────────────────────────────────────────────
 # Sourced before oh-my-zsh so your overrides win over theme defaults.
 # Edit with: dragon-configure
-[[ -f "$HOME/.config/appa-fino/conf.zsh" ]] \
-    && { source "$HOME/.config/appa-fino/conf.zsh" \
+[[ -f "$HOME/.config/master-oogway/conf.zsh" ]] \
+    && { source "$HOME/.config/master-oogway/conf.zsh" \
         || print -P "%F{yellow}[dragon]%f conf.zsh has a syntax error — run dragon-configure to fix it"; }
 
 # ── user pre-plugin extensions ─────────────────────────────────────────────────
-# Drop *.zsh files in ~/.config/appa-fino/custom-pre-zsh/ to source them here,
+# Drop *.zsh files in ~/.config/master-oogway/custom-pre-zsh/ to source them here,
 # before plugins and oh-my-zsh (good for PATH changes, env vars, early overrides).
-for __af_file in "$HOME/.config/appa-fino/custom-pre-zsh/"*.zsh(N); do
-    source "$__af_file"
+for __mo_file in "$HOME/.config/master-oogway/custom-pre-zsh/"*.zsh(N); do
+    source "$__mo_file"
 done
-unset __af_file
+unset __mo_file
 
 # ── plugins ────────────────────────────────────────────────────────────────────
 # gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info).
@@ -63,7 +63,7 @@ plugins=(
     history-substring-search  # Up/Down arrows search history by the prefix you've already typed
     docker                    # tab-completion for docker commands and flags
 
-    # ── appa-fino plugins ──────────────────────────────────────────────────────
+    # ── master-oogway plugins ──────────────────────────────────────────────────
     # NOTE: order matters — override plugins must come before additive ones so
     # that additive plugins (and your shell) inherit the overridden commands.
     # Within each group, order has no effect.
@@ -95,12 +95,12 @@ plugins=(
 source "$ZSH/oh-my-zsh.sh"
 
 # ── user post-plugin extensions ────────────────────────────────────────────────
-# Drop *.zsh files in ~/.config/appa-fino/custom-zsh/ to source them here,
+# Drop *.zsh files in ~/.config/master-oogway/custom-zsh/ to source them here,
 # after plugins and oh-my-zsh (good for aliases, functions, prompt tweaks).
-for __af_file in "$HOME/.config/appa-fino/custom-zsh/"*.zsh(N); do
-    source "$__af_file"
+for __mo_file in "$HOME/.config/master-oogway/custom-zsh/"*.zsh(N); do
+    source "$__mo_file"
 done
-unset __af_file
+unset __mo_file
 
 # ── tool initializations ───────────────────────────────────────────────────────
 # Each block is guarded: if the tool isn't installed it is silently skipped.
@@ -128,4 +128,4 @@ bindkey "${terminfo[kcud1]}" history-substring-search-down
 
 # ── dragon update check ─────────────────────────────────────────────────────
 # Notifies when new theme variables are available after a repo update.
-source "$HOME/.appa-fino/dragon-notifier.zsh"
+source "$HOME/.master-oogway/dragon-notifier.zsh"

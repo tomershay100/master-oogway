@@ -6,9 +6,9 @@
 
 # ── File-level constants ──────────────────────────────────────────────────────
 
-typeset -g _DRAGON_CONF_FILE="${HOME}/.config/appa-fino/conf.zsh"
-typeset -g _DRAGON_THEMES_DIR="${HOME}/.appa-fino/zsh-custom.d/themes"
-typeset -g _DRAGON_STATE_DIR="${HOME}/.config/appa-fino"
+typeset -g _DRAGON_CONF_FILE="${HOME}/.config/master-oogway/conf.zsh"
+typeset -g _DRAGON_THEMES_DIR="${HOME}/.master-oogway/zsh-custom.d/themes"
+typeset -g _DRAGON_STATE_DIR="${HOME}/.config/master-oogway"
 typeset -g _DRAGON_STATE_FILE="${_DRAGON_STATE_DIR}/state"
 
 # ── Schema (defaults, types, hints, groups) ──────────────────────────────────
@@ -638,7 +638,7 @@ _dragon_show_start_menu() {
 dragon-configure() {
     if [[ "${1-}" == "--version" || "${1-}" == "-v" ]]; then
         local version
-        version=$(git -C "${HOME}/.appa-fino" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
+        version=$(git -C "${HOME}/.master-oogway" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
             || echo "unknown")
         echo "dragon ${version}"
         return 0

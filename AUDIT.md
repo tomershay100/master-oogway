@@ -19,10 +19,10 @@ install.sh (3 modes)                   ── bootstrap / update / dev-symlink
   └─ checks theme-vars hash → suggests `dragon-configure`
 
 zshrc.template                         ── user-owned, opt-in plugins listed
-  ├─ sources ~/.config/appa-fino/conf.zsh   (user theme overrides)
-  ├─ sources gitstatus.plugin.zsh           (must precede oh-my-zsh)
+  ├─ sources ~/.config/master-oogway/conf.zsh   (user theme overrides)
+  ├─ sources gitstatus.plugin.zsh               (must precede oh-my-zsh)
   ├─ runs oh-my-zsh.sh with ZSH_THEME=dragon
-  └─ sources ~/.appa-fino/dragon-notifier.zsh   (new-vars notifier)
+  └─ sources ~/.master-oogway/dragon-notifier.zsh   (new-vars notifier)
 
 zsh-custom.d/                          ── ZSH_CUSTOM (sourced by oh-my-zsh)
   ├─ themes/dragon.zsh-theme → dragon.zsh   (symlink for OMZ loader)
@@ -206,7 +206,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
   "safe to try" framing of `curl | bash`.
 - **Fix:** `install.sh --uninstall` that:
   - Restores `~/.zshrc.pre-master-oogway` if present
-  - Removes `~/.appa-fino`, `~/.config/appa-fino`
+  - Removes `~/.master-oogway`, `~/.config/master-oogway`
   - Removes `SendEnv DRAGON__*` line from `~/.ssh/config`
   - Removes `AcceptEnv DRAGON__*` from `/etc/ssh/sshd_config` (with
     `confirm`)
@@ -240,15 +240,14 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ### 2.10 ✅ `_install_zshrc` detection is fragile
 
-- **What:** Subsequent runs back off if `.appa-fino` appears anywhere in
+- **What:** Subsequent runs back off if `.master-oogway` appears anywhere in
   `~/.zshrc` — including in a comment.
-- **Fix:** Use a structured marker `# appa-fino:managed v=<version>` so
-  detection is exact.
+- **Fix:** Use a structured marker `# dragon:managed` so detection is exact.
 - **Effort:** 🟢
 
 ### 2.11 ✅ No drop-in directory for user aliases / zsh extensions
 
-- **Done:** `~/.config/appa-fino/custom-pre-zsh/` (before plugins) and
+- **Done:** `~/.config/master-oogway/custom-pre-zsh/` (before plugins) and
   `custom-zsh/` (after plugins) created by `install.sh`; sourced via
   `*.zsh(N)` glob loops in `zshrc.template`.
 

@@ -1,26 +1,26 @@
-# appa-fino
+# master-oogway
 
-A complete zsh shell environment — custom prompt theme, interactive
+A complete zsh shell environment — custom prompt theme (dragon), interactive
 configurator, git aliases, fuzzy-finder functions, and 17 opt-in
 oh-my-zsh plugins — distributed as a standalone git repo.
 
 ## What it does
 
-- Clones itself to `~/.appa-fino/` (or symlinks when run from a dotfiles repo)
+- Clones itself to `~/.master-oogway/` (or symlinks when run from a dotfiles repo)
 - Replaces `~/.zshrc` on first install with a curated template;
   never overwrites it again
-- Copies `gitconfig` → `~/.gitconfig` and `.zshenv` → `~/.zshenv`
-- Adds `SendEnv APPA_FINO__*` to `~/.ssh/config` (creates it if missing) so
+- Copies `gitconfig.master-oogway` → `~/.gitconfig.master-oogway` and `.zshenv` → `~/.zshenv`
+- Adds `SendEnv DRAGON__*` to `~/.ssh/config` (creates it if missing) so
   your theme settings forward over SSH
-- Adds `AcceptEnv APPA_FINO__*` to `/etc/ssh/sshd_config` (via sudo) so this
-  machine accepts forwarded theme vars from other appa-fino clients
+- Adds `AcceptEnv DRAGON__*` to `/etc/ssh/sshd_config` (via sudo) so this
+  machine accepts forwarded theme vars from other master-oogway clients
 - Initialises plugin submodules (gitstatus, zsh-autosuggestions,
   zsh-syntax-highlighting, you-should-use)
-- Loads the `appa-fino` prompt theme via `ZSH_CUSTOM=~/.appa-fino/zsh-custom.d`
-- Stores user theme config in `~/.config/appa-fino/conf.zsh` — never
+- Loads the `dragon` prompt theme via `ZSH_CUSTOM=~/.master-oogway/zsh-custom.d`
+- Stores user theme config in `~/.config/master-oogway/conf.zsh` — never
   overwritten after creation
 - Notifies on shell start when new theme variables are available since the
-  last `appa-fino-configure` run
+  last `dragon-configure` run
 
 ## Installation
 
@@ -30,16 +30,16 @@ oh-my-zsh must be installed first:
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ```
 
-Then install appa-fino:
+Then install master-oogway:
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/tomershay100/appa-fino/main/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/tomershay100/master-oogway/main/install.sh)"
 ```
 
 ## Updating
 
 ```bash
-~/.appa-fino/install.sh
+~/.master-oogway/install.sh
 ```
 
 ## User-owned files (never overwritten after creation)
@@ -47,16 +47,15 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/tomershay100/appa-fino/m
 | File | Created by | Notes |
 |------|-----------|-------|
 | `~/.zshrc` | first install | edit freely |
-| `~/.config/appa-fino/conf.zsh` | `appa-fino-configure` | theme settings |
-| `~/.gitconfig.local` | you | machine-specific git overrides (auto-included) |
+| `~/.config/master-oogway/conf.zsh` | `dragon-configure` | theme settings |
 
-`~/.gitconfig` is updated on every install run. Your `user.name` and `user.email`
-are preserved automatically. Use `~/.gitconfig.local` for any machine-specific
-git settings — it is included by `~/.gitconfig` and is never touched by the installer.
+`~/.gitconfig` is created once with an `[include]` pointing to
+`~/.gitconfig.master-oogway`. Your `user.name` and `user.email` live in
+`~/.gitconfig` and are never touched by the installer after creation.
 
 ## Plugins
 
-All appa-fino functionality is delivered as opt-in oh-my-zsh plugins.
+All master-oogway functionality is delivered as opt-in oh-my-zsh plugins.
 They are listed in two groups in `~/.zshrc`. Comment out any line to disable it.
 
 ### Override plugins — replace system commands
@@ -213,31 +212,31 @@ These only add new commands and never change existing behavior.
 ## Theme configurator
 
 Interactive wizard that steps through every theme feature group and writes
-`~/.config/appa-fino/conf.zsh` with your choices.
+`~/.config/master-oogway/conf.zsh` with your choices.
 
 ```bash
-appa-fino-configure            # full wizard
-appa-fino-configure --new-only # only new variables since last run
+dragon-configure            # full wizard
+dragon-configure --new-only # only new variables since last run
 ```
 
 ## SSH theme forwarding
 
-appa-fino forwards your theme settings over SSH so you get your own prompt
-on remote machines that also have appa-fino installed.
+master-oogway forwards your theme settings over SSH so you get your own
+prompt on remote machines that also have master-oogway installed.
 
 **Client side** (done automatically by `install.sh`):
 
 ```sshconfig
 # ~/.ssh/config
 Host *
-    SendEnv APPA_FINO__*
+    SendEnv DRAGON__*
 ```
 
 **Server side** (done automatically by `install.sh` via sudo):
 
 ```text
 # /etc/ssh/sshd_config
-AcceptEnv APPA_FINO__*
+AcceptEnv DRAGON__*
 ```
 
 If you are setting up a remote manually, add the `AcceptEnv` line and reload sshd:

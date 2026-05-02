@@ -2,8 +2,8 @@
 # Notifies once per new hash if theme variables were added since last config run.
 
 () {
-    local themes_dir="${HOME}/.appa-fino/zsh-custom.d/themes"
-    local state_file="${HOME}/.config/appa-fino/state"
+    local themes_dir="${HOME}/.master-oogway/zsh-custom.d/themes"
+    local state_file="${HOME}/.config/master-oogway/state"
 
     [[ -d "${themes_dir}" ]] || return
     [[ -f "${state_file}" ]] || return

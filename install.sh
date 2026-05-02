@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# install.sh - dragon/appa-fino zsh environment installer
+# install.sh - dragon zsh environment installer (bundle: master-oogway)
 #
 # Three modes (auto-detected):
 #   curl pipe   curl -fsSL <url>/install.sh | bash
-#               Clones the repo to ~/.appa-fino/, then re-execs from there.
+#               Clones the repo to ~/.master-oogway/, then re-execs from there.
 #
-#   update      ~/.appa-fino/install.sh
+#   update      ~/.master-oogway/install.sh
 #               git pull + submodule update, then re-applies dotfiles.
 #
 #   dev         shared/shell/install.sh  (inside the dotfiles repo)
-#               Symlinks shared/shell/ → ~/.appa-fino/, then applies dotfiles.
+#               Symlinks shared/shell/ → ~/.master-oogway/, then applies dotfiles.
 # ------------------------------------------------------------------------------
 set -Eeuo pipefail
 
-readonly REPO_URL="https://github.com/tomershay100/appa-fino.git"
-readonly INSTALL_DIR="${HOME}/.appa-fino"
-readonly CONF_DIR="${HOME}/.config/appa-fino"
+readonly REPO_URL="https://github.com/tomershay100/master-oogway.git"
+readonly INSTALL_DIR="${HOME}/.master-oogway"
+readonly CONF_DIR="${HOME}/.config/master-oogway"
 readonly STATE_FILE="${CONF_DIR}/state"
 readonly ZSHRC="${HOME}/.zshrc"
 
@@ -127,13 +127,13 @@ if _running_via_pipe; then
         git -C "${INSTALL_DIR}" submodule update --init --recursive
     else
         [[ -e "${INSTALL_DIR}" ]] && die "${INSTALL_DIR} exists but is not a git repo. Remove it and retry."
-        info "Cloning appa-fino into ${INSTALL_DIR}..."
+        info "Cloning master-oogway into ${INSTALL_DIR}..."
         git clone --recurse-submodules "${REPO_URL}" "${INSTALL_DIR}"
     fi
     exec bash "${INSTALL_DIR}/install.sh"
 fi
 
-# ── Mode: update (running from ~/.appa-fino/install.sh) ───────────────────────
+# ── Mode: update (running from ~/.master-oogway/install.sh) ──────────────────
 
 if _running_from_install_dir; then
     info "Updating ${INSTALL_DIR}..."
@@ -143,7 +143,7 @@ if _running_from_install_dir; then
 fi
 
 # ── Mode: dev (running from inside the dotfiles repo) ─────────────────────────
-# Symlink shared/shell/ → ~/.appa-fino/ so edits to the repo are live.
+# Symlink shared/shell/ → ~/.master-oogway/ so edits to the repo are live.
 
 if ! _running_from_install_dir; then
     local_dir="$(_script_dir)"
@@ -202,7 +202,7 @@ fi
 # ── Uninstall ──────────────────────────────────────────────────────────────────
 
 if [[ "${1:-}" == "--uninstall" ]]; then
-    info "Uninstalling dragon/appa-fino..."
+    info "Uninstalling dragon (master-oogway)..."
 
     # .zshrc
     _uninstall_zshrc_backup="${ZSHRC}.pre-dragon"
@@ -252,7 +252,7 @@ if [[ "${1:-}" == "--uninstall" ]]; then
         success "AcceptEnv DRAGON__* not in /etc/ssh/sshd_config — nothing to remove"
     fi
 
-    # ~/.config/appa-fino — user conf dir (contains conf.zsh, state, drop-ins)
+    # ~/.config/master-oogway — user conf dir (contains conf.zsh, state, drop-ins)
     if [[ -d "${CONF_DIR}" ]]; then
         if confirm "Remove ${CONF_DIR} (contains your dragon theme config)?"; then
             rm -rf "${CONF_DIR}"
@@ -264,7 +264,7 @@ if [[ "${1:-}" == "--uninstall" ]]; then
         success "${CONF_DIR} not found — nothing to remove"
     fi
 
-    # ~/.appa-fino — symlink (dev) or cloned repo (production)
+    # ~/.master-oogway — symlink (dev) or cloned repo (production)
     if [[ -L "${INSTALL_DIR}" ]]; then
         rm -f "${INSTALL_DIR}"
         success "Removed symlink ${INSTALL_DIR}"
@@ -335,7 +335,7 @@ if [[ ! -f "${ZSHRC}" ]]; then
 elif grep -qF '# dragon:managed' "${ZSHRC}" 2>/dev/null; then
     success "${ZSHRC} already managed by dragon — not overwritten"
     _check_zshrc_drift
-elif grep -q '\.appa-fino' "${ZSHRC}" 2>/dev/null; then
+elif grep -q '\.master-oogway' "${ZSHRC}" 2>/dev/null; then
     success "${ZSHRC} already configured for dragon — not overwritten"
     _check_zshrc_drift
 else
