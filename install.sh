@@ -326,6 +326,9 @@ fi
 if ! command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
     todo_item "Install bat for syntax-highlighted cat/less: sudo apt install bat"
 fi
+if ! command -v atuin &>/dev/null; then
+    todo_item "Install atuin for richer shell history (timestamps, exit codes, CWD per command):"$'\n'"     curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"$'\n'"     Then run: atuin import auto  (imports your existing history)"
+fi
 
 # ── .zshrc: first install replaces; subsequent runs leave it alone ─────────────
 

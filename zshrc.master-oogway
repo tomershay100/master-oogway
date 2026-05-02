@@ -120,6 +120,16 @@ command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 # Use 'z <partial-name>' instead of 'cd <full-path>'. Remove if not installed.
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 
+# atuin: SQLite-backed shell history with timestamps, exit codes, CWD, and duration.
+# Ctrl+R opens atuin's interactive search instead of fzf's plain history picker.
+# --disable-up-arrow keeps the Up/Down arrows for history-substring-search (below).
+# First-time setup: atuin import auto  (imports your existing HISTFILE into atuin)
+# Optional sync:    atuin login        (cross-machine history sync via atuin server)
+if command -v atuin &>/dev/null; then
+    export ATUIN_NOBIND=false          # let atuin bind Ctrl+R
+    eval "$(atuin init zsh --disable-up-arrow)"
+fi
+
 # ── key bindings ───────────────────────────────────────────────────────────────
 # history-substring-search: Up/Down arrows search by the prefix already typed.
 # terminfo values map to the correct escape sequences for your terminal.
