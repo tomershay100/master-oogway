@@ -1,5 +1,9 @@
 # dragon-notifier.zsh — sourced from ~/.zshrc after oh-my-zsh.
 # Notifies once per new hash if theme variables were added since last config run.
+#
+# Performance: on the common path (no new variables) the grep file scan is
+# skipped entirely by comparing the themes directory mtime against the value
+# cached in the state file by dragon-configure / _dragon_write_state.
 
 () {
     local themes_dir="${HOME}/.master-oogway/master-oogway-omz-custom/dragon"
@@ -8,11 +12,19 @@
     [[ -d "${themes_dir}" ]] || return
     [[ -f "${state_file}" ]] || return
 
-    local current_hash stored_hash dismissed_hash
-    current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
-        | sort -u | md5sum | cut -d' ' -f1)
-    stored_hash=$(grep -m1 '^vars_hash=' "${state_file}" 2>/dev/null | cut -d= -f2)
+    local stored_hash dismissed_hash stored_mtime current_mtime current_hash
+    stored_hash=$(grep -m1 '^vars_hash='     "${state_file}" 2>/dev/null | cut -d= -f2)
     dismissed_hash=$(grep -m1 '^dismissed_hash=' "${state_file}" 2>/dev/null | cut -d= -f2)
+    stored_mtime=$(grep -m1 '^themes_mtime=' "${state_file}" 2>/dev/null | cut -d= -f2)
+    current_mtime=$(stat -c '%Y' "${themes_dir}" 2>/dev/null)
+
+    if [[ -n "$stored_mtime" && "$current_mtime" == "$stored_mtime" ]]; then
+        # Theme files unchanged since last configure run — skip the grep entirely.
+        current_hash="$stored_hash"
+    else
+        current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
+            | sort -u | md5sum | cut -d' ' -f1)
+    fi
 
     [[ "${current_hash}" != "${stored_hash}" ]] || return
     [[ "${current_hash}" != "${dismissed_hash}" ]] || return
@@ -20,11 +32,12 @@
     print -P "%F{yellow}[dragon]%f New theme options available — run %Bdragon-configure --new-only%b"
     print -P "%F{245}  (to silence until next update: dragon-configure --dismiss)%f"
 
-    # Mark as dismissed so subsequent shell starts don't repeat the message.
-    # Rewrite the state file (preserving other keys) rather than appending,
-    # so dismissed_hash entries don't accumulate.
+    # Rewrite the state file atomically — update dismissed_hash and mtime in place,
+    # so dismissed_hash entries don't accumulate and mtime stays fresh.
     local tmp_state="${state_file}.tmp"
-    grep -v '^dismissed_hash=' "${state_file}" 2>/dev/null > "${tmp_state}" || true
-    printf 'dismissed_hash=%s\n' "${current_hash}" >> "${tmp_state}"
+    grep -v -e '^dismissed_hash=' -e '^themes_mtime=' "${state_file}" 2>/dev/null \
+        > "${tmp_state}" || true
+    printf 'dismissed_hash=%s\nthemes_mtime=%s\n' "${current_hash}" "${current_mtime}" \
+        >> "${tmp_state}"
     mv "${tmp_state}" "${state_file}"
 }

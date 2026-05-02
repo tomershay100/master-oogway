@@ -36,14 +36,16 @@ _dragon_read_state() {
 
 _dragon_write_state() {
     local preset="${1:-default}"
-    local hash
+    local hash mtime
     hash=$(_dragon_vars_hash)
+    mtime=$(stat -c '%Y' "${_DRAGON_THEMES_DIR}" 2>/dev/null)
     _dragon_read_state   # load current state so we can preserve dismissed_hash
     mkdir -p "${_DRAGON_STATE_DIR}"
     {
         echo "configured=true"
         echo "preset=${preset}"
         echo "vars_hash=${hash}"
+        echo "themes_mtime=${mtime}"
         # Preserve dismissed_hash across configure runs so --dismiss stays effective
         [[ -n "${_DRAGON_STATE[dismissed_hash]:-}" ]] \
             && echo "dismissed_hash=${_DRAGON_STATE[dismissed_hash]}"
@@ -704,12 +706,17 @@ dragon-configure() {
     fi
 
     if [[ "${1-}" == "--dismiss" ]]; then
-        local themes_dir="${_DRAGON_THEMES_DIR}"
-        local current_hash
-        current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
+        local current_hash current_mtime
+        current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${_DRAGON_THEMES_DIR}" 2>/dev/null \
             | sort -u | md5sum | cut -d' ' -f1)
+        current_mtime=$(stat -c '%Y' "${_DRAGON_THEMES_DIR}" 2>/dev/null)
         mkdir -p "${_DRAGON_STATE_DIR}"
-        printf '\ndismissed_hash=%s\n' "${current_hash}" >> "${_DRAGON_STATE_FILE}"
+        local tmp_state="${_DRAGON_STATE_FILE}.tmp"
+        grep -v -e '^dismissed_hash=' -e '^themes_mtime=' "${_DRAGON_STATE_FILE}" \
+            2>/dev/null > "${tmp_state}" || true
+        printf 'dismissed_hash=%s\nthemes_mtime=%s\n' "${current_hash}" "${current_mtime}" \
+            >> "${tmp_state}"
+        mv "${tmp_state}" "${_DRAGON_STATE_FILE}"
         print -P "%F{green}✓%f Dragon notifier dismissed until next update."
         return 0
     fi
