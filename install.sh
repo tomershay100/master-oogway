@@ -201,6 +201,8 @@ fi
 
 # ── Pre-flight ─────────────────────────────────────────────────────────────────
 
+[[ "$(uname)" == "Linux" ]] || die "dragon requires Linux (Ubuntu 24.04). macOS/BSD are not supported."
+
 require_cmd zsh
 require_cmd git
 

@@ -88,7 +88,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 - **Done:** Gated behind `confirm` prompt — user must explicitly consent.
 
-### 1.8 `install.sh` — GNU sed `a\` syntax is non-portable   🟢
+### 1.8 ✅ `install.sh` — GNU sed `a\` syntax is non-portable
 
 - **What:** `sed -i "/^Host \*[[:space:]]*$/a\\${send_line}"` is GNU-sed
   specific.
