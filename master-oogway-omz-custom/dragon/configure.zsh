@@ -721,6 +721,75 @@ dragon-configure() {
         return 0
     fi
 
+    if [[ "${1-}" == "--export" ]]; then
+        # Export non-default settings to a file (or stdout if no file given).
+        local out_file="${2:-}"
+        _dragon_init_defaults
+        _dragon_load_current_conf
+        local -a lines=()
+        local var val default
+        for var val in "${(@kv)_DRAGON_CURRENT}"; do
+            default="${_DRAGON_DEFAULTS[$var]:-}"
+            [[ "$val" == "$default" ]] && continue
+            local safe_val="${val//\\/\\\\}"; safe_val="${safe_val//\"/\\\"}"
+            lines+=( "export DRAGON__${var}=\"${safe_val}\"" )
+        done
+        if [[ ${#lines[@]} -eq 0 ]]; then
+            print -P "%F{245}No non-default settings to export — all vars are at their defaults.%f"
+            _dragon_cleanup; return 0
+        fi
+        local output
+        output=$(printf '%s\n' "${lines[@]}" | sort)
+        if [[ -n "$out_file" ]]; then
+            printf '%s\n' "$output" > "$out_file"
+            print -P "%F{green}✓%f Exported %B${#lines[@]}%b non-default vars to %B${out_file}%b"
+        else
+            printf '%s\n' "$output"
+        fi
+        _dragon_cleanup; return 0
+    fi
+
+    if [[ "${1-}" == "--import" ]]; then
+        local in_file="${2:-}"
+        if [[ -z "$in_file" ]]; then
+            echo "Usage: dragon-configure --import <file>" >&2; return 1
+        fi
+        if [[ ! -f "$in_file" ]]; then
+            echo "dragon-configure --import: file not found: ${in_file}" >&2; return 1
+        fi
+        if ! zsh -n "$in_file" 2>/dev/null; then
+            echo "dragon-configure --import: syntax error in ${in_file}" >&2; return 1
+        fi
+        _dragon_init_defaults
+        _dragon_init_types
+        _dragon_init_hints
+        _dragon_init_groups
+        typeset -gA _DRAGON_STATE=()
+        # Start from defaults then overlay the import file's exports
+        _dragon_load_current_conf   # loads existing conf first (defaults as base)
+        local line var raw
+        while IFS= read -r line; do
+            [[ "$line" == '#'* || -z "${line// }" ]] && continue
+            if [[ "$line" =~ ^[[:space:]]*'export DRAGON__'([A-Z_]+)'="'(.*) ]]; then
+                var="${match[1]}"; raw="${match[2]%%\" #*}"
+                raw="${raw//\\\"/\"}"; raw="${raw//\\\\/\\}"
+                # Only import vars that exist in our schema
+                if [[ -n "${_DRAGON_DEFAULTS[$var]+_}" ]]; then
+                    _DRAGON_CURRENT[$var]="$raw"
+                fi
+            fi
+        done < "$in_file"
+        _dragon_write_conf || { _dragon_cleanup; return 1; }
+        _dragon_write_state "${_DRAGON_STATE[preset]:-default}"
+        local var val
+        for var val in "${(@kv)_DRAGON_CURRENT}"; do
+            export "DRAGON__${var}=${val}"
+        done
+        dragon__update_zsh_prompt 2>/dev/null
+        print -P "%F{green}✓%f Imported settings from %B${in_file}%b — prompt updated immediately."
+        _dragon_cleanup; return 0
+    fi
+
     local new_only=false
     [[ "${1-}" == "--new-only" ]] && new_only=true
 
