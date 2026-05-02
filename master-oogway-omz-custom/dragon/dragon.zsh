@@ -21,6 +21,7 @@ __is_via_ssh()
 
 TERMINAL_BACKGROUND_COLOR="black"
 RESET_FORMAT="%f%k%b%u"
+typeset -g exit_code=0   # set by __save_exit_code; zero-initialized to avoid stale reads
 
 # Load defaults from schema and apply them via set_if_unset.
 # set_if_unset only sets vars not already exported — SSH-forwarded vars win.
@@ -39,7 +40,7 @@ for _dragon_k _dragon_v in "${(@kv)_DRAGON_DEFAULTS}"; do
 done
 unset _dragon_k _dragon_v
 
-declare -A COLORS=(
+typeset -A COLORS=(
 	[black]=000 [red]=001 [green]=002 [yellow]=003
 	[blue]=004 [magenta]=005 [cyan]=006 [white]=007
 	[gray]=008 [grey]=008 [maroon]=009 [lime]=010 [olive]=011

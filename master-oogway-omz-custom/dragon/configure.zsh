@@ -7,7 +7,7 @@
 # ── File-level constants ──────────────────────────────────────────────────────
 
 typeset -g _DRAGON_CONF_FILE="${HOME}/.config/master-oogway/conf.zsh"
-typeset -g _DRAGON_THEMES_DIR="${HOME}/.master-oogway/master-oogway-omz-custom/dragon"
+typeset -g _DRAGON_THEMES_DIR="${0:a:h}"   # .../dragon/ — derived from script location
 typeset -g _DRAGON_STATE_DIR="${HOME}/.config/master-oogway"
 typeset -g _DRAGON_STATE_FILE="${_DRAGON_STATE_DIR}/state"
 

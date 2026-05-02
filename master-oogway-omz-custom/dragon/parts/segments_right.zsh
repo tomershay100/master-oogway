@@ -38,16 +38,16 @@ __reset_timer()
 
 __get_readable_time()
 {
-	local seconds=$1
-	local days=$((seconds/86400))
-	local hours=$((seconds%86400/3600))
-	local minutes=$((seconds%3600/60))
-	local seconds=$((seconds%60))
+	local total=$1
+	local days=$(( total / 86400 ))
+	local hours=$(( total % 86400 / 3600 ))
+	local minutes=$(( total % 3600 / 60 ))
+	local secs=$(( total % 60 ))
 
-	(( days > 0 )) && echo -n "${days}d "
-	(( hours > 0 )) && echo -n "${hours}h "
-	(( minutes > 0 )) && echo -n "${minutes}m "
-	echo -n "${seconds}s"
+	(( days > 0 ))    && print -n "${days}d "
+	(( hours > 0 ))   && print -n "${hours}h "
+	(( minutes > 0 )) && print -n "${minutes}m "
+	print -n "${secs}s"
 }
 
 dragon__set_execution_time()
