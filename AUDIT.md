@@ -198,7 +198,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 - **Done:** `install.sh --version` and `dragon-configure --version` both
   print `master-oogway YYYY-MM-DD_HHmmss-<hash>` from the installed git commit.
 
-### 2.6 No uninstall path   🟡
+### 2.6 ✅ No uninstall path
 
 - **What:** Once installed, undoing it requires manual file deletion +
   unwinding the SSH config edits.

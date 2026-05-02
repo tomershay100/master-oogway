@@ -199,6 +199,94 @@ if [[ "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
     exit 0
 fi
 
+# ── Uninstall ──────────────────────────────────────────────────────────────────
+
+if [[ "${1:-}" == "--uninstall" ]]; then
+    info "Uninstalling dragon/appa-fino..."
+
+    # .zshrc
+    _uninstall_zshrc_backup="${ZSHRC}.pre-dragon"
+    if [[ -f "$_uninstall_zshrc_backup" ]]; then
+        cp "$_uninstall_zshrc_backup" "${ZSHRC}"
+        success "Restored ${ZSHRC} from ${_uninstall_zshrc_backup}"
+    elif grep -qF '# dragon:managed' "${ZSHRC}" 2>/dev/null; then
+        rm -f "${ZSHRC}"
+        warn "Removed managed ${ZSHRC} — no backup found. Recreate it manually."
+    else
+        success "${ZSHRC} not managed by dragon — left untouched"
+    fi
+
+    # .gitconfig
+    _uninstall_gitconfig_backup="${HOME}/.gitconfig.pre-master-oogway"
+    if [[ -f "$_uninstall_gitconfig_backup" ]]; then
+        cp "$_uninstall_gitconfig_backup" "${HOME}/.gitconfig"
+        success "Restored ~/.gitconfig from ${_uninstall_gitconfig_backup}"
+    elif [[ -f "${HOME}/.gitconfig" ]]; then
+        sed -i '/gitconfig\.master-oogway/d' "${HOME}/.gitconfig"
+        sed -i '/^\[include\]$/{N;/^\[include\]\n[[:space:]]*$/d}' "${HOME}/.gitconfig"
+        success "Removed bundle [include] from ~/.gitconfig"
+    fi
+    rm -f "${HOME}/.gitconfig.master-oogway"
+    success "Removed ~/.gitconfig.master-oogway"
+
+    # ~/.ssh/config — remove SendEnv DRAGON__* line
+    _uninstall_ssh_config="${HOME}/.ssh/config"
+    if grep -qF 'SendEnv DRAGON__*' "$_uninstall_ssh_config" 2>/dev/null; then
+        sed -i '/SendEnv DRAGON__\*/d' "$_uninstall_ssh_config"
+        success "Removed SendEnv DRAGON__* from ~/.ssh/config"
+    else
+        success "SendEnv DRAGON__* not in ~/.ssh/config — nothing to remove"
+    fi
+
+    # /etc/ssh/sshd_config — remove AcceptEnv DRAGON__* (needs sudo)
+    _uninstall_sshd_config="/etc/ssh/sshd_config"
+    if grep -qF 'AcceptEnv DRAGON__*' "$_uninstall_sshd_config" 2>/dev/null; then
+        if confirm "Remove AcceptEnv DRAGON__* from /etc/ssh/sshd_config and reload sshd? (sudo required)"; then
+            sudo sed -i '/AcceptEnv DRAGON__\*/d' "$_uninstall_sshd_config"
+            sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
+            success "Removed AcceptEnv DRAGON__* and reloaded sshd"
+        else
+            warn "Skipped — remove manually: sudo sed -i '/AcceptEnv DRAGON__\\\*/d' /etc/ssh/sshd_config"
+        fi
+    else
+        success "AcceptEnv DRAGON__* not in /etc/ssh/sshd_config — nothing to remove"
+    fi
+
+    # ~/.config/appa-fino — user conf dir (contains conf.zsh, state, drop-ins)
+    if [[ -d "${CONF_DIR}" ]]; then
+        if confirm "Remove ${CONF_DIR} (contains your dragon theme config)?"; then
+            rm -rf "${CONF_DIR}"
+            success "Removed ${CONF_DIR}"
+        else
+            warn "Skipped — ${CONF_DIR} left in place"
+        fi
+    else
+        success "${CONF_DIR} not found — nothing to remove"
+    fi
+
+    # ~/.appa-fino — symlink (dev) or cloned repo (production)
+    if [[ -L "${INSTALL_DIR}" ]]; then
+        rm -f "${INSTALL_DIR}"
+        success "Removed symlink ${INSTALL_DIR}"
+    elif [[ -d "${INSTALL_DIR}" ]]; then
+        if confirm "Remove ${INSTALL_DIR} (the cloned dragon repo)?"; then
+            rm -rf "${INSTALL_DIR}"
+            success "Removed ${INSTALL_DIR}"
+        else
+            warn "Skipped — ${INSTALL_DIR} left in place"
+        fi
+    else
+        success "${INSTALL_DIR} not found — nothing to remove"
+    fi
+
+    # .zshenv — not removed; may predate dragon or contain user edits
+    warn "${HOME}/.zshenv was NOT removed — it may contain your own settings."
+    warn "Review it manually: ${HOME}/.zshenv"
+
+    success "dragon uninstall complete. Open a new terminal to apply changes."
+    exit 0
+fi
+
 # ── Pre-flight ─────────────────────────────────────────────────────────────────
 
 [[ "$(uname)" == "Linux" ]] || die "dragon requires Linux (Ubuntu 24.04). macOS/BSD are not supported."
