@@ -9,12 +9,11 @@ Grouped by priority: 🔴 bugs → 🟠 issues → 🟡 enhancements.
 
 ## 🟡 Enhancements
 
-### atuin — SQLite shell history ✅ done
+### atuin — SQLite shell history (future)
 
-- [x] **atuin** — replaces `HISTFILE` with a SQLite database. Every command gets
+- [ ] **atuin** — replaces `HISTFILE` with a SQLite database. Every command gets
   a timestamp, working directory, exit code, and duration. `Ctrl+R` becomes a
   full fuzzy search across all of that. Optional cross-machine sync.
-  - `install.sh` now suggests atuin if not installed (with curl one-liner + `atuin import auto` hint)
-  - `zshrc.master-oogway` initializes atuin when present: `eval "$(atuin init zsh --disable-up-arrow)"`
-  - `--disable-up-arrow` preserves history-substring-search's Up/Down arrow bindings
-  - atuin overrides fzf's Ctrl+R with its richer TUI when both are installed
+  Requires its own install script (not just apt on all distros).
+  See: https://github.com/atuinsh/atuin
+  Add to `install.sh` and `zshrc.template` once install flow is designed.
