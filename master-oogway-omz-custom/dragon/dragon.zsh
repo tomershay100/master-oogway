@@ -1,7 +1,8 @@
-# dragon.zsh-theme — entry point for the dragon prompt
+# dragon.zsh — dragon prompt theme (master-oogway)
 #
 # Loads schema-driven defaults, sources prompt logic from parts/, and
 # registers zsh hooks. All segment/render code lives in parts/*.zsh.
+# Sourced by themes/dragon.zsh-theme (the OMZ entry point shim).
 
 set_if_unset()
 {
@@ -57,6 +58,10 @@ source "${0:a:h}/parts/segments_right.zsh"   # date, exec_timer, ssh_conn, jobs,
 source "${0:a:h}/parts/prompt.zsh"           # __calc_prompt_length, lprompt + rprompt builders
 source "${0:a:h}/parts/transient.zsh"        # zle hooks, gitstatus glue, prompt refresh
 
+# ── Source dragon tools (auto-sourcing from ZSH_CUSTOM root is bypassed) ──────
+source "${0:a:h}/configure.zsh"
+source "${0:a:h}/aliases.zsh"
+
 # ── Initial render + hook registration ────────────────────────────────────────
 
 __update_prompt
@@ -75,4 +80,3 @@ add-zsh-hook chpwd   __update_prompt
 add-zsh-hook chpwd   __dragon_track_chpwd
 
 zle -N zle-line-finish __dragon_zle_line_finish
-

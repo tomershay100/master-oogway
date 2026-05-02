@@ -9,17 +9,19 @@ For user documentation see [README.md](README.md).
 
 ```
 install.sh                        entry point — 3 modes (see below)
-zshrc.template                    user's ~/.zshrc (installed once, never overwritten)
+zshrc.master-oogway                    user's ~/.zshrc (installed once, never overwritten)
 .zshenv                           always re-copied to ~/.zshenv on each install run
 gitconfig.master-oogway           always re-copied to ~/.gitconfig.master-oogway
 dragon-notifier.zsh               sourced by ~/.zshrc — notifies when new vars exist
 
-zsh-custom.d/                     ZSH_CUSTOM directory (sourced by oh-my-zsh)
+master-oogway-omz-custom/         ZSH_CUSTOM directory (sourced by oh-my-zsh)
   themes/
-    dragon.zsh-theme              theme entry point — init defaults, register hooks
+    dragon.zsh-theme              OMZ entry point shim — sources ../dragon/dragon.zsh
+  dragon/                         all dragon theme code lives here
+    dragon.zsh                    theme entry point — defaults loop, hook registration
     schema.zsh                    _DRAGON_DEFAULTS: single source of truth for all vars
-    dragon-configure.zsh          interactive wizard (~750 lines)
-    dragon-aliases.zsh            rezsh, reset_theme_variables
+    configure.zsh                 interactive wizard (~750 lines)
+    aliases.zsh                   rezsh, reset_theme_variables
     parts/
       helpers.zsh                 __get_xterm_*, __dragon__show (segment renderer)
       segments_left.zsh           username, hostname, directory, prompt_char, ssh_prefix
@@ -79,11 +81,11 @@ Different files have different latency depending on how they reach disk:
 
 | What you changed | How to test |
 |---|---|
-| Any `zsh-custom.d/` file (plugins, theme parts, configure) | `soursh` — live via symlink |
+| Any `master-oogway-omz-custom/` file (plugins, theme parts, configure) | `soursh` — live via symlink |
 | `dragon-notifier.zsh` | `soursh` |
 | `.zshenv` | re-run `./install.sh`, then `soursh` |
 | `gitconfig.master-oogway` | re-run `./install.sh` |
-| `zshrc.template` | `rm ~/.zshrc && ./install.sh` |
+| `zshrc.master-oogway` | `rm ~/.zshrc && ./install.sh` |
 | `install.sh` itself | just run `./install.sh` — idempotent |
 
 ---
@@ -105,17 +107,17 @@ This runs:
 
 ## Adding a plugin
 
-1. Create `zsh-custom.d/plugins/mo-<name>/mo-<name>.plugin.zsh`
+1. Create `master-oogway-omz-custom/plugins/mo-<name>/mo-<name>.plugin.zsh`
 2. First line must be a `# Provides:` comment — one line describing what it adds:
    ```zsh
    # Provides: mycommand (does X) and myalias (does Y).
    ```
-3. Add `mo-<name>` to the plugins list in `zshrc.template` (override or additive group)
+3. Add `mo-<name>` to the plugins list in `zshrc.master-oogway` (override or additive group)
 4. Run `make readme` to regenerate the README plugin table
 5. Run `make check`
 
 Override plugins (those that shadow system commands) must appear **before** additive
-plugins in `zshrc.template` so additive plugins inherit the overridden commands.
+plugins in `zshrc.master-oogway` so additive plugins inherit the overridden commands.
 Each override should also define an escape-hatch alias (`r<name>`) that calls the
 original binary directly.
 
@@ -123,7 +125,7 @@ original binary directly.
 
 ## Adding a theme configuration variable
 
-All theme variables live in `zsh-custom.d/themes/schema.zsh` inside `_DRAGON_DEFAULTS`.
+All theme variables live in `master-oogway-omz-custom/dragon/schema.zsh` inside `_DRAGON_DEFAULTS`.
 This is the **single source of truth** — add a variable here and it is automatically:
 - initialized on shell startup via the defaults loop in `dragon.zsh-theme`
 - exposed in `dragon-configure` (grouped under its schema group)

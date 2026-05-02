@@ -163,7 +163,7 @@ if ! _running_from_install_dir; then
     fi
 
     _init_plugins() {
-        local plugins_dir="${INSTALL_DIR}/zsh-custom.d/plugins"
+        local plugins_dir="${INSTALL_DIR}/master-oogway-omz-custom/plugins"
         local -a missing=()
         for plugin in gitstatus you-should-use zsh-autosuggestions zsh-syntax-highlighting; do
             local plugin_dir="${plugins_dir}/${plugin}"
@@ -313,11 +313,11 @@ _install_zshrc() {
         cp "${ZSHRC}" "${backup}"
         info "Backed up ${ZSHRC} → ${backup}"
     fi
-    copy_file "${INSTALL_DIR}/zshrc.template" "${ZSHRC}"
+    copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}"
 }
 
 _check_zshrc_drift() {
-    local template="${INSTALL_DIR}/zshrc.template"
+    local template="${INSTALL_DIR}/zshrc.master-oogway"
     [[ -f "${template}" ]] || return
     if ! diff -q "${template}" "${ZSHRC}" &>/dev/null; then
         warn "Your ~/.zshrc differs from the current template."
@@ -467,7 +467,7 @@ _install_sshd_acceptenv
 # ── dragon theme: check for new variables ───────────────────────────────────
 
 _check_theme_vars() {
-    local themes_dir="${INSTALL_DIR}/zsh-custom.d/themes"
+    local themes_dir="${INSTALL_DIR}/master-oogway-omz-custom/dragon"
     local current_hash
     current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
         | sort -u | md5sum | cut -d' ' -f1)

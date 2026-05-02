@@ -1,10 +1,10 @@
 .PHONY: lint test check readme
 
-PLUGIN_ZSH := $(wildcard zsh-custom.d/plugins/mo-*/**.plugin.zsh)
-THEME_ZSH  := zsh-custom.d/themes/dragon.zsh-theme \
-              $(wildcard zsh-custom.d/themes/*.zsh) \
-              $(wildcard zsh-custom.d/themes/parts/*.zsh)
-CONFIGURE  := zsh-custom.d/dragon-configure.zsh
+PLUGIN_ZSH := $(wildcard master-oogway-omz-custom/plugins/mo-*/**.plugin.zsh)
+THEME_ZSH  := master-oogway-omz-custom/themes/dragon.zsh-theme \
+              $(wildcard master-oogway-omz-custom/dragon/*.zsh) \
+              $(wildcard master-oogway-omz-custom/dragon/parts/*.zsh)
+CONFIGURE  := master-oogway-omz-custom/dragon/configure.zsh
 NOTIFIER   := dragon-notifier.zsh
 
 lint:

@@ -5,12 +5,12 @@
 set -Eeuo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-THEME="${REPO_ROOT}/zsh-custom.d/themes/dragon.zsh-theme"
-SCHEMA="${REPO_ROOT}/zsh-custom.d/themes/schema.zsh"
+THEME="${REPO_ROOT}/master-oogway-omz-custom/dragon/dragon.zsh"
+SCHEMA="${REPO_ROOT}/master-oogway-omz-custom/dragon/schema.zsh"
 
 # Verify theme sources schema rather than duplicating defaults inline.
 if ! grep -q 'source.*schema\.zsh' "$THEME"; then
-    echo "ERROR: dragon.zsh-theme does not source schema.zsh" >&2
+    echo "ERROR: dragon.zsh does not source schema.zsh" >&2
     exit 1
 fi
 
@@ -21,4 +21,4 @@ if ! grep -q '_DRAGON_DEFAULTS' "$SCHEMA"; then
 fi
 
 var_count=$(grep -oP '(?<=\[)([A-Z_]+)(?=\])' "$SCHEMA" | sort -u | wc -l | tr -d ' ')
-echo "ok: schema has ${var_count} variables; dragon.zsh-theme sources schema.zsh"
+echo "ok: schema has ${var_count} variables; dragon.zsh sources schema.zsh"

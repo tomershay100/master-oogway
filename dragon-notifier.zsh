@@ -2,7 +2,7 @@
 # Notifies once per new hash if theme variables were added since last config run.
 
 () {
-    local themes_dir="${HOME}/.master-oogway/zsh-custom.d/themes"
+    local themes_dir="${HOME}/.master-oogway/master-oogway-omz-custom/dragon"
     local state_file="${HOME}/.config/master-oogway/state"
 
     [[ -d "${themes_dir}" ]] || return

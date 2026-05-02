@@ -1,19 +1,19 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# dragon-configure.zsh
+# configure.zsh
 # Provides `dragon-configure [--new-only]` — interactive theme wizard.
-# Sourced by oh-my-zsh via ZSH_CUSTOM; no side effects at top level.
+# Sourced by dragon.zsh (not OMZ directly); no side effects at top level.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── File-level constants ──────────────────────────────────────────────────────
 
 typeset -g _DRAGON_CONF_FILE="${HOME}/.config/master-oogway/conf.zsh"
-typeset -g _DRAGON_THEMES_DIR="${HOME}/.master-oogway/zsh-custom.d/themes"
+typeset -g _DRAGON_THEMES_DIR="${HOME}/.master-oogway/master-oogway-omz-custom/dragon"
 typeset -g _DRAGON_STATE_DIR="${HOME}/.config/master-oogway"
 typeset -g _DRAGON_STATE_FILE="${_DRAGON_STATE_DIR}/state"
 
 # ── Schema (defaults, types, hints, groups) ──────────────────────────────────
 
-source "${0:a:h}/themes/schema.zsh"
+source "${0:a:h}/schema.zsh"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # State management

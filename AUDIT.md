@@ -13,23 +13,24 @@
 
 ```
 install.sh (3 modes)                   ── bootstrap / update / dev-symlink
-  ├─ writes ~/.zshrc (first time only) from zshrc.template
+  ├─ writes ~/.zshrc (first time only) from zshrc.master-oogway
   ├─ writes ~/.zshenv, ~/.gitconfig (preserves user.name/email)
   ├─ patches ~/.ssh/config + /etc/ssh/sshd_config (SendEnv/AcceptEnv)
   └─ checks theme-vars hash → suggests `dragon-configure`
 
-zshrc.template                         ── user-owned, opt-in plugins listed
+zshrc.master-oogway                         ── user-owned, opt-in plugins listed
   ├─ sources ~/.config/master-oogway/conf.zsh   (user theme overrides)
   ├─ sources gitstatus.plugin.zsh               (must precede oh-my-zsh)
   ├─ runs oh-my-zsh.sh with ZSH_THEME=dragon
   └─ sources ~/.master-oogway/dragon-notifier.zsh   (new-vars notifier)
 
-zsh-custom.d/                          ── ZSH_CUSTOM (sourced by oh-my-zsh)
-  ├─ themes/dragon.zsh-theme → dragon.zsh   (symlink for OMZ loader)
-  ├─ themes/dragon.zsh                 ~1 100 lines — the prompt theme
-  ├─ themes/schema.zsh                   391 lines — defaults/types/groups
-  ├─ dragon-configure.zsh                746 lines — interactive wizard
-  ├─ dragon-aliases.zsh                    8 lines — `rezsh` reset
+master-oogway-omz-custom/                          ── ZSH_CUSTOM (sourced by oh-my-zsh)
+  ├─ themes/dragon.zsh-theme             shim — sources ../dragon/dragon.zsh
+  ├─ dragon/dragon.zsh             ~80 lines — defaults loop, hook registration
+  ├─ dragon/schema.zsh               391 lines — defaults/types/groups
+  ├─ dragon/configure.zsh            746 lines — interactive wizard
+  ├─ dragon/aliases.zsh                8 lines — `rezsh` reset
+  ├─ dragon/parts/                   7 files  — prompt segments, git, transient
   └─ plugins/mo-*/                      17 OMZ plugins (override + additive)
 ```
 
@@ -88,7 +89,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ### 1.10 ✅ `~/.zshrc` PATH lines double-prepend on re-source
 
-- **Done:** `typeset -U path` added to `zshrc.template`.
+- **Done:** `typeset -U path` added to `zshrc.master-oogway`.
 
 ### 1.11 `gnucash` flatpak alias clobbers a real binary   🟢 (kept intentionally)
 
@@ -180,7 +181,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ### 2.8 ✅ No defensive sourcing of `conf.zsh`
 
-- **What:** `zshrc.template` does `[[ -f … ]] && source conf.zsh`. If the
+- **What:** `zshrc.master-oogway` does `[[ -f … ]] && source conf.zsh`. If the
   user hand-edits and breaks it (unmatched quote), the whole shell startup
   fails.
 - **Fix:** `source ... 2>/dev/null || warn "conf.zsh has a syntax error"`
@@ -204,7 +205,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 - **Done:** `~/.config/master-oogway/custom-pre-zsh/` (before plugins) and
   `custom-zsh/` (after plugins) created by `install.sh`; sourced via
-  `*.zsh(N)` glob loops in `zshrc.template`.
+  `*.zsh(N)` glob loops in `zshrc.master-oogway`.
 
 ### 2.12 ✅ Bundle name = theme name → can't switch theme cleanly
 
