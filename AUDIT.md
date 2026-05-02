@@ -161,7 +161,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
   - `transient.zsh` (~100 lines) — zle hooks, gitstatus glue, prompt refresh
   All 53 functions verified present after split. `make check` clean.
 
-### 2.3 Preview "group_inject" code is brittle inline shell   🟡
+### 2.3 ✅ Preview "group_inject" code is brittle inline shell
 
 - **What:** `dragon-configure.zsh:188–222` builds preview-scenario data
   by injecting heredoc-style shell into the `zsh -c` subshell — including

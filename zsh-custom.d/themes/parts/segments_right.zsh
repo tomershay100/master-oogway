@@ -55,11 +55,13 @@ dragon__set_execution_time()
 	FINAL_DRAGON__EXEC_TIMER_CONTENT=""
 	! $DRAGON__ENABLE_EXEC_TIMER && return
 
-	if ((timer == -1 || SECONDS - timer < $DRAGON__EXEC_TIMER_THRESHOLD)); then
+	if [[ -n "${DRAGON__PREVIEW_FAKE_EXEC_TIME:-}" ]]; then
+		REAL_DRAGON__EXEC_TIMER_CONTENT="${DRAGON__PREVIEW_FAKE_EXEC_TIME}"
+	elif ((timer == -1 || SECONDS - timer < $DRAGON__EXEC_TIMER_THRESHOLD)); then
 		return
+	else
+		REAL_DRAGON__EXEC_TIMER_CONTENT="$(__get_readable_time $((SECONDS - timer)))"
 	fi
-
-	REAL_DRAGON__EXEC_TIMER_CONTENT="$(__get_readable_time $((SECONDS - timer)))"
 
 	REAL_DRAGON__EXEC_TIMER_PREFIX="$DRAGON__EXEC_TIMER_PREFIX"
 	REAL_DRAGON__EXEC_TIMER_SUFFIX="$DRAGON__EXEC_TIMER_SUFFIX"
@@ -88,7 +90,7 @@ dragon__set_job_count()
 	FINAL_DRAGON__JOB_COUNT_CONTENT=""
 	! $DRAGON__ENABLE_JOB_COUNT && return
 
-	local jobs_count=${#jobstates[@]}
+	local jobs_count="${DRAGON__PREVIEW_FAKE_JOB_COUNT:-${#jobstates[@]}}"
 	[[ "$jobs_count" -eq 0 ]] && return
 
 	REAL_DRAGON__JOB_COUNT_CONTENT="%j"
@@ -106,6 +108,11 @@ dragon__set_job_count()
 
 __set_ssh_connection_count_content()
 {
+	if [[ -n "${DRAGON__PREVIEW_FAKE_SSH_CONN_COUNT:-}" ]]; then
+		REAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT="${DRAGON__PREVIEW_FAKE_SSH_CONN_COUNT}"
+		return
+	fi
+
 	local -a who_lines=( "${(f)$(who)}" )
 	local -a pts_lines=( "${(M)who_lines[@]:#*pts*}" )
 	local ip_pattern='^\([0-9]{1,3}(\.[0-9]{1,3}){3}\)$'

@@ -179,51 +179,24 @@ _dragon_render_preview() {
         export "DRAGON__${var}=${val}"
     done
 
-    local ssh_inject="" preview_exit_code=0
-    $ssh_mode  && ssh_inject="SSH_TTY=/dev/pts/0"
+    local preview_exit_code=0 _saved_ssh_tty="${SSH_TTY:-}"
+    $ssh_mode  && export SSH_TTY=/dev/pts/0
     $fail_mode && preview_exit_code=1
 
-    # Build group-specific fake data so rprompt segments are visible in preview.
-    local group_inject=""
+    # Export group-specific fake data via env vars honoured by the theme segments.
     case "$group" in
-        exec_timer)
-            # timer=-65: subshell SECONDS≈0, so SECONDS-timer≈65 >= threshold → shows "1m 5s"
-            group_inject="timer=-65" ;;
-        job_count)
-            # Override job count function to inject 2 fake background jobs.
-            group_inject="dragon__set_job_count() {
-                FINAL_DRAGON__JOB_COUNT_CONTENT=''
-                ! \$DRAGON__ENABLE_JOB_COUNT && return
-                local jobs_count=2
-                REAL_DRAGON__JOB_COUNT_CONTENT=2
-                __set_job_count_prefix_and_suffix
-                REAL_DRAGON__JOB_COUNT_FOREGROUND_COLOR=\"\$DRAGON__JOB_COUNT_FOREGROUND_COLOR\"
-                REAL_DRAGON__JOB_COUNT_BACKGROUND_COLOR=\"\$DRAGON__JOB_COUNT_BACKGROUND_COLOR\"
-                REAL_DRAGON__JOB_COUNT_BOLD=\"\$DRAGON__JOB_COUNT_BOLD\"
-                REAL_DRAGON__JOB_COUNT_UNDERLINE=\"\$DRAGON__JOB_COUNT_UNDERLINE\"
-                __dragon__show JOB_COUNT
-                FINAL_DRAGON__JOB_COUNT_CONTENT=\"\$SHOW_RESULT\"
-            }" ;;
-        ssh_conn_count)
-            # Fake 2 incoming SSH connections (SSH_TTY not needed here — this is about
-            # connections TO this machine, not whether we ourselves are on SSH).
-            group_inject="__set_ssh_connection_count_content() {
-                REAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT=2
-            }" ;;
-        exit_status)
-            # The --fail flag already sets exit_code=1; nothing extra needed.
-            : ;;
+        exec_timer)   export DRAGON__PREVIEW_FAKE_EXEC_TIME="1m 5s" ;;
+        job_count)    export DRAGON__PREVIEW_FAKE_JOB_COUNT=2 ;;
+        ssh_conn_count) export DRAGON__PREVIEW_FAKE_SSH_CONN_COUNT=2 ;;
         git_stash_remote)
-            group_inject="VCS_STATUS_STASHES=2
-            VCS_STATUS_COMMITS_AHEAD=3
-            VCS_STATUS_COMMITS_BEHIND=1" ;;
-        git_clean_dirty)
-            group_inject="VCS_STATUS_HAS_UNSTAGED=1" ;;
+            export VCS_STATUS_STASHES=2
+            export VCS_STATUS_COMMITS_AHEAD=3
+            export VCS_STATUS_COMMITS_BEHIND=1 ;;
+        git_clean_dirty) export VCS_STATUS_HAS_UNSTAGED=1 ;;
     esac
 
     local preview
     preview=$(zsh -c "
-        ${ssh_inject}
         zle()             { :; }
         gitstatus_start() { :; }
         gitstatus_query() { :; }
@@ -234,17 +207,16 @@ _dragon_render_preview() {
         PWD='/home/${USER}/projects/myapp/src/components'
         VCS_STATUS_RESULT='ok-sync'
         VCS_STATUS_LOCAL_BRANCH='main'
-        VCS_STATUS_HAS_UNSTAGED=0
+        VCS_STATUS_HAS_UNSTAGED=\${VCS_STATUS_HAS_UNSTAGED:-0}
         VCS_STATUS_HAS_STAGED=0
         VCS_STATUS_HAS_UNTRACKED=0
-        VCS_STATUS_COMMITS_AHEAD=0
-        VCS_STATUS_COMMITS_BEHIND=0
-        VCS_STATUS_STASHES=0
+        VCS_STATUS_COMMITS_AHEAD=\${VCS_STATUS_COMMITS_AHEAD:-0}
+        VCS_STATUS_COMMITS_BEHIND=\${VCS_STATUS_COMMITS_BEHIND:-0}
+        VCS_STATUS_STASHES=\${VCS_STATUS_STASHES:-0}
         VCS_STATUS_REMOTE_NAME='origin'
         exit_code=${preview_exit_code}
         __LAST_EXIT_CODE=${preview_exit_code}
         source '${_DRAGON_THEMES_DIR}/dragon.zsh-theme' 2>/dev/null
-        ${group_inject}
         dragon__update_zsh_prompt 2>/dev/null
         if [[ '${transient_mode}' == true ]]; then
             __dragon_zle_line_finish 2>/dev/null
@@ -252,6 +224,14 @@ _dragon_render_preview() {
         print -rP -- \"\${PROMPT}\"
         [[ -n \"\${RPROMPT}\" ]] && printf 'RPROMPT: ' && print -rP -- \"\${RPROMPT}\"
     " 2>/dev/null)
+
+    # Clean up preview-only env vars so they don't leak into the live shell.
+    unset DRAGON__PREVIEW_FAKE_EXEC_TIME DRAGON__PREVIEW_FAKE_JOB_COUNT \
+          DRAGON__PREVIEW_FAKE_SSH_CONN_COUNT \
+          VCS_STATUS_STASHES VCS_STATUS_COMMITS_AHEAD VCS_STATUS_COMMITS_BEHIND \
+          VCS_STATUS_HAS_UNSTAGED 2>/dev/null || true
+    if [[ -n "$_saved_ssh_tty" ]]; then export SSH_TTY="$_saved_ssh_tty"
+    else unset SSH_TTY 2>/dev/null || true; fi
 
     local label=""
     $ssh_mode       && label=" %F{245}(SSH)%f"
