@@ -38,7 +38,8 @@ _dragon_write_state() {
     local preset="${1:-default}"
     local hash mtime
     hash=$(_dragon_vars_hash)
-    mtime=$(stat -c '%Y' "${_DRAGON_THEMES_DIR}" 2>/dev/null)
+    mtime=$(find "${_DRAGON_THEMES_DIR}" -name '*.zsh' -printf '%T@\n' 2>/dev/null \
+        | sort -n | tail -1)
     _dragon_read_state   # load current state so we can preserve dismissed_hash
     mkdir -p "${_DRAGON_STATE_DIR}"
     {
@@ -219,7 +220,7 @@ _dragon_render_preview() {
         VCS_STATUS_COMMITS_BEHIND=\${VCS_STATUS_COMMITS_BEHIND:-0}
         VCS_STATUS_STASHES=\${VCS_STATUS_STASHES:-0}
         VCS_STATUS_REMOTE_NAME='origin'
-        exit_code=${preview_exit_code}
+        _DRAGON_EXIT_CODE=${preview_exit_code}
         __LAST_EXIT_CODE=${preview_exit_code}
         source '${_DRAGON_THEMES_DIR}/dragon.zsh' 2>/dev/null
         dragon__update_zsh_prompt 2>/dev/null
@@ -322,10 +323,6 @@ _dragon_edit_var() {
             else
                 print -P "  %F{245}[Enter] keep empty   or type new value%f"
             fi
-            local _valid_color_names=(
-                black red green yellow blue magenta cyan white
-                gray grey maroon lime olive navy fuchsia aqua silver
-            )
             local val
             while true; do
                 printf "  New value (Enter = keep '%s'): " "${current:-(empty)}"
@@ -336,7 +333,7 @@ _dragon_edit_var() {
                     break  # keep current
                 elif [[ "$val" =~ '^[0-9]+$' && 10#$val -le 255 ]]; then
                     _DRAGON_CURRENT[$var]="$val"; break
-                elif (( ${_valid_color_names[(Ie)${(L)val}]} )); then
+                elif [[ -n "${COLORS[${(L)val}]:-}" ]]; then
                     _DRAGON_CURRENT[$var]="${(L)val}"; break
                 else
                     print -P "  %F{red}Invalid color '%F{white}${val}%F{red}' — enter a name or 0-255.%f"
@@ -709,7 +706,8 @@ dragon-configure() {
         local current_hash current_mtime
         current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${_DRAGON_THEMES_DIR}" 2>/dev/null \
             | sort -u | md5sum | cut -d' ' -f1)
-        current_mtime=$(stat -c '%Y' "${_DRAGON_THEMES_DIR}" 2>/dev/null)
+        current_mtime=$(find "${_DRAGON_THEMES_DIR}" -name '*.zsh' -printf '%T@\n' 2>/dev/null \
+            | sort -n | tail -1)
         mkdir -p "${_DRAGON_STATE_DIR}"
         local tmp_state="${_DRAGON_STATE_FILE}.tmp"
         grep -v -e '^dismissed_hash=' -e '^themes_mtime=' "${_DRAGON_STATE_FILE}" \

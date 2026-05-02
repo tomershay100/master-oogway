@@ -21,11 +21,11 @@ __dragon_zle_line_finish()
 	local char="${DRAGON__TRANSIENT_PROMPT_CHAR:-$DRAGON__PROMPT_CHAR}"
 	[[ -z "$char" ]] && return
 
-	# exit_code is set by __save_exit_code in the previous precmd cycle — it holds
+	# _DRAGON_EXIT_CODE is set by __save_exit_code in the previous precmd cycle — it holds
 	# the exit code of the last command, which is the same value the current full
 	# prompt is already colored with. So we get the correct green/red here.
 	local fg bg bold underline
-	if $DRAGON__ENABLE_EXIT_STATUS_PROMPT_COLORING && [[ "$exit_code" -eq 0 ]]; then
+	if $DRAGON__ENABLE_EXIT_STATUS_PROMPT_COLORING && [[ "$_DRAGON_EXIT_CODE" -eq 0 ]]; then
 		fg="$DRAGON__PROMPT_CHAR_SUCCESS_FOREGROUND_COLOR"
 		bg="$DRAGON__PROMPT_CHAR_SUCCESS_BACKGROUND_COLOR"
 		bold="$DRAGON__PROMPT_CHAR_SUCCESS_BOLD"

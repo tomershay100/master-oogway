@@ -16,7 +16,8 @@
     stored_hash=$(grep -m1 '^vars_hash='     "${state_file}" 2>/dev/null | cut -d= -f2)
     dismissed_hash=$(grep -m1 '^dismissed_hash=' "${state_file}" 2>/dev/null | cut -d= -f2)
     stored_mtime=$(grep -m1 '^themes_mtime=' "${state_file}" 2>/dev/null | cut -d= -f2)
-    current_mtime=$(stat -c '%Y' "${themes_dir}" 2>/dev/null)
+    current_mtime=$(find "${themes_dir}" -name '*.zsh' -printf '%T@\n' 2>/dev/null \
+        | sort -n | tail -1)
 
     if [[ -n "$stored_mtime" && "$current_mtime" == "$stored_mtime" ]]; then
         # Theme files unchanged since last configure run — skip the grep entirely.

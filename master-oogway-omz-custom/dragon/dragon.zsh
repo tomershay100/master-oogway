@@ -21,7 +21,7 @@ __is_via_ssh()
 
 TERMINAL_BACKGROUND_COLOR="black"
 RESET_FORMAT="%f%k%b%u"
-typeset -g exit_code=0   # set by __save_exit_code; zero-initialized to avoid stale reads
+typeset -g _DRAGON_EXIT_CODE=0   # set by __save_exit_code; zero-initialized to avoid stale reads
 
 # Load defaults from schema and apply them via set_if_unset.
 # set_if_unset only sets vars not already exported — SSH-forwarded vars win.

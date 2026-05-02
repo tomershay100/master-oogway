@@ -65,6 +65,7 @@ dragon__set_execution_time()
 		# Call without $() to avoid a subshell — result written to _DRAGON_READABLE_TIME
 		__get_readable_time $((SECONDS - timer))
 		REAL_DRAGON__EXEC_TIMER_CONTENT="${_DRAGON_READABLE_TIME}"
+		unset _DRAGON_READABLE_TIME
 	fi
 
 	REAL_DRAGON__EXEC_TIMER_PREFIX="$DRAGON__EXEC_TIMER_PREFIX"
@@ -160,25 +161,25 @@ __save_exit_code()
 {
 	local last_exit="$?"
 	if [[ "$_DRAGON_CMD_RAN" == "true" ]]; then
-		exit_code="$last_exit"
+		_DRAGON_EXIT_CODE="$last_exit"
 	else
-		exit_code=0
+		_DRAGON_EXIT_CODE=0
 	fi
 	_DRAGON_CMD_RAN=false
 }
 
 __get_full_exit_code()
 {
-	if [[ "$exit_code" -gt 128 ]]; then
+	if [[ "$_DRAGON_EXIT_CODE" -gt 128 ]]; then
 		local sig_name
-		sig_name="$(kill -l "$exit_code" 2>/dev/null)"
+		sig_name="$(kill -l "$_DRAGON_EXIT_CODE" 2>/dev/null)"
 		local kill_status=$?
 		if [[ $kill_status -eq 0 && -n "$sig_name" ]]; then
 			echo "SIG$sig_name"
 			return
 		fi
 	fi
-	echo "$exit_code"
+	echo "$_DRAGON_EXIT_CODE"
 }
 
 __get_exit_status_content()
@@ -186,7 +187,7 @@ __get_exit_status_content()
 	if "$DRAGON__ENABLE_FULL_EXIT_STATUS"; then
 		__get_full_exit_code
 	else
-		echo "$exit_code"
+		echo "$_DRAGON_EXIT_CODE"
 	fi
 }
 
@@ -194,7 +195,7 @@ dragon__set_exit_status()
 {
 	FINAL_DRAGON__EXIT_STATUS_CONTENT=""
 	! "$DRAGON__ENABLE_EXIT_STATUS" && return
-	[[ "$exit_code" -eq 0 ]] && return
+	[[ "$_DRAGON_EXIT_CODE" -eq 0 ]] && return
 
 	REAL_DRAGON__EXIT_STATUS_CONTENT="$(__get_exit_status_content)"
 
