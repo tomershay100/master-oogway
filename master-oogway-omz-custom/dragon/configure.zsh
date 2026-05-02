@@ -38,11 +38,15 @@ _dragon_write_state() {
     local preset="${1:-default}"
     local hash
     hash=$(_dragon_vars_hash)
+    _dragon_read_state   # load current state so we can preserve dismissed_hash
     mkdir -p "${_DRAGON_STATE_DIR}"
     {
         echo "configured=true"
         echo "preset=${preset}"
         echo "vars_hash=${hash}"
+        # Preserve dismissed_hash across configure runs so --dismiss stays effective
+        [[ -n "${_DRAGON_STATE[dismissed_hash]:-}" ]] \
+            && echo "dismissed_hash=${_DRAGON_STATE[dismissed_hash]}"
     } > "${_DRAGON_STATE_FILE}"
 }
 
@@ -635,11 +639,13 @@ _dragon_show_start_menu() {
 
     case "$key" in
         2)
+            # Full wizard: keep current settings, step through ALL groups
             print -P "  %F{green}✓ Full wizard%f"
             sleep 0.4
-            _dragon_select_preset
+            _DRAGON_CHOSEN_PRESET="${_DRAGON_STATE[preset]:-default}"
             ;;
         3)
+            # Reset to preset: discard current config, start fresh from a chosen preset
             print -P "  %F{green}✓ Reset to preset%f"
             sleep 0.4
             _dragon_select_preset

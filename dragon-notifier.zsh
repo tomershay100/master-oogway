@@ -11,8 +11,8 @@
     local current_hash stored_hash dismissed_hash
     current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
         | sort -u | md5sum | cut -d' ' -f1)
-    stored_hash=$(grep '^vars_hash=' "${state_file}" 2>/dev/null | cut -d= -f2)
-    dismissed_hash=$(grep '^dismissed_hash=' "${state_file}" 2>/dev/null | cut -d= -f2)
+    stored_hash=$(grep -m1 '^vars_hash=' "${state_file}" 2>/dev/null | cut -d= -f2)
+    dismissed_hash=$(grep -m1 '^dismissed_hash=' "${state_file}" 2>/dev/null | cut -d= -f2)
 
     [[ "${current_hash}" != "${stored_hash}" ]] || return
     [[ "${current_hash}" != "${dismissed_hash}" ]] || return
@@ -21,5 +21,10 @@
     print -P "%F{245}  (to silence until next update: dragon-configure --dismiss)%f"
 
     # Mark as dismissed so subsequent shell starts don't repeat the message.
-    printf '\ndismissed_hash=%s\n' "${current_hash}" >> "${state_file}"
+    # Rewrite the state file (preserving other keys) rather than appending,
+    # so dismissed_hash entries don't accumulate.
+    local tmp_state="${state_file}.tmp"
+    grep -v '^dismissed_hash=' "${state_file}" 2>/dev/null > "${tmp_state}" || true
+    printf 'dismissed_hash=%s\n' "${current_hash}" >> "${tmp_state}"
+    mv "${tmp_state}" "${state_file}"
 }

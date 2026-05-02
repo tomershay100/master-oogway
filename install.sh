@@ -310,8 +310,12 @@ fi
 _install_zshrc() {
     if [[ -f "${ZSHRC}" ]]; then
         local backup="${ZSHRC}.pre-master-oogway"
-        cp "${ZSHRC}" "${backup}"
-        info "Backed up ${ZSHRC} → ${backup}"
+        if [[ ! -f "${backup}" ]]; then
+            cp "${ZSHRC}" "${backup}"
+            info "Backed up ${ZSHRC} → ${backup}"
+        else
+            info "Backup already exists at ${backup} — not overwriting"
+        fi
     fi
     copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}"
 }
