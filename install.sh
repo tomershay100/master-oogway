@@ -334,9 +334,9 @@ _install_sshd_acceptenv
 # ── dragon theme: check for new variables ───────────────────────────────────
 
 _check_theme_vars() {
-    local theme_file="${INSTALL_DIR}/zsh-custom.d/themes/dragon.zsh"
+    local themes_dir="${INSTALL_DIR}/zsh-custom.d/themes"
     local current_hash
-    current_hash=$(grep -o 'DRAGON__[A-Z_]*' "${theme_file}" 2>/dev/null \
+    current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
         | sort -u | md5sum | cut -d' ' -f1)
 
     if [[ ! -f "${STATE_FILE}" ]]; then

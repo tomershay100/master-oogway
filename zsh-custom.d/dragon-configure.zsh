@@ -6,9 +6,9 @@
 
 # ── File-level constants ──────────────────────────────────────────────────────
 
-typeset -g _DRAGON_CONF_FILE="${HOME}/.config/dragon/conf.zsh"
-typeset -g _DRAGON_THEME_FILE="${HOME}/.dragon/zsh-custom.d/themes/dragon.zsh"
-typeset -g _DRAGON_STATE_DIR="${HOME}/.config/dragon"
+typeset -g _DRAGON_CONF_FILE="${HOME}/.config/appa-fino/conf.zsh"
+typeset -g _DRAGON_THEMES_DIR="${HOME}/.appa-fino/zsh-custom.d/themes"
+typeset -g _DRAGON_STATE_DIR="${HOME}/.config/appa-fino"
 typeset -g _DRAGON_STATE_FILE="${_DRAGON_STATE_DIR}/state"
 
 # ── Schema (defaults, types, hints, groups) ──────────────────────────────────
@@ -20,7 +20,7 @@ source "${0:a:h}/themes/schema.zsh"
 # ─────────────────────────────────────────────────────────────────────────────
 
 _dragon_vars_hash() {
-    grep -o 'DRAGON__[A-Z_]*' "${_DRAGON_THEME_FILE}" 2>/dev/null \
+    grep -roh 'DRAGON__[A-Z_]*' "${_DRAGON_THEMES_DIR}" 2>/dev/null \
         | sort -u | md5sum | cut -d' ' -f1
 }
 
@@ -243,7 +243,7 @@ _dragon_render_preview() {
         VCS_STATUS_REMOTE_NAME='origin'
         exit_code=${preview_exit_code}
         __LAST_EXIT_CODE=${preview_exit_code}
-        source '${_DRAGON_THEME_FILE}' 2>/dev/null
+        source '${_DRAGON_THEMES_DIR}/dragon.zsh-theme' 2>/dev/null
         ${group_inject}
         dragon__update_zsh_prompt 2>/dev/null
         if [[ '${transient_mode}' == true ]]; then
