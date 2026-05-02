@@ -812,3 +812,49 @@ _dragon_cleanup() {
     unset _DRAGON_DEFAULTS _DRAGON_CURRENT _DRAGON_TYPE _DRAGON_HINT _DRAGON_STATE _DRAGON_CHOSEN_PRESET
     unset _DRAGON_GROUP_TITLE _DRAGON_GROUP_DESC _DRAGON_GROUP_VARS _DRAGON_GROUPS
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# dragon-theme — instant preset switcher (no wizard)
+# ─────────────────────────────────────────────────────────────────────────────
+
+dragon-theme() {
+    local preset="${1:-}"
+    if [[ -z "$preset" || "$preset" == "--help" || "$preset" == "-h" ]]; then
+        echo "Usage: dragon-theme <preset>"
+        echo "  Instantly switch the dragon prompt to a built-in preset."
+        echo ""
+        echo "  Presets:"
+        echo "    short    — minimal: hostname:\$  with inline git, no rprompt extras"
+        echo "    default  — balanced: user@host:dir, git status, time & timer"
+        echo "    verbose  — maximum: multiline, full paths, timestamps, rich git"
+        echo ""
+        echo "  Your non-preset settings are preserved. Re-run dragon-configure"
+        echo "  to fine-tune individual variables."
+        return 0
+    fi
+    case "$preset" in
+        short|default|verbose) ;;
+        *) echo "dragon-theme: unknown preset '${preset}'. Use: short, default, verbose" >&2; return 1 ;;
+    esac
+
+    _dragon_init_defaults
+    _dragon_init_types
+    _dragon_init_hints
+    _dragon_init_groups
+    typeset -gA _DRAGON_STATE=()
+
+    _dragon_load_current_conf
+    _dragon_apply_preset "$preset"
+    _dragon_write_conf || { _dragon_cleanup; return 1; }
+    _dragon_write_state "$preset"
+
+    # Apply to current shell immediately
+    local var val
+    for var val in "${(@kv)_DRAGON_CURRENT}"; do
+        export "DRAGON__${var}=${val}"
+    done
+    dragon__update_zsh_prompt 2>/dev/null
+
+    print -P "%F{green}✓%f dragon theme switched to %B${preset}%b — prompt updated immediately."
+    _dragon_cleanup
+}
