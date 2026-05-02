@@ -142,8 +142,8 @@ if _running_from_install_dir; then
     success "Repository up-to-date"
 fi
 
-# ── Mode: dev (running from inside the dotfiles repo) ─────────────────────────
-# Symlink shared/shell/ → ~/.master-oogway/ so edits to the repo are live.
+# ── Mode: dev (running from a local clone, not ~/.master-oogway) ──────────────
+# Symlinks the local clone → ~/.master-oogway/ so edits are live immediately.
 
 if ! _running_from_install_dir; then
     local_dir="$(_script_dir)"
@@ -162,7 +162,6 @@ if ! _running_from_install_dir; then
         success "Linked ${INSTALL_DIR} → ${local_dir}"
     fi
 
-    # In dev mode, plugin submodules live in the dotfiles repo.
     _init_plugins() {
         local plugins_dir="${INSTALL_DIR}/zsh-custom.d/plugins"
         local -a missing=()
@@ -170,14 +169,12 @@ if ! _running_from_install_dir; then
             local plugin_dir="${plugins_dir}/${plugin}"
             if [[ ! -e "${plugin_dir}/.git" ]]; then
                 [[ -d "${plugin_dir}" ]] && rm -rf "${plugin_dir}"
-                missing+=("shared/shell/zsh-custom.d/plugins/${plugin}")
+                missing+=("${plugin}")
             fi
         done
         if [[ ${#missing[@]} -gt 0 ]]; then
             info "Initializing missing plugin submodules: ${missing[*]}"
-            local repo_root
-            repo_root="$(git -C "${local_dir}" rev-parse --show-toplevel)"
-            git -C "${repo_root}" submodule update --init --recursive "${missing[@]}"
+            git -C "${local_dir}" submodule update --init --recursive
         else
             success "Plugin submodules already initialized"
         fi

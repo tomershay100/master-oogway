@@ -1,4 +1,4 @@
-.PHONY: lint test check
+.PHONY: lint test check readme
 
 PLUGIN_ZSH := $(wildcard zsh-custom.d/plugins/mo-*/**.plugin.zsh)
 THEME_ZSH  := zsh-custom.d/themes/dragon.zsh-theme \
@@ -16,3 +16,6 @@ test:
 	bash tests/check_schema.sh
 
 check: lint test
+
+readme:
+	bash scripts/gen_readme.sh

@@ -90,14 +90,7 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ### 1.8 ✅ `install.sh` — GNU sed `a\` syntax is non-portable
 
-- **What:** `sed -i "/^Host \*[[:space:]]*$/a\\${send_line}"` is GNU-sed
-  specific.
-- **Why:** Won't run on macOS or any BSD without `gsed`. Today the README
-  mentions Ubuntu only, so this is documentation-grade, not a bug — but
-  drops users on macOS who try `bash -c "$(curl …)"`.
-- **Fix:** Either declare Linux-only in the README + add an OS check at the
-  top of `install.sh`, or rewrite with a portable awk.
-- **Effort:** 🟢
+- **Done:** `install.sh` already has `[[ "$(uname)" == "Linux" ]] || die "dragon requires Linux (Ubuntu 24.04). macOS/BSD are not supported."` — Linux-only OS guard in place. GNU sed usage is acceptable.
 
 ### 1.9 ✅ `sudo sh -c "echo … >> …"` fragile quoting
 
@@ -163,35 +156,15 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ### 2.3 ✅ Preview "group_inject" code is brittle inline shell
 
-- **What:** `dragon-configure.zsh:188–222` builds preview-scenario data
-  by injecting heredoc-style shell into the `zsh -c` subshell — including
-  redefining `dragon__set_job_count` inline.
-- **Why:** When the theme refactors a function name or signature, the
-  injection silently fails (no error, just a broken preview). Refactor #2.2
-  above will absolutely break this.
-- **Fix:** Expose **preview hooks** in the theme — empty functions named
-  `__dragon_preview_hook_<group>` that the preview can override cleanly.
-  Or: make every "fake data" injection set well-known overrideable env
-  vars (e.g. `DRAGON__PREVIEW_FAKE_JOB_COUNT=2`) and have the segments
-  honour them.
-- **Effort:** 🟡
+- **Done:** Preview fake data now uses `DRAGON__PREVIEW_FAKE_*` env vars
+  (`DRAGON__PREVIEW_FAKE_EXEC_TIME`, `DRAGON__PREVIEW_FAKE_JOB_COUNT`,
+  `DRAGON__PREVIEW_FAKE_SSH_CONN_COUNT`). Segments read these vars; no
+  inline function redefinition. Unset after preview via explicit `unset`.
 
-### 2.4 No tests, no CI   🟡
+### 2.4 ~~No tests, no CI~~ — declined
 
-- **What:** Pure-bash codebase with zero coverage.
-- **Why:** Every refactor proposed above is unsafe without tests.
-- **Fix:** Lightweight test approach using [bats-core]:
-  ```
-  tests/
-    test_install_modes.bats        # mock HOME; assert files copied / linked
-    test_plugins_smoke.bats        # source each plugin in clean zsh; assert no error
-    test_calc_validation.bats      # assert calc rejects shell metachars
-    test_port_validation.bats      # 1..65535 happy + sad paths
-    test_extract_dispatch.bats     # assert each archive type calls right cmd
-    snapshot_prompt.bats           # render a known config + diff against fixture
-  ```
-  Wire into a tiny GH Actions workflow (`bats tests/`).
-- **Effort:** 🟡 (initial), 🟢 (per-test ongoing)
+- **Decision:** `make check` (bash -n, zsh -n, shellcheck, schema drift) is
+  sufficient. Full bats suite + GH Actions is overkill for a personal tool.
 
 ### 2.5 ✅ No version metadata / no `--version`
 
@@ -230,13 +203,11 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
   and have `dragon-configure` validate (`zsh -n conf.zsh`) before writing.
 - **Effort:** 🟢
 
-### 2.9 Plugin loading is eager   🔴
+### 2.9 ~~Plugin loading is eager~~ — declined
 
-- **What:** All 17 mo-* plugins source on shell startup, even ones rarely
-  invoked (`md2pdf`, `serve`, `frg`).
-- **Fix:** zsh-defer + lazy alias trick. Only worth it if startup time is
-  actually measured as a problem.
-- **Effort:** 🔴
+- **Decision:** Startup cost is negligible (small alias/function definitions,
+  no subprocesses). zsh-defer adds complexity with no measurable benefit.
+  Skipped.
 
 ### 2.10 ✅ `_install_zshrc` detection is fragile
 
@@ -251,15 +222,12 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
   `custom-zsh/` (after plugins) created by `install.sh`; sourced via
   `*.zsh(N)` glob loops in `zshrc.template`.
 
-### 2.12 Bundle name = theme name → can't switch theme cleanly   🟡
+### 2.12 ✅ Bundle name = theme name → can't switch theme cleanly
 
-- **What:** "master-oogway" is the bundle name, "dragon" is the theme. These are now separate — the bundle rename is deferred. the bundle and the OMZ theme. A user who
-  wants the mo-* plugins but a different prompt is stuck.
-- **Fix:** Rename the theme file to `fino.zsh-theme` (suggested name: `fino`).
-  Keep all bundle paths, env-var prefix, and plugin names as `master-oogway`.
-  Add a compat symlink for one release cycle; `install.sh` migrates existing
-  `~/.zshrc` entries.
-- **Effort:** 🟡
+- **Done:** Bundle identity is `master-oogway` (paths, install marker, plugin
+  prefix `mo-*`). Theme identity is `dragon` (`DRAGON__*` vars, `ZSH_THEME`,
+  `dragon-configure`, function prefixes). Fully separated — a user can set
+  `ZSH_THEME` to any OMZ theme independently of the mo-* plugins.
 
 ---
 
@@ -299,21 +267,22 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ## 5. 🟡 DX / docs
 
-### 5.1 Dev mode is the most powerful, least documented mode   🟢
+### 5.1 ✅ Dev mode is the most powerful, least documented mode
 
-- **Fix:** Add a "Development" section to README.md covering: dev mode,
-  `make check`, schema drift check, the symlink invariant.
-- **Effort:** 🟢
+- **Done:** `CONTRIBUTING.md` added — repo layout, three install modes,
+  edit→test loop per file category, how to add a plugin, schema system,
+  theme architecture, and `make check` / `make readme` usage.
 
 ### 5.2 ✅ No `make` / no orchestration entry point
 
-- **Done:** `Makefile` added with `lint`, `test`, `check` targets.
+- **Done:** `Makefile` with `lint`, `test`, `check`, `readme` targets.
 
-### 5.3 README's command tables drift from plugin reality   🟢
+### 5.3 ✅ README's command tables drift from plugin reality
 
-- **Fix:** A single tiny generator: each plugin starts with `# Provides:`
-  comment (already does!). A script greps these and rebuilds the tables.
-- **Effort:** 🟢
+- **Done:** `scripts/gen_readme.sh` reads `# Provides:` from each
+  `mo-*.plugin.zsh` (skipping `-override` plugins) and rewrites the
+  additive plugins table in `README.md` between sentinel comments.
+  Run via `make readme`.
 
 ---
 
@@ -321,16 +290,16 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 | # | Feature | Why | Effort |
 |---|---|---|---|
-| F1 | **`dragon-doctor`** subcommand — checks symlink, schema drift, missing fzf/eza/etc, conf.zsh syntax, sshd AcceptEnv, gitstatusd binary present | Single first-aid command for users; collapses 80% of bug reports | 🟢 |
-| F2 | **Preset live-import** — `dragon-configure --import <url>` to fetch a `conf.zsh` snippet from a URL/gist | Lets people share configs; ties to the wizard's preset story | 🟡 |
-| F3 | **Per-directory profile overrides** via direnv hook | Powerful safety signal; already have direnv loaded | 🟡 |
-| F4 | **`dragon-bench`** — built-in prompt micro-benchmark | Performance budget enforcement | 🟢 |
+| F1 | ~~**`dragon-doctor`** subcommand~~ — declined | — | — |
+| F2 | ~~**Preset live-import** — `dragon-configure --import <url>`~~ — declined | — | — |
+| F3 | ~~**Per-directory profile overrides** via direnv hook~~ — declined | — | — |
+| F4 | ~~**`dragon-bench`** — built-in prompt micro-benchmark~~ — declined | — | — |
 | F5 | **atuin** integration | SQLite-backed history with timestamps/duration/exit code | 🟡 |
 | F6 | **VCS abstraction** — generalise git segment to jj / hg / fossil | Nice to have for jj users | 🔴 |
 | F7 | **Theme switcher** — multiple themes selectable via `ZSH_THEME=` | Natural after 2.12 lands | 🔴 |
 | F8 | **Public IP cache for `natip`** (kept as-is — fine as a one-liner) | — | — |
 | F9 | ✅ **`fbranch` show recent activity in preview** rather than `git log` | Helpful UX | 🟢 |
-| F10 | **First-run "guided tour"** in `dragon-configure` | Walks through what segments mean | 🟡 |
+| F10 | ✅ **First-run "guided tour"** in `dragon-configure` | Walks through what segments mean | 🟡 |
 
 ---
 
@@ -341,16 +310,20 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 3. ~~**1.5 + 1.6** Prompt-time pipeline removal~~ ✅ done
 4. ~~**1.1** Drop the .zsh-theme symlink~~ ✅ done
 5. ~~**2.2** Split the theme into `parts/`~~ ✅ done
-6. **2.3** Replace preview `group_inject` with hooks
-7. **2.4** Bats test suite + GH Actions
-8. **F1** `dragon-doctor`
-9. **2.6** Uninstall script
+6. ~~**2.3** Replace preview `group_inject` with hooks~~ ✅ done
+7. ~~**2.4** Bats test suite + GH Actions~~ — declined
+8. ~~**F1** `dragon-doctor`~~ — declined
+9. ~~**2.6** Uninstall script~~ ✅ done
+10. ~~**5.1** CONTRIBUTING.md~~ ✅ done
+11. ~~**5.3** README generator (`make readme`)~~ ✅ done
+12. ~~**F10** First-run guided tour~~ ✅ done
 
 ## 8. Long-term track
 
-1. **2.9** Lazy plugin loading
+1. ~~**2.9** Lazy plugin loading~~ — declined
 2. Drop OMZ dependency
-3. **F3** direnv-driven per-directory profiles
-4. **F7** Multiple theme variants (`fino-minimal`, `fino-pure`)
+3. ~~**F3** direnv-driven per-directory profiles~~ — declined
+4. **F7** Multiple theme variants
+5. **F5** atuin integration
 
 ---

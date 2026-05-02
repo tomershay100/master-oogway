@@ -77,20 +77,22 @@ that bypasses the override and calls the original binary directly.
 
 These only add new commands and never change existing behavior.
 
+<!-- mo-plugins-start -->
 | Plugin | Provides |
 |--------|---------|
-| `mo-auto-ls` | run `ls` automatically after every `cd` |
-| `mo-git` | git aliases (`ga`, `gs`, `gp`, ...), `gsum`, `fbranch`, `flog` |
-| `mo-navigation` | `mkcd`, `up`, `tmpcd`, `fcd` (fuzzy cd) |
-| `mo-files` | `extract`, `bak`, `sizeof`, `fpath` (fuzzy file picker) |
-| `mo-search` | `grep`/`grepi` aliases, `f` (find shortcut), `fhist`, `fman`, `frg` |
-| `mo-network` | `natip` (public IP), `sshto` (fuzzy SSH host picker) |
-| `mo-process` | `psgrep`, `port`, `fkill` (fuzzy process kill) |
-| `mo-build` | `m` (parallel make), `mc` (make clean) |
-| `mo-dev` | `calc`, `epoch`, `serve` (HTTP server), `md2pdf` |
-| `mo-env` | `fenv` (fuzzy environment variable browser) |
-| `mo-shell-tools` | `h`, `?`, `cwhich`, `vwhich`, `vizsh`, `soursh` |
-| `mo-apps` | GUI app launchers (`gnucash` via flatpak) |
+| `mo-apps` | launcher aliases for GUI applications installed via flatpak |
+| `mo-auto-ls` | auto-ls — runs ls automatically after every cd |
+| `mo-build` | m (parallel make with optional colormake+banner) and mc (make clean) |
+| `mo-dev` | calc, epoch, serve, md2pdf — developer utility functions |
+| `mo-env` | fenv — fuzzy browser and inline editor for environment variables |
+| `mo-files` | file management helpers — extract, bak, sizeof, fp |
+| `mo-git` | git aliases, repo summary, and fuzzy branch/log pickers |
+| `mo-navigation` | directory navigation helpers — mkcd, up, tmpcd, fcd |
+| `mo-network` | natip (public IP lookup) and sshto (fuzzy SSH host picker) |
+| `mo-process` | psgrep (search processes), port (what's on a port), fkill (fuzzy kill) |
+| `mo-search` | grep aliases, find shortcut, and fuzzy history/man/ripgrep pickers |
+| `mo-shell-tools` | shell inspection and config helpers — h, ?, cwhich, vwhich, vizsh, soursh |
+<!-- mo-plugins-end -->
 
 > **Load order:** override plugins must appear before additive plugins in
 > `~/.zshrc` so additive plugins inherit the overridden commands.

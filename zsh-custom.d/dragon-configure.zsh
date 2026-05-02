@@ -430,6 +430,48 @@ _dragon_run_step() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# First-run guided tour
+# ─────────────────────────────────────────────────────────────────────────────
+
+_dragon_guided_tour() {
+    clear
+    print -P "%B%F{cyan}── Welcome to dragon ────────────────────────────────────────────────%f%b"
+    print ""
+    print -P "  Here is what your prompt will look like and what each part means."
+    print ""
+    print -P "  %B%F{green}Left prompt%f%b"
+    print ""
+    print -P "    %F{green}user%f%F{245}@%f%F{cyan}hostname%f%F{245}:%f%F{yellow}~/projects%f %F{magenta}on main ✔%f"
+    print -P "    %F{green}❯%f"
+    print ""
+    print -P "    %F{245}user@hostname%f   — who and where you are (hidden when not needed)"
+    print -P "    %F{245}~/projects%f      — current directory (short, regular, or full path)"
+    print -P "    %F{245}main ✔%f          — git branch + clean/dirty indicator"
+    print -P "    %F{245}❯%f               — prompt character (green = last command succeeded,"
+    print -P "                         red = it failed)"
+    print ""
+    print -P "  %B%F{blue}Right prompt%f%b"
+    print ""
+    print -P "    %F{245}1m 5s  2j  14:32:01%f"
+    print ""
+    print -P "    %F{245}1m 5s%f       — how long the last command took"
+    print -P "    %F{245}2j%f          — number of background jobs"
+    print -P "    %F{245}14:32:01%f    — current time"
+    print -P "    %F{red}✘ 1%f         — exit code of the last command (hidden on success)"
+    print ""
+    print -P "  %B%F{245}Git status indicators%f%b"
+    print ""
+    print -P "    %F{green}≡%f  in sync with remote    %F{yellow}↑3%f  3 commits ahead"
+    print -P "    %F{red}↓2%f  2 commits behind       %F{yellow}*%f   uncommitted changes"
+    print ""
+    print -P "  Everything is configurable — the next screen lets you choose a starting"
+    print -P "  preset (minimal, balanced, or verbose), then steps through every feature."
+    print ""
+    print -P "  %F{245}Press any key to continue...%f"
+    _dragon_read_key _dragon_any
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Preset selector
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -695,7 +737,8 @@ dragon-configure() {
         _dragon_read_state
         _dragon_show_start_menu || return 0
     else
-        # No conf yet — preset selection
+        # First run — guided tour then preset selection
+        _dragon_guided_tour
         _dragon_select_preset
     fi
 
