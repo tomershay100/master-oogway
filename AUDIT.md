@@ -265,22 +265,13 @@ single-var SSH canary, the hard-coded preview injection, the symlink).
 
 ## 3. 🟠 Performance
 
-### 3.1 Prompt-time process spawning   🟡
+### 3.1 ✅ Prompt-time process spawning
 
-Beyond items 1.5 and 1.6, the prompt also spawns:
-- `kill -l "$exit_code"` per prompt when `exit_code > 128` (signal lookup —
-  cheap)
-- A subshell `print -P "$PROMPT" | sed` (item 1.6)
-- The `who | grep …` pipeline (item 1.5)
-
-After fixing 1.5 and 1.6, the rest is ~zero cost. Worth measuring before
-optimising further; baseline currently isn't recorded.
-
-**Fix:** Add `tests/perf/prompt_bench.zsh` that uses zsh's `EPOCHREALTIME`
-to time `__update_prompt` 1 000 times in a clean repo and a dirty repo,
-report avg/p99. Establish a budget (e.g. <5 ms p99) and CI-fail on
-regression.
-**Effort:** 🟡
+- **Done:** 1.5 eliminated `who|grep|grep|awk` → pure zsh array filtering.
+  1.6 eliminated `print -P|sed` → `${(%)var}` + pure zsh ANSI strip.
+  Remaining cost is `kill -l` on exit codes >128 (one fork, infrequent,
+  negligible). All other prompt work is pure zsh or async gitstatus.
+- Benchmark / regression budget deferred to F4 (`dragon-bench`).
 
 ### 3.2 `gitstatusd` query timeout is hard-coded `0.03`   🟢 (kept as-is)
 
