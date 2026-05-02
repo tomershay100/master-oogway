@@ -37,5 +37,3 @@
 [log]
 	date = iso
 
-[include]
-	path = ~/.gitconfig.local
