@@ -33,7 +33,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"  # don't mark the prompt dirty for untracke
 
 # ── appa-fino theme config ─────────────────────────────────────────────────────
 # Sourced before oh-my-zsh so your overrides win over theme defaults.
-# Edit with: appa-fino-configure
+# Edit with: dragon-configure
 [[ -f "$HOME/.config/appa-fino/conf.zsh" ]] && source "$HOME/.config/appa-fino/conf.zsh"
 
 # ── user pre-plugin extensions ─────────────────────────────────────────────────

@@ -399,11 +399,13 @@ __add_separator_between_right_segments()
 
 __calc_prompt_length()
 {
-	local rendered_zsh_prompt=$(print -P "$PROMPT" | sed -E 's/\x1b\[[0-9;]*m//g')
-	local zsh_prompt_length=${#rendered_zsh_prompt}
+	local expanded_zsh_prompt="${(%)PROMPT}"
+	local stripped_zsh_prompt="${expanded_zsh_prompt//$'\e['[0-9;]#m/}"
+	local zsh_prompt_length=${#stripped_zsh_prompt}
 
-	local rendered_git_prompt=$(print -P "$FINAL_GIT_STATUS_CONTENT" | sed -E 's/\x1b\[[0-9;]*m//g')
-	local git_prompt_length=${#rendered_git_prompt}
+	local expanded_git_prompt="${(%)FINAL_GIT_STATUS_CONTENT}"
+	local stripped_git_prompt="${expanded_git_prompt//$'\e['[0-9;]#m/}"
+	local git_prompt_length=${#stripped_git_prompt}
 
 	FINAL_ONE_LINE_LPROMPT_LEN=$(((zsh_prompt_length+git_prompt_length)*1.1)) # plus 10% for invisible characters
 }
@@ -693,16 +695,21 @@ dragon__set_job_count()
 
 __set_ssh_connection_count_content()
 {
-	local current_ssh_connections
-	current_ssh_connections="$(who | grep pts | grep -v "127.0.0.1" | awk '{ print $5 }' | grep -E '^\([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\)$')"
+	local -a who_lines=( "${(f)$(who)}" )
+	local -a pts_lines=( "${(M)who_lines[@]:#*pts*}" )
+	local ip_pattern='^\([0-9]{1,3}(\.[0-9]{1,3}){3}\)$'
+	local -a remote_ips=()
+	local line
+	for line in "${pts_lines[@]}"; do
+		local ip="${line##* }"
+		[[ "$ip" =~ $ip_pattern ]] && remote_ips+=( "$ip" )
+	done
 
-	local connection_count
-	if __is_via_ssh; then
-		local current_connection_ip
-		current_connection_ip="$(awk '{ print $1 }' <<< "$SSH_CLIENT")"
-		connection_count="$(grep -v "$current_connection_ip" <<< "$current_ssh_connections" | grep -c .)"
-	else
-		connection_count="$(grep -c . <<< "$current_ssh_connections")"
+	local connection_count=${#remote_ips}
+	if __is_via_ssh && [[ -n "$SSH_CLIENT" ]]; then
+		local current_ip="(${SSH_CLIENT%% *})"
+		local -a other_ips=( "${remote_ips[@]:#$current_ip}" )
+		connection_count=${#other_ips}
 	fi
 
 	REAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT="$connection_count"
