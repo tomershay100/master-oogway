@@ -296,12 +296,14 @@ _install_gitconfig() {
             info "Review ${backup} and move any personal settings to ${GITCONFIG}"
         fi
         cat > "${GITCONFIG}" <<EOF
+# Bundle defaults — your settings below override these.
+[include]
+	path = ~/.gitconfig.master-oogway
+
+# Your identity and personal overrides go here (or below the include above).
 [user]
 	name = ${git_name}
 	email = ${git_email}
-
-[include]
-	path = ~/.gitconfig.master-oogway
 EOF
         success "Created ${GITCONFIG} with identity and bundle include"
         return
