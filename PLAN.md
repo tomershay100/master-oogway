@@ -19,6 +19,9 @@ status, rationale, and the commit or PR where it landed.
 | PERF-1 | `dragon-notifier.zsh` ran a full `grep -roh` scan on every shell start. Fixed: mtime cache — skip grep when theme files unchanged. | PR #1 |
 | SEC-2 | `sshto` read only `~/.ssh/config`, silently omitting hosts behind `Include` directives. Fixed: enumerates `~/.ssh/config` + `~/.ssh/config.d/*`; handles multi-name `Host` stanzas. | PR #2 |
 | FEAT-5 | No Nerd Font detection at configure time. Fixed: glyph probe in `_dragon_guided_tour()` — prints U+E0B0 + U+F07B, asks y/N, sets `USE_NERD_FONT=false` if not rendered. Only runs on first-run (when conf.zsh doesn't exist). | PR #2 |
+| UNINSTALL | Backup files (`.zshrc.pre-master-oogway`, `.gitconfig.pre-master-oogway`) stranded after restore; `.zshenv` warning too vague. Fixed: backups deleted after restore; warning names exactly what was written. | PR #3 |
+| PRESET | `dragon-configure --preset <name>` — instant preset switch with backup/restore instructions shown before confirmation. Also added `--help` flag documenting all subcommands. | PR #4 |
+| DOCS | README: expanded theme configurator section, preset quick-switch guide, `rezsh`/`reset_theme_variables` table, mo-apps command reference. CONTRIBUTING: added PLAN.md and `.editorconfig` to repo layout. | PR #5 |
 | PERF-3 | `__get_readable_time` was called in a subshell `$()`, forking on every prompt render when exec-timer was active. Fixed: writes to `_DRAGON_READABLE_TIME` global; caller reads the var directly. | PR #1 |
 | SEC-1 | `serve()` bound to `0.0.0.0` with no warning. Fixed: defaults to `127.0.0.1`; `SERVE_BIND` env var for intentional LAN exposure. | PR #1 |
 | SEC-3 | `calc` whitelist comment was insufficient. Fixed: added comment explaining why `system("cmd")` is blocked. | PR #1 |
@@ -32,11 +35,7 @@ status, rationale, and the commit or PR where it landed.
 
 ## 🚧 In Progress
 
-| Item | Description | Branch |
-|------|-------------|--------|
-| UNINSTALL | Backup files (`.zshrc.pre-master-oogway`, `.gitconfig.pre-master-oogway`) stranded after restore; `.zshenv` warning too vague. | `claude/uninstall-cleanup` → PR #3 |
-| PRESET | `dragon-configure --preset <name>` for instant preset switching with backup instructions. | `claude/preset-switcher` → PR #4 |
-| DOCS | README and CONTRIBUTING.md sweep — document `--preset`, `--dismiss`, `rezsh`, completeness pass. | `claude/docs-sweep` → PR #5 |
+*None — all tracked items are complete, declined, or parked.*
 
 ---
 

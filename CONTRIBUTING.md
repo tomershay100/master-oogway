@@ -13,6 +13,8 @@ zshrc.master-oogway                    user's ~/.zshrc (installed once, never ov
 .zshenv                           always re-copied to ~/.zshenv on each install run
 gitconfig.master-oogway           always re-copied to ~/.gitconfig.master-oogway
 dragon-notifier.zsh               sourced by ~/.zshrc — notifies when new vars exist
+PLAN.md                           project roadmap — completed / in-progress / declined items
+.editorconfig                     enforces tab indentation + LF endings across editors
 
 master-oogway-omz-custom/         ZSH_CUSTOM directory (sourced by oh-my-zsh)
   themes/
@@ -142,6 +144,7 @@ Groups map to the wizard sections in `dragon-configure`.
 After adding, run `make check` — the schema test will verify the count is consistent.
 Users will be notified on next shell start that new variables are available
 (`dragon-configure --new-only` to configure just the new ones).
+Run `dragon-configure --help` to see all available subcommands.
 
 ---
 
