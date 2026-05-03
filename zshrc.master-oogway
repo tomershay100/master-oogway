@@ -122,7 +122,8 @@ command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 
 # atuin: enhanced shell history — every command gets a timestamp, working directory,
 # exit code, and duration. Ctrl+R opens atuin's fuzzy search across all of that.
-# --disable-up-arrow keeps Up/Down for history-substring-search. Remove if not installed.
+# --disable-up-arrow keeps Up/Down for history-substring-search.
+# Remove this line to keep fzf's Ctrl+R history widget instead.
 command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
 
 # ── key bindings ───────────────────────────────────────────────────────────────

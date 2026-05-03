@@ -261,9 +261,9 @@ cp ~/.config/master-oogway/conf.zsh.bak ~/.config/master-oogway/conf.zsh && sour
 
 ## Optional tools
 
-The following tools are not installed by master-oogway but are pre-wired in
-`~/.zshrc` with `command -v` guards — they activate automatically once installed.
-The installer will remind you to install any that are missing.
+These tools are not installed by master-oogway but are pre-wired in `~/.zshrc`
+with `command -v` guards — they activate automatically once installed. The
+installer prints a reminder when one is missing.
 
 ### atuin — enhanced shell history
 
