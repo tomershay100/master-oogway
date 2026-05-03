@@ -239,7 +239,7 @@ dragon-configure --help            # show all options
 Switch to a named preset without running the full wizard:
 
 ```bash
-dragon-configure --preset short     # minimal — hostname:dir❯, inline git, no rprompt extras
+dragon-configure --preset short     # minimal — hostname:dir$, inline git, no rprompt extras
 dragon-configure --preset default   # balanced — user@host:dir ❯, git, time, exec-timer
 dragon-configure --preset verbose   # maximum — multiline, full paths, rich git indicators
 ```
