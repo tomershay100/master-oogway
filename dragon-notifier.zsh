@@ -6,7 +6,7 @@
 # cached in the state file by dragon-configure / _dragon_write_state.
 
 () {
-    local themes_dir="${HOME}/.master-oogway/master-oogway-omz-custom/dragon"
+    local themes_dir="${HOME}/.master-oogway/omz-custom/themes/dragon"
     local state_file="${HOME}/.config/master-oogway/state"
 
     [[ -d "${themes_dir}" ]] || return

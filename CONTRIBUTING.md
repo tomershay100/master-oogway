@@ -15,22 +15,22 @@ gitconfig.master-oogway           always re-copied to ~/.gitconfig.master-oogway
 dragon-notifier.zsh               sourced by ~/.zshrc — notifies when new vars exist
 .editorconfig                     enforces tab indentation + LF endings across editors
 
-master-oogway-omz-custom/         ZSH_CUSTOM directory (sourced by oh-my-zsh)
+omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
   themes/
-    dragon.zsh-theme              OMZ entry point shim — sources ../dragon/dragon.zsh
-  dragon/                         all dragon theme code lives here
-    dragon.zsh                    theme entry point — defaults loop, hook registration
-    schema.zsh                    _DRAGON_DEFAULTS: single source of truth for all vars
-    configure.zsh                 interactive wizard (~750 lines)
-    aliases.zsh                   rezsh, reset_theme_variables
-    parts/
-      helpers.zsh                 __get_xterm_*, __dragon__show (segment renderer)
-      segments_left.zsh           username, hostname, directory, prompt_char, ssh_prefix
-      segments_right.zsh          date_time, exec_timer, ssh_conn_count, jobs, exit_status
-      separators.zsh              segment separators, multiline prompt lines
-      git.zsh                     gitstatus integration, git segment
-      prompt.zsh                  __calc_prompt_length, dragon__set_lprompt/set_rprompt
-      transient.zsh               zle hooks, gitstatus glue, prompt refresh
+    dragon.zsh-theme              OMZ entry point shim — sources dragon/dragon.zsh
+    dragon/                       all dragon theme code lives here
+      dragon.zsh                  theme entry point — defaults loop, hook registration
+      schema.zsh                  _DRAGON_DEFAULTS: single source of truth for all vars
+      configure.zsh               interactive wizard (~750 lines)
+      aliases.zsh                 rezsh, reset_theme_variables
+      parts/
+        helpers.zsh               __get_xterm_*, __dragon__show (segment renderer)
+        segments_left.zsh         username, hostname, directory, prompt_char, ssh_prefix
+        segments_right.zsh        date_time, exec_timer, ssh_conn_count, jobs, exit_status
+        separators.zsh            segment separators, multiline prompt lines
+        git.zsh                   gitstatus integration, git segment
+        prompt.zsh                __calc_prompt_length, dragon__set_lprompt/set_rprompt
+        transient.zsh             zle hooks, gitstatus glue, prompt refresh
   plugins/
     mo-*/mo-*.plugin.zsh          17 oh-my-zsh plugins (override + additive)
 
@@ -82,7 +82,7 @@ Different files have different latency depending on how they reach disk:
 
 | What you changed | How to test |
 |---|---|
-| Any `master-oogway-omz-custom/` file (plugins, theme parts, configure) | `soursh` — live via symlink |
+| Any `omz-custom/` file (plugins, theme parts, configure) | `soursh` — live via symlink |
 | `dragon-notifier.zsh` | `soursh` |
 | `.zshenv` | re-run `./install.sh`, then `soursh` |
 | `gitconfig.master-oogway` | re-run `./install.sh` |
@@ -108,7 +108,7 @@ This runs:
 
 ## Adding a plugin
 
-1. Create `master-oogway-omz-custom/plugins/mo-<name>/mo-<name>.plugin.zsh`
+1. Create `omz-custom/plugins/mo-<name>/mo-<name>.plugin.zsh`
 2. First line must be a `# Provides:` comment — one line describing what it adds:
    ```zsh
    # Provides: mycommand (does X) and myalias (does Y).
@@ -126,7 +126,7 @@ original binary directly.
 
 ## Adding a theme configuration variable
 
-All theme variables live in `master-oogway-omz-custom/dragon/schema.zsh` inside `_DRAGON_DEFAULTS`.
+All theme variables live in `omz-custom/themes/dragon/schema.zsh` inside `_DRAGON_DEFAULTS`.
 This is the **single source of truth** — add a variable here and it is automatically:
 - initialized on shell startup via the defaults loop in `dragon.zsh-theme`
 - exposed in `dragon-configure` (grouped under its schema group)

@@ -16,7 +16,7 @@ oh-my-zsh plugins — distributed as a standalone git repo.
   machine accepts forwarded theme vars from other master-oogway clients
 - Initialises plugin submodules (gitstatus, zsh-autosuggestions,
   zsh-syntax-highlighting, you-should-use)
-- Loads the `dragon` prompt theme via `ZSH_CUSTOM=~/.master-oogway/master-oogway-omz-custom`
+- Loads the `dragon` prompt theme via `ZSH_CUSTOM=~/.master-oogway/omz-custom`
 - Stores user theme config in `~/.config/master-oogway/conf.zsh` — never
   overwritten after creation
 - Notifies on shell start when new theme variables are available since the

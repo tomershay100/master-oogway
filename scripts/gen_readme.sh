@@ -10,7 +10,7 @@ set -Eeuo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "${SCRIPT_DIR}/.." && pwd)
-PLUGINS_DIR="${REPO_ROOT}/master-oogway-omz-custom/plugins"
+PLUGINS_DIR="${REPO_ROOT}/omz-custom/plugins"
 README="${REPO_ROOT}/README.md"
 
 # ── Build table lines ──────────────────────────────────────────────────────────

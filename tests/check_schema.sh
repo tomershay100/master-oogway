@@ -5,8 +5,8 @@
 set -Eeuo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-THEME="${REPO_ROOT}/master-oogway-omz-custom/dragon/dragon.zsh"
-SCHEMA="${REPO_ROOT}/master-oogway-omz-custom/dragon/schema.zsh"
+THEME="${REPO_ROOT}/omz-custom/themes/dragon/dragon.zsh"
+SCHEMA="${REPO_ROOT}/omz-custom/themes/dragon/schema.zsh"
 
 # Verify theme sources schema rather than duplicating defaults inline.
 if ! grep -q 'source.*schema\.zsh' "$THEME"; then

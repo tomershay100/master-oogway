@@ -1,12 +1,12 @@
 [submodule "zsh-custom.d/plugins/gitstatus"]
-	path = master-oogway-omz-custom/plugins/gitstatus
+	path = omz-custom/plugins/gitstatus
 	url = https://github.com/romkatv/gitstatus.git
 [submodule "zsh-custom.d/plugins/you-should-use"]
-	path = master-oogway-omz-custom/plugins/you-should-use
+	path = omz-custom/plugins/you-should-use
 	url = https://github.com/MichaelAquilina/zsh-you-should-use.git
 [submodule "zsh-custom.d/plugins/zsh-autosuggestions"]
-	path = master-oogway-omz-custom/plugins/zsh-autosuggestions
+	path = omz-custom/plugins/zsh-autosuggestions
 	url = https://github.com/zsh-users/zsh-autosuggestions.git
 [submodule "zsh-custom.d/plugins/zsh-syntax-highlighting"]
-	path = master-oogway-omz-custom/plugins/zsh-syntax-highlighting
+	path = omz-custom/plugins/zsh-syntax-highlighting
 	url = https://github.com/zsh-users/zsh-syntax-highlighting.git

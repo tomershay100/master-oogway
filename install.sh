@@ -163,7 +163,7 @@ if ! _running_from_install_dir; then
     fi
 
     _init_plugins() {
-        local plugins_dir="${INSTALL_DIR}/master-oogway-omz-custom/plugins"
+        local plugins_dir="${INSTALL_DIR}/omz-custom/plugins"
         local -a missing=()
         for plugin in gitstatus you-should-use zsh-autosuggestions zsh-syntax-highlighting; do
             local plugin_dir="${plugins_dir}/${plugin}"
@@ -371,6 +371,15 @@ else
     _install_zshrc
 fi
 
+# ── one-shot path migration for installs predating the omz-custom rename ──────
+# The directory was renamed: master-oogway-omz-custom → omz-custom, and the
+# theme code moved into themes/dragon/. Existing ~/.zshrc files still point at
+# the old path — rewrite the ZSH_CUSTOM line in place so the shell keeps loading.
+if [[ -f "${ZSHRC}" ]] && grep -qF 'master-oogway-omz-custom' "${ZSHRC}"; then
+    sed -i 's|master-oogway-omz-custom|omz-custom|g' "${ZSHRC}"
+    success "Migrated ZSH_CUSTOM path in ${ZSHRC} (master-oogway-omz-custom → omz-custom)"
+fi
+
 # ── .zshenv ────────────────────────────────────────────────────────────────────
 
 copy_file "${INSTALL_DIR}/.zshenv" "${HOME}/.zshenv"
@@ -499,7 +508,7 @@ _install_sshd_acceptenv
 # ── dragon theme: check for new variables ───────────────────────────────────
 
 _check_theme_vars() {
-    local themes_dir="${INSTALL_DIR}/master-oogway-omz-custom/dragon"
+    local themes_dir="${INSTALL_DIR}/omz-custom/themes/dragon"
     local current_hash
     current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
         | sort -u | md5sum | cut -d' ' -f1)
