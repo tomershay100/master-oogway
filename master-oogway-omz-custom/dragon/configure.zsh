@@ -496,8 +496,8 @@ _dragon_guided_tour() {
     else
         _DRAGON_CURRENT[USE_NERD_FONT]="false"
         print -P "  %F{yellow}✓ ASCII fallbacks will be used — no special font needed.%f"
+        print -P "  %F{245}  (install a Nerd Font later → re-run %Bdragon-configure%b to switch back)%f"
     fi
-    sleep 0.5
     print ""
     print -P "  %F{245}Press any key to continue...%f"
     _dragon_read_key _dragon_any

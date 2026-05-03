@@ -15,6 +15,8 @@ sshto() {
     local host
     # Parse all Host names; handle multi-name stanzas (Host alpha beta gamma → three entries).
     # Wildcards and '?' patterns are excluded per-field — they are match rules, not connectable targets.
+    # Note: arbitrary `Include` directives inside config files are NOT recursively resolved.
+    # If you need full resolution (Include, Match, defaults), use `ssh -G <host>` instead.
     host=$(awk '/^Host / { for (i=2; i<=NF; i++) if ($i !~ /[*?]/) print $i }' "${config_files[@]}" \
         | sort -u \
         | fzf --height=40% --reverse --header='Select SSH host')
