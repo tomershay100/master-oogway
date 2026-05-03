@@ -227,7 +227,8 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     _uninstall_zshrc_backup="${ZSHRC}.pre-master-oogway"
     if [[ -f "$_uninstall_zshrc_backup" ]]; then
         cp "$_uninstall_zshrc_backup" "${ZSHRC}"
-        success "Restored ${ZSHRC} from ${_uninstall_zshrc_backup}"
+        rm -f "$_uninstall_zshrc_backup"
+        success "Restored ${ZSHRC} from backup (backup removed)"
     elif grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
         rm -f "${ZSHRC}"
         warn "Removed managed ${ZSHRC} — no backup found. Recreate it manually."
@@ -239,7 +240,8 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     _uninstall_gitconfig_backup="${HOME}/.gitconfig.pre-master-oogway"
     if [[ -f "$_uninstall_gitconfig_backup" ]]; then
         cp "$_uninstall_gitconfig_backup" "${HOME}/.gitconfig"
-        success "Restored ~/.gitconfig from ${_uninstall_gitconfig_backup}"
+        rm -f "$_uninstall_gitconfig_backup"
+        success "Restored ~/.gitconfig from backup (backup removed)"
     elif [[ -f "${HOME}/.gitconfig" ]]; then
         sed -i '/gitconfig\.master-oogway/d' "${HOME}/.gitconfig"
         sed -i '/^\[include\]$/{N;/^\[include\]\n[[:space:]]*$/d}' "${HOME}/.gitconfig"
@@ -298,9 +300,11 @@ if [[ "${1:-}" == "--uninstall" ]]; then
         success "${INSTALL_DIR} not found — nothing to remove"
     fi
 
-    # .zshenv — not removed; may predate dragon or contain user edits
-    warn "${HOME}/.zshenv was NOT removed — it may contain your own settings."
-    warn "Review it manually: ${HOME}/.zshenv"
+    # .zshenv — not removed; may predate dragon or contain user edits beyond what
+    # master-oogway wrote (EDITOR / VISUAL exports). Left in place with clear guidance.
+    warn "${HOME}/.zshenv was NOT removed."
+    warn "  master-oogway wrote EDITOR/VISUAL exports there. If you no longer need them,"
+    warn "  remove or edit: ${HOME}/.zshenv"
 
     success "dragon uninstall complete. Open a new terminal to apply changes."
     exit 0
