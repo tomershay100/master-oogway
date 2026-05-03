@@ -35,11 +35,9 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
     mo-*/mo-*.plugin.zsh          17 oh-my-zsh plugins (override + additive)
 
 tests/
-  check_schema.sh                 validates schema var count vs theme; run via make test
-
-Makefile                          lint / test / check / readme targets
+  check_schema.sh                 validates schema var count vs theme; run directly with bash
 scripts/
-  gen_readme.sh                   regenerates README command tables from # Provides: comments
+  gen_readme.sh                   regenerates README plugin table from # Provides: comments
 ```
 
 ---
@@ -93,16 +91,27 @@ Different files have different latency depending on how they reach disk:
 
 ## Validation
 
-Always run before committing:
+Always run these four checks before committing — every change should pass all four:
+
 ```bash
-make check
+# 1. bash syntax check on install.sh
+bash -n install.sh
+
+# 2. zsh syntax check on all theme + plugin + notifier files
+zsh -n omz-custom/themes/dragon.zsh-theme \
+       omz-custom/themes/dragon/*.zsh \
+       omz-custom/themes/dragon/parts/*.zsh \
+       omz-custom/plugins/mo-*/mo-*.plugin.zsh \
+       dragon-notifier.zsh
+
+# 3. static analysis on the bash files
+shellcheck install.sh tests/check_schema.sh
+
+# 4. schema/theme consistency check
+bash tests/check_schema.sh
 ```
 
-This runs:
-- `bash -n install.sh` — bash syntax check
-- `zsh -n` on all plugin + theme files — zsh syntax check
-- `shellcheck install.sh tests/check_schema.sh` — static analysis
-- `tests/check_schema.sh` — verifies schema var count matches theme
+If any of these fail, fix the underlying issue — never commit a file that fails parsing.
 
 ---
 
@@ -114,8 +123,13 @@ This runs:
    # Provides: mycommand (does X) and myalias (does Y).
    ```
 3. Add `mo-<name>` to the plugins list in `zshrc.master-oogway` (override or additive group)
-4. Run `make readme` to regenerate the README plugin table
-5. Run `make check`
+4. **Update the README** — regenerate the auto-generated plugin table:
+   ```bash
+   bash scripts/gen_readme.sh
+   ```
+   Then add a `### mo-<name>` command-reference section to [README.md](README.md)
+   under "Command reference" describing each command the plugin provides.
+5. Run the four validation checks above.
 
 Override plugins (those that shadow system commands) must appear **before** additive
 plugins in `zshrc.master-oogway` so additive plugins inherit the overridden commands.
@@ -140,7 +154,10 @@ This is the **single source of truth** — add a variable here and it is automat
 Types: `bool`, `color`, `string`, `int`.
 Groups map to the wizard sections in `dragon-configure`.
 
-After adding, run `make check` — the schema test will verify the count is consistent.
+After adding, run `bash tests/check_schema.sh` — verifies the count is consistent.
+Also update the [README.md](README.md) "Theme configurator" section if the new
+variable belongs in user-facing documentation.
+
 Users will be notified on next shell start that new variables are available
 (`dragon-configure --new-only` to configure just the new ones).
 Run `dragon-configure --help` to see all available subcommands.
@@ -170,18 +187,24 @@ machines to skip re-applying local defaults over the forwarded values.
 
 ---
 
-## Generating the README command tables
+## Generating the README plugin table
 
 ```bash
-make readme
+bash scripts/gen_readme.sh
 ```
 
 Reads `# Provides:` comments from all `mo-*.plugin.zsh` files and rewrites the
 additive plugins table in `README.md` between the sentinel markers:
-```
+
+```text
 <!-- mo-plugins-start -->
 ...
 <!-- mo-plugins-end -->
 ```
 
 Run this after adding or modifying a plugin's `# Provides:` comment.
+
+> **Reminder:** the script only regenerates the auto-table at the top.
+> If you add a new plugin or a new command to an existing plugin, also add or
+> update its dedicated `### mo-<name>` section under "Command reference" in
+> README.md by hand — those tables are not auto-generated.
