@@ -272,8 +272,21 @@ working directory, exit code, and duration. `Ctrl+R` opens atuin's fuzzy search
 across all of that. Up/Down arrows continue to use `history-substring-search`
 (master-oogway initialises atuin with `--disable-up-arrow` for this reason).
 
+**Install** (use the official one-liner — distro packages are often outdated):
+
 ```bash
 curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+```
+
+Requires **atuin ≥ 18.0** for the `--disable-up-arrow` flag — older builds
+will print a flag-unknown error on every shell start. `atuin --version` to
+check.
+
+**First run** — import your existing `~/.zsh_history` so old commands are
+searchable in `Ctrl+R`:
+
+```bash
+atuin import auto
 ```
 
 ---

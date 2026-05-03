@@ -22,7 +22,7 @@ status, rationale, and the commit or PR where it landed.
 | UNINSTALL | Backup files (`.zshrc.pre-master-oogway`, `.gitconfig.pre-master-oogway`) stranded after restore; `.zshenv` warning too vague. Fixed: backups deleted after restore; warning names exactly what was written. | PR #3 |
 | PRESET | `dragon-configure --preset <name>` — instant preset switch with backup/restore instructions shown before confirmation. Also added `--help` flag documenting all subcommands. | PR #4 |
 | DOCS | README: expanded theme configurator section, preset quick-switch guide, `rezsh`/`reset_theme_variables` table, mo-apps command reference. CONTRIBUTING: added PLAN.md and `.editorconfig` to repo layout. | PR #5 |
-| FEAT-2 · atuin | atuin init added to `zshrc.master-oogway` with `--disable-up-arrow` (preserves `history-substring-search`); install hint added to preflight `todo_item` list; "Optional tools" section added to README. | PR #6 |
+| FEAT-2 · atuin | atuin init added to `zshrc.master-oogway` with `--disable-up-arrow` (preserves `history-substring-search`); install hint added to preflight `todo_item` list; "Optional tools" section added to README. Originally parked over installer-embedding concerns — sidestepped by adding a `todo_item` hint instead of running the installer. | PR #6 |
 | PERF-3 | `__get_readable_time` was called in a subshell `$()`, forking on every prompt render when exec-timer was active. Fixed: writes to `_DRAGON_READABLE_TIME` global; caller reads the var directly. | PR #1 |
 | SEC-1 | `serve()` bound to `0.0.0.0` with no warning. Fixed: defaults to `127.0.0.1`; `SERVE_BIND` env var for intentional LAN exposure. | PR #1 |
 | SEC-3 | `calc` whitelist comment was insufficient. Fixed: added comment explaining why `system("cmd")` is blocked. | PR #1 |
@@ -52,7 +52,6 @@ status, rationale, and the commit or PR where it landed.
 | SEC-2 (recursive Include) | One level of includes (`~/.ssh/config → ~/.ssh/config.d/*`) covers the real-world bug. Recursive parsing is `ssh -G` territory — out of scope for a bugfix. |
 | DX-4 · enum selection > 9 options | Current max is 3; single-keypress UX is a feature, not a bug. Revisit only if an enum ever needs ≥10 options. |
 | DX-5 · `gen_readme.sh` plugin ordering | Script works; README is accurate; automating sort order has no functional impact. |
-| FEAT-2 · atuin integration | Over-engineered for an installer; atuin is a personal choice, not a shell environment feature. |
 | FEAT-3 · `dragon-configure --export/--import` | Solved adequately by sharing `conf.zsh` directly; the abstraction adds ~150 lines for no meaningful gain. |
 | FEAT-4 · `dragon-theme` instant switcher | Redundant with `dragon-configure --new-only`; extra surface area without clear benefit. |
 | FEAT-6 · `mo-docker` plugin | Out of scope; the existing `docker` OMZ plugin covers completion. Opinionated aliases belong in a user's `custom-zsh/`. |
