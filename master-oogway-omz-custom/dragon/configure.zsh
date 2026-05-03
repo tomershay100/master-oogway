@@ -712,6 +712,23 @@ _dragon_show_start_menu() {
 # ─────────────────────────────────────────────────────────────────────────────
 
 dragon-configure() {
+    if [[ "${1-}" == "--help" || "${1-}" == "-h" ]]; then
+        cat <<'EOF'
+Usage: dragon-configure [options]
+
+Options:
+  (none)              Full interactive wizard — step through every setting
+  --new-only          Only configure variables added since the last run
+  --preset <name>     Instantly switch to a preset (short / default / verbose)
+  --dismiss           Silence the "new variables" notifier until next update
+  --version, -v       Print the installed dragon version
+  --help, -h          Show this help
+
+Config file: ~/.config/master-oogway/conf.zsh
+EOF
+        return 0
+    fi
+
     if [[ "${1-}" == "--version" || "${1-}" == "-v" ]]; then
         local version
         version=$(git -C "${HOME}/.master-oogway" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
@@ -750,6 +767,64 @@ dragon-configure() {
 
     # Load existing conf (sets _DRAGON_CURRENT from defaults + active conf values)
     _dragon_load_current_conf
+
+    # ── Preset switcher: dragon-configure --preset <name>
+    if [[ "${1-}" == "--preset" ]]; then
+        local _preset="${2:-}"
+        case "$_preset" in
+            short|default|verbose) ;;
+            *)
+                print -P "%F{red}✗%f Invalid preset: '${_preset:-<none>}'"
+                print -P "  Valid presets: %Bshort%b  %Bdefault%b  %Bverbose%b"
+                print -P "  Usage: dragon-configure --preset <short|default|verbose>"
+                _dragon_cleanup
+                return 1
+                ;;
+        esac
+
+        clear
+        print -P "%B%F{cyan}── dragon: Switch to '${_preset}' preset ────────────────────────────%f%b"
+        print ""
+        print -P "  This will reset your theme config to the %B${_preset}%b preset defaults."
+        if [[ -f "${_DRAGON_CONF_FILE}" ]]; then
+            print -P "  Your current settings will be replaced."
+            print ""
+            print -P "  %F{yellow}Back up first — restore any time by overwriting conf.zsh:%f"
+            print ""
+            print -P "    %B# back up%b"
+            print -P "    cp ${_DRAGON_CONF_FILE} ${_DRAGON_CONF_FILE}.bak"
+            print ""
+            print -P "    %B# restore later%b"
+            print -P "    cp ${_DRAGON_CONF_FILE}.bak ${_DRAGON_CONF_FILE} && soursh"
+            print ""
+        fi
+        printf "  Switch to %s preset now? [y/N] " "$_preset"
+        local _preset_confirm
+        read -r _preset_confirm
+        if [[ "$_preset_confirm" != y* && "$_preset_confirm" != Y* ]]; then
+            print ""
+            print -P "  %F{245}Aborted. Back up first, then re-run:%f"
+            print -P "  %F{245}  dragon-configure --preset ${_preset}%f"
+            _dragon_cleanup
+            return 0
+        fi
+
+        # Preserve USE_NERD_FONT — it reflects terminal capability, not style preference.
+        # _dragon_apply_preset resets all vars to schema defaults; we restore it afterward.
+        # Only restore if the saved value is non-empty — otherwise let the preset default win
+        # (avoids zero-ing USE_NERD_FONT on a never-configured system).
+        local _saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]-}"
+        _dragon_apply_preset "$_preset"
+        [[ -n "$_saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$_saved_nerd_font"
+        _dragon_write_conf
+        _dragon_write_state "$_preset"
+        print ""
+        print -P "  %F{green}✓ Switched to ${_preset} preset.%f"
+        print -P "  %F{245}Reload to apply: %Bsoursh%b"
+        print -P "  %F{245}Fine-tune with:  %Bdragon-configure%b%f"
+        _dragon_cleanup
+        return 0
+    fi
 
     # ── New-only mode: check for new vars
     if $new_only; then
