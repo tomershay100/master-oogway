@@ -7,7 +7,7 @@
 # ── File-level constants ──────────────────────────────────────────────────────
 
 typeset -g _DRAGON_CONF_FILE="${HOME}/.config/master-oogway/conf.zsh"
-typeset -g _DRAGON_THEMES_DIR="${HOME}/.master-oogway/master-oogway-omz-custom/dragon"
+typeset -g _DRAGON_THEMES_DIR="${0:a:h}"   # .../dragon/ — derived from script location
 typeset -g _DRAGON_STATE_DIR="${HOME}/.config/master-oogway"
 typeset -g _DRAGON_STATE_FILE="${_DRAGON_STATE_DIR}/state"
 
@@ -36,13 +36,20 @@ _dragon_read_state() {
 
 _dragon_write_state() {
     local preset="${1:-default}"
-    local hash
+    local hash mtime
     hash=$(_dragon_vars_hash)
+    mtime=$(find "${_DRAGON_THEMES_DIR}" -name '*.zsh' -printf '%T@\n' 2>/dev/null \
+        | sort -n | tail -1)
+    _dragon_read_state   # load current state so we can preserve dismissed_hash
     mkdir -p "${_DRAGON_STATE_DIR}"
     {
         echo "configured=true"
         echo "preset=${preset}"
         echo "vars_hash=${hash}"
+        echo "themes_mtime=${mtime}"
+        # Preserve dismissed_hash across configure runs so --dismiss stays effective
+        [[ -n "${_DRAGON_STATE[dismissed_hash]:-}" ]] \
+            && echo "dismissed_hash=${_DRAGON_STATE[dismissed_hash]}"
     } > "${_DRAGON_STATE_FILE}"
 }
 
@@ -213,7 +220,7 @@ _dragon_render_preview() {
         VCS_STATUS_COMMITS_BEHIND=\${VCS_STATUS_COMMITS_BEHIND:-0}
         VCS_STATUS_STASHES=\${VCS_STATUS_STASHES:-0}
         VCS_STATUS_REMOTE_NAME='origin'
-        exit_code=${preview_exit_code}
+        _DRAGON_EXIT_CODE=${preview_exit_code}
         __LAST_EXIT_CODE=${preview_exit_code}
         source '${_DRAGON_THEMES_DIR}/dragon.zsh' 2>/dev/null
         dragon__update_zsh_prompt 2>/dev/null
@@ -316,14 +323,22 @@ _dragon_edit_var() {
             else
                 print -P "  %F{245}[Enter] keep empty   or type new value%f"
             fi
-            printf "  New value (Enter = keep '%s'): " "${current:-(empty)}"
             local val
-            read -r val
-            if [[ "$val" == e || "$val" == E ]]; then
-                _DRAGON_CURRENT[$var]=""
-            elif [[ -n "$val" ]]; then
-                _DRAGON_CURRENT[$var]="$val"
-            fi
+            while true; do
+                printf "  New value (Enter = keep '%s'): " "${current:-(empty)}"
+                read -r val
+                if [[ "$val" == e || "$val" == E ]]; then
+                    _DRAGON_CURRENT[$var]=""; break
+                elif [[ -z "$val" ]]; then
+                    break  # keep current
+                elif [[ "$val" =~ '^[0-9]+$' && 10#$val -le 255 ]]; then
+                    _DRAGON_CURRENT[$var]="$val"; break
+                elif [[ -n "${COLORS[${(L)val}]:-}" ]]; then
+                    _DRAGON_CURRENT[$var]="${(L)val}"; break
+                else
+                    print -P "  %F{red}Invalid color '%F{white}${val}%F{red}' — enter a name or 0-255.%f"
+                fi
+            done
             ;;
         string)
             if [[ -n "$current" ]]; then
@@ -635,11 +650,13 @@ _dragon_show_start_menu() {
 
     case "$key" in
         2)
+            # Full wizard: keep current settings, step through ALL groups
             print -P "  %F{green}✓ Full wizard%f"
             sleep 0.4
-            _dragon_select_preset
+            _DRAGON_CHOSEN_PRESET="${_DRAGON_STATE[preset]:-default}"
             ;;
         3)
+            # Reset to preset: discard current config, start fresh from a chosen preset
             print -P "  %F{green}✓ Reset to preset%f"
             sleep 0.4
             _dragon_select_preset
@@ -686,12 +703,18 @@ dragon-configure() {
     fi
 
     if [[ "${1-}" == "--dismiss" ]]; then
-        local themes_dir="${_DRAGON_THEMES_DIR}"
-        local current_hash
-        current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
+        local current_hash current_mtime
+        current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${_DRAGON_THEMES_DIR}" 2>/dev/null \
             | sort -u | md5sum | cut -d' ' -f1)
+        current_mtime=$(find "${_DRAGON_THEMES_DIR}" -name '*.zsh' -printf '%T@\n' 2>/dev/null \
+            | sort -n | tail -1)
         mkdir -p "${_DRAGON_STATE_DIR}"
-        printf '\ndismissed_hash=%s\n' "${current_hash}" >> "${_DRAGON_STATE_FILE}"
+        local tmp_state="${_DRAGON_STATE_FILE}.tmp"
+        grep -v -e '^dismissed_hash=' -e '^themes_mtime=' "${_DRAGON_STATE_FILE}" \
+            2>/dev/null > "${tmp_state}" || true
+        printf 'dismissed_hash=%s\nthemes_mtime=%s\n' "${current_hash}" "${current_mtime}" \
+            >> "${tmp_state}"
+        mv "${tmp_state}" "${_DRAGON_STATE_FILE}"
         print -P "%F{green}✓%f Dragon notifier dismissed until next update."
         return 0
     fi

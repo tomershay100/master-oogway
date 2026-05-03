@@ -31,16 +31,20 @@ alias gclean="git clean -fd"
 
 function gsum() {
     git rev-parse --git-dir &>/dev/null || { echo "Not a git repo" >&2; return 1; }
-    local branch remote ahead behind stashes untracked
+    local branch remote ahead behind
     branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD)
     remote=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)
     ahead=$(git rev-list --count '@{u}..HEAD' 2>/dev/null)
     behind=$(git rev-list --count 'HEAD..@{u}' 2>/dev/null)
-    stashes=$(git stash list 2>/dev/null | wc -l | tr -d ' ')
-    untracked=$(git ls-files --others --exclude-standard | wc -l | tr -d ' ')
+    # Use zsh array counting — avoids wc -l | tr -d ' ' subprocess chains
+    local -a stash_list; stash_list=( "${(f)$(git stash list 2>/dev/null)}" )
+    local stashes=${#stash_list[@]}
+    local -a status_lines; status_lines=( "${(f)$(git status --short 2>/dev/null)}" )
+    local -a untracked_lines=( "${(M)status_lines[@]:#\?\?*}" )
+    local untracked=${#untracked_lines[@]}
     echo "branch : $branch"
     [[ -n "$remote" ]] && echo "remote : $remote  ↑${ahead:-0} ↓${behind:-0}"
-    git status --short | head -20
+    printf '%s\n' "${status_lines[@]}" | head -20
     (( stashes   > 0 )) && echo "stashes: $stashes"
     (( untracked > 0 )) && echo "untracked: $untracked file(s)"
 }
