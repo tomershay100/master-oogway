@@ -330,6 +330,8 @@ fi
 if ! command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
     todo_item "Install bat for syntax-highlighted cat/less: sudo apt install bat"
 fi
+command -v atuin &>/dev/null || \
+    todo_item "Install atuin for enhanced shell history (timestamps, exit codes, fuzzy Ctrl+R):\n     curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
 
 # ── .zshrc: first install replaces; subsequent runs leave it alone ─────────────
 

@@ -22,6 +22,7 @@ status, rationale, and the commit or PR where it landed.
 | UNINSTALL | Backup files (`.zshrc.pre-master-oogway`, `.gitconfig.pre-master-oogway`) stranded after restore; `.zshenv` warning too vague. Fixed: backups deleted after restore; warning names exactly what was written. | PR #3 |
 | PRESET | `dragon-configure --preset <name>` — instant preset switch with backup/restore instructions shown before confirmation. Also added `--help` flag documenting all subcommands. | PR #4 |
 | DOCS | README: expanded theme configurator section, preset quick-switch guide, `rezsh`/`reset_theme_variables` table, mo-apps command reference. CONTRIBUTING: added PLAN.md and `.editorconfig` to repo layout. | PR #5 |
+| FEAT-2 · atuin | atuin init added to `zshrc.master-oogway` with `--disable-up-arrow` (preserves `history-substring-search`); install hint added to preflight `todo_item` list; "Optional tools" section added to README. | PR #6 |
 | PERF-3 | `__get_readable_time` was called in a subshell `$()`, forking on every prompt render when exec-timer was active. Fixed: writes to `_DRAGON_READABLE_TIME` global; caller reads the var directly. | PR #1 |
 | SEC-1 | `serve()` bound to `0.0.0.0` with no warning. Fixed: defaults to `127.0.0.1`; `SERVE_BIND` env var for intentional LAN exposure. | PR #1 |
 | SEC-3 | `calc` whitelist comment was insufficient. Fixed: added comment explaining why `system("cmd")` is blocked. | PR #1 |
@@ -63,15 +64,6 @@ status, rationale, and the commit or PR where it landed.
 ## 🅿️ Someday / Parked
 
 These items have real merit but are not worth scheduling until a specific trigger occurs.
-
-### FEAT-2 · atuin — SQLite shell history
-
-- **Value**: Every command gets a timestamp, working directory, exit code, and duration. `Ctrl+R` becomes fuzzy search across all of that. Optional cross-machine sync.
-- **Cost**: Requires its own installer (not just `apt`); adds a binary dependency. Integration in `install.sh` + `zshrc.master-oogway` is ~1 hour; testing across distros is more.
-- **Trigger to revisit**: Once atuin ships stable multi-distro install scripts that can be embedded safely. See https://github.com/atuinsh/atuin
-- **Notes**: Conflicts with `history-substring-search` Up/Down arrow behavior — needs `--disable-up-arrow` flag and testing.
-
----
 
 ### ARCH-1 · Drop oh-my-zsh dependency
 

@@ -259,6 +259,25 @@ cp ~/.config/master-oogway/conf.zsh.bak ~/.config/master-oogway/conf.zsh && sour
 | `rezsh` | reset all `DRAGON__*` vars to defaults, then reload the shell |
 | `reset_theme_variables` | unset all `DRAGON__*` variables without reloading |
 
+## Optional tools
+
+The following tools are not installed by master-oogway but are pre-wired in
+`~/.zshrc` with `command -v` guards — they activate automatically once installed.
+The installer will remind you to install any that are missing.
+
+### atuin — enhanced shell history
+
+Replaces `HISTFILE` with a SQLite database. Every command gets a timestamp,
+working directory, exit code, and duration. `Ctrl+R` opens atuin's fuzzy search
+across all of that. Up/Down arrows continue to use `history-substring-search`
+(master-oogway initialises atuin with `--disable-up-arrow` for this reason).
+
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+```
+
+---
+
 ## SSH theme forwarding
 
 master-oogway forwards your theme settings over SSH so you get your own
