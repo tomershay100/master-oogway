@@ -244,8 +244,9 @@ dragon-configure --preset default   # balanced — user@host:dir ❯, git, time,
 dragon-configure --preset verbose   # maximum — multiline, full paths, rich git indicators
 ```
 
-Before applying the switch you are shown the exact backup and restore commands.
-To revert any time:
+The command prints the exact backup + restore one-liners and waits for `[y/N]`
+before overwriting your config. If you backed up first (the printed `cp` to
+`conf.zsh.bak`), you can revert any time with:
 
 ```bash
 cp ~/.config/master-oogway/conf.zsh.bak ~/.config/master-oogway/conf.zsh && soursh
