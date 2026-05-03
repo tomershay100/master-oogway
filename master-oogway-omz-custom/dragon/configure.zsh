@@ -798,7 +798,7 @@ EOF
             print -P "    cp ${_DRAGON_CONF_FILE}.bak ${_DRAGON_CONF_FILE} && soursh"
             print ""
         fi
-        printf "  Switch to ${_preset} preset now? [y/N] "
+        printf "  Switch to %s preset now? [y/N] " "$_preset"
         local _preset_confirm
         read -r _preset_confirm
         if [[ "$_preset_confirm" != y* && "$_preset_confirm" != Y* ]]; then
@@ -809,7 +809,11 @@ EOF
             return 0
         fi
 
+        # Preserve USE_NERD_FONT — it reflects terminal capability, not style preference.
+        # _dragon_apply_preset resets all vars to schema defaults; we restore it afterward.
+        local _saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]}"
         _dragon_apply_preset "$_preset"
+        _DRAGON_CURRENT[USE_NERD_FONT]="$_saved_nerd_font"
         _dragon_write_conf
         _dragon_write_state "$_preset"
         print ""
