@@ -481,6 +481,24 @@ _dragon_guided_tour() {
     print -P "  Everything is configurable — the next screen lets you choose a starting"
     print -P "  preset (minimal, balanced, or verbose), then steps through every feature."
     print ""
+    print -P "  %B%F{245}Font check%f%b"
+    print ""
+    print -P "  dragon uses special characters for a richer look."
+    print -P "  Powerline arrow:  "
+    print -P "  Nerd Font icon:   "
+    print ""
+    printf "  Do both characters render as a solid arrow and a folder icon? [y/N] "
+    local _nf_key
+    _dragon_read_key _nf_key
+    print ""
+    if [[ "$_nf_key" == y || "$_nf_key" == Y ]]; then
+        print -P "  %F{green}✓ Nerd Font glyphs enabled.%f"
+    else
+        _DRAGON_CURRENT[USE_NERD_FONT]="false"
+        print -P "  %F{yellow}✓ ASCII fallbacks will be used — no special font needed.%f"
+    fi
+    sleep 0.5
+    print ""
     print -P "  %F{245}Press any key to continue...%f"
     _dragon_read_key _dragon_any
 }
