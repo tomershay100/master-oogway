@@ -32,7 +32,11 @@ status, rationale, and the commit or PR where it landed.
 
 ## 🚧 In Progress
 
-*None — all tracked items are complete, declined, or parked.*
+| Item | Description | Branch |
+|------|-------------|--------|
+| UNINSTALL | Backup files (`.zshrc.pre-master-oogway`, `.gitconfig.pre-master-oogway`) stranded after restore; `.zshenv` warning too vague. | `claude/uninstall-cleanup` → PR #3 |
+| PRESET | `dragon-configure --preset <name>` for instant preset switching with backup instructions. | `claude/preset-switcher` → PR #4 |
+| DOCS | README and CONTRIBUTING.md sweep — document `--preset`, `--dismiss`, `rezsh`, completeness pass. | `claude/docs-sweep` → PR #5 |
 
 ---
 
@@ -60,6 +64,15 @@ status, rationale, and the commit or PR where it landed.
 ## 🅿️ Someday / Parked
 
 These items have real merit but are not worth scheduling until a specific trigger occurs.
+
+### FEAT-2 · atuin — SQLite shell history
+
+- **Value**: Every command gets a timestamp, working directory, exit code, and duration. `Ctrl+R` becomes fuzzy search across all of that. Optional cross-machine sync.
+- **Cost**: Requires its own installer (not just `apt`); adds a binary dependency. Integration in `install.sh` + `zshrc.master-oogway` is ~1 hour; testing across distros is more.
+- **Trigger to revisit**: Once atuin ships stable multi-distro install scripts that can be embedded safely. See https://github.com/atuinsh/atuin
+- **Notes**: Conflicts with `history-substring-search` Up/Down arrow behavior — needs `--disable-up-arrow` flag and testing.
+
+---
 
 ### ARCH-1 · Drop oh-my-zsh dependency
 
