@@ -14,8 +14,8 @@ sshto() {
     [[ ${#config_files} -gt 0 ]] || { echo "sshto: no SSH config files found" >&2; return 1; }
     local host
     # Parse all Host names; handle multi-name stanzas (Host alpha beta gamma → three entries).
-    # Wildcards and '?' patterns are excluded — they are match rules, not connectable targets.
-    host=$(awk '/^Host / && $2 !~ /[*?]/ { for (i=2; i<=NF; i++) print $i }' "${config_files[@]}" \
+    # Wildcards and '?' patterns are excluded per-field — they are match rules, not connectable targets.
+    host=$(awk '/^Host / { for (i=2; i<=NF; i++) if ($i !~ /[*?]/) print $i }' "${config_files[@]}" \
         | sort -u \
         | fzf --height=40% --reverse --header='Select SSH host')
     [[ -n "$host" ]] && ssh "$host"
