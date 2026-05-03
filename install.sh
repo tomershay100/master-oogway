@@ -303,8 +303,8 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     # .zshenv — not removed; may predate dragon or contain user edits beyond what
     # master-oogway wrote (EDITOR / VISUAL exports). Left in place with clear guidance.
     warn "${HOME}/.zshenv was NOT removed."
-    warn "  master-oogway wrote EDITOR/VISUAL exports there. If you no longer need them:"
-    warn "  ${HOME}/.zshenv"
+    warn "  master-oogway wrote EDITOR/VISUAL exports there. If you no longer need them,"
+    warn "  remove or edit: ${HOME}/.zshenv"
 
     success "dragon uninstall complete. Open a new terminal to apply changes."
     exit 0
