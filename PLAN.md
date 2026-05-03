@@ -17,6 +17,8 @@ status, rationale, and the commit or PR where it landed.
 | ARCH-6 | `exit_code` global was implicit and zero-uninitialized, risking stale reads. Fixed: `typeset -g _DRAGON_EXIT_CODE=0` in `dragon.zsh`. | PR #1 |
 | ARCH-7 | `__get_readable_time` shadowed parameter `seconds` with a same-named local. Fixed: renamed to `secs`. | PR #1 |
 | PERF-1 | `dragon-notifier.zsh` ran a full `grep -roh` scan on every shell start. Fixed: mtime cache — skip grep when theme files unchanged. | PR #1 |
+| SEC-2 | `sshto` read only `~/.ssh/config`, silently omitting hosts behind `Include` directives. Fixed: enumerates `~/.ssh/config` + `~/.ssh/config.d/*`; handles multi-name `Host` stanzas. | PR #2 |
+| FEAT-5 | No Nerd Font detection at configure time. Fixed: glyph probe in `_dragon_guided_tour()` — prints U+E0B0 + U+F07B, asks y/N, sets `USE_NERD_FONT=false` if not rendered. Only runs on first-run (when conf.zsh doesn't exist). | PR #2 |
 | PERF-3 | `__get_readable_time` was called in a subshell `$()`, forking on every prompt render when exec-timer was active. Fixed: writes to `_DRAGON_READABLE_TIME` global; caller reads the var directly. | PR #1 |
 | SEC-1 | `serve()` bound to `0.0.0.0` with no warning. Fixed: defaults to `127.0.0.1`; `SERVE_BIND` env var for intentional LAN exposure. | PR #1 |
 | SEC-3 | `calc` whitelist comment was insufficient. Fixed: added comment explaining why `system("cmd")` is blocked. | PR #1 |
@@ -30,10 +32,7 @@ status, rationale, and the commit or PR where it landed.
 
 ## 🚧 In Progress
 
-| Item | Description | Branch |
-|------|-------------|--------|
-| SEC-2 | `sshto` reads only `~/.ssh/config`, missing `Include` directives. Fix: enumerate `~/.ssh/config` + `~/.ssh/config.d/*`; parse all `Host` names per stanza. | TBD |
-| FEAT-5 | No Nerd Font detection at install/configure time. Fix: interactive glyph test in `_dragon_guided_tour()` — print probe chars, ask y/N, write `DRAGON__USE_NERD_FONT=false` if no. Skip if already set in conf.zsh. | TBD |
+*None — all tracked items are complete, declined, or parked.*
 
 ---
 
