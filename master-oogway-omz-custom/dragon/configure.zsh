@@ -811,9 +811,11 @@ EOF
 
         # Preserve USE_NERD_FONT — it reflects terminal capability, not style preference.
         # _dragon_apply_preset resets all vars to schema defaults; we restore it afterward.
-        local _saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]}"
+        # Only restore if the saved value is non-empty — otherwise let the preset default win
+        # (avoids zero-ing USE_NERD_FONT on a never-configured system).
+        local _saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]-}"
         _dragon_apply_preset "$_preset"
-        _DRAGON_CURRENT[USE_NERD_FONT]="$_saved_nerd_font"
+        [[ -n "$_saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$_saved_nerd_font"
         _dragon_write_conf
         _dragon_write_state "$_preset"
         print ""
