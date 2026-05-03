@@ -209,6 +209,15 @@ These only add new commands and never change existing behavior.
 | `m` | `make -j$(nproc)` (with colormake + banner if installed) |
 | `mc` | `make clean` |
 
+### mo-apps — application launchers
+
+Provides short aliases for GUI applications installed via flatpak.
+Each alias is silently skipped if flatpak is not installed.
+
+| Command | Description |
+|---------|-------------|
+| `gnucash` | launch GnuCash (personal finance) via flatpak |
+
 ---
 
 ## Theme configurator
@@ -217,9 +226,37 @@ Interactive wizard that steps through every theme feature group and writes
 `~/.config/master-oogway/conf.zsh` with your choices.
 
 ```bash
-dragon-configure            # full wizard
-dragon-configure --new-only # only new variables since last run
+dragon-configure                   # full interactive wizard
+dragon-configure --new-only        # step through only newly added variables
+dragon-configure --preset <name>   # instantly switch to a preset (no wizard)
+dragon-configure --dismiss         # silence the notifier until the next theme update
+dragon-configure --version         # print the installed dragon version
+dragon-configure --help            # show all options
 ```
+
+### Preset quick-switch
+
+Switch to a named preset without running the full wizard:
+
+```bash
+dragon-configure --preset short     # minimal — hostname:dir❯, inline git, no rprompt extras
+dragon-configure --preset default   # balanced — user@host:dir ❯, git, time, exec-timer
+dragon-configure --preset verbose   # maximum — multiline, full paths, rich git indicators
+```
+
+Before applying the switch you are shown the exact backup and restore commands.
+To revert any time:
+
+```bash
+cp ~/.config/master-oogway/conf.zsh.bak ~/.config/master-oogway/conf.zsh && soursh
+```
+
+### Theme aliases
+
+| Command | Description |
+|---------|-------------|
+| `rezsh` | reset all `DRAGON__*` vars to defaults, then reload the shell |
+| `reset_theme_variables` | unset all `DRAGON__*` variables without reloading |
 
 ## SSH theme forwarding
 
