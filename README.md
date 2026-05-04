@@ -1,7 +1,7 @@
 # master-oogway
 
 A complete zsh shell environment — custom prompt theme (dragon), interactive
-configurator, git aliases, fuzzy-finder functions, and 17 opt-in
+configurator, git aliases, fuzzy-finder functions, and 18 opt-in
 oh-my-zsh plugins — distributed as a standalone git repo.
 
 ## What it does
@@ -91,7 +91,8 @@ These only add new commands and never change existing behavior.
 | `mo-network` | natip (public IP lookup) and sshto (fuzzy SSH host picker) |
 | `mo-process` | psgrep (search processes), port (what's on a port), fkill (fuzzy kill) |
 | `mo-search` | grep aliases, find shortcut, and fuzzy history/man/ripgrep pickers |
-| `mo-shell-tools` | shell inspection and config helpers — h, ?, cwhich, vwhich, vizsh, soursh |
+| `mo-shell-tools` | shell inspection and config helpers — h, ?, cwhich, vwhich, vizsh, soursh, please |
+| `mo-welcome` | welcome banner — system snapshot printed on every shell open |
 <!-- mo-plugins-end -->
 
 > **Load order:** override plugins must appear before additive plugins in
@@ -185,9 +186,10 @@ These only add new commands and never change existing behavior.
 | `h` | last 50 history entries |
 | `?` | print exit code of the last command |
 | `cwhich <cmd>` | cat the source of a command |
-| `vwhich <cmd>` | open the source of a command in vim |
-| `vizsh` | open `~/.zshrc` in vim |
+| `vwhich <cmd>` | open the source of a command in `$EDITOR` (falls back to vim) |
+| `vizsh` | open `~/.zshrc` in `$EDITOR` (falls back to vim) |
 | `soursh` | reload `~/.zshrc` |
+| `please` | re-run the previous command with sudo |
 
 ### mo-network — network helpers
 

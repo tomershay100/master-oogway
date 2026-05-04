@@ -32,7 +32,7 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
         prompt.zsh                __calc_prompt_length, dragon__set_lprompt/set_rprompt
         transient.zsh             zle hooks, gitstatus glue, prompt refresh
   plugins/
-    mo-*/mo-*.plugin.zsh          17 oh-my-zsh plugins (override + additive)
+    mo-*/mo-*.plugin.zsh          18 oh-my-zsh plugins (override + additive)
 
 tests/
   check_schema.sh                 validates schema var count vs theme; run directly with bash
