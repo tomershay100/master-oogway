@@ -1,7 +1,10 @@
 # Provides: natip (public IP lookup) and sshto (fuzzy SSH host picker).
 # Requires: curl for natip. sshto also requires fzf and ~/.ssh/config (or ~/.ssh/config.d/*).
 
-alias natip="curl -s ifconfig.me"
+natip() {
+    command -v curl &>/dev/null || { echo "natip: curl not installed (try: sudo apt install curl)" >&2; return 1; }
+    curl -s ifconfig.me
+}
 
 sshto() {
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
