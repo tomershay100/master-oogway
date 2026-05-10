@@ -5,8 +5,13 @@
 # skipped entirely by comparing the themes directory mtime against the value
 # cached in the state file by dragon-configure / _dragon_write_state.
 
+# Resolve the themes dir at SOURCE time and pass it as $1 to the anon function.
+# Inside an anon function, $0 is the literal string "(anon)" — NOT the script
+# file — so `${0:a:h}` would resolve to $PWD's parent (often $HOME) and the
+# downstream `find` would scan the user's entire home directory. Don't change
+# this without testing in a fresh shell.
 () {
-    local themes_dir="${0:a:h}"
+    local themes_dir="$1"
     local state_file="${HOME}/.config/master-oogway/state"
 
     [[ -d "${themes_dir}" ]] || return
@@ -41,4 +46,4 @@
     printf 'dismissed_hash=%s\nthemes_mtime=%s\n' "${current_hash}" "${current_mtime}" \
         >> "${tmp_state}"
     mv "${tmp_state}" "${state_file}"
-}
+} "${0:a:h}"
