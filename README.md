@@ -9,7 +9,8 @@ oh-my-zsh plugins — distributed as a standalone git repo.
 - Clones itself to `~/.master-oogway/` (or symlinks when run from a dotfiles repo)
 - Replaces `~/.zshrc` on first install with a curated template;
   never overwrites it again
-- Copies `gitconfig.master-oogway` → `~/.gitconfig.master-oogway` and `.zshenv` → `~/.zshenv`
+- Copies `gitconfig.master-oogway` → `~/.gitconfig.master-oogway`,
+  `zshenv.master-oogway` → `~/.zshenv`, and `editorconfig.master-oogway` → `~/.editorconfig`
 - Adds `SendEnv DRAGON__*` to `~/.ssh/config` (creates it if missing) so
   your theme settings forward over SSH
 - Adds `AcceptEnv DRAGON__*` to `/etc/ssh/sshd_config` (via sudo) so this
@@ -52,6 +53,18 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/tomershay100/master-oogw
 `~/.gitconfig` is created once with an `[include]` pointing to
 `~/.gitconfig.master-oogway`. Your `user.name` and `user.email` live in
 `~/.gitconfig` and are never touched by the installer after creation.
+
+## Installed templates (re-copied on every `install.sh` run)
+
+These three files in the repo (`*.master-oogway`) get copied to your home
+directory as dotfiles every time you run the installer. Edit the repo
+template and re-run `install.sh` to redeploy.
+
+| Template (in repo) | Installed at | What it does |
+|---|---|---|
+| `zshenv.master-oogway` | `~/.zshenv` | Sourced for *every* zsh invocation (interactive shells, scripts, cron, sudoedit). Sets `EDITOR` / `VISUAL` (prefers `nvim` → `vim` → `vi`) so anything that consults them — git commit, `crontab -e`, `sudoedit` — uses your editor of choice. Kept minimal because non-interactive shells source it too. |
+| `gitconfig.master-oogway` | `~/.gitconfig.master-oogway` | Curated git defaults — `init.defaultBranch=main`, `pull.rebase=true`, `push.autoSetupRemote=true`, `fetch.prune=true`, `rerere.enabled=true`, meld for diff/merge, sensible `branch.sort`/`tag.sort`, etc. Wired into your `~/.gitconfig` via `[include]` so your own `[user]` settings win. |
+| `editorconfig.master-oogway` | `~/.editorconfig` | EditorConfig conventions (tab indentation, LF endings, UTF-8). Lives at `$HOME` so EditorConfig-aware editors apply it everywhere — they walk up from the file being edited and stop at the first match. |
 
 ## Plugins
 
