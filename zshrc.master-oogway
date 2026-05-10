@@ -26,7 +26,7 @@ setopt HIST_IGNORE_SPACE    # commands prefixed with a space are not saved (usef
 setopt HIST_FIND_NO_DUPS    # skip duplicate entries when searching history (Ctrl+R / up-arrow)
 setopt HIST_VERIFY          # `!!` and `!$` expand on the prompt before running — saves you from disaster
 setopt HIST_REDUCE_BLANKS   # strip extra whitespace from each command before storing
-setopt EXTENDED_HISTORY     # record timestamps in $HISTFILE — required by atuin and friends
+setopt EXTENDED_HISTORY     # record timestamps in $HISTFILE
 setopt AUTO_CD              # type a directory name alone to cd into it (no need for 'cd')
 
 # ── Shell behavior ─────────────────────────────────────────────────────────────
@@ -201,12 +201,6 @@ command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 # zoxide: a smarter cd that learns your most-used directories.
 # Use 'z <partial-name>' instead of 'cd <full-path>'. Remove if not installed.
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
-
-# atuin: enhanced shell history — every command gets a timestamp, working directory,
-# exit code, and duration. Ctrl+R opens atuin's fuzzy search across all of that.
-# --disable-up-arrow keeps Up/Down for history-substring-search.
-# Remove this line to keep fzf's Ctrl+R history widget instead.
-command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
 
 # ── key bindings ───────────────────────────────────────────────────────────────
 # history-substring-search: Up/Down arrows search by the prefix already typed.
