@@ -300,11 +300,14 @@ if [[ "${1:-}" == "--uninstall" ]]; then
         success "${INSTALL_DIR} not found — nothing to remove"
     fi
 
-    # .zshenv — not removed; may predate dragon or contain user edits beyond what
-    # master-oogway wrote (EDITOR / VISUAL exports). Left in place with clear guidance.
+    # .zshenv / .editorconfig — not removed; may predate dragon or have been
+    # edited by the user. Left in place with clear guidance for each.
     warn "${HOME}/.zshenv was NOT removed."
     warn "  master-oogway wrote EDITOR/VISUAL exports there. If you no longer need them,"
     warn "  remove or edit: ${HOME}/.zshenv"
+    warn "${HOME}/.editorconfig was NOT removed."
+    warn "  master-oogway wrote tab-indent / LF-ending conventions there."
+    warn "  remove or edit: ${HOME}/.editorconfig"
 
     success "dragon uninstall complete. Open a new terminal to apply changes."
     exit 0
@@ -380,7 +383,13 @@ fi
 
 # ── .zshenv ────────────────────────────────────────────────────────────────────
 
-copy_file "${INSTALL_DIR}/.zshenv" "${HOME}/.zshenv"
+copy_file "${INSTALL_DIR}/zshenv.master-oogway" "${HOME}/.zshenv"
+
+# ── .editorconfig ──────────────────────────────────────────────────────────────
+# Installed at ~/.editorconfig so the conventions apply globally — EditorConfig
+# walks up from the file being edited and picks up the first match.
+
+copy_file "${INSTALL_DIR}/editorconfig.master-oogway" "${HOME}/.editorconfig"
 
 # ── .gitconfig ─────────────────────────────────────────────────────────────────
 # ~/.gitconfig.master-oogway  — bundle-managed settings (always updated)

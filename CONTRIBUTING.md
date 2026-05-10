@@ -9,10 +9,10 @@ For user documentation see [README.md](README.md).
 
 ```
 install.sh                        entry point — 3 modes (see below)
-zshrc.master-oogway                    user's ~/.zshrc (installed once, never overwritten)
-.zshenv                           always re-copied to ~/.zshenv on each install run
-gitconfig.master-oogway           always re-copied to ~/.gitconfig.master-oogway
-.editorconfig                     enforces tab indentation + LF endings across editors
+zshrc.master-oogway               user's ~/.zshrc (installed once, never overwritten)
+zshenv.master-oogway              always re-copied to ~/.zshenv on each install run
+gitconfig.master-oogway           always re-copied to ~/.gitconfig.master-oogway on each install run
+editorconfig.master-oogway        always re-copied to ~/.editorconfig on each install run
 
 omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
   themes/
@@ -81,8 +81,9 @@ Different files have different latency depending on how they reach disk:
 | What you changed | How to test |
 |---|---|
 | Any `omz-custom/` file (plugins, theme parts, configure, notifier) | `soursh` — live via symlink |
-| `.zshenv` | re-run `./install.sh`, then `soursh` |
+| `zshenv.master-oogway` | re-run `./install.sh`, then `soursh` |
 | `gitconfig.master-oogway` | re-run `./install.sh` |
+| `editorconfig.master-oogway` | re-run `./install.sh` |
 | `zshrc.master-oogway` | `rm ~/.zshrc && ./install.sh` |
 | `install.sh` itself | just run `./install.sh` — idempotent |
 
