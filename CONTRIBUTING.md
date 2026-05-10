@@ -182,8 +182,13 @@ gitstatus callback → __refresh_prompt (transient.zsh)
 ```
 
 **SSH theme forwarding:**
-`~/.zshenv` exports `DRAGON__FORWARDED=1`. `conf.zsh` checks this var on remote
-machines to skip re-applying local defaults over the forwarded values.
+The generated `~/.config/master-oogway/conf.zsh` (written by `dragon-configure`)
+both **exports** `DRAGON__FORWARDED=1` after the early-return guard, and
+**checks** it on entry: `[[ "${DRAGON__FORWARDED:-}" == "1" ]] && return`.
+On the sending machine the export sets the var so SSH's `SendEnv DRAGON__*`
+carries it; on the receiving machine the guard short-circuits, so any forwarded
+`DRAGON__*` values stay untouched. (`.zshenv` is not involved — it only sets
+`EDITOR`/`VISUAL`.)
 
 ---
 
