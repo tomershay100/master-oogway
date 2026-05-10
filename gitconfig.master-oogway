@@ -1,39 +1,38 @@
 [init]
-	defaultBranch = main
+	defaultBranch = main                # `git init` creates `main` instead of `master`
 
 [core]
-	autocrlf = input
+	autocrlf = input                    # normalise CRLF→LF on commit; check out as-is (Linux-friendly)
 
 [diff]
-	tool = meld
+	tool = meld                         # `git difftool` opens meld (GUI 3-pane diff)
 
 [difftool "meld"]
-	cmd = meld "$LOCAL" "$REMOTE"
+	cmd = meld "$LOCAL" "$REMOTE"       # how meld is invoked for `git difftool`
 
 [merge]
-	tool = meld
+	tool = meld                         # `git mergetool` opens meld (GUI 3-way merge)
 
 [mergetool "meld"]
-	cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"
+	cmd = meld "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"  # 3-way merge layout for meld
 
 [pull]
-	rebase = true
+	rebase = true                       # `git pull` rebases instead of merging — linear history
 
 [fetch]
-	prune = true
+	prune = true                        # `git fetch` deletes local refs whose remote counterparts are gone
 
 [push]
-	autoSetupRemote = true
+	autoSetupRemote = true              # first `git push` on a new branch auto-creates the upstream
 
 [rerere]
-	enabled = true
+	enabled = true                      # remember conflict resolutions and replay them on re-occurrence
 
 [branch]
-	sort = -committerdate
+	sort = -committerdate               # `git branch` lists most-recently-committed first
 
 [tag]
-	sort = version:refname
+	sort = version:refname              # `git tag` sorts semver-style (v1.2 < v1.10) instead of lexically
 
 [log]
-	date = iso
-
+	date = iso                          # `git log` prints dates as 2026-05-10 17:53:00 +0000

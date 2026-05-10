@@ -185,7 +185,7 @@ These only add new commands and never change existing behavior.
 |---------|-------------|
 | `h` | last 50 history entries |
 | `?` | print exit code of the last command |
-| `cwhich <cmd>` | cat the source of a command |
+| `cwhich <cmd>` | cat the source of a command (syntax-highlighted via bat/batcat if installed) |
 | `vwhich <cmd>` | open the source of a command in `$EDITOR` (falls back to vim) |
 | `vizsh` | open `~/.zshrc` in `$EDITOR` (falls back to vim) |
 | `soursh` | reload `~/.zshrc` |
