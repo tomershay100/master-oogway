@@ -54,6 +54,25 @@ require_cmd() {
     command -v "$cmd" &>/dev/null || die "'${cmd}' not found. Install: sudo apt install ${pkg}"
 }
 
+# Try to install a package via apt-get if it's missing. Returns 0 if the command
+# is now on PATH (either was already, or installed successfully), 1 otherwise.
+# Caller decides whether to die() or continue.
+apt_install() {
+    local cmd="$1" pkg="${2:-$1}"
+    command -v "$cmd" &>/dev/null && return 0
+    if ! command -v apt-get &>/dev/null; then
+        warn "'${cmd}' not installed and apt-get is unavailable — install '${pkg}' manually"
+        return 1
+    fi
+    info "'${cmd}' not installed — running: sudo apt-get install -y ${pkg}"
+    if sudo apt-get install -y "$pkg" >/dev/null 2>&1; then
+        success "Installed ${pkg}"
+        return 0
+    fi
+    warn "Failed to install '${pkg}' — try manually: sudo apt install ${pkg}"
+    return 1
+}
+
 copy_file() {
     local src="$1" dst="$2"
     [[ -e "$src" ]] || die "Source does not exist: ${src}"
@@ -120,7 +139,7 @@ _running_from_install_dir() {
 # Bootstrap only: clone (or pull) the repo, then re-exec the real install.sh.
 
 if _running_via_pipe; then
-    require_cmd git
+    apt_install git || die "Cannot proceed without git"
     if [[ -d "${INSTALL_DIR}/.git" ]]; then
         info "Updating ${INSTALL_DIR}..."
         git -C "${INSTALL_DIR}" pull --ff-only || die "git pull failed — resolve conflicts or re-clone"
@@ -317,21 +336,35 @@ fi
 
 [[ "$(uname)" == "Linux" ]] || die "dragon requires Linux (Ubuntu 24.04). macOS/BSD are not supported."
 
-require_cmd zsh
-require_cmd git
+# Must-have packages — auto-installed via apt-get when missing. dragon cannot
+# function without these.
+apt_install zsh  || die "Cannot proceed without zsh"
+apt_install git  || die "Cannot proceed without git"
+apt_install curl || die "Cannot proceed without curl (needed by the oh-my-zsh installer)"
 
+# oh-my-zsh — required, but not an apt package. Print the official one-liner
+# and exit rather than running it ourselves (its installer is interactive and
+# replaces the user's shell — better the user sees the source before running).
 if [[ ! -f "${HOME}/.oh-my-zsh/oh-my-zsh.sh" ]]; then
-    die "oh-my-zsh not found. Install first:\n  sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
+    die "oh-my-zsh not found — please install it first, then re-run this script:
+
+  sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
 fi
 
+# Nice-to-have packages — silently skipped at runtime when missing (each plugin
+# guards its own dependency). Just remind the user via the post-install todo
+# list so they know the option exists.
 command -v fzf    &>/dev/null || todo_item "Install fzf for fuzzy history search: sudo apt install fzf"
 command -v meld   &>/dev/null || todo_item "Install meld for git difftool: sudo apt install meld"
 command -v direnv &>/dev/null || todo_item "Install direnv for per-directory envs: sudo apt install direnv"
+command -v lsof   &>/dev/null || todo_item "Install lsof for the 'port' command: sudo apt install lsof"
+command -v rg     &>/dev/null || todo_item "Install ripgrep for the 'frg' fuzzy ripgrep picker: sudo apt install ripgrep"
+command -v fd     &>/dev/null || todo_item "Install fd for faster fzf file picker (Ctrl+T): sudo apt install fd-find"
 if ! command -v eza &>/dev/null && ! command -v exa &>/dev/null; then
     todo_item "Install eza (Ubuntu) or exa (Raspberry Pi) for enhanced ls: sudo apt install eza"
 fi
 if ! command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
-    todo_item "Install bat for syntax-highlighted cat/less: sudo apt install bat"
+    todo_item "Install bat for syntax-highlighted cat/less/man: sudo apt install bat"
 fi
 
 # ── .zshrc: first install replaces; subsequent runs leave it alone ─────────────
