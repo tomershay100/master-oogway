@@ -211,7 +211,3 @@ bindkey "${terminfo[kcud1]}" history-substring-search-down
 # Ctrl+→ / Ctrl+← jump by word — sequences sent by most modern terminals.
 bindkey '^[[1;5C' forward-word
 bindkey '^[[1;5D' backward-word
-
-# ── dragon update check ─────────────────────────────────────────────────────
-# Notifies when new theme variables are available after a repo update.
-source "$HOME/.master-oogway/dragon-notifier.zsh"

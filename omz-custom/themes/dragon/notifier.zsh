@@ -1,12 +1,12 @@
-# dragon-notifier.zsh — sourced from ~/.zshrc after oh-my-zsh.
-# Notifies once per new hash if theme variables were added since last config run.
+# notifier.zsh — sourced by dragon.zsh-theme (so it only runs when ZSH_THEME=dragon).
+# Notifies once per new hash if theme variables were added since last configure run.
 #
 # Performance: on the common path (no new variables) the grep file scan is
 # skipped entirely by comparing the themes directory mtime against the value
 # cached in the state file by dragon-configure / _dragon_write_state.
 
 () {
-    local themes_dir="${HOME}/.master-oogway/omz-custom/themes/dragon"
+    local themes_dir="${0:a:h}"
     local state_file="${HOME}/.config/master-oogway/state"
 
     [[ -d "${themes_dir}" ]] || return
