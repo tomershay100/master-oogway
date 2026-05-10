@@ -1,6 +1,25 @@
 # Provides: file management helpers — extract, bak, sizeof, fp.
 # Requires: fp also requires fzf (skipped with an error if not installed).
 
+# Tool name → apt package hint, used by extract() when a tool is missing.
+typeset -gA _MO_EXTRACT_HINTS=(
+    [tar]="tar"
+    [bunzip2]="bzip2"
+    [gunzip]="gzip"
+    [unzip]="unzip"
+    [7z]="p7zip-full"
+    [unrar]="unrar"
+    [xz]="xz-utils"
+    [zstd]="zstd"
+)
+
+# Internal: returns 0 if `$1` is on PATH, else prints a clean install hint and returns 1.
+_mo_extract_check() {
+    command -v "$1" &>/dev/null && return 0
+    echo "extract: '$1' not installed (try: sudo apt install ${_MO_EXTRACT_HINTS[$1]:-$1})" >&2
+    return 1
+}
+
 function extract() {
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
         echo "Usage: extract <file> [file2 ...]"
@@ -21,18 +40,18 @@ function extract() {
             continue
         fi
         case "$file" in
-            *.tar.bz2)  tar xjf "$file"        ;;
-            *.tar.gz)   tar xzf "$file"        ;;
-            *.tar.xz)   tar xJf "$file"        ;;
-            *.tar.zst)  tar --zstd -xf "$file" ;;
-            *.tar)      tar xf  "$file"        ;;
-            *.bz2)      bunzip2 "$file"        ;;
-            *.gz)       gunzip  "$file"        ;;
-            *.zip)      unzip   "$file"        ;;
-            *.7z)       7z x    "$file"        ;;
-            *.rar)      unrar x "$file"        ;;
-            *.xz)       xz -d   "$file"        ;;
-            *.zst)      zstd -d "$file"        ;;
+            *.tar.bz2)  _mo_extract_check tar     && tar xjf "$file"        || failed=1 ;;
+            *.tar.gz)   _mo_extract_check tar     && tar xzf "$file"        || failed=1 ;;
+            *.tar.xz)   _mo_extract_check tar     && tar xJf "$file"        || failed=1 ;;
+            *.tar.zst)  _mo_extract_check tar     && tar --zstd -xf "$file" || failed=1 ;;
+            *.tar)      _mo_extract_check tar     && tar xf  "$file"        || failed=1 ;;
+            *.bz2)      _mo_extract_check bunzip2 && bunzip2 "$file"        || failed=1 ;;
+            *.gz)       _mo_extract_check gunzip  && gunzip  "$file"        || failed=1 ;;
+            *.zip)      _mo_extract_check unzip   && unzip   "$file"        || failed=1 ;;
+            *.7z)       _mo_extract_check 7z      && 7z x    "$file"        || failed=1 ;;
+            *.rar)      _mo_extract_check unrar   && unrar x "$file"        || failed=1 ;;
+            *.xz)       _mo_extract_check xz      && xz -d   "$file"        || failed=1 ;;
+            *.zst)      _mo_extract_check zstd    && zstd -d "$file"        || failed=1 ;;
             *) echo "extract: unknown format '$file'" >&2; failed=1 ;;
         esac
     done

@@ -25,6 +25,7 @@ function port() {
         echo "port: invalid port '$1' (must be 1–65535)" >&2
         return 1
     fi
+    command -v lsof &>/dev/null || { echo "port: lsof not installed (try: sudo apt install lsof)" >&2; return 1; }
     local out lsof_rc
     out=$(lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN -P -n 2>/dev/null); lsof_rc=$?
     if [[ -z "$out" && $lsof_rc -ne 0 ]]; then
