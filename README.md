@@ -37,6 +37,12 @@ Then install master-oogway:
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/tomershay100/master-oogway/main/install.sh)"
 ```
 
+The installer auto-installs the **must-have** packages it needs via
+`sudo apt install` (zsh, git, curl) and prints a post-install reminder for
+**nice-to-have** packages that improve specific plugins (`bat`, `eza`, `fzf`,
+`fd`, `meld`, `direnv`, `lsof`, `ripgrep`). Every nice-to-have plugin guards
+its dependency at runtime, so the shell stays usable even if you skip them.
+
 ## Updating
 
 ```bash
