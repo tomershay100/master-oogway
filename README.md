@@ -1,7 +1,7 @@
 # master-oogway
 
 A complete zsh shell environment — custom prompt theme (dragon), interactive
-configurator, git aliases, fuzzy-finder functions, and 18 opt-in
+configurator, git aliases, fuzzy-finder functions, and 19 opt-in
 oh-my-zsh plugins — distributed as a standalone git repo.
 
 ## What it does
@@ -101,6 +101,7 @@ These only add new commands and never change existing behavior.
 | `mo-apps` | launcher aliases for GUI applications installed via flatpak |
 | `mo-auto-ls` | auto-ls — runs ls automatically after every cd |
 | `mo-build` | m (parallel make with optional colormake+banner) and mc (make clean) |
+| `mo-cli` | `master-oogway` CLI — update / uninstall / version / doctor / configure / edit / path / help |
 | `mo-dev` | calc, epoch, serve, md2pdf — developer utility functions |
 | `mo-env` | fenv — fuzzy browser and inline editor for environment variables |
 | `mo-files` | file management helpers — extract, bak, sizeof, fp |
@@ -207,6 +208,19 @@ These only add new commands and never change existing behavior.
 | `vizsh` | open `~/.zshrc` in `$EDITOR` (falls back to vim) |
 | `soursh` | reload `~/.zshrc` |
 | `please` | re-run the previous command with sudo |
+
+### mo-cli — `master-oogway` command dispatcher
+
+| Command | Description |
+|---------|-------------|
+| `master-oogway update` | pull latest master-oogway and re-run `install.sh` |
+| `master-oogway uninstall` | run `install.sh --uninstall` (interactive) |
+| `master-oogway version` | print the installed dragon version (date + commit) |
+| `master-oogway doctor` | check which optional tools are installed and which apt packages provide the missing ones |
+| `master-oogway configure [args]` | open `dragon-configure` (forwards args, e.g. `--preset short`) |
+| `master-oogway edit` | open `~/.zshrc` in `$EDITOR` |
+| `master-oogway path` | print the master-oogway install dir |
+| `master-oogway help` | show all subcommands |
 
 ### mo-network — network helpers
 
