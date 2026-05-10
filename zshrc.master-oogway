@@ -155,6 +155,7 @@ plugins=(
     mo-env                     # fenv (fuzzy environment variable browser)
     mo-shell-tools             # h, ?, cwhich, vwhich, vizsh, soursh, please
     mo-apps                    # GUI app launchers (gnucash via flatpak)
+    mo-cli                     # `master-oogway` CLI: update, uninstall, version, doctor, ...
     mo-welcome                 # 2-line system snapshot banner on shell open
 )
 
