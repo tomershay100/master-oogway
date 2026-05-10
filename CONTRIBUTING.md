@@ -12,17 +12,17 @@ install.sh                        entry point — 3 modes (see below)
 zshrc.master-oogway                    user's ~/.zshrc (installed once, never overwritten)
 .zshenv                           always re-copied to ~/.zshenv on each install run
 gitconfig.master-oogway           always re-copied to ~/.gitconfig.master-oogway
-dragon-notifier.zsh               sourced by ~/.zshrc — notifies when new vars exist
 .editorconfig                     enforces tab indentation + LF endings across editors
 
 omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
   themes/
-    dragon.zsh-theme              OMZ entry point shim — sources dragon/dragon.zsh
+    dragon.zsh-theme              OMZ entry point shim — sources dragon/{dragon,configure,aliases,notifier}.zsh
     dragon/                       all dragon theme code lives here
       dragon.zsh                  theme entry point — defaults loop, hook registration
       schema.zsh                  _DRAGON_DEFAULTS: single source of truth for all vars
       configure.zsh               interactive wizard (~750 lines)
       aliases.zsh                 rezsh, reset_theme_variables
+      notifier.zsh                shell-start notifier — fires when new theme vars exist
       parts/
         helpers.zsh               __get_xterm_*, __dragon__show (segment renderer)
         segments_left.zsh         username, hostname, directory, prompt_char, ssh_prefix
@@ -80,8 +80,7 @@ Different files have different latency depending on how they reach disk:
 
 | What you changed | How to test |
 |---|---|
-| Any `omz-custom/` file (plugins, theme parts, configure) | `soursh` — live via symlink |
-| `dragon-notifier.zsh` | `soursh` |
+| Any `omz-custom/` file (plugins, theme parts, configure, notifier) | `soursh` — live via symlink |
 | `.zshenv` | re-run `./install.sh`, then `soursh` |
 | `gitconfig.master-oogway` | re-run `./install.sh` |
 | `zshrc.master-oogway` | `rm ~/.zshrc && ./install.sh` |
@@ -97,12 +96,11 @@ Always run these four checks before committing — every change should pass all 
 # 1. bash syntax check on install.sh
 bash -n install.sh
 
-# 2. zsh syntax check on all theme + plugin + notifier files
+# 2. zsh syntax check on all theme + plugin files
 zsh -n omz-custom/themes/dragon.zsh-theme \
        omz-custom/themes/dragon/*.zsh \
        omz-custom/themes/dragon/parts/*.zsh \
-       omz-custom/plugins/mo-*/mo-*.plugin.zsh \
-       dragon-notifier.zsh
+       omz-custom/plugins/mo-*/mo-*.plugin.zsh
 
 # 3. static analysis on the bash files
 shellcheck install.sh tests/check_schema.sh
