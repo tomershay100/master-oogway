@@ -90,7 +90,6 @@ that bypasses the override and calls the original binary directly.
 
 These only add new commands and never change existing behavior.
 
-<!-- mo-plugins-start -->
 | Plugin | Provides |
 |--------|---------|
 | `mo-apps` | launcher aliases for GUI applications installed via flatpak |
@@ -106,7 +105,6 @@ These only add new commands and never change existing behavior.
 | `mo-search` | grep aliases, find shortcut, and fuzzy history/man/ripgrep pickers |
 | `mo-shell-tools` | shell inspection and config helpers — h, ?, cwhich, vwhich, vizsh, soursh, please |
 | `mo-welcome` | welcome banner — system snapshot printed on every shell open |
-<!-- mo-plugins-end -->
 
 > **Load order:** override plugins must appear before additive plugins in
 > `~/.zshrc` so additive plugins inherit the overridden commands.
