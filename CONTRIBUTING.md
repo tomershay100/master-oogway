@@ -36,8 +36,6 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
 
 tests/
   check_schema.sh                 validates schema var count vs theme; run directly with bash
-scripts/
-  gen_readme.sh                   regenerates README plugin table from # Provides: comments
 ```
 
 ---
@@ -116,24 +114,28 @@ If any of these fail, fix the underlying issue — never commit a file that fail
 
 ## Adding a plugin
 
-1. Create `omz-custom/plugins/mo-<name>/mo-<name>.plugin.zsh`
+1. Create `omz-custom/plugins/mo-<name>/mo-<name>.plugin.zsh`.
 2. First line must be a `# Provides:` comment — one line describing what it adds:
+
    ```zsh
    # Provides: mycommand (does X) and myalias (does Y).
    ```
-3. Add `mo-<name>` to the plugins list in `zshrc.master-oogway` (override or additive group)
-4. **Update the README** — regenerate the auto-generated plugin table:
-   ```bash
-   bash scripts/gen_readme.sh
-   ```
-   Then add a `### mo-<name>` command-reference section to [README.md](README.md)
-   under "Command reference" describing each command the plugin provides.
+
+3. Add `mo-<name>` to the plugins list in `zshrc.master-oogway` (override or additive group), with a one-line trailing comment summarising what it provides.
+4. **Update [README.md](README.md) by hand — there is no generator.** Two places to touch:
+   - The "Additive plugins" table (under `## Plugins → ### Additive plugins — new commands only`) — add a new row matching the format of its siblings: <code>&#124; `mo-&lt;name&gt;` &#124; one-line description &#124;</code>. Keep the table sorted alphabetically by plugin name.
+   - The "Command reference" section — add a new `### mo-<name> — short heading` subsection with a `Command | Description` table listing every command the plugin exposes.
 5. Run the four validation checks above.
 
 Override plugins (those that shadow system commands) must appear **before** additive
 plugins in `zshrc.master-oogway` so additive plugins inherit the overridden commands.
 Each override should also define an escape-hatch alias (`r<name>`) that calls the
-original binary directly.
+original binary directly. Override plugins go in the "Override plugins" table at the top
+of the README's `## Plugins` section, not in the additive table.
+
+If a plugin requires a tool that may not be installed, **always guard usage with
+`command -v <tool> &>/dev/null`** so the plugin loads silently when the dependency
+is absent. See `mo-bat-override` for the canonical pattern.
 
 ---
 
@@ -189,26 +191,3 @@ carries it; on the receiving machine the guard short-circuits, so any forwarded
 `DRAGON__*` values stay untouched. (`.zshenv` is not involved — it only sets
 `EDITOR`/`VISUAL`.)
 
----
-
-## Generating the README plugin table
-
-```bash
-bash scripts/gen_readme.sh
-```
-
-Reads `# Provides:` comments from all `mo-*.plugin.zsh` files and rewrites the
-additive plugins table in `README.md` between the sentinel markers:
-
-```text
-<!-- mo-plugins-start -->
-...
-<!-- mo-plugins-end -->
-```
-
-Run this after adding or modifying a plugin's `# Provides:` comment.
-
-> **Reminder:** the script only regenerates the auto-table at the top.
-> If you add a new plugin or a new command to an existing plugin, also add or
-> update its dedicated `### mo-<name>` section under "Command reference" in
-> README.md by hand — those tables are not auto-generated.
