@@ -33,7 +33,7 @@ if __is_via_ssh; then
 else
 	set_if_unset DRAGON__USE_NERD_FONT true
 fi
-local _dragon_k _dragon_v
+typeset _dragon_k _dragon_v
 for _dragon_k _dragon_v in "${(@kv)_DRAGON_DEFAULTS}"; do
 	[[ "$_dragon_k" == "USE_NERD_FONT" ]] && continue
 	set_if_unset "DRAGON__${_dragon_k}" "$_dragon_v"
