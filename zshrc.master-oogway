@@ -61,7 +61,6 @@ HYPHEN_INSENSITIVE="true"        # treat - and _ as identical in tab-completion 
 COMPLETION_WAITING_DOTS="true"   # show ... while tab-completion is computing
 DISABLE_UNTRACKED_FILES_DIRTY="true"  # don't mark the prompt dirty for untracked files (faster in large repos)
 CASE_SENSITIVE="false"           # tab-completion ignores case (READ → README.md)
-ENABLE_CORRECTION="true"         # OMZ wrapper around `setopt CORRECT` — same effect, OMZ-style toggle
 DISABLE_AUTO_UPDATE="true"       # never auto-check for OMZ updates — quieter shell start
 
 # ── Completion (zsh native + zstyle tweaks) ────────────────────────────────────
