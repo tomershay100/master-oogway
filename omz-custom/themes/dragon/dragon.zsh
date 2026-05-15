@@ -65,10 +65,7 @@ __update_prompt
 
 autoload -U add-zsh-hook
 
-if (( ! ${preexec_functions[(Ie)__set_timer]} )); then
-	add-zsh-hook preexec __set_timer
-fi
-
+add-zsh-hook preexec __set_timer
 add-zsh-hook preexec __mark_cmd_ran
 add-zsh-hook precmd  __save_exit_code
 add-zsh-hook precmd  __update_prompt
