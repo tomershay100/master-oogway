@@ -119,7 +119,10 @@ print_todos() {
 _SCRIPT_SOURCE="${BASH_SOURCE[0]:-}"
 
 _running_via_pipe() {
-    [[ -z "${_SCRIPT_SOURCE}" || "${_SCRIPT_SOURCE}" == "bash" || "${_SCRIPT_SOURCE}" == "/dev/stdin" ]]
+    case "${_SCRIPT_SOURCE}" in
+        ""|bash|/dev/stdin|/dev/fd/*|/proc/self/fd/*) return 0 ;;
+    esac
+    return 1
 }
 
 _script_dir() {
