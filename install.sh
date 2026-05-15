@@ -44,8 +44,6 @@ _on_error() {
 }
 trap '_on_error $LINENO' ERR
 
-_cleanup() { local ec=$?; trap - EXIT INT TERM; exit "$ec"; }
-trap _cleanup EXIT INT TERM
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
