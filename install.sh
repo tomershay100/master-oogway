@@ -135,10 +135,20 @@ _running_from_install_dir() {
     [[ "$(_script_dir)" == "${INSTALL_DIR}" ]]
 }
 
-# ── Mode: curl pipe ────────────────────────────────────────────────────────────
-# Bootstrap only: clone (or pull) the repo, then re-exec the real install.sh.
+_running_from_master_oogway_clone() {
+    local dir; dir="$(_script_dir)" || return 1
+    local remote
+    remote=$(git -C "$dir" remote get-url origin 2>/dev/null) || return 1
+    [[ "$remote" == *"master-oogway"* ]]
+}
 
-if _running_via_pipe; then
+# ── Mode: curl pipe / bootstrap ────────────────────────────────────────────────
+# Triggered when piped through bash, OR when the script is run from a directory
+# that is not a master-oogway clone (e.g. a copied script, /tmp, a random path).
+# Clones (or pulls) the repo, then re-execs the real install.sh from INSTALL_DIR.
+
+if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_oogway_clone; }; then
+    _running_via_pipe || info "Script is not running from a master-oogway clone — bootstrapping..."
     apt_install git || die "Cannot proceed without git"
     if [[ -d "${INSTALL_DIR}/.git" ]]; then
         info "Updating ${INSTALL_DIR}..."
@@ -161,10 +171,10 @@ if _running_from_install_dir; then
     success "Repository up-to-date"
 fi
 
-# ── Mode: dev (running from a local clone, not ~/.master-oogway) ──────────────
+# ── Mode: dev (running from a master-oogway clone, not ~/.master-oogway) ───────
 # Symlinks the local clone → ~/.master-oogway/ so edits are live immediately.
 
-if ! _running_from_install_dir; then
+if _running_from_master_oogway_clone && ! _running_from_install_dir; then
     local_dir="$(_script_dir)"
     if [[ -L "${INSTALL_DIR}" && "$(readlink "${INSTALL_DIR}")" == "${local_dir}" ]]; then
         success "${INSTALL_DIR} already linked to this repo"
@@ -173,6 +183,8 @@ if ! _running_from_install_dir; then
         if confirm "Re-link to ${local_dir}?"; then
             ln -sfn "${local_dir}" "${INSTALL_DIR}"
             success "Re-linked ${INSTALL_DIR} → ${local_dir}"
+        else
+            die "Aborted — ${INSTALL_DIR} still points to $(readlink "${INSTALL_DIR}")"
         fi
     elif [[ -e "${INSTALL_DIR}" ]]; then
         die "${INSTALL_DIR} exists and is not a symlink. Remove it and re-run."
