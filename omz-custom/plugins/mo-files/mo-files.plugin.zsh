@@ -39,15 +39,16 @@ function extract() {
             failed=1
             continue
         fi
+        local _tar_flags="--no-overwrite-dir --no-same-owner --no-same-permissions"
         case "$file" in
-            *.tar.bz2)  _mo_extract_check tar     && tar xjf "$file"        || failed=1 ;;
-            *.tar.gz)   _mo_extract_check tar     && tar xzf "$file"        || failed=1 ;;
-            *.tar.xz)   _mo_extract_check tar     && tar xJf "$file"        || failed=1 ;;
-            *.tar.zst)  _mo_extract_check tar     && tar --zstd -xf "$file" || failed=1 ;;
-            *.tar)      _mo_extract_check tar     && tar xf  "$file"        || failed=1 ;;
+            *.tar.bz2)  _mo_extract_check tar     && tar xjf "$file"        ${=_tar_flags} || failed=1 ;;
+            *.tar.gz)   _mo_extract_check tar     && tar xzf "$file"        ${=_tar_flags} || failed=1 ;;
+            *.tar.xz)   _mo_extract_check tar     && tar xJf "$file"        ${=_tar_flags} || failed=1 ;;
+            *.tar.zst)  _mo_extract_check tar     && tar --zstd -xf "$file" ${=_tar_flags} || failed=1 ;;
+            *.tar)      _mo_extract_check tar     && tar xf  "$file"        ${=_tar_flags} || failed=1 ;;
             *.bz2)      _mo_extract_check bunzip2 && bunzip2 "$file"        || failed=1 ;;
             *.gz)       _mo_extract_check gunzip  && gunzip  "$file"        || failed=1 ;;
-            *.zip)      _mo_extract_check unzip   && unzip   "$file"        || failed=1 ;;
+            *.zip)      _mo_extract_check unzip   && unzip -K "$file"       || failed=1 ;;
             *.7z)       _mo_extract_check 7z      && 7z x    "$file"        || failed=1 ;;
             *.rar)      _mo_extract_check unrar   && unrar x "$file"        || failed=1 ;;
             *.xz)       _mo_extract_check xz      && xz -d   "$file"        || failed=1 ;;
