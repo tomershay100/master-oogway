@@ -60,8 +60,22 @@ fbranch() {
     local default_branch
     default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
         | sed 's|refs/remotes/origin/||') || default_branch="main"
+
+    # fzf substitutes {} textually into the preview shell — drop branches with chars that could execute.
+    local -a all_branches safe_branches dropped
+    all_branches=( ${(f)"$(git branch --format='%(refname:short)' 2>/dev/null)"} )
+    local b unsafe_chars=$'$`();|&<>"\'\\'
+    for b in "${all_branches[@]}"; do
+        if [[ "$b" == *[$unsafe_chars]* ]]; then
+            dropped+=("$b")
+        else
+            safe_branches+=("$b")
+        fi
+    done
+    (( ${#dropped[@]} > 0 )) && print -P "%F{yellow}fbranch: hid %B${#dropped[@]}%b branch(es) with shell-unsafe names — use 'git switch' for those%f" >&2
+
     local branch
-    branch=$(git branch --format='%(refname:short)' 2>/dev/null \
+    branch=$(printf '%s\n' "${safe_branches[@]}" \
         | fzf --height=60% --reverse \
               --preview-window=right:60%:wrap \
               --preview "

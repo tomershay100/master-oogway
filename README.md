@@ -149,7 +149,7 @@ These only add new commands and never change existing behavior.
 | `gundo` | undo last commit (keep changes staged) |
 | `gclean` | remove untracked files and dirs |
 | `gsum` | print branch + staged/unstaged summary |
-| `fbranch` | fuzzy-select a branch and switch to it |
+| `fbranch` | fuzzy-select a branch and switch to it (hides branches with shell-unsafe names) |
 | `flog` | fuzzy-browse git log and show diff |
 
 ### mo-navigation — directory movement
