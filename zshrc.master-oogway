@@ -133,7 +133,6 @@ plugins=(
     command-not-found         # suggests packages to install when a command is not found
     fzf                       # enables Ctrl+R (history), Ctrl+T (file), Alt+C (cd) fuzzy finders
     history-substring-search  # Up/Down arrows search history by the prefix you've already typed
-    docker                    # tab-completion for docker commands and flags
 
     # ── master-oogway plugins ──────────────────────────────────────────────────
     # NOTE: order matters — override plugins must come before additive ones so
