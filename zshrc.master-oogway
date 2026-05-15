@@ -1,5 +1,8 @@
 # master-oogway:managed — this file is yours to edit freely.
 # Re-running install.sh will NOT overwrite this file.
+# WARNING: do not remove or edit the line above — it is the marker that protects
+# this file from being replaced. If it is missing, the next install/update run
+# will overwrite this file with the default template and your edits will be lost.
 
 # ── PATH additions ─────────────────────────────────────────────────────────────
 # Add directories to PATH only if they exist (avoids warnings on missing dirs).
