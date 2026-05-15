@@ -219,9 +219,9 @@ _dragon_render_preview() {
         VCS_STATUS_COMMITS_BEHIND=\${VCS_STATUS_COMMITS_BEHIND:-0}
         VCS_STATUS_STASHES=\${VCS_STATUS_STASHES:-0}
         VCS_STATUS_REMOTE_NAME='origin'
+        source '${_DRAGON_THEMES_DIR}/dragon.zsh' 2>/dev/null
         _DRAGON_EXIT_CODE=${preview_exit_code}
         __LAST_EXIT_CODE=${preview_exit_code}
-        source '${_DRAGON_THEMES_DIR}/dragon.zsh' 2>/dev/null
         dragon__update_zsh_prompt 2>/dev/null
         if [[ '${transient_mode}' == true ]]; then
             __dragon_zle_line_finish 2>/dev/null
