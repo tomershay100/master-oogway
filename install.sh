@@ -454,12 +454,16 @@ _install_gitconfig() {
     git_email=$(git config --file "${GITCONFIG}" user.email 2>/dev/null || true)
 
     if [[ -z "$git_name" ]]; then
-        _ask "Git user name: "
-        read -r git_name < /dev/tty
+        while [[ -z "$git_name" ]]; do
+            _ask "Git user name: "
+            read -r git_name < /dev/tty
+        done
     fi
     if [[ -z "$git_email" ]]; then
-        _ask "Git email: "
-        read -r git_email < /dev/tty
+        while [[ -z "$git_email" ]]; do
+            _ask "Git email: "
+            read -r git_email < /dev/tty
+        done
     fi
 
     # If ~/.gitconfig already includes the bundle, leave it alone.
@@ -473,16 +477,15 @@ _install_gitconfig() {
             info "Backed up ${GITCONFIG} → ${backup}"
             info "Review ${backup} and move any personal settings to ${GITCONFIG}"
         fi
-        cat > "${GITCONFIG}" <<EOF
+        cat > "${GITCONFIG}" <<'EOF'
 # Bundle defaults — your settings below override these.
 [include]
 	path = ~/.gitconfig.master-oogway
 
 # Your identity and personal overrides go here (or below the include above).
-[user]
-	name = ${git_name}
-	email = ${git_email}
 EOF
+        git config --file "${GITCONFIG}" user.name  "$git_name"
+        git config --file "${GITCONFIG}" user.email "$git_email"
         success "Created ${GITCONFIG} with identity and bundle include"
         return
     fi
