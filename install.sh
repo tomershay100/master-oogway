@@ -417,15 +417,6 @@ else
     _install_zshrc
 fi
 
-# ── one-shot path migration for installs predating the omz-custom rename ──────
-# The directory was renamed: master-oogway-omz-custom → omz-custom, and the
-# theme code moved into themes/dragon/. Existing ~/.zshrc files still point at
-# the old path — rewrite the ZSH_CUSTOM line in place so the shell keeps loading.
-if [[ -f "${ZSHRC}" ]] && grep -qF 'master-oogway-omz-custom' "${ZSHRC}"; then
-    sed -i 's|master-oogway-omz-custom|omz-custom|g' "${ZSHRC}"
-    success "Migrated ZSH_CUSTOM path in ${ZSHRC} (master-oogway-omz-custom → omz-custom)"
-fi
-
 # ── .zshenv ────────────────────────────────────────────────────────────────────
 
 copy_file "${INSTALL_DIR}/zshenv.master-oogway" "${HOME}/.zshenv"
