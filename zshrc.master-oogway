@@ -108,7 +108,11 @@ HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'       # case-insensitive
 
 # ── plugins ────────────────────────────────────────────────────────────────────
 # gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info).
-source "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh"
+if [[ -f "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh" ]]; then
+    source "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh"
+else
+    print -P "%F{yellow}[master-oogway]%f gitstatus missing — run %B~/.master-oogway/install.sh%b to restore submodules"
+fi
 
 plugins=(
     # ── oh-my-zsh plugins ──────────────────────────────────────────────────────
