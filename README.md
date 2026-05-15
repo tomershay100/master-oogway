@@ -89,7 +89,7 @@ These shadow existing commands. Remove any you don't want.
 | `mo-safety-override` | `cp/mv/mkdir/reboot` with confirmation prompts |
 | `mo-colorize-override` | `ip/diff` → colorized output |
 
-Each override provides an escape hatch alias (`rls`, `rcat`, `rless`, `rvim`)
+Each override provides an escape hatch alias (`rls`, `rcat`, `rless`, `rvim`, `rcp`, `rmv`, `rmkdir`)
 that bypasses the override and calls the original binary directly.
 
 ### Additive plugins — new commands only
