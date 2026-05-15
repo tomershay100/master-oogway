@@ -13,7 +13,7 @@ fhist() {
         echo "  Tip: CTRL+R (fzf plugin) does the same from any prompt."
         return
     fi
-    command -v fzf &>/dev/null || { echo "fhist: fzf not installed" >&2; return 1; }
+    _mo_require fzf fhist || return
     local cmd
     cmd=$(fc -ln 1 | fzf --tac --height=40% --reverse --no-sort)
     [[ -n "$cmd" ]] && print -z "$cmd"
@@ -25,7 +25,7 @@ fman() {
         echo "  Fuzzy-select a man page and open it."
         return
     fi
-    command -v fzf &>/dev/null || { echo "fman: fzf not installed" >&2; return 1; }
+    _mo_require fzf fman || return
     local page
     page=$(man -k '' 2>/dev/null \
         | fzf --height=50% --reverse --preview 'man {1}' \
@@ -39,8 +39,8 @@ frg() {
         echo "  Fuzzy search file contents with ripgrep and open result in \$EDITOR."
         return
     fi
-    command -v fzf &>/dev/null || { echo "frg: fzf not installed" >&2; return 1; }
-    command -v rg  &>/dev/null || { echo "frg: rg not installed"  >&2; return 1; }
+    _mo_require fzf frg || return
+    _mo_require rg  frg || return
     local result
     result=$(rg --color=always --line-number "" 2>/dev/null \
         | fzf --ansi --height=60% --reverse \

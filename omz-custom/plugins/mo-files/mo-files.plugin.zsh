@@ -95,7 +95,7 @@ fp() {
         echo "  Tip: CTRL+T (fzf plugin) inserts a file path inline at the prompt."
         return
     fi
-    command -v fzf &>/dev/null || { echo "fp: fzf not installed" >&2; return 1; }
+    _mo_require fzf fp || return
     local base="${1:-.}"
     local preview_cmd
     if command -v bat &>/dev/null; then

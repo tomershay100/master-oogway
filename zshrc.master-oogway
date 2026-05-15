@@ -149,6 +149,7 @@ plugins=(
 
     # Additive plugins add new commands and never change existing behavior.
     # Safe to comment out any you don't use.
+    mo-utils                   # internal: _mo_require helper (must be first additive plugin)
     mo-auto-ls                 # run ls automatically after every cd
     mo-git                     # git aliases (ga, gs, gp, ...) + gsum, fbranch, flog
     mo-navigation              # mkcd, up, tmpcd, fcd (fuzzy cd)

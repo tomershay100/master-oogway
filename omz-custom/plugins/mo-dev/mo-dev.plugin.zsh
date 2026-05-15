@@ -15,7 +15,7 @@ function calc() {
         echo "Usage: calc <expression>  (use -h for details)" >&2
         return 1
     fi
-    command -v bc &>/dev/null || { echo "calc: bc not installed" >&2; return 1; }
+    _mo_require bc calc || return
     local expr="$*"
     # Whitelist: digits, math ops, parens, bc names (lowercase a-z, _), spaces.
     # system("cmd") is blocked — " is not in the whitelist.
@@ -54,7 +54,7 @@ function serve() {
         echo "  Set SERVE_BIND=0.0.0.0 to expose to the local network."
         return
     fi
-    command -v python3 &>/dev/null || { echo "serve: python3 not installed" >&2; return 1; }
+    _mo_require python3 serve || return
     local port="${1:-8000}"
     local bind="${SERVE_BIND:-127.0.0.1}"
     echo "Serving $(pwd) on http://${bind}:${port}"
