@@ -152,7 +152,7 @@ if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_
     apt_install git || die "Cannot proceed without git"
     if [[ -d "${INSTALL_DIR}/.git" ]]; then
         info "Updating ${INSTALL_DIR}..."
-        git -C "${INSTALL_DIR}" pull --ff-only || die "git pull failed — resolve conflicts or re-clone"
+        _git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
         git -C "${INSTALL_DIR}" submodule update --init --recursive
     else
         [[ -e "${INSTALL_DIR}" ]] && die "${INSTALL_DIR} exists but is not a git repo. Remove it and retry."
@@ -166,7 +166,7 @@ fi
 
 if _running_from_install_dir; then
     info "Updating ${INSTALL_DIR}..."
-    git -C "${INSTALL_DIR}" pull --ff-only || die "git pull failed — resolve conflicts or re-clone"
+    _git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
     git -C "${INSTALL_DIR}" submodule update --init --recursive
     success "Repository up-to-date"
 fi
