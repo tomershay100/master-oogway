@@ -7,7 +7,7 @@ alias h="history 50"                              # last 50 history entries
 # cat the source of a command — prefers bat/batcat for syntax highlighting if installed.
 cwhich() {
     local target
-    target="$(which "$1")" || return
+    target="$(whence -p "$1")" || { echo "cwhich: '$1' not found as a file" >&2; return 1; }
     if command -v batcat &>/dev/null; then
         batcat "$target"
     elif command -v bat &>/dev/null; then
@@ -17,7 +17,11 @@ cwhich() {
     fi
 }
 
-vwhich() { ${EDITOR:-vim} "$(which "$1")"; }      # open the source of a command in $EDITOR
+vwhich() {
+    local target
+    target="$(whence -p "$1")" || { echo "vwhich: '$1' not found as a file" >&2; return 1; }
+    ${EDITOR:-vim} "$target"
+}
 
 alias vizsh='${EDITOR:-vim} ~/.zshrc'             # open ~/.zshrc in $EDITOR
 alias soursh="source ~/.zshrc"                    # reload ~/.zshrc
