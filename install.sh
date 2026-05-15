@@ -296,8 +296,12 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     if grep -qF 'AcceptEnv DRAGON__*' "$_uninstall_sshd_config" 2>/dev/null; then
         if confirm "Remove AcceptEnv DRAGON__* from /etc/ssh/sshd_config and reload sshd? (sudo required)"; then
             sudo sed -i '/AcceptEnv DRAGON__\*/d' "$_uninstall_sshd_config"
-            sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
-            success "Removed AcceptEnv DRAGON__* and reloaded sshd"
+            if sudo sshd -t 2>/dev/null; then
+                sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
+                success "Removed AcceptEnv DRAGON__* and reloaded sshd"
+            else
+                warn "sshd config validation failed after removal — sshd NOT reloaded; check /etc/ssh/sshd_config manually"
+            fi
         else
             warn "Skipped — remove manually: sudo sed -i '/AcceptEnv DRAGON__\\\*/d' /etc/ssh/sshd_config"
         fi
@@ -546,6 +550,11 @@ _install_sshd_acceptenv() {
         return
     fi
     printf '%s\n' "$accept_line" | sudo tee -a "$sshd_config" >/dev/null
+    if ! sudo sshd -t 2>/dev/null; then
+        warn "sshd config validation failed — reverting change to avoid lockout"
+        sudo sed -i '/AcceptEnv DRAGON__\*/d' "$sshd_config"
+        return 1
+    fi
     sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
     success "Added AcceptEnv DRAGON__* and reloaded sshd"
 }
