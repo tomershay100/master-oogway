@@ -44,5 +44,5 @@
         > "${tmp_state}" || true
     printf 'dismissed_hash=%s\nthemes_mtime=%s\n' "${current_hash}" "${current_mtime}" \
         >> "${tmp_state}"
-    mv "${tmp_state}" "${state_file}"
+    command mv "${tmp_state}" "${state_file}"
 } "${0:a:h}"

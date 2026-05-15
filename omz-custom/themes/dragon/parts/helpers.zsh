@@ -8,6 +8,8 @@ __get_xterm_color_by_name()
 		return
 	fi
 
+	[[ -z "$color_name" ]] && return
+
 	local fg_code="${COLORS[${(L)color_name}]}"
 	if [[ -n "$fg_code" ]]; then
 		XTERM_COLOR="$fg_code"

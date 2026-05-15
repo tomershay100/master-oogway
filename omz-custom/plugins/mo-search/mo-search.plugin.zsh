@@ -2,6 +2,7 @@
 # Requires: fhist, fman, frg also require fzf (skipped with an error if not installed).
 # frg also requires rg (ripgrep).
 
+unalias grep 2>/dev/null
 grep()  { command grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} --exclude={'*.so','*.apd','*.pd'} "$@"; }
 grepi() { grep -i "$@"; }
 alias f="find . | grepi"
