@@ -6,9 +6,15 @@
 typeset -U path   # keep $path array deduplicated; prevents growth on re-source
 
 # ── Locale ─────────────────────────────────────────────────────────────────────
-# Force UTF-8 — minimal containers/remote servers often miss this.
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
+# Prefer en_US.UTF-8 but fall back to C.UTF-8 when the locale isn't generated
+# (common on minimal Ubuntu, containers, and bare server installs).
+if locale -a 2>/dev/null | grep -qiE '^en_us\.utf-?8$'; then
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+else
+    export LANG=C.UTF-8
+    export LC_ALL=C.UTF-8
+fi
 
 # ── History ────────────────────────────────────────────────────────────────────
 HISTSIZE=100000          # commands kept in memory during the session
