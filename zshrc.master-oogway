@@ -5,25 +5,20 @@
 # Add directories to PATH only if they exist (avoids warnings on missing dirs).
 typeset -U path   # keep $path array deduplicated; prevents growth on re-source
 
-# pip --user installs (pip install --user) and pipx-managed tools land here.
-[[ -d "$HOME/.local/bin" ]]      && export PATH="$HOME/.local/bin:$PATH"
-# npm global installs without sudo: first run `npm config set prefix ~/.npm-global`
-[[ -d "$HOME/.npm-global/bin" ]] && export PATH="$HOME/.npm-global/bin:$PATH"
-
 # ── Locale ─────────────────────────────────────────────────────────────────────
 # Force UTF-8 — minimal containers/remote servers often miss this.
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
 # ── History ────────────────────────────────────────────────────────────────────
-HISTSIZE=50000          # commands kept in memory during the session
-SAVEHIST=50000          # commands written to the history file on exit
+HISTSIZE=100000          # commands kept in memory during the session
+SAVEHIST=100000          # commands written to the history file on exit
 HIST_STAMPS="yyyy-mm-dd"  # prefix each history entry with a date
 
 setopt SHARE_HISTORY        # share history across all open terminals in real time
-setopt HIST_IGNORE_DUPS     # don't record a command if it's identical to the previous one
+unsetopt HIST_IGNORE_DUPS     # don't record a command if it's identical to the previous one
 setopt HIST_IGNORE_SPACE    # commands prefixed with a space are not saved (useful for secrets)
-setopt HIST_FIND_NO_DUPS    # skip duplicate entries when searching history (Ctrl+R / up-arrow)
+unsetopt HIST_FIND_NO_DUPS    # skip duplicate entries when searching history (Ctrl+R / up-arrow)
 setopt HIST_VERIFY          # `!!` and `!$` expand on the prompt before running — saves you from disaster
 setopt HIST_REDUCE_BLANKS   # strip extra whitespace from each command before storing
 setopt EXTENDED_HISTORY     # record timestamps in $HISTFILE
