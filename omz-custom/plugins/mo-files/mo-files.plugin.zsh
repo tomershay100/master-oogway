@@ -66,7 +66,7 @@ function bak() {
         return
     fi
     local ts
-    ts=$(date +%Y%m%d_%H%M%S)
+    ts=$(date +%Y%m%d_%H%M%S_%N)
     for f in "$@"; do
         [[ -e "$f" ]] || { echo "bak: not found: $f" >&2; continue; }
         cp -v "$f" "${f}.bak.${ts}"
