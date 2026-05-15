@@ -3,7 +3,7 @@
 
 natip() {
     command -v curl &>/dev/null || { echo "natip: curl not installed (try: sudo apt install curl)" >&2; return 1; }
-    curl -s ifconfig.me
+    curl -s --max-time 5 ifconfig.me
 }
 
 sshto() {
