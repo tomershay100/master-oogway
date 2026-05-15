@@ -96,7 +96,7 @@ flog() {
         echo "Usage: flog"
         echo "  Interactively browse git log and copy the selected commit hash."
         echo "  Preview pane shows the commit diff stat."
-        echo "  Copies hash to clipboard (xclip), or prints it if xclip is unavailable."
+        echo "  Copies hash to clipboard (wl-copy or xclip), or prints it if neither is available."
         return
     fi
     command -v fzf &>/dev/null || { echo "flog: fzf not installed" >&2; return 1; }
@@ -107,7 +107,10 @@ flog() {
               --preview-window=right:60% \
         | awk '{print $1}')
     [[ -z "$hash" ]] && return
-    if command -v xclip &>/dev/null; then
+    if command -v wl-copy &>/dev/null; then
+        echo -n "$hash" | wl-copy
+        echo "Copied: $hash"
+    elif command -v xclip &>/dev/null; then
         echo -n "$hash" | xclip -selection clipboard
         echo "Copied: $hash"
     else

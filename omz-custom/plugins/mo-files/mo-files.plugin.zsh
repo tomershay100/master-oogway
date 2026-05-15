@@ -90,7 +90,7 @@ fp() {
         echo "Usage: fp [base-dir]"
         echo "  Interactively select a file and copy its full path to clipboard."
         echo "  base-dir — where to search (default: current directory)"
-        echo "  Copies path to clipboard (xclip), or prints it if xclip is unavailable."
+        echo "  Copies path to clipboard (wl-copy or xclip), or prints it if neither is available."
         echo "  Tip: CTRL+T (fzf plugin) inserts a file path inline at the prompt."
         return
     fi
@@ -110,7 +110,10 @@ fp() {
         | fzf --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
     || return
     local fullpath="${file:a}"
-    if command -v xclip &>/dev/null; then
+    if command -v wl-copy &>/dev/null; then
+        echo -n "$fullpath" | wl-copy
+        echo "Copied: $fullpath"
+    elif command -v xclip &>/dev/null; then
         echo -n "$fullpath" | xclip -selection clipboard
         echo "Copied: $fullpath"
     else
