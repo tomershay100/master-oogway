@@ -11,6 +11,8 @@ __get_xterm_color_by_name()
 	local fg_code="${COLORS[${(L)color_name}]}"
 	if [[ -n "$fg_code" ]]; then
 		XTERM_COLOR="$fg_code"
+	else
+		print -P "%F{red}[dragon] unknown color: '${color_name}' — check ~/.config/master-oogway/conf.zsh%f" >&2
 	fi
 }
 
