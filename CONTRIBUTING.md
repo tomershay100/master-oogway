@@ -19,7 +19,7 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
     dragon.zsh-theme              OMZ entry point shim — sources dragon/{dragon,configure,aliases,notifier}.zsh
     dragon/                       all dragon theme code lives here
       dragon.zsh                  theme entry point — defaults loop, hook registration
-      schema.zsh                  _DRAGON_DEFAULTS: single source of truth for all vars
+      schema.zsh                  single source of truth for all DRAGON__* vars (defaults, types, hints, groups)
       configure.zsh               interactive wizard (~750 lines)
       aliases.zsh                 rezsh, reset_theme_variables
       notifier.zsh                shell-start notifier — fires when new theme vars exist
@@ -33,9 +33,6 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
         transient.zsh             zle hooks, gitstatus glue, prompt refresh
   plugins/
     mo-*/mo-*.plugin.zsh          19 oh-my-zsh plugins (override + additive)
-
-tests/
-  check_schema.sh                 validates schema var count vs theme; run directly with bash
 ```
 
 ---
@@ -89,7 +86,7 @@ Different files have different latency depending on how they reach disk:
 
 ## Validation
 
-Always run these four checks before committing — every change should pass all four:
+Always run these checks before committing — every change should pass all of them:
 
 ```bash
 # 1. bash syntax check on install.sh
@@ -101,11 +98,8 @@ zsh -n omz-custom/themes/dragon.zsh-theme \
        omz-custom/themes/dragon/parts/*.zsh \
        omz-custom/plugins/mo-*/mo-*.plugin.zsh
 
-# 3. static analysis on the bash files
-shellcheck install.sh tests/check_schema.sh
-
-# 4. schema/theme consistency check
-bash tests/check_schema.sh
+# 3. static analysis on install.sh
+shellcheck install.sh
 ```
 
 If any of these fail, fix the underlying issue — never commit a file that fails parsing.
@@ -141,27 +135,80 @@ is absent. See `mo-bat-override` for the canonical pattern.
 
 ## Adding a theme configuration variable
 
-All theme variables live in `omz-custom/themes/dragon/schema.zsh` inside `_DRAGON_DEFAULTS`.
-This is the **single source of truth** — add a variable here and it is automatically:
-- initialized on shell startup via the defaults loop in `dragon.zsh-theme`
-- exposed in `dragon-configure` (grouped under its schema group)
-- validated by `tests/check_schema.sh`
+`schema.zsh` is the **single source of truth** for every `DRAGON__*` variable.
+The defaults loop in `dragon.zsh` iterates over it and calls `set_if_unset "DRAGON__${key}" "$default"`
+for each entry, so the live variable name is always `DRAGON__` + the schema key
+(e.g. schema key `ENABLE_GIT_STATUS` → runtime variable `$DRAGON__ENABLE_GIT_STATUS`).
+
+You must touch **all five** of the following — missing any one means the variable
+either has no default, is invisible to `dragon-configure`, or renders nothing.
+
+### 1. `_DRAGON_DEFAULTS` — declare the key and its default value
 
 ```zsh
-# In schema.zsh _DRAGON_DEFAULTS — format: "KEY" "type:group:default"
-"MY_NEW_VAR"    "bool:appearance:true"
+typeset -gA _DRAGON_DEFAULTS=(
+    ...
+    [MY_NEW_VAR]="default_value"
+    ...
+)
 ```
 
-Types: `bool`, `color`, `string`, `int`.
-Groups map to the wizard sections in `dragon-configure`.
+### 2. `_DRAGON_TYPE` — declare the type for the configurator wizard
 
-After adding, run `bash tests/check_schema.sh` — verifies the count is consistent.
-Also update the [README.md](README.md) "Theme configurator" section if the new
-variable belongs in user-facing documentation.
+```zsh
+typeset -gA _DRAGON_TYPE=(
+    ...
+    [MY_NEW_VAR]="bool"     # or: color | string | enum:opt1|opt2|opt3
+    ...
+)
+```
 
-Users will be notified on next shell start that new variables are available
+Types:
+
+- `bool` — wizard shows a yes/no toggle
+- `color` — wizard shows a color picker
+- `string` — wizard shows a free-text prompt
+- `enum:a|b|c` — wizard shows a selection menu
+
+### 3. `_DRAGON_GROUP_VARS` — assign the key to a wizard group
+
+Add the key to the space-separated value of the appropriate group:
+
+```zsh
+typeset -gA _DRAGON_GROUP_VARS=(
+    ...
+    [git_status]="ENABLE_GIT_STATUS GIT_STATUS_ON_NEW_LINE ... MY_NEW_VAR"
+    ...
+)
+```
+
+If you need a new group entirely, also add it to `_DRAGON_GROUPS` (ordered list),
+`_DRAGON_GROUP_TITLE` (display name), and `_DRAGON_GROUP_DESC` (one-line description).
+
+### 4. Optionally — `_DRAGON_HINT` — add a hint shown in the wizard
+
+Only needed when the value format or semantics aren't obvious from the type alone:
+
+```zsh
+typeset -gA _DRAGON_HINT=(
+    ...
+    [MY_NEW_VAR]="Explanation of what the value controls and valid values."
+    ...
+)
+```
+
+### 5. Consume the variable in the appropriate `parts/*.zsh` segment
+
+Reference it as `$DRAGON__MY_NEW_VAR`. If you're adding a whole new segment,
+also call it from `dragon__set_lprompt` or `dragon__set_rprompt` in `prompt.zsh`.
+
+---
+
+Users are notified on next shell start that new variables are available
 (`dragon-configure --new-only` to configure just the new ones).
-Run `dragon-configure --help` to see all available subcommands.
+
+If the new variable is user-facing, also update the [README.md](README.md)
+"Theme configurator" section.
 
 ---
 
