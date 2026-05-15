@@ -46,5 +46,10 @@ frg() {
         | fzf --ansi --height=60% --reverse \
               --delimiter ':' --nth='1,3..' \
               --preview 'bat --color=always --highlight-line {2} {1} 2>/dev/null || cat {1}')
-    [[ -n "$result" ]] && ${EDITOR:-vim} "$(cut -d: -f1 <<< "$result")" "+$(cut -d: -f2 <<< "$result")"
+    if [[ -n "$result" ]]; then
+        local file linenum
+        file=$(awk 'match($0, /^(.+):([0-9]+):/, a) { print a[1] }' <<< "$result")
+        linenum=$(awk 'match($0, /^(.+):([0-9]+):/, a) { print a[2] }' <<< "$result")
+        [[ -n "$file" ]] && ${EDITOR:-vim} "$file" "+${linenum}"
+    fi
 }

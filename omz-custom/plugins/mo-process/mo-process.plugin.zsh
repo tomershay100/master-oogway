@@ -4,10 +4,10 @@
 function psgrep() {
     if [[ "$1" == "-h" || "$1" == "--help" || $# -eq 0 ]]; then
         echo "Usage: psgrep <name>"
-        echo "  Show running processes matching <name> (case-insensitive)."
+        echo "  Show running processes matching <name> (case-insensitive, full command line)."
         return
     fi
-    ps aux | grep -i "[${1:0:1}]${1:1}"
+    pgrep -lif "$1"
 }
 
 function port() {
