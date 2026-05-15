@@ -168,7 +168,7 @@ These only add new commands and never change existing behavior.
 | `extract <file>` | extract any archive format |
 | `bak <file>` | copy file to `<file>.bak.YYYYMMDD_HHMMSS` |
 | `sizeof <path>` | disk usage of paths, sorted by size |
-| `fpath [dir]` | fuzzy-select a file and copy its full path to clipboard |
+| `fp [dir]` | fuzzy-select a file and copy its full path to clipboard |
 
 ### mo-search — search and fuzzy pickers
 
