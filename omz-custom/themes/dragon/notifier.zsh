@@ -25,11 +25,10 @@
         | sort -n | tail -1)
 
     if [[ -n "$stored_mtime" && "$current_mtime" == "$stored_mtime" ]]; then
-        # Theme files unchanged since last configure run — skip the grep entirely.
+        # Theme files unchanged since last configure run — skip md5sum entirely.
         current_hash="$stored_hash"
     else
-        current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
-            | sort -u | md5sum | cut -d' ' -f1)
+        current_hash=$(md5sum "${themes_dir}/dragon/schema.zsh" 2>/dev/null | cut -d' ' -f1)
     fi
 
     [[ "${current_hash}" != "${stored_hash}" ]] || return

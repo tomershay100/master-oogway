@@ -20,8 +20,7 @@ source "${0:a:h}/schema.zsh"
 # ─────────────────────────────────────────────────────────────────────────────
 
 _dragon_vars_hash() {
-    grep -roh 'DRAGON__[A-Z_]*' "${_DRAGON_THEMES_DIR}" 2>/dev/null \
-        | sort -u | md5sum | cut -d' ' -f1
+    md5sum "${_DRAGON_THEMES_DIR}/dragon/schema.zsh" 2>/dev/null | cut -d' ' -f1
 }
 
 _dragon_read_state() {
