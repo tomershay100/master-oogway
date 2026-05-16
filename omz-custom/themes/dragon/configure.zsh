@@ -70,9 +70,25 @@ _dragon_load_current_conf() {
     local line
     while IFS= read -r line; do
         [[ "$line" == '#'* || "$line" =~ ^[[:space:]]*$ ]] && continue
-        if [[ "$line" =~ ^[[:space:]]*'export DRAGON__'([A-Z_]+)'="'(.*) ]]; then
+
+        # Current format (single-quoted, since 2026-05-16): immune to shell
+        # expansion of $, `, and \ in user-provided values. The greedy (.*)
+        # captures up to the LAST ' before optional trailing whitespace +
+        # comment, so values containing the escape sequence '\'' round-trip
+        # cleanly.
+        if [[ "$line" =~ "^[[:space:]]*export DRAGON__([A-Z_]+)='(.*)'[[:space:]]*(#.*)?$" ]]; then
             local varname="${match[1]}"
-            local raw="${match[2]%%\" #*}"  # strip closing " and trailing comment
+            local raw="${match[2]}"
+            local q=\'
+            raw="${raw//$q\\$q$q/$q}"       # unescape '\'' → '
+            _DRAGON_CURRENT[$varname]="$raw"
+        # Legacy format (double-quoted, pre-2026-05-16): read-only — we no
+        # longer emit it, but existing users' conf.zsh files still parse.
+        # Greedy (.*)" matches up to LAST " before optional comment, so this
+        # also fixes the old reader's '" #'-substring truncation bug.
+        elif [[ "$line" =~ "^[[:space:]]*export DRAGON__([A-Z_]+)=\"(.*)\"[[:space:]]*(#.*)?$" ]]; then
+            local varname="${match[1]}"
+            local raw="${match[2]}"
             raw="${raw//\\\"/\"}"           # unescape \" → "
             raw="${raw//\\\\/\\}"           # unescape \\ → \
             _DRAGON_CURRENT[$varname]="$raw"
@@ -600,8 +616,13 @@ HEADER
                 local default="${_DRAGON_DEFAULTS[$var]:-}"
                 local hint="${_DRAGON_HINT[$var]:-}"
                 local vtype="${_DRAGON_TYPE[$var]:-string}"
-                local safe_val="${val//\\/\\\\}"
-                safe_val="${safe_val//\"/\\\"}"
+                # Single-quoted output: immune to shell expansion of $, `, and \.
+                # The only char needing escape inside '...' is ' itself, via the
+                # standard '\'' idiom (close-quote, escaped-quote, reopen-quote).
+                # Use a $q variable because in double-quoted strings `\'` is 2
+                # chars (\, '), not 1 — building '\\\'' inline would be wrong.
+                local q=\'
+                local safe_val="${val//$q/$q\\$q$q}"
 
                 # Emit type hint for special vars
                 if [[ -n "$hint" ]]; then
@@ -611,9 +632,9 @@ HEADER
                 fi
 
                 if [[ "$val" == "$default" ]]; then
-                    printf '# export DRAGON__%s="%s"  # default\n' "$var" "$safe_val"
+                    printf "# export DRAGON__%s='%s'  # default\n" "$var" "$safe_val"
                 else
-                    printf 'export DRAGON__%s="%s"\n' "$var" "$safe_val"
+                    printf "export DRAGON__%s='%s'\n" "$var" "$safe_val"
                 fi
             done
             printf '\n'
