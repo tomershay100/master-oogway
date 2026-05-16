@@ -2,7 +2,7 @@
 # Requires: fcd also requires fzf (skipped with an error if not installed).
 
 function mkcd() {
-    if [[ "$1" == "-h" || "$1" == "--help" || $# -eq 0 ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
         echo "Usage: mkcd <dir>"
         echo "  Create <dir> (including parents) and cd into it."
         return
@@ -11,7 +11,7 @@ function mkcd() {
 }
 
 function up() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: up [n | dirname]"
         echo "  up          — go up one level (same as cd ..)"
         echo "  up 3        — go up 3 levels"
@@ -41,7 +41,7 @@ function up() {
 }
 
 function tmpcd() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: tmpcd"
         echo "  Create a temporary directory and cd into it."
         echo "  Prints the path so you know where you are."
@@ -52,7 +52,7 @@ function tmpcd() {
 }
 
 fcd() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: fcd [base-dir]"
         echo "  Interactively select a directory and cd into it."
         echo "  base-dir — where to search (default: current directory)"

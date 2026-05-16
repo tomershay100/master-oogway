@@ -8,7 +8,7 @@ grepi() { grep -i "$@"; }
 alias f="find . | grepi"
 
 fhist() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: fhist"
         echo "  Fuzzy-select a past command and put it in the readline buffer."
         echo "  Tip: CTRL+R (fzf plugin) does the same from any prompt."
@@ -21,7 +21,7 @@ fhist() {
 }
 
 fman() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: fman"
         echo "  Fuzzy-select a man page and open it."
         return
@@ -35,7 +35,7 @@ fman() {
 }
 
 frg() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: frg"
         echo "  Fuzzy search file contents with ripgrep and open result in \$EDITOR."
         return

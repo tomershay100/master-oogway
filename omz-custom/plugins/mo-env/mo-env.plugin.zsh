@@ -2,7 +2,7 @@
 # Requires: fzf (skipped with an error if not installed).
 
 fenv() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: fenv [-e | -E]"
         echo "  Interactively search environment variables."
         echo "  (no flag)  — print the selected variable"

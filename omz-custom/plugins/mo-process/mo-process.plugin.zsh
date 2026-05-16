@@ -2,7 +2,7 @@
 # Requires: fkill also requires fzf (skipped with an error if not installed).
 
 function psgrep() {
-    if [[ "$1" == "-h" || "$1" == "--help" || $# -eq 0 ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
         echo "Usage: psgrep <name>"
         echo "  Show running processes matching <name> (case-insensitive, full command line)."
         return
@@ -11,7 +11,7 @@ function psgrep() {
 }
 
 function port() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: port <number>"
         echo "  Show which process is listening on the given TCP/UDP port."
         echo "  Falls back to sudo if the port is not visible without elevated permissions."
@@ -39,7 +39,7 @@ function port() {
 }
 
 fkill() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: fkill [signal]"
         echo "  Interactively select one or more processes to kill."
         echo "  signal — signal to send (default: -15 SIGTERM)"

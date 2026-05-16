@@ -7,7 +7,7 @@ natip() {
 }
 
 sshto() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: sshto"
         echo "  Fuzzy-select a host from ~/.ssh/config and ~/.ssh/config.d/* and connect."
         return

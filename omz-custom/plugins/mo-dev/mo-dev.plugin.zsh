@@ -2,7 +2,7 @@
 # Requires: python3 for serve. bc for calc. pandoc + xelatex for md2pdf.
 
 function calc() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: calc <expression>"
         echo "  Evaluate a math expression using bc -l."
         echo "  Examples:"
@@ -28,7 +28,7 @@ function calc() {
 }
 
 function epoch() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: epoch [timestamp | date-string]"
         echo "  (no args)         — print current unix timestamp"
         echo "  epoch 1700000000  — convert unix timestamp to human-readable date"
@@ -45,7 +45,7 @@ function epoch() {
 }
 
 function serve() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: serve [port]"
         echo "  Start an HTTP server in the current directory."
         echo "  port — port to listen on (default: 8000)"
@@ -63,7 +63,7 @@ function serve() {
 }
 
 function md2pdf() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: md2pdf <file.md> [file2.md ...]"
         echo "  Convert Markdown files to PDF using pandoc + xelatex."
         echo "  Output is placed alongside the source file (<name>.pdf)."

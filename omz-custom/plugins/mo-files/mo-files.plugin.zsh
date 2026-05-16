@@ -47,7 +47,7 @@ _mo_extract_zip() {
 }
 
 function extract() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: extract <file> [file2 ...]"
         echo "  Extracts archives of any format:"
         echo "  .tar.gz  .tar.bz2  .tar.xz  .tar.zst  .tar"
@@ -86,7 +86,7 @@ function extract() {
 }
 
 function bak() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: bak <file> [file ...]"
         echo "  Copy each file to <file>.bak.YYYYMMDD_HHMMSS"
         return
@@ -102,7 +102,7 @@ function bak() {
 }
 
 function sizeof() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: sizeof <path> [path2 ...]"
         echo "  Print the disk usage of each path, sorted by size."
         return
@@ -115,7 +115,7 @@ function sizeof() {
 }
 
 fp() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: fp [base-dir]"
         echo "  Interactively select a file and copy its full path to clipboard."
         echo "  base-dir — where to search (default: current directory)"

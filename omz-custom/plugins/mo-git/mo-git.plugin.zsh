@@ -50,7 +50,7 @@ function gsum() {
 }
 
 fbranch() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: fbranch"
         echo "  Fuzzy-select a git branch and switch to it."
         echo "  Preview shows commits ahead of main and the diff stat."
@@ -93,7 +93,7 @@ fbranch() {
 }
 
 flog() {
-    if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: flog"
         echo "  Interactively browse git log and copy the selected commit hash."
         echo "  Preview pane shows the commit diff stat."
