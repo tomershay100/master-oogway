@@ -11,7 +11,12 @@ typeset -U path   # keep $path array deduplicated; prevents growth on re-source
 # ── Locale ─────────────────────────────────────────────────────────────────────
 # Prefer en_US.UTF-8 but fall back to C.UTF-8 when the locale isn't generated
 # (common on minimal Ubuntu, containers, and bare server installs).
-if locale -a 2>/dev/null | grep -qiE '^en_us\.utf-?8$'; then
+# Probe by asking glibc what charmap it actually picks when LC_ALL is set —
+# returns "UTF-8" on success, the fallback charmap (e.g. "ANSI_X3.4-1968")
+# on a missing locale. Exit code is always 0, so test the output text.
+# Single fork (~1 ms) vs `locale -a | grep` (~45 ms — locale -a streams the
+# entire locale archive).
+if [[ "$(LC_ALL=en_US.UTF-8 locale charmap 2>/dev/null)" == "UTF-8" ]]; then
     export LANG=en_US.UTF-8
     export LC_ALL=en_US.UTF-8
 else
