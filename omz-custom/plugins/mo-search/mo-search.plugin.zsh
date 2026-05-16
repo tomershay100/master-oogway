@@ -43,7 +43,12 @@ frg() {
     _mo_require fzf frg || return
     _mo_require rg  frg || return
     local result
+    # fzf substitutes {1} (path field) into the preview shell literally —
+    # a file named ';rm;.txt' would execute on cursor-move. Filter unsafe
+    # paths before they reach fzf. awk strips ANSI from the path field for
+    # the check; the original colorized line still goes to fzf for display.
     result=$(rg --color=always --line-number "" 2>/dev/null \
+        | awk -F: '{ p=$1; gsub(/\033\[[0-9;]*m/, "", p); if (p ~ /[$`();|&<>"\x27\\]/) next; print }' \
         | fzf --ansi --height=60% --reverse \
               --delimiter ':' --nth='1,3..' \
               --preview 'bat --color=always --highlight-line {2} {1} 2>/dev/null || cat {1}')

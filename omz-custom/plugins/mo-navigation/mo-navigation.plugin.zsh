@@ -69,8 +69,12 @@ fcd() {
         preview_cmd='\ls -1 --color=always {}'
     fi
     local dir
+    # fzf substitutes {} into the preview shell literally — a dir named
+    # ';rm -rf;' would execute on cursor-move. Filter unsafe names out
+    # before they reach fzf (same defense as fbranch in mo-git).
     dir=$(find "$base" -type d 2>/dev/null \
         | grep -v '\.git' \
+        | grep -vF -e '$' -e '`' -e '(' -e ')' -e ';' -e '|' -e '&' -e '<' -e '>' -e '"' -e "'" -e '\' \
         | fzf --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
     && cd "$dir"
 }

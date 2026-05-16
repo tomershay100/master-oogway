@@ -106,8 +106,12 @@ fp() {
         preview_cmd='cat {}'
     fi
     local file
+    # fzf substitutes {} into the preview shell literally — a file named
+    # ';rm -rf;.txt' would execute on cursor-move. Filter unsafe names out
+    # before they reach fzf (same defense as fbranch in mo-git).
     file=$(find "$base" -type f 2>/dev/null \
         | grep -v '\.git' \
+        | grep -vF -e '$' -e '`' -e '(' -e ')' -e ';' -e '|' -e '&' -e '<' -e '>' -e '"' -e "'" -e '\' \
         | fzf --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
     || return
     local fullpath="${file:a}"
