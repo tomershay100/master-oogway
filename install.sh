@@ -376,7 +376,9 @@ command -v meld   &>/dev/null || todo_item "Install meld for git difftool: sudo 
 command -v direnv &>/dev/null || todo_item "Install direnv for per-directory envs: sudo apt install direnv"
 command -v lsof   &>/dev/null || todo_item "Install lsof for the 'port' command: sudo apt install lsof"
 command -v rg     &>/dev/null || todo_item "Install ripgrep for the 'frg' fuzzy ripgrep picker: sudo apt install ripgrep"
-command -v fd     &>/dev/null || todo_item "Install fd for faster fzf file picker (Ctrl+T): sudo apt install fd-find"
+if ! command -v fd &>/dev/null && ! command -v fdfind &>/dev/null; then
+    todo_item "Install fd for faster fzf file picker (Ctrl+T): sudo apt install fd-find"
+fi
 if ! command -v eza &>/dev/null && ! command -v exa &>/dev/null; then
     todo_item "Install eza (Ubuntu) or exa (Raspberry Pi) for enhanced ls: sudo apt install eza"
 fi

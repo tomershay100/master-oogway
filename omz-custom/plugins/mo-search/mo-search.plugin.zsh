@@ -51,7 +51,7 @@ frg() {
         | awk -F: '{ p=$1; gsub(/\033\[[0-9;]*m/, "", p); if (p ~ /[$`();|&<>"\x27\\]/) next; print }' \
         | fzf --ansi --height=60% --reverse \
               --delimiter ':' --nth='1,3..' \
-              --preview 'bat --color=always --highlight-line {2} {1} 2>/dev/null || cat {1}')
+              --preview 'bat --color=always --highlight-line {2} {1} 2>/dev/null || batcat --color=always --highlight-line {2} {1} 2>/dev/null || cat {1}')
     if [[ -n "$result" ]]; then
         local file linenum
         file=$(awk 'match($0, /^(.+):([0-9]+):/, a) { print a[1] }' <<< "$result")

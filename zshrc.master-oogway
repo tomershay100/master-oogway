@@ -196,8 +196,17 @@ unset __mo_file
 
 export LESS='-FRX'   # -F exit if fits screen, -R color through, -X don't clear on exit
 
+# Resolve the actual binary name for bat and fd once at startup. Ubuntu's
+# apt installs them as 'batcat' and 'fdfind' to avoid package conflicts;
+# upstream and other distros use the short names. Unset at end of file.
+typeset _mo_bat="" _mo_fd=""
+if command -v bat    &>/dev/null; then _mo_bat="bat"
+elif command -v batcat &>/dev/null; then _mo_bat="batcat"; fi
+if command -v fd     &>/dev/null; then _mo_fd="fd"
+elif command -v fdfind &>/dev/null; then _mo_fd="fdfind"; fi
+
 # Use bat as the man-page renderer (col -bx strips overstrike chars).
-command -v bat &>/dev/null && export MANPAGER='sh -c "col -bx | bat -l man -p"'
+[[ -n "$_mo_bat" ]] && export MANPAGER="sh -c \"col -bx | $_mo_bat -l man -p\""
 
 export BAT_THEME='Coldark-Dark'   # `bat --list-themes` to see options
 
@@ -207,11 +216,18 @@ export BAT_THEME='Coldark-Dark'   # `bat --list-themes` to see options
 # fzf options — tweak or remove to change fuzzy-finder appearance and behavior.
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 # Ctrl+T file picker: preview file contents with bat (falls back to cat if bat not installed).
-export FZF_CTRL_T_OPTS="
-  --preview 'bat --color=always --style=plain {} 2>/dev/null || cat {}'
+if [[ -n "$_mo_bat" ]]; then
+    export FZF_CTRL_T_OPTS="
+  --preview '$_mo_bat --color=always --style=plain {} 2>/dev/null || cat {}'
   --preview-window=right:60%:wrap"
-# Use `fd` if installed — faster than find, respects .gitignore.
-command -v fd &>/dev/null && export FZF_DEFAULT_COMMAND='fd --type f --hidden --strip-cwd-prefix --exclude .git'
+else
+    export FZF_CTRL_T_OPTS="
+  --preview 'cat {}'
+  --preview-window=right:60%:wrap"
+fi
+# Use fd (or Ubuntu's fdfind) if installed — faster than find, respects .gitignore.
+[[ -n "$_mo_fd" ]] && export FZF_DEFAULT_COMMAND="$_mo_fd --type f --hidden --strip-cwd-prefix --exclude .git"
+unset _mo_bat _mo_fd
 # Alt+C directory picker: eza tree preview, fallback to ls.
 export FZF_ALT_C_OPTS="
   --preview 'eza --tree --color=always --level=2 {} 2>/dev/null || ls -la {}'
