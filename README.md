@@ -92,6 +92,29 @@ These shadow existing commands. Remove any you don't want.
 Each override provides an escape hatch alias (`rls`, `rcat`, `rless`, `rvim`, `rcp`, `rmv`, `rmkdir`)
 that bypasses the override and calls the original binary directly.
 
+#### When the override gets in the way
+
+Override plugins replace common commands with enhanced alternatives — but the
+enhanced version is occasionally the wrong choice (concatenating binaries with
+`cat`, scripting around `mv` that expects no `-i` prompt, copy-pasting commands
+that assume the system `ls` flags, etc.). Two ways to bypass per command:
+
+| You want to run… | Use either |
+|------------------|------------|
+| system `cat` (binary-safe) | `rcat <file>` or `\cat <file>` or `command cat <file>` |
+| system `less` | `rless <file>` or `\less <file>` |
+| system `vim` (not nvim) | `rvim <file>` or `\vim <file>` |
+| system `cp` (no `-i` prompt) | `rcp src dst` or `\cp src dst` |
+| system `mv` (no `-i` prompt) | `rmv src dst` or `\mv src dst` |
+| system `mkdir` (no `-pv`) | `rmkdir dir` or `\mkdir dir` |
+| system `ls` (not eza) | `rls` or `\ls` |
+| system `tree` (not `eza --tree`) | `rtree` or `\tree` |
+
+The `r<name>` aliases are defined by each override plugin; `\<name>` is a
+shell-level trick that suppresses alias expansion for that one invocation.
+Scripts running under `#!/usr/bin/env zsh` don't inherit interactive aliases,
+so this only matters at the prompt.
+
 ### Additive plugins — new commands only
 
 These only add new commands and never change existing behavior.
