@@ -20,7 +20,12 @@ source "${0:a:h}/schema.zsh"
 # ─────────────────────────────────────────────────────────────────────────────
 
 _dragon_vars_hash() {
-    md5sum "${_DRAGON_THEMES_DIR}/dragon/schema.zsh" 2>/dev/null | cut -d' ' -f1
+    # Hash the SET of DRAGON__VARNAME identifiers across the whole theme dir,
+    # not the literal bytes of any single file. Robust against reformatting /
+    # comment edits, and detects vars added in any file (not just schema.zsh).
+    # Must match install.sh:571 and notifier.zsh — change all three together.
+    grep -Eroh 'DRAGON__[A-Z_]+' "${_DRAGON_THEMES_DIR}" 2>/dev/null \
+        | sort -u | md5sum | cut -d' ' -f1
 }
 
 _dragon_read_state() {
@@ -759,8 +764,7 @@ EOF
 
     if [[ "${1-}" == "--dismiss" ]]; then
         local current_hash current_mtime
-        current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${_DRAGON_THEMES_DIR}" 2>/dev/null \
-            | sort -u | md5sum | cut -d' ' -f1)
+        current_hash=$(_dragon_vars_hash)
         current_mtime=$(find "${_DRAGON_THEMES_DIR}" -name '*.zsh' -printf '%T@\n' 2>/dev/null \
             | sort -n | tail -1)
         mkdir -p "${_DRAGON_STATE_DIR}"

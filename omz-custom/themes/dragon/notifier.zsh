@@ -25,10 +25,14 @@
         | sort -n | tail -1)
 
     if [[ -n "$stored_mtime" && "$current_mtime" == "$stored_mtime" ]]; then
-        # Theme files unchanged since last configure run — skip md5sum entirely.
+        # Theme files unchanged since last configure run — skip the grep entirely.
         current_hash="$stored_hash"
     else
-        current_hash=$(md5sum "${themes_dir}/dragon/schema.zsh" 2>/dev/null | cut -d' ' -f1)
+        # Hash the SET of DRAGON__VARNAME identifiers across the theme dir.
+        # Must match install.sh:571 and configure.zsh:_dragon_vars_hash
+        # — change all three together.
+        current_hash=$(grep -Eroh 'DRAGON__[A-Z_]+' "${themes_dir}" 2>/dev/null \
+            | sort -u | md5sum | cut -d' ' -f1)
     fi
 
     [[ "${current_hash}" != "${stored_hash}" ]] || return
