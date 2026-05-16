@@ -166,7 +166,7 @@ These only add new commands and never change existing behavior.
 
 | Command | Description |
 |---------|-------------|
-| `extract <file>` | extract any archive format |
+| `extract <file>` | extract any archive format (`.zip` into `<file-basename>/` after a path-traversal pre-scan) |
 | `bak <file>` | copy file to `<file>.bak.YYYYMMDD_HHMMSS` |
 | `sizeof <path>` | disk usage of paths, sorted by size |
 | `fp [dir]` | fuzzy-select a file and copy its full path to clipboard |

@@ -20,6 +20,32 @@ _mo_extract_check() {
     return 1
 }
 
+# Internal: safe zip extraction. unzip has no built-in path-traversal defense
+# (unlike modern GNU tar which refuses '..' by default), so we:
+#   1. Pre-scan entries with `unzip -Z1`. Refuse if any entry is absolute
+#      (starts with /) or contains '..' as a path component.
+#   2. Extract into a named subdir derived from the archive name to contain
+#      damage and avoid clobbering files already present in CWD.
+#   3. Refuse if the destination subdir already exists, so re-running extract
+#      on the same archive doesn't silently merge into an existing tree.
+_mo_extract_zip() {
+    local f="$1"
+    local entries
+    entries=$(unzip -Z1 "$f" 2>/dev/null) \
+        || { echo "extract: cannot list entries in '$f'" >&2; return 1; }
+    if grep -qE '(^/|(^|/)\.\.(/|$))' <<< "$entries"; then
+        echo "extract: refusing '$f' — contains absolute or traversal paths" >&2
+        echo "  inspect with: unzip -Z1 '$f'" >&2
+        return 1
+    fi
+    local outdir="${f:t:r}"
+    if [[ -e "$outdir" ]]; then
+        echo "extract: refusing — '$outdir' already exists; remove it first or extract manually" >&2
+        return 1
+    fi
+    unzip -K -d "$outdir" "$f"
+}
+
 function extract() {
     if [[ "$1" == "-h" || "$1" == "--help" ]]; then
         echo "Usage: extract <file> [file2 ...]"
@@ -48,7 +74,7 @@ function extract() {
             *.tar)      _mo_extract_check tar     && tar xf  "$file"        ${=_tar_flags} || failed=1 ;;
             *.bz2)      _mo_extract_check bunzip2 && bunzip2 "$file"        || failed=1 ;;
             *.gz)       _mo_extract_check gunzip  && gunzip  "$file"        || failed=1 ;;
-            *.zip)      _mo_extract_check unzip   && unzip -K "$file"       || failed=1 ;;
+            *.zip)      _mo_extract_check unzip   && _mo_extract_zip "$file"    || failed=1 ;;
             *.7z)       _mo_extract_check 7z      && 7z x    "$file"        || failed=1 ;;
             *.rar)      _mo_extract_check unrar   && unrar x "$file"        || failed=1 ;;
             *.xz)       _mo_extract_check xz      && xz -d   "$file"        || failed=1 ;;
