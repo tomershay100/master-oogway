@@ -132,6 +132,7 @@ These only add new commands and never change existing behavior.
 | `mo-git` | git aliases, repo summary, and fuzzy branch/log pickers |
 | `mo-navigation` | directory navigation helpers — mkcd, up, tmpcd, fcd |
 | `mo-network` | natip (public IP lookup) and sshto (fuzzy SSH host picker) |
+| `mo-lan-ssh` | `s-<host>` aliases + ssh tab-completion for every SSH host discovered on your LAN (auto-refreshed) |
 | `mo-process` | psgrep (search processes), port (what's on a port), fkill (fuzzy kill) |
 | `mo-search` | grep aliases, find shortcut, and fuzzy history/man/ripgrep pickers |
 | `mo-shell-tools` | shell inspection and config helpers — h, ?, cwhich, vwhich, vizsh, soursh, please |
@@ -252,6 +253,27 @@ These only add new commands and never change existing behavior.
 |---------|-------------|
 | `natip` | print your public IP address |
 | `sshto` | fuzzy-select an SSH host and connect |
+
+### mo-lan-ssh — LAN-wide SSH host discovery
+
+Auto-discovers every SSH-listening host on your LAN, defines an `s-<hostname>` alias per host, and feeds the hosts to zsh's ssh/scp tab-completion. Re-scans on its own when the cache is stale (default 24h TTL) or when you move to a different network.
+
+| Command | Description |
+|---------|-------------|
+| `s-<host>` | shorthand for `ssh <host>` (one per discovered host) |
+| `mo-lan-ssh list` | print cached LAN hosts (one per line, with `:port` if non-22) |
+| `mo-lan-ssh refresh [--background]` | re-scan the LAN; `--background` returns immediately |
+| `mo-lan-ssh status` | show cache age, network ID, host count, SSH config state |
+| `mo-lan-ssh setup` | one-time: ensure `~/.ssh/config` has `Include config.d/*`, run first scan |
+| `mo-lan-ssh help` | show all subcommands + env-var configuration |
+
+**First-run behavior:** the first shell after install has no aliases (discovery runs in the background and takes ~3-15s depending on LAN size). The second shell you open has them.
+
+**Discovery strategy:** tries DNS zone-transfer (AXFR) first; falls back to `nmap` ping-sweep + reverse DNS; then `arp-scan` (with passwordless sudo); finally parses `~/.ssh/known_hosts`. First strategy that returns ≥1 host wins. Each candidate is then port-probed to confirm an SSH listener.
+
+**Non-default SSH ports:** set `MO_LAN_SSH_PORTS=22,2222,22022` to probe additional ports. Hosts on non-22 ports get a `Port` directive in `~/.ssh/config.d/lan-hosts` so `ssh <host>` automatically uses the right port.
+
+**Tunable via env vars:** `MO_LAN_TTL`, `MO_LAN_SSH_PORTS`, `MO_LAN_PROBE_TIMEOUT`, `MO_LAN_PROBE_PARALLEL`, `MO_LAN_EXCLUDE`, `MO_LAN_SUBNET`, `MO_LAN_DNS_SERVER`, `MO_LAN_DNS_ZONE`, `MO_LAN_VERBOSE` — see `mo-lan-ssh help`.
 
 ### mo-env — environment
 
