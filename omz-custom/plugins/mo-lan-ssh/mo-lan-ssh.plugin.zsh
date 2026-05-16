@@ -161,6 +161,135 @@ _mo_lan_maybe_write_sshconf() {
 
     # 3. ssh-config write — idempotent, skipped when nothing changed.
     _mo_lan_maybe_write_sshconf
+
+    # 4. SSH wrapper — registered only with a non-empty hostset AND when not
+    # explicitly disabled. Defining ssh() conditionally means users without
+    # LAN hosts (or with MO_LAN_AUTO_TRUST=false) get the stock ssh binary
+    # behavior — `which ssh` will show the file, not our function.
+    if [[ "${MO_LAN_AUTO_TRUST:-true}" != "false" ]]; then
+        typeset -gA _MO_LAN_HOSTSET=()
+        for h in "${hosts[@]}"; do _MO_LAN_HOSTSET[$h]=1; done
+        ssh() { _mo_lan_ssh_wrapper "$@"; }
+    fi
+}
+
+# ── SSH wrapper (Phase 2) ─────────────────────────────────────────────────────
+#
+# Wraps the `ssh` command, but only for hosts in the LAN cache. For every
+# other target (github.com, work servers, IP literals not in cache) the
+# wrapper does ONE associative-array lookup then falls through to
+# `command ssh` with zero added latency.
+#
+# What it does for LAN targets (and only for them):
+#   1. Probe with BatchMode=yes — does pubkey auth work in ≤ probe_timeout?
+#      - Yes  → just ssh.
+#      - "Host key verification failed" / "REMOTE HOST IDENTIFICATION HAS
+#         CHANGED" → ssh-keygen -R the host (we trust LAN key changes),
+#         then re-probe. If now OK → just ssh.
+#      - Permission denied / no working key → ssh-copy-id interactively,
+#        then ssh.
+#
+# Safety gates (any one of these → pass through to bare ssh, no surprise):
+#   - The target hostname isn't in _MO_LAN_HOSTSET.
+#   - MO_LAN_AUTO_TRUST=false.
+#   - Stdin isn't a TTY (script-pipe usage like `cmd | ssh foo ...`).
+
+# Parse ssh argv to find the destination (first non-flag arg, skipping the
+# values of option-taking flags). Returns empty string if no target found.
+_mo_lan_extract_target() {
+    local arg next_is_value=false
+    for arg in "$@"; do
+        if $next_is_value; then
+            next_is_value=false
+            continue
+        fi
+        case "$arg" in
+            # Flags taking a separate-arg value (-l user / -p 2222 / -i key / etc.)
+            -[BbcDEeFIiJLlmOoPpRSWwQ])
+                next_is_value=true
+                ;;
+            # Flags with attached value (-p2222), or any other -flag (-v, -A, …)
+            -*)
+                ;;
+            # First non-flag arg is the destination
+            *)
+                print -- "$arg"
+                return
+                ;;
+        esac
+    done
+}
+
+_mo_lan_ssh_wrapper() {
+    # Non-interactive stdin (pipe/script) → don't interfere with the user's flow
+    [[ -t 0 ]] || { command ssh "$@"; return; }
+
+    # MO_LAN_AUTO_TRUST=false → wrapper disabled, pass through
+    [[ "${MO_LAN_AUTO_TRUST:-true}" == "false" ]] && { command ssh "$@"; return; }
+
+    local target target_host
+    target=$(_mo_lan_extract_target "$@")
+    target_host="${target##*@}"   # strip user@ if present
+
+    # Not a LAN host → pass through with zero ceremony
+    if [[ -z "$target_host" || -z "${_MO_LAN_HOSTSET[$target_host]:-}" ]]; then
+        command ssh "$@"
+        return
+    fi
+
+    # Probe: BatchMode rejects password auth, so we only succeed on a working
+    # key. accept-new auto-records a first-time host key but rejects changes.
+    local probe_err probe_rc
+    probe_err=$(command ssh -o BatchMode=yes \
+                            -o ConnectTimeout="$MO_LAN_PROBE_TIMEOUT" \
+                            -o StrictHostKeyChecking=accept-new \
+                            "$target" true 2>&1)
+    probe_rc=$?
+
+    if (( probe_rc == 0 )); then
+        # Key auth works — just ssh.
+        command ssh "$@"
+        return
+    fi
+
+    # Key mismatch? Trust the LAN, purge, re-probe. Stock ssh's normal
+    # MITM defense is exactly what we're relaxing here, see README.
+    if [[ "$probe_err" == *"REMOTE HOST IDENTIFICATION HAS CHANGED"* \
+       || "$probe_err" == *"Host key verification failed"* ]]; then
+        print -P "%F{yellow}[mo-lan-ssh]%f Host key changed for $target_host — purging old key (LAN host: trusted)"
+        ssh-keygen -R "$target_host" >/dev/null 2>&1
+        probe_err=$(command ssh -o BatchMode=yes \
+                                -o ConnectTimeout="$MO_LAN_PROBE_TIMEOUT" \
+                                -o StrictHostKeyChecking=accept-new \
+                                "$target" true 2>&1)
+        probe_rc=$?
+        if (( probe_rc == 0 )); then
+            command ssh "$@"
+            return
+        fi
+    fi
+
+    # Classify the failure. Only run ssh-copy-id when password (or
+    # keyboard-interactive) auth is actually offered — copying a key
+    # accomplishes nothing if the failure is "connection refused", a
+    # KEX mismatch with an ancient device, network unreachable, etc.
+    if [[ "$probe_err" == *"Permission denied"* \
+       && ( "$probe_err" == *"password"* || "$probe_err" == *"keyboard-interactive"* ) ]]; then
+        print -P "%F{cyan}[mo-lan-ssh]%f No working key for $target_host — running ssh-copy-id"
+        if command ssh-copy-id "$target" </dev/tty; then
+            print -P "%F{green}[mo-lan-ssh]%f Key installed; reconnecting…"
+        else
+            print -P "%F{yellow}[mo-lan-ssh]%f ssh-copy-id failed — falling through to interactive ssh"
+        fi
+    elif [[ "$probe_err" == *"Permission denied"* ]]; then
+        # Pubkey-only server and our keys aren't authorized. ssh-copy-id
+        # has no way to bootstrap. Tell the user the manual path.
+        print -P "%F{yellow}[mo-lan-ssh]%f $target_host accepts only pubkey auth; bootstrap manually:" >&2
+        print -P "%F{245}  ssh-copy-id -f -i ~/.ssh/<your-key.pub> $target%f" >&2
+    fi
+    # Network errors / protocol mismatch / etc. — say nothing, just let the
+    # real ssh emit the actual error to the user.
+    command ssh "$@"
 }
 
 # ── CLI dispatcher ────────────────────────────────────────────────────────────

@@ -275,6 +275,10 @@ Auto-discovers every SSH-listening host on your LAN, defines an `s-<hostname>` a
 
 **Tunable via env vars:** `MO_LAN_TTL`, `MO_LAN_SSH_PORTS`, `MO_LAN_PROBE_TIMEOUT`, `MO_LAN_PROBE_PARALLEL`, `MO_LAN_EXCLUDE`, `MO_LAN_SUBNET`, `MO_LAN_DNS_SERVER`, `MO_LAN_DNS_ZONE`, `MO_LAN_VERBOSE` — see `mo-lan-ssh help`.
 
+**Auto SSH-key install** (the `ssh` wrapper): when you `ssh` (or `s-<host>`) any LAN host for the first time, the wrapper detects you don't have a key installed yet, runs `ssh-copy-id` for you (you'll be prompted once for your password), then connects. Next time you ssh to that host, you go straight in — no password. If the host gets reinstalled and its host key changes, the wrapper auto-purges the old key and accepts the new one (LAN-trust assumption). Set `MO_LAN_AUTO_TRUST=false` to disable both the auto-copy-id and the auto-purge.
+
+The wrapper is gated tightly: only LAN hosts (per the cache) ever go through the probe. `ssh github.com`, `ssh work.example.com`, etc. pass straight through to system `ssh` with zero added latency or behavior change. The wrapper also auto-disables on piped/scripted ssh (`echo … | ssh foo cmd`) so it never interferes with non-interactive workflows.
+
 ### mo-env — environment
 
 | Command | Description |
