@@ -87,8 +87,9 @@ fbranch() {
                   else
                       git log --oneline --color=always {} 2>/dev/null | head -20
                   fi
-              ") \
-    && git switch "$branch"
+              ")
+    [[ -z "$branch" ]] && return   # user hit Ctrl+C in fzf
+    git switch "$branch"
 }
 
 flog() {
