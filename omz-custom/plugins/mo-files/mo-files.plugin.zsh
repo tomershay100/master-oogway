@@ -95,7 +95,9 @@ function bak() {
     ts=$(date +%Y%m%d_%H%M%S_%N)
     for f in "$@"; do
         [[ -e "$f" ]] || { echo "bak: not found: $f" >&2; continue; }
-        cp -v "$f" "${f}.bak.${ts}"
+        # -a preserves mode/owner/timestamps/xattrs/symlinks so a later
+        # restore reproduces the original file faithfully (including +x).
+        cp -av "$f" "${f}.bak.${ts}"
     done
 }
 
