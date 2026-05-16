@@ -29,6 +29,9 @@ function port() {
     local out lsof_rc
     out=$(lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN -P -n 2>/dev/null); lsof_rc=$?
     if [[ -z "$out" && $lsof_rc -ne 0 ]]; then
+        # Listener owned by another user — surface the elevation explicitly
+        # so the sudo password prompt isn't a surprise.
+        echo "port: nothing visible without root, retrying with sudo..." >&2
         out=$(sudo lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN -P -n 2>/dev/null)
     fi
     if [[ -z "$out" ]]; then
