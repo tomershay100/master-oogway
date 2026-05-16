@@ -566,7 +566,9 @@ _install_sshd_acceptenv
 _check_theme_vars() {
     local themes_dir="${INSTALL_DIR}/omz-custom/themes/dragon"
     local current_hash
-    current_hash=$(grep -roh 'DRAGON__[A-Z_]*' "${themes_dir}" 2>/dev/null \
+    # Require at least one trailing char so the bare prefix 'DRAGON__' (which
+    # appears in commentary like 'DRAGON__*') is not counted as a var name.
+    current_hash=$(grep -Eroh 'DRAGON__[A-Z_]+' "${themes_dir}" 2>/dev/null \
         | sort -u | md5sum | cut -d' ' -f1)
 
     if [[ ! -f "${STATE_FILE}" ]]; then
