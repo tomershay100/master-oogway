@@ -17,10 +17,13 @@ function calc() {
     fi
     _mo_require bc calc || return
     local expr="$*"
-    # Whitelist: digits, math ops, parens, bc names (lowercase a-z, _), spaces.
-    # system("cmd") is blocked — " is not in the whitelist.
-    # system(bare) passes but bc treats bare identifiers as variables, not shell commands.
-    if [[ ! "$expr" =~ ^[0-9a-z_\ \+\-\*/\^\(\)\.\,\%]+$ ]]; then
+    # Whitelist: digits, letters (both cases — bc accepts SQRT as well as
+    # sqrt), underscore, space, and math operators. system("cmd") is blocked
+    # because " is not in the whitelist. system(bare) passes the regex but
+    # bc treats bare identifiers as variables, not shell commands.
+    # The hyphen is at the START of the bracket expression so the regex
+    # engine treats it as a literal, not a range operator.
+    if [[ ! "$expr" =~ '^[-0-9a-zA-Z_ +*/^().,%]+$' ]]; then
         echo "calc: expression contains invalid characters" >&2
         return 1
     fi
