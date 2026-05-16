@@ -132,13 +132,13 @@ fp() {
         preview_cmd='cat {}'
     fi
     local file
-    # fzf substitutes {} into the preview shell literally — a file named
-    # ';rm -rf;.txt' would execute on cursor-move. Filter unsafe names out
-    # before they reach fzf (same defense as fbranch in mo-git).
-    file=$(find "$base" -type f 2>/dev/null \
-        | grep -v '\.git' \
-        | grep -vF -e '$' -e '`' -e '(' -e ')' -e ';' -e '|' -e '&' -e '<' -e '>' -e '"' -e "'" -e '\' \
-        | fzf --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
+    # NUL-delimited pipeline so filenames with spaces or newlines survive
+    # intact (line-delimited would fragment them across fzf entries).
+    # The grep -zvF filter drops shell-unsafe names (newline included) so
+    # fzf's literal {} substitution can't be turned into code-execution.
+    file=$(find "$base" -type f -not -path '*/.git/*' -print0 2>/dev/null \
+        | grep -zvF -e '$' -e '`' -e '(' -e ')' -e ';' -e '|' -e '&' -e '<' -e '>' -e '"' -e "'" -e '\' -e $'\n' \
+        | fzf --read0 --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
     || return
     local fullpath="${file:a}"
     if command -v wl-copy &>/dev/null; then
