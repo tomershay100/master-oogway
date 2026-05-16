@@ -127,6 +127,17 @@ Each override should also define an escape-hatch alias (`r<name>`) that calls th
 original binary directly. Override plugins go in the "Override plugins" table at the top
 of the README's `## Plugins` section, not in the additive table.
 
+**Plugin-order constraints in `zshrc.master-oogway`:**
+
+1. `zsh-autosuggestions` must come **before** `zsh-syntax-highlighting`.
+2. `zsh-syntax-highlighting` must be **the very last entry** in the `plugins=()`
+   array. It wraps every ZLE widget defined by earlier plugins; widgets defined
+   after it will not be re-highlighted on each keystroke. New plugins go above
+   it, never below.
+3. Override plugins (`mo-*-override`) come before additive plugins.
+4. `mo-utils` is the first additive plugin (defines `_mo_require` used by all
+   other additive `mo-*`).
+
 If a plugin requires a tool that may not be installed, **always guard usage with
 `command -v <tool> &>/dev/null`** so the plugin loads silently when the dependency
 is absent. See `mo-bat-override` for the canonical pattern.

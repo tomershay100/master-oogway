@@ -124,8 +124,14 @@ fi
 
 plugins=(
     # ── oh-my-zsh plugins ──────────────────────────────────────────────────────
+    # NOTE: zsh-syntax-highlighting is intentionally placed at the END of this
+    # array (after all master-oogway plugins). Per upstream's README, it must
+    # be sourced LAST so it can wrap every ZLE widget defined by earlier
+    # plugins. Widgets defined after it (e.g. by sudo, fzf, history-substring-
+    # search) would not get re-highlighted on each keystroke. The only
+    # ordering constraint between the two highlighters is that
+    # zsh-autosuggestions must come BEFORE zsh-syntax-highlighting.
     zsh-autosuggestions       # suggests commands as you type based on history (→ to accept)
-    zsh-syntax-highlighting   # colors valid commands green and invalid ones red while typing
     sudo                      # press Esc twice to prepend sudo to the current command
     you-should-use            # reminds you when you type a command that has an alias defined
     colored-man-pages         # colorizes man pages for easier reading
@@ -164,6 +170,10 @@ plugins=(
     mo-apps                    # GUI app launchers (gnucash via flatpak)
     mo-cli                     # `master-oogway` CLI: update, uninstall, version, doctor, ...
     mo-welcome                 # 2-line system snapshot banner on shell open
+
+    # MUST BE LAST — wraps every ZLE widget defined above. See the note at the
+    # top of this array.
+    zsh-syntax-highlighting   # colors valid commands green and invalid ones red while typing
 )
 
 source "$ZSH/oh-my-zsh.sh"
