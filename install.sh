@@ -525,7 +525,7 @@ _install_ssh_sendenv() {
         info "Migrated existing SendEnv DRAGON__* to marker-wrapped stanza"
     fi
 
-    printf '\n%s\nHost *\n    SendEnv DRAGON__*\n%s\n' "$marker_begin" "$marker_end" >> "$ssh_config"
+    printf '\n%s\nHost *\n    SendEnv DRAGON__*\n    HashKnownHosts no\n%s\n' "$marker_begin" "$marker_end" >> "$ssh_config"
     chmod 600 "$ssh_config"
     success "Added SendEnv DRAGON__* to ~/.ssh/config"
 }
