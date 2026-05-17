@@ -389,10 +389,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 * **Fixed:** Added `apt_install bash || die` alongside zsh/git/curl in the must-have packages block.
 
-#### M-16. `mo-lan-ssh` discovery silently swallows all errors
-* **Location:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:60-66`
-* **Problem:** `2>/dev/null` everywhere; if `dig` is missing on a no-nmap system, the user sees "no cache yet" forever with no clue why.
-* **Recommendation:** Redirect stderr to `~/.config/master-oogway/lan-hosts.lastrun.err`. `mo-lan-ssh status` displays it when cache is empty.
+#### M-16. ✅ `mo-lan-ssh` discovery — early guard when no dig/nmap
+
+* **Fixed:** `_mo_lan_discover.zsh main()` now checks for `dig` or `nmap` before running any strategy and emits a clear install hint. `install.sh` adds `nmap` to the post-install todo list when neither tool is present.
 
 #### M-17. `mo-lan-ssh` deferred phase-3 commands referenced in `MO-LAN-PLAN.md` but unimplemented
 * **Location:** `MO-LAN-PLAN.md:351`, `mo-lan-ssh.plugin.zsh:374-438`

@@ -391,6 +391,9 @@ command -v rg     &>/dev/null || todo_item "Install ripgrep for the 'frg' fuzzy 
 if ! command -v fd &>/dev/null && ! command -v fdfind &>/dev/null; then
     todo_item "Install fd for faster fzf file picker (Ctrl+T): sudo apt install fd-find"
 fi
+if ! command -v dig &>/dev/null && ! command -v nmap &>/dev/null; then
+    todo_item "Install nmap for mo-lan-ssh LAN host discovery: sudo apt install nmap"
+fi
 if ! command -v eza &>/dev/null && ! command -v exa &>/dev/null; then
     todo_item "Install eza (Ubuntu) or exa (Raspberry Pi) for enhanced ls: sudo apt install eza"
 fi
