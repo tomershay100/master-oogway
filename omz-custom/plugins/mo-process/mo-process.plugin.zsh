@@ -25,7 +25,7 @@ function port() {
         echo "port: invalid port '$1' (must be 1–65535)" >&2
         return 1
     fi
-    _mo_require lsof port lsof || return
+    command -v lsof &>/dev/null || { echo "port: lsof not installed (try: sudo apt install lsof)" >&2; return 1; }
     local out lsof_rc
     out=$(lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN -P -n 2>/dev/null); lsof_rc=$?
     if [[ -z "$out" && $lsof_rc -ne 0 ]]; then
@@ -52,7 +52,7 @@ fkill() {
         echo "  Tip: use TAB to select multiple processes."
         return
     fi
-    _mo_require fzf fkill || return
+    command -v fzf &>/dev/null || { echo "fkill: fzf not installed" >&2; return 1; }
     local sig="${1:--15}"
     local pids
     pids=$(ps -ef \

@@ -2,7 +2,7 @@
 # Requires: curl for natip. sshto also requires fzf and ~/.ssh/config (or ~/.ssh/config.d/*).
 
 natip() {
-    _mo_require curl natip curl || return
+    command -v curl &>/dev/null || { echo "natip: curl not installed (try: sudo apt install curl)" >&2; return 1; }
     curl -s --max-time 5 ifconfig.me
 }
 
@@ -12,7 +12,7 @@ sshto() {
         echo "  Fuzzy-select a host from ~/.ssh/config and ~/.ssh/config.d/* and connect."
         return
     fi
-    _mo_require fzf sshto || return
+    command -v fzf &>/dev/null || { echo "sshto: fzf not installed" >&2; return 1; }
     local -a config_files=( ~/.ssh/config(N) ~/.ssh/config.d/*(N) )
     [[ ${#config_files} -gt 0 ]] || { echo "sshto: no SSH config files found" >&2; return 1; }
     local host

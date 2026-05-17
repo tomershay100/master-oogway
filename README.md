@@ -121,7 +121,6 @@ These only add new commands and never change existing behavior.
 
 | Plugin | Provides |
 |--------|---------|
-| `mo-utils` | internal: `_mo_require` dependency-check helper (must be first additive plugin) |
 | `mo-apps` | launcher aliases for GUI applications installed via flatpak |
 | `mo-auto-ls` | auto-ls — runs ls automatically after every cd |
 | `mo-build` | m (parallel make with optional colormake+banner) and mc (make clean) |

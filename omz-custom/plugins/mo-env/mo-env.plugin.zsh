@@ -10,7 +10,7 @@ fenv() {
         echo "  -E         — edit value in \$EDITOR ($EDITOR)"
         return
     fi
-    _mo_require fzf fenv || return
+    command -v fzf &>/dev/null || { echo "fenv: fzf not installed" >&2; return 1; }
     local mode="print"
     [[ "$1" == "-e" ]] && mode="inline"
     [[ "$1" == "-E" ]] && mode="editor"

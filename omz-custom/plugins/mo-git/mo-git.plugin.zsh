@@ -56,7 +56,7 @@ fbranch() {
         echo "  Preview shows commits ahead of main and the diff stat."
         return
     fi
-    _mo_require fzf fbranch || return
+    command -v fzf &>/dev/null || { echo "fbranch: fzf not installed" >&2; return 1; }
     local default_branch
     default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
         | sed 's|refs/remotes/origin/||') || default_branch="main"
@@ -100,7 +100,7 @@ flog() {
         echo "  Copies hash to clipboard (wl-copy or xclip), or prints it if neither is available."
         return
     fi
-    _mo_require fzf flog || return
+    command -v fzf &>/dev/null || { echo "flog: fzf not installed" >&2; return 1; }
     local hash
     hash=$(git log --oneline --color=always 2>/dev/null \
         | fzf --ansi --height=60% --reverse \

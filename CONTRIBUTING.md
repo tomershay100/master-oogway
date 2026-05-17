@@ -135,8 +135,6 @@ of the README's `## Plugins` section, not in the additive table.
    after it will not be re-highlighted on each keystroke. New plugins go above
    it, never below.
 3. Override plugins (`mo-*-override`) come before additive plugins.
-4. `mo-utils` is the first additive plugin (defines `_mo_require` used by all
-   other additive `mo-*`).
 
 If a plugin requires a tool that may not be installed, **always guard usage with
 `command -v <tool> &>/dev/null`** so the plugin loads silently when the dependency

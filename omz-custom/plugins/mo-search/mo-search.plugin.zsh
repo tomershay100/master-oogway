@@ -14,7 +14,7 @@ fhist() {
         echo "  Tip: CTRL+R (fzf plugin) does the same from any prompt."
         return
     fi
-    _mo_require fzf fhist || return
+    command -v fzf &>/dev/null || { echo "fhist: fzf not installed" >&2; return 1; }
     local cmd
     cmd=$(fc -ln 1 | fzf --tac --height=40% --reverse --no-sort)
     [[ -n "$cmd" ]] && print -z "$cmd"
@@ -26,7 +26,7 @@ fman() {
         echo "  Fuzzy-select a man page and open it."
         return
     fi
-    _mo_require fzf fman || return
+    command -v fzf &>/dev/null || { echo "fman: fzf not installed" >&2; return 1; }
     local page
     page=$(man -k '' 2>/dev/null \
         | fzf --height=50% --reverse --preview 'man {1}' \
@@ -40,8 +40,8 @@ frg() {
         echo "  Fuzzy search file contents with ripgrep and open result in \$EDITOR."
         return
     fi
-    _mo_require fzf frg || return
-    _mo_require rg  frg || return
+    command -v fzf &>/dev/null || { echo "frg: fzf not installed" >&2; return 1; }
+    command -v rg  &>/dev/null || { echo "frg: rg not installed (try: sudo apt install ripgrep)" >&2; return 1; }
     local result
     # fzf substitutes {1} (path field) into the preview shell literally —
     # a file named ';rm;.txt' would execute on cursor-move. Filter unsafe

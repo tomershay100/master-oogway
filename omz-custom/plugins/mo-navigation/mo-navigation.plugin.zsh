@@ -60,7 +60,7 @@ fcd() {
         echo "  Tip: ALT+C (fzf plugin) does the same from any prompt."
         return
     fi
-    _mo_require fzf fcd || return
+    command -v fzf &>/dev/null || { echo "fcd: fzf not installed" >&2; return 1; }
     local base="${1:-.}"
     local preview_cmd
     if command -v eza &>/dev/null; then
