@@ -18,27 +18,23 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 ### Main strengths
 1. **Idempotent installer with real uninstall** — backup-once semantics, sshd validation with auto-revert, marker-based `~/.zshrc` protection, dev/prod auto-detect via `BASH_SOURCE`.
 2. **Configurability is best-in-class** — schema-driven theme, three presets, interactive `dragon-configure` wizard, SSH env-var forwarding, drop-in dirs for user overrides (`custom-pre-zsh/`, `custom-zsh/`).
-3. **Override/additive plugin distinction** — documented in CONTRIBUTING, enforced by load order. Every additive plugin uses `_mo_require` consistently; every override plugin ships an `r*` escape-hatch alias.
+3. **Override/additive plugin distinction** — documented in CONTRIBUTING, enforced by load order. Every additive plugin uses inline dependency checks consistently; every override plugin ships an `r*` escape-hatch alias.
 4. **Defensive shell discipline** — zip-slip protection in `extract`, NUL-delimited pipelines in `fcd`/`fp`, branch-injection filtering in `fbranch`, locale probe in 1 fork instead of 44, `lsof`-port validated before use, marker-protected sshd_config edits with `sshd -t` pre-validate.
 5. **Documentation tells the truth** — README accurately describes installed surface; CONTRIBUTING enumerates the five touch-points needed when adding a theme variable; `# Provides:` lines on every plugin.
 
-### Main risks (the report develops each)
-1. **`_mo_require` is a single point of failure** — every additive plugin depends on `mo-utils` being loaded first; nothing enforces this. Removing `mo-utils` cascades to ~11 plugins all crashing on call.
-2. **No safe-mode / minimal-mode** — when a plugin or `custom-zsh/*.zsh` drop-in breaks the shell, the user has no `zsh -i --safe` equivalent that still loads dragon. Only escape is `zsh -f`.
-3. **No in-shell discovery surface** — the `# Provides:` headers are a great convention but not surfaced at runtime. Users learn 20% of the framework's commands.
-4. **`mo-lan-ssh` ssh wrapper probes synchronously on every call** — adds ~200ms per `ssh <lan-host>` with no cache of "already-set-up" hosts.
-5. **`MO-LAN-PLAN.md` is stale** — committed but never deleted. Forward-looking plan for a feature that already shipped, with phase-3 subcommands (`trust`/`forget`/`exclude`) referenced in plan but **not implemented**. Active source-of-truth confusion.
-6. **No central capability cache** — `command -v bat`/`fzf`/`fd` is probed at ~8-13 sites independently. Wasted forks at shell start; no place to ask "what does the framework think is installed?".
-7. **Dragon wizard latency** — `_dragon_render_preview` spawns a fresh `zsh -c` per preview redraw. 40+ subshells per guided wizard.
-8. **`DRAGON__*` exports leak across SSH/tmux** — `dragon-configure --preset` re-exports values, after which `conf.zsh` edits become silent no-ops in pre-existing tmux panes.
+### Main risks
+1. **No safe-mode / minimal-mode** — when a plugin or `custom-zsh/*.zsh` drop-in breaks the shell, the user has no `zsh -i --safe` equivalent that still loads dragon. Only escape is `zsh -f`.
+2. **No in-shell discovery surface** — the `# Provides:` headers are a great convention but not surfaced at runtime. Users learn 20% of the framework's commands.
+3. **Dragon wizard latency** — `_dragon_render_preview` spawns a fresh `zsh -c` per preview redraw. 40+ subshells per guided wizard.
+4. **`DRAGON__*` exports leak across SSH/tmux** — `dragon-configure --preset` re-exports values, after which `conf.zsh` edits become silent no-ops in pre-existing tmux panes.
 
 ### Issue distribution
 
 | Severity | Count |
 |---|---|
 | 🔴 Critical | 0 |
-| 🟠 High | 8 |
-| 🟡 Medium | 32 |
+| 🟠 High | 2 |
+| 🟡 Medium | 1 |
 | 🟢 Low | 35 |
 
 **Zero critical issues** is the headline. The system will not eat data, lock the user out, or fail catastrophically on any plausible inputs the audit explored. The 🟠 high issues are real UX/reliability gaps, not crashes.
@@ -55,7 +51,7 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 │  • Manages: ~/.zshrc symlink, ~/.gitconfig, ~/.editorconfig,   │
 │             ~/.zshenv, ~/.ssh/config, /etc/ssh/sshd_config     │
 │  • Calls: apt_install zsh git curl; clones/pulls main repo +  │
-│           4 submodules; runs `_init_plugins` (dev mode only)  │
+│           4 submodules; runs `_init_plugins` (all modes)      │
 │  • Reverses everything via --uninstall                        │
 └────────────────────────────────────────────────────────────────┘
               │
@@ -103,24 +99,24 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 **Plugin contract** (implicit, no formal interface):
 - File: `omz-custom/plugins/<name>/<name>.plugin.zsh`
 - Convention: one `# Provides:` line listing user-visible commands.
-- Dependencies: declared by `_mo_require <tool> <caller> [apt-pkg]` calls in function bodies (not in headers).
+- Dependencies: declared by inline `command -v` checks in function bodies.
 - Ordering: overrides first, `mo-utils` second, others next, syntax-highlighting last. Enforced by humans editing `~/.zshrc`.
 
 **Theme contract:**
 - Variables declared in `schema.zsh` via `populate_defaults`/`populate_types`/`populate_hints`/`populate_groups`.
 - Five touch-points required per new var (documented in CONTRIBUTING.md:148-219): defaults, type, hint, group, segment renderer.
-- `_dragon_vars_hash` (md5 of all `DRAGON__*` identifiers found by grep) gates the notifier — but it's grep-based and over-matches comments/docs.
+- `_dragon_vars_hash` (md5 of sorted `_DRAGON_DEFAULTS` keys) gates the notifier.
 
 ### Module breakdown (LOC by area)
 
 | Area | LOC | Files |
 |---|---:|---|
 | install.sh | 612 | 1 |
-| docs (README, CONTRIBUTING, MO-LAN-PLAN) | 1060 | 3 |
+| docs (README, CONTRIBUTING) | 1060 | 2 |
 | zshrc/zshenv/gitconfig/editorconfig | 335 | 4 |
 | Dragon theme | 1907 | 12 |
 | mo-* plugins (21 files) | 1815 | 22 |
-| **Total in scope** | **5729** | **42** |
+| **Total in scope** | **5729** | **41** |
 | Vendored submodules (out of scope) | ~53k | n/a |
 
 ---
@@ -152,32 +148,24 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 | **No per-host theme overrides** — `HOSTNAME_VIA_SSH_*` covers "remote vs local" but not "on `prod-db` use red." | Repeated manual config per machine. |
 | **`MO_*` env namespace is mo-lan-ssh-only** — other plugins use `SERVE_BIND`, `MD2PDF_THEME`, etc. | Inconsistent contract; hard to find the knobs. |
 | **No way to disable a plugin without editing `~/.zshrc`** — the marker-protected file's drift-warning fires forever after a single edit. | Users banner-blind to the warning that actually matters (new plugin added by upstream). |
-| **Wizard can't reach `[10]` items** — `_dragon_edit_var` enum input is hard-coded `[1-9]` (`configure.zsh:326-329`), so `GIT_DIRTY_UNDERLINE` (var #10 in `git_clean_dirty` group) is unreachable. Must hand-edit `conf.zsh`. | Silent inability to wizard-customize. |
 | **No "preview-before-save" for theme presets** — `--preset` writes conf and asks for reload. | Slow iteration. |
 | **No `dragon-configure --get/--set` non-interactive mode** for scripted/Ansible-driven config. | Forces the wizard for one-line tweaks. |
 
 ### Theme system review
 
 * **Schema-driven** is the right choice and well-executed. Pure-data file (`schema.zsh`), no side effects, clean populator functions.
-* **Hash-based change detection** is clever but `grep -Eroh 'DRAGON__[A-Z_]+'` over-matches: comments, docs, the cleanup vars-listing block in `_dragon_cleanup` (`configure.zsh:933-936`), and preset definitions. Cosmetic edits trigger false-positive notifier.
 * **Configurator latency** (`configure.zsh:226-252`): every preview redraw runs `zsh -c` + sources `dragon.zsh`. On guided wizard with 20 groups × 2-4 mode-variants × keypress redraws, easily 40+ subshells. Perceptibly laggy on slower hardware.
 * **Exports leak** (`dragon.zsh:7-14`, `aliases.zsh:3-9`): `set_if_unset` exports all defaults. Once `dragon-configure --preset X` runs, those values are in the env permanently. New tmux panes inherit them, and `conf.zsh` edits silently no-op because `set_if_unset` sees the env var already set.
-
-### Documentation drift
-
-* `README.md` is largely accurate (recent commit `5b5896b` added the "When the override gets in the way" section — a real UX improvement).
-* **`MO-LAN-PLAN.md` is stale and harmful**: written as a forward-looking plan, but the plugin is fully implemented and wired in. Phase-3 subcommands listed in the plan (`trust`/`forget`/`exclude`) are referenced in user-facing help nowhere but **are not implemented** — anyone reading the plan and trying `mo-lan-ssh forget gandalf` gets "unknown command." Three sources of truth (plan, README, code) for one feature.
-* **`zshenv.master-oogway`** ships with EDITOR/VISUAL exports; uninstaller asymmetrically refuses to remove it (`install.sh:341-346`) even when the file is byte-identical to the template.
 
 ---
 
 ## 4. Robustness & Failure Handling
 
-### Optional dependency handling (the most important section)
+### Optional dependency handling
 
 | Tool | Plugins | Handling | Verdict |
 |---|---|---|---|
-| `fzf` | mo-network, mo-env, mo-search, mo-process, mo-navigation, mo-files, mo-git | soft via `_mo_require` | ✅ Consistent |
+| `fzf` | mo-network, mo-env, mo-search, mo-process, mo-navigation, mo-files, mo-git | soft via inline check | ✅ Consistent |
 | `bat`/`batcat` | mo-bat-override, mo-shell-tools, mo-search, mo-files | silent fallback to `cat` (overrides); soft elsewhere | ✅ Ubuntu rename handled |
 | `eza` | mo-eza-override, mo-navigation | fallback to `ls` | ✅ |
 | `fd`/`fdfind` | zshrc (FZF_DEFAULT_COMMAND) | silent | ✅ |
@@ -197,28 +185,20 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 **The cross-cutting flaw:** every plugin probes its own dependencies. `command -v bat` happens at ~13 distinct call-sites. A central capability cache (in `mo-utils`) would unify behavior and save forks.
 
-**`_mo_require` cliff:** if a user removes `mo-utils` from the plugins array (entirely reasonable — they may think "it's just utils"), every additive plugin crashes with `_mo_require: command not found` on first use. Comments declare the dependency but nothing enforces it.
-
 ### Fallback mechanisms — by area
 
 | Area | Has fallback? | Notes |
 |---|---|---|
 | Override aliases (`cat`/`ls`/`vim`/`cp`/`mv`/`reboot`) | ✅ | `r*` escape-hatch aliases (`rcat`, `rls`, …) |
 | `bat`/`batcat` Ubuntu rename | ✅ | Detected globally |
-| Missing fzf in fuzzy commands | ✅ | `_mo_require` exits with clear apt hint |
+| Missing fzf in fuzzy commands | ✅ | inline check exits with clear apt hint |
 | Missing `gitstatus` daemon for prompt | ✅ | `parts/git.zsh` guards on `gitstatus_query` presence |
 | Missing 256-color terminal | ❌ | `__get_xterm_color_by_name` only handles unknown names, not unsupported terminals |
 | Missing Nerd Font glyphs | ❌ | `USE_NERD_FONT` defaults via SSH-presence only; no terminal probe |
-| Missing `python3` for `serve` | ✅ | `_mo_require` |
+| Missing `python3` for `serve` | ✅ | inline check |
 | Missing `xelatex` for `md2pdf` | ❌ | Cryptic pandoc error |
 | Network failure during install clone | 🟡 | Partial clone leaves cryptic state; `git pull --ff-only` on rerun may mask broken submodules |
-| sshd_config edit fails validation | ✅ | Auto-reverts via `sshd -t`, recent fix |
-
-### Error handling review
-
-* **Installer:** `set -Eeuo pipefail`, `_on_error` trap with `BASH_COMMAND` reporting, `die` helper consistent throughout. **Issue:** `die` called from `$(…)` exits only the subshell — no current bug but a latent trap for future contributors.
-* **Plugins:** `2>/dev/null` swallows errors broadly. `mo-lan-ssh/_mo_lan_refresh_async` silently discards all discovery errors — users with `dig` missing on a no-nmap system see "no cache yet" with no clue why.
-* **Configurator:** `_dragon_read_key` traps `EXIT INT TERM` and clears them after each keypress, **clobbering any pre-existing user trap** for the rest of the session (`configure.zsh:181-189`).
+| sshd_config edit fails validation | ✅ | Auto-reverts via `sshd -t` |
 
 ### Edge cases & failure scenarios
 
@@ -226,7 +206,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 * **User deletes the `# master-oogway:managed` marker line:** Next install **clobbers user edits** without backup re-running (the `.pre-master-oogway` backup is only created on first install).
 * **User has tab-indented `Host *` block in `~/.ssh/config`:** `SendEnv` injection's `sed` regex uses 4-space prefix; lands with inconsistent indentation in user's file.
 * **User has multiple `Host *` stanzas:** `sed` inserts after the *first* match — possibly the wrong section.
-* **Ctrl+C during `dragon-configure` preview:** `_DRAGON_*` exports leak to parent shell, silently overriding `conf.zsh` for the rest of the session.
 * **Bare `Host *` is commented in `~/.ssh/config`:** `mo-lan-ssh` setup adds a duplicate `Include` directive.
 * **`reboot -f` typed:** `mo-safety-override` strips the `-f` arg silently (`mo-safety-override.plugin.zsh:14-17`).
 * **`gunzip` on a symlinked archive:** modifies the symlink target (`mo-files.plugin.zsh:76`) — accepted because `[[ ! -f "$file" ]]` accepts symlinks.
@@ -264,29 +243,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 | mo-files | 155 | `extract`, `bak`, `sizeof`, `fp` | tar/unzip/7z/…, fzf |
 | mo-lan-ssh (+helper) | 440+205 | LAN ssh discovery + wrapper | dig/nmap/arp-scan, flock |
 
-### Extensibility design — current state
-
-**The contract is implicit.** Any `omz-custom/plugins/<name>/<name>.plugin.zsh` is auto-loaded if listed in `~/.zshrc`'s `plugins=(...)` array. Conventions:
-* `# Provides: <commands>` header (uniformly applied).
-* `_mo_<plugin>_<helper>` for internal functions.
-* `-h/--help` on every user-visible function.
-* `r*` escape-hatch aliases for override plugins.
-
-**No mechanical contract.** No machine-readable metadata header → `master-oogway doctor` has to hardcode the tool list (`mo-cli.plugin.zsh:40-56`) rather than computing it from plugin metadata. No version, no declared deps array, no `enable/disable` registration point.
-
-### Plugin lifecycle
-
-* **Load:** oh-my-zsh sources `<name>.plugin.zsh` once. No `init` hook beyond top-level code.
-* **Run:** functions/aliases defined at load are dispatched on user invocation.
-* **Unload:** No mechanism. To "disable" a plugin, the user edits `~/.zshrc`.
-* **Reload:** `soursh` re-sources `~/.zshrc`; idempotency is each plugin's responsibility.
-
-### Safety of plugins
-
-Each plugin runs in the user's shell with full privilege. There is no sandboxing — appropriate, since users install this knowingly. But:
-* **Aliases override scripting commands** (`cat`, `ls`, `cp`, `vim`). zsh doesn't expand aliases in non-interactive shells unless `expand_aliases` is set, but `mo-safety-override` uses functions (`cp`, `mv`, etc.) — and **functions are inherited by `eval`/`zsh -c`**. A user who runs `zsh -c "cp a b"` from a script gets the interactive confirmation prompt. Functions exported via `typeset -fx` would be even worse; the plugin uses bare functions, which is the right choice.
-* **mo-lan-ssh is the only plugin that mutates `~/.ssh/config`** — well-isolated to `~/.ssh/config.d/lan-hosts` with an `Include` directive in the main config.
-
 ### Missing abstraction layers
 
 1. **No capability cache** — every plugin re-probes `command -v X` independently.
@@ -301,22 +257,6 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 ## 6. Issues Found (Detailed List)
 
 ### 🟠 High-severity issues
-
-#### H-1. ✅ RESOLVED — `_mo_require` dependency eliminated
-
-* **Resolved:** `mo-utils` plugin deleted. All 15 `_mo_require` call sites replaced with inline `command -v` checks. Each plugin is now fully self-contained with zero cross-plugin dependencies.
-
-#### H-2. ✅ NOT APPLICABLE — shell switch handled by OMZ installer
-
-* **Resolved:** `install.sh` requires oh-my-zsh to be pre-installed and `die`s if it isn't. OMZ's own installer already prompts the user to `chsh` to zsh. By the time master-oogway runs, the shell is already switched (or the user explicitly declined).
-
-#### H-3. ✅ RESOLVED — `_init_plugins` now runs in all modes
-
-* **Resolved:** Hoisted `_init_plugins` out of the dev-mode block into a top-level function. Replaced `${local_dir}` with `${INSTALL_DIR}` (correct in all modes). Now called from both update mode and dev mode, guaranteeing submodule recovery regardless of how the installer is invoked.
-
-#### H-4. ✅ RESOLVED — `frg` now uses `rg --null` for safe filename parsing
-
-* **Resolved:** Switched to `rg --null` which NUL-terminates filenames. awk splits on NUL (`FS="\0"`), strips ANSI, applies the security filter, then emits TAB-separated `file\tlineno\tcontent`. fzf uses `--delimiter '\t'` so `{1}` is always the bare filename regardless of colons in the path. Extraction uses `cut -f1`/`cut -f2` — no regex ambiguity.
 
 #### H-5. `dragon-configure --preset` leaks `DRAGON__*` exports to parent shell
 
@@ -334,120 +274,13 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **Impact:** Wizard feels sluggish (perceptibly so on slow machines, containers, SSH). Bad first impression.
 * **Recommendation:** Cache rendered previews keyed by `(group, mode, vars-hash)`; re-render only on actual value change.
 
-#### H-7. ✅ WON'T FIX — probe latency accepted; `mo-lan-ssh trust` is the explicit alternative
-
-* **Decision:** `mo-lan-ssh trust <host>` already handles key setup on demand. Adding a cache (state file) or in-session tracking adds complexity for a problem the user controls. The probe is only meaningful on first connect; subsequent connections succeed instantly (probe_rc=0 → straight through). Accepted.
-
-#### H-8. ✅ WON'T FIX — removing the plugin from `plugins=()` is the correct disable mechanism
-
-* **Decision:** A `MO_LAN_SSH_DISABLED=1` env-var is a runtime escape hatch for a problem already solved at config time — comment out or remove `mo-lan-ssh` from `plugins=()`. Adding another knob adds surface area with no real benefit.
-
 ### 🟡 Medium-severity issues
 
-#### M-1. ✅ RESOLVED — `local_dir` renamed to `_MO_DEV_DIR`
-
-* **Resolved:** Renamed all 6 references. Uppercase signals global scope; underscore prefix signals internal. No behavior change.
-
-#### M-2. ✅ NOT APPLICABLE — see H-2; OMZ installer owns the shell-switch step
-
-#### M-3. ✅ Partial-clone recovery — explicit die with recovery command
-
-* **Location:** `install.sh:154-163`
-* **Fixed:** All three `git` call sites (clone, submodule update in bootstrap, submodule update in `_init_plugins`) now capture stderr and `die` with the exact recovery command: `rm -rf ~/.master-oogway` + re-run.
-
-#### M-4. ✅ `~/.zshrc` backup always timestamped before overwrite
-
-* **Location:** `install.sh` (`_install_zshrc`)
-* **Fixed:** `_install_zshrc` now always backs up to `~/.zshrc.pre-master-oogway.YYYYMMDD_HHMMSS` whenever the file exists, regardless of whether a prior backup exists. No overwrite can silently discard a file.
-
-#### M-5. ✅ `SendEnv DRAGON__*` — marker-wrapped stanza appended at EOF
-
-* **Location:** `install.sh` (`_install_ssh_sendenv`)
-* **Fixed:** Replaces the `sed`-insert-after-first-match approach with a `# BEGIN/END master-oogway:sendenv`-wrapped `Host *` block appended at end-of-file. Uninstall removes by marker range. Migrates legacy bare-line installs automatically.
-
-#### M-6. ⏭ SKIPPED — `/etc/ssh/sshd_config` prompt on laptops without sshd
-
-#### M-7. ⏭ SKIPPED — Unverified clones / GPG tag verification
-
-#### M-8. ✅ NOT APPLICABLE — mo-utils removed; `command -v` is a shell built-in with hash-table cost, not a fork
-
-#### M-9. ✅ NOT APPLICABLE — mo-utils removed entirely (H-1)
-
-#### M-10. ⏭ SKIPPED — Per-plugin enable/disable
-
-#### M-11. ⏭ SKIPPED — Alias collisions with single-letter commands
-
-#### M-12. ✅ RESOLVED — `_confirm_reboot` now forwards `"$@"` to `command reboot`
-
-#### M-13. ⏭ SKIPPED — `mo-search/grep` clobbers pre-defined alias (user should use custom-zsh/)
-
-#### M-14. ✅ `mo-process/port` — replaced printf awk with column -t
-
-* **Fixed:** Replaces hardcoded `printf` field selection with a custom header + field-selected awk piped to `column -t`. Output now includes `(LISTEN)` state and auto-sizes columns.
-
-#### M-15. ✅ `install.sh` ensures bash is installed before proceeding
-
-* **Fixed:** Added `apt_install bash || die` alongside zsh/git/curl in the must-have packages block.
-
-#### M-16. ✅ `mo-lan-ssh` discovery — warn when no dig/nmap, don't block
-
-* **Fixed:** `_mo_lan_discover.zsh main()` warns when neither `dig` nor `nmap` is present but continues so `strat_known_hosts` can still provide completions. `install.sh` adds `nmap` to the post-install todo list when neither tool is present.
-
-#### M-17. ✅ NOT APPLICABLE — `trust`, `forget`, `add`, `remove` all implemented in dispatcher
-
-#### M-18. ✅ NOT APPLICABLE — `MO-LAN-PLAN.md` no longer exists in the repo
-
-#### M-19. ✅ `apt_install` — captures stderr and shows it on failure
-
-* **Fixed:** Captures stderr separately; stdout stays suppressed for clean install output. On failure, prints the captured apt error and warns.
-
-#### M-20. ⏭ SKIPPED — `who(1)` per-prompt overhead
-
-#### M-21. ✅ `__calc_prompt_length` — broader CSI strip, dropped 1.1 fudge
-
-* **Fixed:** Pattern widened from `[0-9;]#m` to `[0-9;]#[A-Za-z]` to catch all CSI final bytes, not just SGR. Removed the `*1.1` over-estimate which caused premature git-segment line wraps. Inlined into two one-liners.
-
-#### M-22. ✅ Separator color compare — normalize via `__get_xterm_color_by_name`
-
-* **Fixed:** Both `__add_separator_between_left_segments` and `__add_separator_between_right_segments` now assign `${XTERM_COLOR:-$TERMINAL_BACKGROUND_COLOR}` back to the local color variable after lookup, so comparisons always use the normalized form.
-
-#### M-23. ✅ `_dragon_render_preview` — wrapped in subshell to prevent env-leak
-
-* **Fixed:** Entire function body wrapped in `( ... )`. All exports (`DRAGON__*`, `SSH_TTY`, `VCS_STATUS_*`) are automatically discarded when the subshell exits, including on Ctrl+C. Dead cleanup block removed.
-
-#### M-24. ⏭ SKIPPED — stale `VCS_STATUS_*` flicker after `cd`
-
-#### M-25. ✅ `_dragon_vars_hash` — hash schema keys instead of grep output
-
-* **Fixed:** All three sites (`configure.zsh`, `notifier.zsh`, `install.sh`) now serialize `${(@k)_DRAGON_DEFAULTS}` instead of grepping for `DRAGON__*`. Immune to comment edits. `install.sh` spawns a one-shot `zsh -c` to source `schema.zsh` and compute the same hash from bash.
-
-#### M-26. ✅ `_dragon_read_key` — replaced traps with `always { }` block
-
-* **Fixed:** `_dragon_read_key` now uses zsh's `always { }` construct to restore `stty` state. No traps are set or cleared, so user's session cleanup hooks (SSH sync, tmp dirs, locks) are fully preserved.
-
-#### M-27. ✅ Wizard group selector — supports two-digit entry via stty timeout
-
-* **Fixed:** Group variable selector now reads a second digit with `stty min 0 time 5` (0.5s timeout) when the group has >9 items. Enum selector untouched — no enum exceeds 3 options. `GIT_DIRTY_UNDERLINE` (#10) is now reachable.
-
 #### M-28. Asymmetric SSH-override defaults (username vs hostname)
+
 * **Location:** `omz-custom/themes/dragon/schema.zsh:21-25, 34-38`
 * **Problem:** `ENABLE_USERNAME_COLORING_VIA_SSH=false` with empty colors vs `ENABLE_HOSTNAME_COLORING_VIA_SSH=true` with `maroon`. User enabling the toggle gets unreadable empty-color segment.
 * **Recommendation:** Symmetric defaults; seed colors in `_dragon_edit_var` when toggling on.
-
-#### M-29. ✅ Code duplication in `separators.zsh` — extracted `__dragon_render_separator`
-
-* **Fixed:** Shared `__dragon_render_separator <content> <dest_var>` helper introduced. Five public functions collapsed to one-liners. -40 LOC, consistent with the segment pattern already used throughout the theme.
-
-#### M-30. ✅ `mo-welcome` `os_name` — added `uname -s` fallback
-
-* **Fixed:** `os_name="${PRETTY_NAME:-${NAME:-$(uname -s)}}"`. Welcome banner no longer silently blanks the OS line on containers or hosts where `/etc/os-release` is absent or unreadable.
-
-#### M-31. ~~No in-shell command discovery surface~~ — skipped
-* **Location:** No single source; `# Provides:` headers unused at runtime
-* **Problem:** User who types `mo-<TAB>` gets nothing useful; must `cat` plugin files or re-read README to remember aliases.
-* **Recommendation:** `mo-help` command (~50 LOC) that parses `# Provides:` lines and prints a colorized table.
-
-#### M-32. ~~No safe-mode / minimal-mode for triage~~ — skipped
 
 ### 🟢 Low-severity issues (condensed)
 
@@ -487,7 +320,7 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 | L-32 | `omz-custom/plugins/mo-lan-ssh:251,267,292` | `command ssh` wrapper doesn't `exec` on no-op pass-through |
 | L-33 | `omz-custom/plugins/mo-shell-tools:28` | `please` loses quoting via `$(fc -ln -1)`; doesn't detect existing `sudo` prefix |
 | L-34 | `omz-custom/plugins/mo-colorize-override` | No `rip`/`rdiff` escape-hatch aliases for scripts |
-| L-35 | `omz-custom/plugins/mo-process` | `psgrep` calls `pgrep` without `_mo_require` precheck |
+| L-35 | `omz-custom/plugins/mo-process` | `psgrep` calls `pgrep` without inline precheck |
 
 ---
 
@@ -507,128 +340,109 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **Design:** Wrap plugin array + drop-in loops in `if [[ -z "$MO_SAFE_MODE" ]]`. Document `MO_SAFE_MODE=1 zsh` as the triage entry point.
 * **Complexity:** S (~10 LOC + docs) — **Risk:** Very low
 
-#### F-3. Inline fallback `_mo_require` + plugin metadata header ⭐
+#### F-3. Plugin metadata header + `doctor` rewrite ⭐
 * **Value:** Robustness + extensibility
-* **Problem solved:** H-1 (mo-utils-removal cliff) AND mechanical extensibility.
-* **Design:** Three-line header per plugin (`# mo-plugin:`, `# mo-deps:`, `# mo-desc:`). Inline fallback `_mo_require` at top of each consumer plugin. `master-oogway doctor` parses headers to compute dep report dynamically; eliminates the hardcoded list at `mo-cli.plugin.zsh:40-56`.
+* **Design:** Three-line header per plugin (`# mo-plugin:`, `# mo-deps:`, `# mo-desc:`). `master-oogway doctor` parses headers to compute dep report dynamically; eliminates the hardcoded list at `mo-cli.plugin.zsh:40-56`.
 * **Complexity:** M (~120 LOC) — **Risk:** Low
 
 #### F-4. Central capability cache populated by `mo-utils`
 * **Value:** Performance + dev-XP
-* **Problem solved:** M-8 (`command -v bat` at 13 sites); enables F-7.
-* **Design:** `mo-utils` writes `~/.cache/master-oogway/capabilities.zsh` on first load (invalidated by `$PATH` mtime). Plugins consult `$MO_CAPS[bat]`. `doctor` reads from same cache. `mo-recap` to force-refresh.
-* **Complexity:** M (~120 LOC, careful invalidation) — **Risk:** Medium (stale cache mid-session — mitigate with explicit refresh alias)
+* **Problem solved:** `command -v bat` at 13 sites; wasted forks at shell start.
+* **Design:** `mo-utils` writes `~/.cache/master-oogway/capabilities.zsh` on first load (invalidated by `$PATH` mtime). Plugins consult `$MO_CAPS[bat]`.
+* **Complexity:** M (~120 LOC, careful invalidation) — **Risk:** Medium
 
 #### F-5. `master-oogway dump` — effective config snapshot
 * **Value:** Support / dev-XP
-* **Problem solved:** No single command to capture "what does my install look like" for bug reports.
-* **Design:** Markdown-friendly dump of: version, install path, `$ZSH_THEME`, active plugins, all `DRAGON__*`, all `MO_*`, `doctor` output, git rev. Tell users to attach this to issues. Sanitize `MO_LAN_DNS_SERVER` etc. by default.
+* **Design:** Markdown-friendly dump of: version, install path, `$ZSH_THEME`, active plugins, all `DRAGON__*`, all `MO_*`, `doctor` output, git rev. Sanitize `MO_LAN_DNS_SERVER` etc. by default.
 * **Complexity:** S — **Risk:** Low
 
 #### F-6. `master-oogway profile-startup` — built-in startup profiler
 * **Value:** Performance + dev-XP
-* **Problem solved:** No way to measure which plugin/section costs time.
 * **Design:** Alias for `MO_ZPROF=1 zsh -ic exit` with `zmodload zsh/zprof` enabled when `$MO_ZPROF`.
 * **Complexity:** S — **Risk:** Very low
 
 #### F-7. `master-oogway bisect` — find the culprit plugin
 * **Value:** Dev-XP for end users
-* **Problem solved:** Shell suddenly slow/broken → which plugin?
 * **Design:** Repeatedly spawn `MO_DISABLE=plugin1,plugin5 zsh -ic exit` measuring time/exit-code; halve the set each iteration. Depends on F-2.
 * **Complexity:** M — **Risk:** Low
 
 #### F-8. Pluggable segment registry for Dragon
 * **Value:** Power-user extensibility
-* **Problem solved:** Adding `kubectl_ctx` segment requires forking two files (segments_right.zsh + prompt.zsh).
 * **Design:** `DRAGON_LEFT_SEGMENTS=(ssh_prefix username … directory)` and `DRAGON_RPROMPT_SEGMENTS=(…)` arrays. `dragon__set_lprompt` iterates calling `dragon__set_$segment`. Users define function + append. Recovers ~40 LOC from `prompt.zsh`.
 * **Complexity:** M — **Risk:** Low
 
 #### F-9. `mo-where` — find which plugin defined a command
 * **Value:** Discoverability
-* **Problem solved:** `whence -v gs` says "alias to git status" — not which plugin.
 * **Design:** Grep `$ZSH_CUSTOM/plugins/mo-*/` for `^(alias|function) <name>`; print `mo-git:12: alias gs="git status"`.
 * **Complexity:** S (~30 LOC) — **Risk:** Very low
 
 #### F-10. `~/.master-oogway-user/plugins/` — first-class user plugin dir
 * **Value:** Extensibility
-* **Problem solved:** No place for non-trivial user extensions; `custom-zsh/*.zsh` are loose files without `# Provides:` integration.
 * **Design:** Discovered by `~/.zshrc` and appended to `plugins=()`. Same convention. `mo-help` and `doctor` recognize them.
 * **Complexity:** M — **Risk:** Low (additive, opt-in)
 
 #### F-11. `master-oogway plugin enable/disable <name>`
 * **Value:** UX
-* **Problem solved:** M-10 (no per-plugin disable without `~/.zshrc` edit).
 * **Design:** Drop-file `~/.config/master-oogway/disabled/<name>`; plugins check at top. CLI subcommand touches/removes file.
 * **Complexity:** S — **Risk:** Very low
 
 #### F-12. Environment-profile selector (`MO_PROFILE=desktop|server|pi|minimal`)
 * **Value:** UX + maintenance hygiene
-* **Problem solved:** Same plugin set on laptop and Pi server. `mo-apps` (flatpak) on Pi is noise; `mo-welcome` on server SSH is noise.
 * **Design:** `~/.zshrc` switches `plugins=()` membership on `$MO_PROFILE` (default: `desktop`). Installer probes `$DISPLAY`, `/etc/rpi-issue`, `/.dockerenv` and writes a suggested value on first install.
 * **Complexity:** M — **Risk:** Medium (re-templates `~/.zshrc`; needs migration)
 
 #### F-13. `install.sh --dry-run`
 * **Value:** Onboarding / trust
-* **Problem solved:** curl|bash trust-building.
-* **Design:** Print every file to create/modify/back-up, every sudo, every apt — without doing any. Trivial given existing helper-function shape.
+* **Design:** Print every file to create/modify/back-up, every sudo, every apt — without doing any.
 * **Complexity:** S — **Risk:** Low
 
 #### F-14. `dragon-configure --get VAR / --set VAR=VAL` non-interactive mode
 * **Value:** Power-user (Ansible / dotfiles bootstrap)
-* **Problem solved:** Scripting theme config currently requires sed against `conf.zsh`.
 * **Design:** Two new flags that read/write `conf.zsh` (already structured for sed-friendliness).
 * **Complexity:** S — **Risk:** Low
 
 #### F-15. Per-host config layer (`~/.config/master-oogway/conf.d/<hostname>.zsh`)
 * **Value:** UX for multi-host users
-* **Problem solved:** No way to say "on `prod-db`, use red prompt."
 * **Design:** Auto-source `conf.d/${HOST}.zsh` after `conf.zsh`. 3-line change to load path.
 * **Complexity:** S — **Risk:** Very low
 
 #### F-16. Async-evaluated user segments with TTL cache (Dragon)
 * **Value:** Power-user extensibility (p10k parity)
-* **Problem solved:** Users wanting kubectl context / AWS profile / nix shell either block the prompt or go back to p10k.
 * **Design:** `dragon_register_async_segment <name> <cmd> <ttl>` runs `<cmd>` in background, caches in `typeset -gA`, refreshes when stale.
 * **Complexity:** M — **Risk:** Medium
 
 #### F-17. `master-oogway backup` / `restore`
 * **Value:** Robustness
-* **Problem solved:** No one-command save/restore of `~/.zshrc` + `conf.zsh` + drop-ins + gitconfig identity.
 * **Design:** Tarball to `~/master-oogway-backup-YYYYMMDD.tar.gz`; restore reverses with confirmation.
-* **Complexity:** S — **Risk:** Low (restore needs `confirm`)
+* **Complexity:** S — **Risk:** Low
 
 #### F-18. Terminal capability probe (`mo-term-detect`)
 * **Value:** UX (theme correctness out-of-box)
-* **Problem solved:** `USE_NERD_FONT` defaults via SSH-presence only; wrong-font users see broken glyphs.
 * **Design:** Once per install: print 3 glyph rows (powerline, nerd-font, plain), ask "all render correctly?", persist answer, default `USE_NERD_FONT` accordingly.
-* **Complexity:** M — **Risk:** Medium (interactive prompt on shell open is intrusive; gate to first-shell-after-install only)
+* **Complexity:** M — **Risk:** Medium
 
 #### F-19. Submodule SHA dashboard + auto-update workflow
 * **Value:** Robustness / supply-chain
-* **Problem solved:** Four upstream plugins drift untracked; no surfaced view.
 * **Design:** `master-oogway version --submodules` prints pinned SHA vs upstream HEAD per submodule. `master-oogway upgrade-plugins` interactive bumper.
 * **Complexity:** M — **Risk:** Low
 
 #### F-20. Hot-reload watcher (`mo-dev-watch`)
 * **Value:** Dev-XP (author + contributors)
-* **Problem solved:** Edit→test loop is "run `soursh` after every edit."
 * **Design:** Dev-mode only (gated on `[[ -L ~/.master-oogway ]]`). `inotifywait` watches `$ZSH_CUSTOM`; on change, prints `soursh-recommended`. Advisory only, never auto-eval.
 * **Complexity:** S — **Risk:** Low
 
 #### F-21. Versioned `~/.zshrc` migration system
 * **Value:** Robustness — real upgrades, not "diff it yourself"
-* **Problem solved:** Drift warning ≠ migration. New template features never reach existing installs.
 * **Design:** Embed `# master-oogway:rc-version=N`. Per-version additive migration function (append a missing `plugins=()` entry, etc.).
 * **Complexity:** M — **Risk:** Medium
 
 #### F-22. Unified `mo-test` harness
 * **Value:** Reliability
-* **Problem solved:** Recent regressions (fbranch injection, gitstatus guard, etc.) were caught post-hoc.
 * **Design:** `tests/<plugin>.bats` per plugin. Test: aliases defined, `-h` works, missing-dep handling. Run via `master-oogway doctor --test`.
 * **Complexity:** L — **Risk:** Low
 
 ### Features deliberately not proposed
-- **Plugin marketplace / network-fetched plugins** — multiplies attack surface for a personal-dotfiles project. F-10 (user plugin dir) is the right ceiling: third-party plugins still live in the user's filesystem with no central index.
+- **Plugin marketplace / network-fetched plugins** — multiplies attack surface for a personal-dotfiles project.
 - **Telemetry of any kind** (even opt-in) — not appropriate here.
 
 ---
@@ -637,17 +451,11 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 ### Structural improvements
 
-1. **Hoist `_mo_require` out of `mo-utils`** into a tiny lib (`omz-custom/lib/mo-require.zsh`) auto-sourced by every plugin via a one-line `source ${0:A:h}/../../lib/mo-require.zsh`. Eliminates H-1 / M-9 without inline copy-paste. Alternative chosen because it changes plugin file structure: inline copy-paste is simpler.
+1. **Adopt 3-line metadata header convention** (`# mo-plugin:` / `# mo-deps:` / `# mo-desc:`) on every plugin. Replace the hardcoded tool list at `mo-cli.plugin.zsh:40-56` with a `master-oogway doctor` that auto-discovers. Underpins F-3, F-7, F-11.
 
-2. **Adopt 3-line metadata header convention** (`# mo-plugin:` / `# mo-deps:` / `# mo-desc:`) on every plugin. Replace the hardcoded tool list at `mo-cli.plugin.zsh:40-56` with a `master-oogway doctor` that auto-discovers. Underpins F-3, F-7, F-11.
+2. **Consolidate `command -v` probes** into a single capability cache in `mo-utils`. Plugins consult `$MO_CAPS[…]`. Reduces fork count at shell start.
 
-3. **Consolidate separator-render boilerplate** (M-29): four near-identical 8-LOC functions → one `__dragon_render_separator` helper. -40 LOC, +consistency.
-
-4. **Consolidate `command -v` probes** (M-8) into a single capability cache in `mo-utils`. Plugins consult `$MO_CAPS[…]`. Reduces fork count at shell start.
-
-5. ~~**Lift `_init_plugins` out of dev-mode branch** (H-3)~~ — resolved.
-
-6. **Extract drop-in loader** (zshrc.master-oogway:92, 190) into a helper function `_mo_source_dropins <dir>` to reduce template noise and make it easy to add a user-plugin dir (F-10).
+3. **Extract drop-in loader** (`zshrc.master-oogway:92, 190`) into a helper function `_mo_source_dropins <dir>` to reduce template noise and make it easy to add a user-plugin dir (F-10).
 
 ### Code consolidation opportunities
 
@@ -668,14 +476,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 | Improvement | Issue addressed | Effort |
 |---|---|---|
-| ~~Lift `_init_plugins` out of dev-mode branch~~ | H-3 ✅ | S |
 | Replace `_dragon_render_preview` fresh-zsh with cache | H-6 | M |
 | `typeset -g` instead of `export` for DRAGON__* defaults | H-5 | S (audit needed) |
-| ~~Cache "host set up OK" in mo-lan-ssh wrapper~~ | H-7 won't fix | — |
-| ~~`MO_LAN_SSH_DISABLED=1` short-circuit~~ | H-8 won't fix | — |
-| `MO_SAFE_MODE=1` plugin-array gate | M-32, F-2 | S |
-| ~~`ssh -G`-style NUL-delim in `frg`~~ | H-4 ✅ | S |
-| Backup re-trigger when marker missing on update | M-4 | S |
+| `MO_SAFE_MODE=1` plugin-array gate | F-2 | S |
 
 ### Fallback strategies
 
@@ -684,38 +487,18 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **md2pdf precheck** — `_mo_require pandoc md2pdf pandoc` plus `kpsewhich xelatex` plus `fc-list | grep -qi 'JetBrains Mono'` before launching.
 * **Capability degraded reminder** — periodic (weekly, gated by mtime of a state file) "BTW, install `eza` for nicer `ls`" nudge.
 
-### Defensive design improvements
-
-* **Marker line + content hash for `~/.zshrc`** — if hash changes between runs (template upgrade), trigger migration path (F-21); if hash matches but marker missing, treat as user-edited and back up.
-* **State persistence for user choices** — sshd_config "no" answer, banner-acknowledgment, capability-probe result — all belong in `~/.config/master-oogway/state.zsh` (a structured state file beyond the current theme-vars hash).
-* **`always { ... }` blocks** in `_dragon_read_key` to guarantee trap restoration (M-26).
-* **Sanitization layer for `please`** — proper handling of quoting via `${(z)$(fc -ln -1)}` and `${@[@]}` (L-33).
-
 ---
 
-## 10. Final Recommendations Roadmap
+## 10. Remaining Roadmap
 
-### Short term — quick wins (next 2-4 commits)
+### Quick wins (independent, small)
 
-These are pure UX or robustness wins with minimal architectural impact. Recommend tackling **in this order** because each is independent and small:
-
-1. **H-1 / M-9 fix** — inline `_mo_require` fallback in every consumer plugin (5 LOC × 11 plugins). Closes a real cliff.
-2. **F-2 / M-32** — `MO_SAFE_MODE=1` env-gated plugin array. 10 LOC + README section. Unlocks debugging.
-3. **F-1** — `mo-help` command using existing `# Provides:` headers. ~50 LOC. Surfaces ~80% of the framework that users currently don't discover.
-4. ~~**H-2 / M-2**~~ — not applicable; OMZ installer owns the shell-switch step.
-5. ~~**H-3**~~ — resolved: `_init_plugins` now runs in all modes.
-6. ~~**H-4**~~ — resolved: `frg` now uses `rg --null` + TAB-delimited fzf fields.
-7. **H-5** — `typeset -g` instead of `export` for `DRAGON__*` defaults (audit, then ship).
-8. ~~**H-7**~~ — won't fix; `mo-lan-ssh trust` is the explicit path.
-9. ~~**H-8**~~ — won't fix; removing from `plugins=()` is the correct disable.
-10. ~~**M-12**~~ — resolved: `_confirm_reboot` forwards `"$@"`.
-11. **M-18** — **delete or relocate `MO-LAN-PLAN.md`**. Pick README as canonical source.
-12. **M-17** — implement `mo-lan-ssh forget <host>` (the most-needed phase-3 subcommand).
-13. **F-13** — `install.sh --dry-run`. Trust-building for curl|bash.
-14. **F-6** — `master-oogway profile-startup` alias.
-15. **L-15** — `mo-welcome` SHLVL/`MO_WELCOME_QUIET` guard.
-
-Estimated total: ~600 LOC + doc updates. Each ships independently.
+1. **F-2** — `MO_SAFE_MODE=1` env-gated plugin array. 10 LOC + README section. Unlocks debugging.
+2. **F-1** — `mo-help` command using existing `# Provides:` headers. ~50 LOC. Surfaces ~80% of the framework that users currently don't discover.
+3. **H-5** — `typeset -g` instead of `export` for `DRAGON__*` defaults (audit, then ship).
+4. **F-13** — `install.sh --dry-run`. Trust-building for curl|bash.
+5. **F-6** — `master-oogway profile-startup` alias.
+6. **L-15** — `mo-welcome` SHLVL/`MO_WELCOME_QUIET` guard.
 
 ### Medium term — one focused PR each
 
@@ -732,11 +515,11 @@ Estimated total: ~600 LOC + doc updates. Each ships independently.
 
 ### Long term — design discussion before code
 
-1. **F-8** — Pluggable segment registry for Dragon. Largest architectural win for the theme; converts `prompt.zsh` from hand-edited concat to data-driven loop. Migration concern: existing user `conf.zsh` files keep working unchanged (defaults).
-2. **F-10** — First-class user-plugin dir `~/.master-oogway-user/plugins/`. Touches `~/.zshrc` template; needs migration note.
-3. **F-12** — Environment-profile selector. Biggest API change; do *after* F-3 (metadata headers) and F-11 (drop-file disable) so the mechanism reuses existing primitives.
+1. **F-8** — Pluggable segment registry for Dragon.
+2. **F-10** — First-class user-plugin dir `~/.master-oogway-user/plugins/`.
+3. **F-12** — Environment-profile selector. Do *after* F-3 and F-11.
 4. **F-16** — Async user segments. Requires F-8 first.
-5. **F-21** — Versioned `~/.zshrc` migration system. Pairs with F-19 (submodule version dashboard) for a "framework upgrade" story.
+5. **F-21** — Versioned `~/.zshrc` migration system.
 
 ### What to deliberately not do
 
@@ -745,12 +528,6 @@ Estimated total: ~600 LOC + doc updates. Each ships independently.
 * **Cross-distro packaging** (RPM/Pacman) — single-distro focus is a strength.
 * **Sandbox plugins** — over-engineering for trusted user-installed code.
 
-### Closing remark
-
-master-oogway is in unusually good shape for its category. The audit found **zero critical issues** and the eight high-severity items are mostly UX gaps rather than crashes. The single largest investment return is **F-3 (plugin metadata headers)** because it unlocks F-7, F-11, and the framework's discovery story (F-1, F-9). The single largest robustness improvement is **H-1 (inline `_mo_require` fallback)**, which closes a cliff that no documentation can paper over.
-
-The author's recent fix cadence (36 commits across the May audit) demonstrates that the framework is actively maintained and quality-conscious. This audit is best treated as the next two-quarter backlog.
-
 ---
 
-*Total issues: 75 (0 🔴 / 8 🟠 / 32 🟡 / 35 🟢). Total feature proposals: 22. File:line citations: 100+. Audited: 5,729 LOC across 42 files.*
+*Open issues: 38 (0 🔴 / 2 🟠 / 1 🟡 / 35 🟢). Feature proposals: 22. Audited: 5,729 LOC across 41 files.*
