@@ -25,16 +25,14 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 ### Main risks
 1. **No safe-mode / minimal-mode** — when a plugin or `custom-zsh/*.zsh` drop-in breaks the shell, the user has no `zsh -i --safe` equivalent that still loads dragon. Only escape is `zsh -f`.
 2. **No in-shell discovery surface** — the `# Provides:` headers are a great convention but not surfaced at runtime. Users learn 20% of the framework's commands.
-3. **Dragon wizard latency** — `_dragon_render_preview` spawns a fresh `zsh -c` per preview redraw. 40+ subshells per guided wizard.
-4. **`DRAGON__*` exports leak across SSH/tmux** — `dragon-configure --preset` re-exports values, after which `conf.zsh` edits become silent no-ops in pre-existing tmux panes.
 
 ### Issue distribution
 
 | Severity | Count |
 |---|---|
 | 🔴 Critical | 0 |
-| 🟠 High | 2 |
-| 🟡 Medium | 1 |
+| 🟠 High | 0 |
+| 🟡 Medium | 0 |
 | 🟢 Low | 35 |
 
 **Zero critical issues** is the headline. The system will not eat data, lock the user out, or fail catastrophically on any plausible inputs the audit explored. The 🟠 high issues are real UX/reliability gaps, not crashes.
@@ -256,33 +254,7 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ## 6. Issues Found (Detailed List)
 
-### 🟠 High-severity issues
-
-#### H-5. `dragon-configure --preset` leaks `DRAGON__*` exports to parent shell
-
-* **Severity:** 🟠 High
-* **Location:** `omz-custom/themes/dragon/dragon.zsh:7-14`; `configure.zsh:920-922`
-* **Problem:** `set_if_unset` exports every default. `dragon-configure` re-exports chosen values to override `set_if_unset`. After a `--preset` run, the env is permanently polluted; subsequent `soursh` in **the same** terminal — or any new tmux pane that inherited env from this one — silently uses the previous values, **silently ignoring** `conf.zsh` edits.
-* **Impact:** Subtle "why isn't my conf change taking effect?" bug. Wasted hours.
-* **Recommendation:** Use `typeset -g` not `export` for defaults. Forward via SSH explicitly through `conf.zsh`'s own `DRAGON__FORWARDED` mechanism (already designed for this).
-
-#### H-6. `_dragon_render_preview` spawns fresh `zsh -c` per preview redraw
-
-* **Severity:** 🟠 High (UX)
-* **Location:** `omz-custom/themes/dragon/configure.zsh:226-252`
-* **Problem:** Every preview redraw sources `dragon.zsh` in a new `zsh -c`. With `--ssh` / `--fail` / `--transient` mode variants × per-keypress redraw × 20 groups, easily 40+ subshells per wizard run.
-* **Impact:** Wizard feels sluggish (perceptibly so on slow machines, containers, SSH). Bad first impression.
-* **Recommendation:** Cache rendered previews keyed by `(group, mode, vars-hash)`; re-render only on actual value change.
-
-### 🟡 Medium-severity issues
-
-#### M-28. Asymmetric SSH-override defaults (username vs hostname)
-
-* **Location:** `omz-custom/themes/dragon/schema.zsh:21-25, 34-38`
-* **Problem:** `ENABLE_USERNAME_COLORING_VIA_SSH=false` with empty colors vs `ENABLE_HOSTNAME_COLORING_VIA_SSH=true` with `maroon`. User enabling the toggle gets unreadable empty-color segment.
-* **Recommendation:** Symmetric defaults; seed colors in `_dragon_edit_var` when toggling on.
-
-### 🟢 Low-severity issues (condensed)
+### 🟢 Low-severity issues
 
 | # | Location | Issue |
 |---|---|---|
@@ -476,8 +448,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 | Improvement | Issue addressed | Effort |
 |---|---|---|
-| Replace `_dragon_render_preview` fresh-zsh with cache | H-6 | M |
-| `typeset -g` instead of `export` for DRAGON__* defaults | H-5 | S (audit needed) |
 | `MO_SAFE_MODE=1` plugin-array gate | F-2 | S |
 
 ### Fallback strategies
@@ -495,10 +465,9 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 1. **F-2** — `MO_SAFE_MODE=1` env-gated plugin array. 10 LOC + README section. Unlocks debugging.
 2. **F-1** — `mo-help` command using existing `# Provides:` headers. ~50 LOC. Surfaces ~80% of the framework that users currently don't discover.
-3. **H-5** — `typeset -g` instead of `export` for `DRAGON__*` defaults (audit, then ship).
-4. **F-13** — `install.sh --dry-run`. Trust-building for curl|bash.
-5. **F-6** — `master-oogway profile-startup` alias.
-6. **L-15** — `mo-welcome` SHLVL/`MO_WELCOME_QUIET` guard.
+3. **F-13** — `install.sh --dry-run`. Trust-building for curl|bash.
+4. **F-6** — `master-oogway profile-startup` alias.
+5. **L-15** — `mo-welcome` SHLVL/`MO_WELCOME_QUIET` guard.
 
 ### Medium term — one focused PR each
 
@@ -530,4 +499,4 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ---
 
-*Open issues: 38 (0 🔴 / 2 🟠 / 1 🟡 / 35 🟢). Feature proposals: 22. Audited: 5,729 LOC across 41 files.*
+*Open issues: 35 🟢 Low. Feature proposals: 22. Audited: 5,729 LOC across 41 files.*
