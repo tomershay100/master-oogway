@@ -381,15 +381,13 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 #### M-13. ⏭ SKIPPED — `mo-search/grep` clobbers pre-defined alias (user should use custom-zsh/)
 
-#### M-14. `mo-process/port` `awk` rewrite mangles lsof output
-* **Location:** `omz-custom/plugins/mo-process/mo-process.plugin.zsh:41`
-* **Problem:** lsof's `NAME` column is variable-width and can contain spaces; `printf "%s %s %s %s %s" $1 $2 $3 $5 $9` misaligns for entries like `IPv6` or `(LISTEN)`.
-* **Recommendation:** Pipe lsof output through `column -t`; skip awk reformat.
+#### M-14. ✅ `mo-process/port` — replaced printf awk with column -t
 
-#### M-15. `mo-lan-ssh probe_host` requires bash
-* **Location:** `omz-custom/plugins/mo-lan-ssh/_mo_lan_discover.zsh:134`
-* **Problem:** `bash -c "</dev/tcp/..."` hardcoded. Fine on Ubuntu/Pi; risky if scope expands.
-* **Recommendation:** Document, or use a zsh-native TCP probe.
+* **Fixed:** Replaces hardcoded `printf` field selection with a custom header + field-selected awk piped to `column -t`. Output now includes `(LISTEN)` state and auto-sizes columns.
+
+#### M-15. ✅ `install.sh` ensures bash is installed before proceeding
+
+* **Fixed:** Added `apt_install bash || die` alongside zsh/git/curl in the must-have packages block.
 
 #### M-16. `mo-lan-ssh` discovery silently swallows all errors
 * **Location:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:60-66`

@@ -38,7 +38,10 @@ function port() {
         echo "port: nothing listening on $1" >&2
         return 1
     fi
-    echo "$out" | awk 'NR==1 || !seen[$2]++' | awk '{printf "%-15s %-7s %-12s %-6s %s\n", $1, $2, $3, $5, $9}'
+    echo "$out" | awk 'NR==1 || !seen[$2]++' \
+        | awk 'NR==1 {print "COMMAND","PID","USER","PROTO","ADDRESS","STATE"}
+               NR>1  {print $1,$2,$3,$5,$9,$10}' \
+        | column -t
 }
 
 fkill() {

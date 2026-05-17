@@ -366,6 +366,7 @@ fi
 
 # Must-have packages — auto-installed via apt-get when missing. dragon cannot
 # function without these.
+apt_install bash || die "Cannot proceed without bash"
 apt_install zsh  || die "Cannot proceed without zsh"
 apt_install git  || die "Cannot proceed without git"
 apt_install curl || die "Cannot proceed without curl (needed by the oh-my-zsh installer)"
