@@ -373,19 +373,13 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 #### M-9. ✅ NOT APPLICABLE — mo-utils removed entirely (H-1)
 
-#### M-10. No granular plugin enable/disable beyond editing `~/.zshrc`
-* **Location:** `zshrc.master-oogway:148-183`
-* **Problem:** Editing the marker-protected file triggers drift warning forever after.
-* **Recommendation:** Each plugin checks `[[ -e $HOME/.config/master-oogway/disabled/${0:t:r} ]] && return` as first line. 5 LOC × 21 plugins, no `~/.zshrc` edits needed for per-plugin disable.
+#### M-10. ⏭ SKIPPED — Per-plugin enable/disable
 
 #### M-11. ⏭ SKIPPED — Alias collisions with single-letter commands
 
 #### M-12. ✅ RESOLVED — `_confirm_reboot` now forwards `"$@"` to `command reboot`
 
-#### M-13. `mo-search/grep` clobbers user's pre-defined `grep` alias
-* **Location:** `omz-custom/plugins/mo-search/mo-search.plugin.zsh:5-6`
-* **Problem:** `unalias grep 2>/dev/null` runs before the function defines `grep`. A user's `custom-pre-zsh/*.zsh` alias (loaded before plugins) is silently destroyed.
-* **Recommendation:** Detect existing `grep` alias and warn; or document that user aliases should go in `custom-zsh/` (post-plugins).
+#### M-13. ⏭ SKIPPED — `mo-search/grep` clobbers pre-defined alias (user should use custom-zsh/)
 
 #### M-14. `mo-process/port` `awk` rewrite mangles lsof output
 * **Location:** `omz-custom/plugins/mo-process/mo-process.plugin.zsh:41`
