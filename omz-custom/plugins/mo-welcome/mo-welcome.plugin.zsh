@@ -10,7 +10,7 @@
     zmodload zsh/datetime
     strftime -s date_line '%a, %d %b %Y · %H:%M' $EPOCHSECONDS
     [[ -r /etc/os-release ]] && . /etc/os-release 2>/dev/null
-    os_name="${PRETTY_NAME:-${NAME}}"
+    os_name="${PRETTY_NAME:-${NAME:-$(uname -s)}}"
 
     print -P ""
     print -P "  %F{245}host%f   %F{cyan}%B${USER}%b%F{245} @ %f%F{green}%B${HOST%%.*}%b%f"

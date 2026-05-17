@@ -179,11 +179,12 @@ _dragon_apply_preset() {
 _dragon_read_key() {
     local _dragon_stty
     _dragon_stty=$(stty -g 2>/dev/null)
-    trap 'stty "$_dragon_stty" 2>/dev/null' EXIT INT TERM
-    stty -echo -icanon min 1 time 0 2>/dev/null
-    read -rk1 "$1"
-    stty "$_dragon_stty" 2>/dev/null
-    trap - EXIT INT TERM
+    {
+        stty -echo -icanon min 1 time 0 2>/dev/null
+        read -rk1 "$1"
+    } always {
+        stty "$_dragon_stty" 2>/dev/null
+    }
 }
 
 _dragon_render_preview() {

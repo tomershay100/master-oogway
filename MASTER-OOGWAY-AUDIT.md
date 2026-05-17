@@ -421,10 +421,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 * **Fixed:** All three sites (`configure.zsh`, `notifier.zsh`, `install.sh`) now serialize `${(@k)_DRAGON_DEFAULTS}` instead of grepping for `DRAGON__*`. Immune to comment edits. `install.sh` spawns a one-shot `zsh -c` to source `schema.zsh` and compute the same hash from bash.
 
-#### M-26. `_dragon_read_key` clobbers user's `trap`s
-* **Location:** `omz-custom/themes/dragon/configure.zsh:181-189`
-* **Problem:** `trap '...' EXIT INT TERM` then `trap - EXIT INT TERM` overwrites and then removes user's session-cleanup traps for the rest of the session.
-* **Recommendation:** Save existing trap with `trap -p EXIT` and restore. Better: use `always { ... }` blocks.
+#### M-26. ✅ `_dragon_read_key` — replaced traps with `always { }` block
+
+* **Fixed:** `_dragon_read_key` now uses zsh's `always { }` construct to restore `stty` state. No traps are set or cleared, so user's session cleanup hooks (SSH sync, tmp dirs, locks) are fully preserved.
 
 #### M-27. ✅ Wizard group selector — supports two-digit entry via stty timeout
 
@@ -435,25 +434,20 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **Problem:** `ENABLE_USERNAME_COLORING_VIA_SSH=false` with empty colors vs `ENABLE_HOSTNAME_COLORING_VIA_SSH=true` with `maroon`. User enabling the toggle gets unreadable empty-color segment.
 * **Recommendation:** Symmetric defaults; seed colors in `_dragon_edit_var` when toggling on.
 
-#### M-29. Code duplication in `separators.zsh`
-* **Location:** `omz-custom/themes/dragon/parts/separators.zsh:11-69`
-* **Problem:** Four near-identical 8-LOC functions differing only by source/dest vars. The `__dragon_copy_defaults` / `__dragon_finalize` consolidation was already done for segments — pattern not extended here.
-* **Recommendation:** Add `__dragon_render_separator <src_var> <dst_var>` helper. -40 LOC.
+#### M-29. ✅ Code duplication in `separators.zsh` — extracted `__dragon_render_separator`
 
-#### M-30. `mo-welcome` `os_name` empty on unreadable `/etc/os-release`
-* **Location:** `omz-custom/plugins/mo-welcome/mo-welcome.plugin.zsh:13`
-* **Problem:** Silent empty value rather than `uname -s` fallback.
-* **Recommendation:** `os_name="${PRETTY_NAME:-${NAME:-$(uname -s)}}"`.
+* **Fixed:** Shared `__dragon_render_separator <content> <dest_var>` helper introduced. Five public functions collapsed to one-liners. -40 LOC, consistent with the segment pattern already used throughout the theme.
 
-#### M-31. No in-shell command discovery surface
+#### M-30. ✅ `mo-welcome` `os_name` — added `uname -s` fallback
+
+* **Fixed:** `os_name="${PRETTY_NAME:-${NAME:-$(uname -s)}}"`. Welcome banner no longer silently blanks the OS line on containers or hosts where `/etc/os-release` is absent or unreadable.
+
+#### M-31. ~~No in-shell command discovery surface~~ — skipped
 * **Location:** No single source; `# Provides:` headers unused at runtime
 * **Problem:** User who types `mo-<TAB>` gets nothing useful; must `cat` plugin files or re-read README to remember aliases.
 * **Recommendation:** `mo-help` command (~50 LOC) that parses `# Provides:` lines and prints a colorized table.
 
-#### M-32. No safe-mode / minimal-mode for triage
-* **Location:** `zshrc.master-oogway` (plugin array assignment)
-* **Problem:** When a `custom-zsh/*.zsh` drop-in breaks the shell, recovery requires editing `~/.zshrc`. Only fallback is `zsh -f`, which loses dragon too.
-* **Recommendation:** `[[ -z "$MO_SAFE_MODE" ]] && plugins=(...) || plugins=(zsh-autosuggestions zsh-syntax-highlighting)`. ~10 LOC + doc.
+#### M-32. ~~No safe-mode / minimal-mode for triage~~ — skipped
 
 ### 🟢 Low-severity issues (condensed)
 
