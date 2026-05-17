@@ -161,8 +161,7 @@ probe_all() {
 
 main() {
     if ! command -v dig &>/dev/null && ! command -v nmap &>/dev/null; then
-        echo "mo-lan-ssh: discovery requires dig or nmap — install one: sudo apt install nmap" >&2
-        return 1
+        echo "mo-lan-ssh: no dig or nmap — active discovery unavailable (install: sudo apt install nmap)" >&2
     fi
     local raw_names="" strategy="" strat
     for strat in strat_axfr strat_nmap strat_arp_scan strat_known_hosts; do

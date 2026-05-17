@@ -389,19 +389,13 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 * **Fixed:** Added `apt_install bash || die` alongside zsh/git/curl in the must-have packages block.
 
-#### M-16. ✅ `mo-lan-ssh` discovery — early guard when no dig/nmap
+#### M-16. ✅ `mo-lan-ssh` discovery — warn when no dig/nmap, don't block
 
-* **Fixed:** `_mo_lan_discover.zsh main()` now checks for `dig` or `nmap` before running any strategy and emits a clear install hint. `install.sh` adds `nmap` to the post-install todo list when neither tool is present.
+* **Fixed:** `_mo_lan_discover.zsh main()` warns when neither `dig` nor `nmap` is present but continues so `strat_known_hosts` can still provide completions. `install.sh` adds `nmap` to the post-install todo list when neither tool is present.
 
-#### M-17. `mo-lan-ssh` deferred phase-3 commands referenced in `MO-LAN-PLAN.md` but unimplemented
-* **Location:** `MO-LAN-PLAN.md:351`, `mo-lan-ssh.plugin.zsh:374-438`
-* **Problem:** Plan lists `trust`, `forget`, `exclude`; dispatcher only handles `list/refresh/status/setup/help`. User trying `mo-lan-ssh forget gandalf` gets "unknown command."
-* **Recommendation:** Implement at least `forget` (removes from cache + `ssh-keygen -R` + ssh-config rewrite). Common need after re-imaging a Pi.
+#### M-17. ✅ NOT APPLICABLE — `trust`, `forget`, `add`, `remove` all implemented in dispatcher
 
-#### M-18. `MO-LAN-PLAN.md` is stale and harmful
-* **Location:** `MO-LAN-PLAN.md` (whole file)
-* **Problem:** Reads as a forward plan but the plugin is fully implemented and wired in. Three sources of truth (plan, README, code). New contributor reading the plan would start implementing what's already shipped.
-* **Recommendation:** Move to `docs/mo-lan-ssh-design.md` as a historical design doc, or delete outright. README is canonical.
+#### M-18. ✅ NOT APPLICABLE — `MO-LAN-PLAN.md` no longer exists in the repo
 
 #### M-19. `apt-get install … >/dev/null 2>&1` swallows real failures
 * **Location:** `install.sh:66`
