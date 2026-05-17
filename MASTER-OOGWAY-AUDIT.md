@@ -395,10 +395,7 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **Problem:** Short aliases are convenient but conflict with user muscle memory and other dotfile ecosystems. Not documented as a single inventory.
 * **Recommendation:** Consolidate alias inventory in README. Add `MO_DISABLE_SHORT_ALIASES=true` honored by override plugins.
 
-#### M-12. `mo-safety-override/reboot` drops arguments
-* **Location:** `omz-custom/plugins/mo-safety-override/mo-safety-override.plugin.zsh:14-17`
-* **Problem:** `_confirm_reboot` calls `command reboot` with no args. `reboot -f`, `reboot --halt` are silently dropped.
-* **Recommendation:** Convert alias to a function that forwards `"$@"` after confirmation.
+#### M-12. ✅ RESOLVED — `_confirm_reboot` now forwards `"$@"` to `command reboot`
 
 #### M-13. `mo-search/grep` clobbers user's pre-defined `grep` alias
 * **Location:** `omz-custom/plugins/mo-search/mo-search.plugin.zsh:5-6`
@@ -759,7 +756,7 @@ These are pure UX or robustness wins with minimal architectural impact. Recommen
 7. **H-5** — `typeset -g` instead of `export` for `DRAGON__*` defaults (audit, then ship).
 8. ~~**H-7**~~ — won't fix; `mo-lan-ssh trust` is the explicit path.
 9. ~~**H-8**~~ — won't fix; removing from `plugins=()` is the correct disable.
-10. **M-12** — `mo-safety-override/reboot` arg forwarding.
+10. ~~**M-12**~~ — resolved: `_confirm_reboot` forwards `"$@"`.
 11. **M-18** — **delete or relocate `MO-LAN-PLAN.md`**. Pick README as canonical source.
 12. **M-17** — implement `mo-lan-ssh forget <host>` (the most-needed phase-3 subcommand).
 13. **F-13** — `install.sh --dry-run`. Trust-building for curl|bash.
