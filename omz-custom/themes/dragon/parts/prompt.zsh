@@ -1,15 +1,9 @@
 __calc_prompt_length()
 {
 	setopt local_options extended_glob
-	local expanded_zsh_prompt="${(%)PROMPT}"
-	local stripped_zsh_prompt="${expanded_zsh_prompt//$'\e['[0-9;]#m/}"
-	local zsh_prompt_length=${(m)#stripped_zsh_prompt}
-
-	local expanded_git_prompt="${(%)FINAL_GIT_STATUS_CONTENT}"
-	local stripped_git_prompt="${expanded_git_prompt//$'\e['[0-9;]#m/}"
-	local git_prompt_length=${(m)#stripped_git_prompt}
-
-	FINAL_ONE_LINE_LPROMPT_LEN=$(((zsh_prompt_length+git_prompt_length)*1.1)) # plus 10% for invisible characters
+	local zsh_prompt_length=${(m)#${${(%)PROMPT}//$'\e['[0-9;]#[A-Za-z]/}}
+	local git_prompt_length=${(m)#${${(%)FINAL_GIT_STATUS_CONTENT}//$'\e['[0-9;]#[A-Za-z]/}}
+	FINAL_ONE_LINE_LPROMPT_LEN=$(( zsh_prompt_length + git_prompt_length ))
 }
 
 dragon__set_lprompt()

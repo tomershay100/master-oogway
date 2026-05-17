@@ -397,20 +397,15 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 #### M-18. ✅ NOT APPLICABLE — `MO-LAN-PLAN.md` no longer exists in the repo
 
-#### M-19. `apt-get install … >/dev/null 2>&1` swallows real failures
-* **Location:** `install.sh:66`
-* **Problem:** All apt output muted; on failure the user sees only "Failed to install '${pkg}'" with no apt error.
-* **Recommendation:** On failure, re-run `sudo apt-get install -y "$pkg"` without redirect, or capture stderr to a tempfile and `cat` on failure.
+#### M-19. ✅ `apt_install` — captures stderr and shows it on failure
 
-#### M-20. `__set_ssh_connection_count_content` shells out to `who(1)` every prompt
-* **Location:** `omz-custom/themes/dragon/parts/segments_right.zsh:90-115`
-* **Problem:** `${(f)$(who)}` runs per precmd, even when no one is connected. Default is `ENABLE_SSH_CONNECTION_COUNT=true`. 10-30ms per prompt on busy servers.
-* **Recommendation:** TTL cache (5s); or read utmp once per minute via SECONDS-gated check.
+* **Fixed:** Captures stderr separately; stdout stays suppressed for clean install output. On failure, prints the captured apt error and warns.
 
-#### M-21. `__calc_prompt_length` ANSI strip is fragile
-* **Location:** `omz-custom/themes/dragon/parts/prompt.zsh:5,9,12`
-* **Problem:** Glob `${...//$'\e['[0-9;]#m/}` strips CSI SGR only (no OSC/DCS); `*1.1` fudge for invisibles guesses wrong on Nerd Font / emoji widths.
-* **Recommendation:** Use zsh's `%{...%}` non-printing-zone removal first; estimate width via prompt-expanded buffer.
+#### M-20. ⏭ SKIPPED — `who(1)` per-prompt overhead
+
+#### M-21. ✅ `__calc_prompt_length` — broader CSI strip, dropped 1.1 fudge
+
+* **Fixed:** Pattern widened from `[0-9;]#m` to `[0-9;]#[A-Za-z]` to catch all CSI final bytes, not just SGR. Removed the `*1.1` over-estimate which caused premature git-segment line wraps. Inlined into two one-liners.
 
 #### M-22. `__add_separator_between_left_segments` type-fragile color compare
 * **Location:** `omz-custom/themes/dragon/parts/separators.zsh:81-97`

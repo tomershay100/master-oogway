@@ -63,11 +63,14 @@ apt_install() {
         return 1
     fi
     info "'${cmd}' not installed — running: sudo apt-get install -y ${pkg}"
-    if sudo apt-get install -y "$pkg" >/dev/null 2>&1; then
+    local _apt_err
+    _apt_err=$(sudo apt-get install -y "$pkg" 2>&1 >/dev/null)
+    if command -v "$cmd" &>/dev/null; then
         success "Installed ${pkg}"
         return 0
     fi
     warn "Failed to install '${pkg}' — try manually: sudo apt install ${pkg}"
+    [[ -n "$_apt_err" ]] && echo "$_apt_err" >&2
     return 1
 }
 
