@@ -415,15 +415,11 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 * **Fixed:** Entire function body wrapped in `( ... )`. All exports (`DRAGON__*`, `SSH_TTY`, `VCS_STATUS_*`) are automatically discarded when the subshell exits, including on Ctrl+C. Dead cleanup block removed.
 
-#### M-24. `__update_prompt` renders with stale `VCS_STATUS_*` after `cd`
-* **Location:** `omz-custom/themes/dragon/parts/transient.zsh:87-91`
-* **Problem:** Sync render uses previous dir's gitstatus; async callback re-renders. Brief flicker showing the wrong repo's branch after `cd` between repos.
-* **Recommendation:** Clear `VCS_STATUS_*` on `chpwd` before sync render, or skip sync render on chpwd.
+#### M-24. ⏭ SKIPPED — stale `VCS_STATUS_*` flicker after `cd`
 
-#### M-25. `_dragon_vars_hash` over-matches comments/docs
-* **Location:** `omz-custom/themes/dragon/configure.zsh:22-29`, `notifier.zsh:34`
-* **Problem:** `grep -Eroh 'DRAGON__[A-Z_]+'` matches identifiers in comments, in `_dragon_cleanup`'s var-listing, in preset blocks. Cosmetic edits trigger false "new options" notifier.
-* **Recommendation:** Hash only `_DRAGON_DEFAULTS` keys (source `schema.zsh`, serialize `${(@k)_DRAGON_DEFAULTS}`).
+#### M-25. ✅ `_dragon_vars_hash` — hash schema keys instead of grep output
+
+* **Fixed:** All three sites (`configure.zsh`, `notifier.zsh`, `install.sh`) now serialize `${(@k)_DRAGON_DEFAULTS}` instead of grepping for `DRAGON__*`. Immune to comment edits. `install.sh` spawns a one-shot `zsh -c` to source `schema.zsh` and compute the same hash from bash.
 
 #### M-26. `_dragon_read_key` clobbers user's `trap`s
 * **Location:** `omz-custom/themes/dragon/configure.zsh:181-189`

@@ -577,10 +577,13 @@ _install_sshd_acceptenv
 _check_theme_vars() {
     local themes_dir="${INSTALL_DIR}/omz-custom/themes/dragon"
     local current_hash
-    # Require at least one trailing char so the bare prefix 'DRAGON__' (which
-    # appears in commentary like 'DRAGON__*') is not counted as a var name.
-    current_hash=$(grep -Eroh 'DRAGON__[A-Z_]+' "${themes_dir}" 2>/dev/null \
-        | sort -u | md5sum | cut -d' ' -f1)
+    # Hash sorted _DRAGON_DEFAULTS keys via a one-shot zsh — immune to
+    # grep over-matching comments. Must match configure.zsh and notifier.zsh.
+    current_hash=$(zsh -c '
+        source "$1/schema.zsh"
+        _dragon_init_defaults
+        printf "%s\n" "${(@k)_DRAGON_DEFAULTS}" | sort | md5sum | cut -d" " -f1
+    ' -- "${themes_dir}" 2>/dev/null)
 
     if [[ ! -f "${STATE_FILE}" ]]; then
         todo_item "Configure your prompt: open a new terminal and run 'dragon-configure'"

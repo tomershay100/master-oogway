@@ -25,14 +25,13 @@
         | sort -n | tail -1)
 
     if [[ -n "$stored_mtime" && "$current_mtime" == "$stored_mtime" ]]; then
-        # Theme files unchanged since last configure run — skip the grep entirely.
+        # Theme files unchanged since last configure run — skip hash entirely.
         current_hash="$stored_hash"
     else
-        # Hash the SET of DRAGON__VARNAME identifiers across the theme dir.
-        # Must match install.sh:571 and configure.zsh:_dragon_vars_hash
+        # Hash sorted _DRAGON_DEFAULTS keys — immune to comment/doc changes.
+        # Must match configure.zsh:_dragon_vars_hash and install.sh
         # — change all three together.
-        current_hash=$(grep -Eroh 'DRAGON__[A-Z_]+' "${themes_dir}" 2>/dev/null \
-            | sort -u | md5sum | cut -d' ' -f1)
+        current_hash=$(printf '%s\n' "${(@k)_DRAGON_DEFAULTS}" | sort | md5sum | cut -d' ' -f1)
     fi
 
     [[ "${current_hash}" != "${stored_hash}" ]] || return

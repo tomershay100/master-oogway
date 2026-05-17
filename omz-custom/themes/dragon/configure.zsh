@@ -20,12 +20,10 @@ source "${0:a:h}/schema.zsh"
 # ─────────────────────────────────────────────────────────────────────────────
 
 _dragon_vars_hash() {
-    # Hash the SET of DRAGON__VARNAME identifiers across the whole theme dir,
-    # not the literal bytes of any single file. Robust against reformatting /
-    # comment edits, and detects vars added in any file (not just schema.zsh).
-    # Must match install.sh:571 and notifier.zsh — change all three together.
-    grep -Eroh 'DRAGON__[A-Z_]+' "${_DRAGON_THEMES_DIR}" 2>/dev/null \
-        | sort -u | md5sum | cut -d' ' -f1
+    # Hash the sorted list of _DRAGON_DEFAULTS keys — the authoritative schema
+    # source of truth. Immune to grep over-matching comments/docs.
+    # Must match notifier.zsh and install.sh — change all three together.
+    printf '%s\n' "${(@k)_DRAGON_DEFAULTS}" | sort | md5sum | cut -d' ' -f1
 }
 
 _dragon_read_state() {
