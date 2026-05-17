@@ -181,7 +181,7 @@ _dragon_read_key() {
     _dragon_stty=$(stty -g 2>/dev/null)
     {
         stty -echo -icanon min 1 time 0 2>/dev/null
-        read -rk1 "$1"
+        read -k1 "$1"
     } always {
         stty "$_dragon_stty" 2>/dev/null
     }
@@ -454,7 +454,7 @@ _dragon_run_step() {
                     local key2 _stty2
                     _stty2=$(stty -g 2>/dev/null)
                     stty -echo -icanon min 0 time 5 2>/dev/null
-                    IFS= read -rk1 key2 2>/dev/null || key2=""
+                    IFS= read -k1 key2 2>/dev/null || key2=""
                     stty "$_stty2" 2>/dev/null
                     [[ "$key2" == [0-9] ]] && idx="${key}${key2}"
                 fi
