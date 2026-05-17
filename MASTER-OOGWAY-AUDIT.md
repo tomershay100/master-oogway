@@ -426,10 +426,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **Problem:** `trap '...' EXIT INT TERM` then `trap - EXIT INT TERM` overwrites and then removes user's session-cleanup traps for the rest of the session.
 * **Recommendation:** Save existing trap with `trap -p EXIT` and restore. Better: use `always { ... }` blocks.
 
-#### M-27. Wizard enum reader caps at `[1-9]`, unreachable item #10
-* **Location:** `omz-custom/themes/dragon/configure.zsh:326-329`, `456-461`
-* **Problem:** Hard-coded single-digit pattern. `git_clean_dirty` group has 10 vars; var #10 (`GIT_DIRTY_UNDERLINE`) is unreachable from the wizard.
-* **Recommendation:** Multi-digit input with Enter to confirm, or two-char read with 50ms timeout for the second digit.
+#### M-27. ✅ Wizard group selector — supports two-digit entry via stty timeout
+
+* **Fixed:** Group variable selector now reads a second digit with `stty min 0 time 5` (0.5s timeout) when the group has >9 items. Enum selector untouched — no enum exceeds 3 options. `GIT_DIRTY_UNDERLINE` (#10) is now reachable.
 
 #### M-28. Asymmetric SSH-override defaults (username vs hostname)
 * **Location:** `omz-custom/themes/dragon/schema.zsh:21-25, 34-38`

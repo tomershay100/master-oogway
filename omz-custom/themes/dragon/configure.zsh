@@ -447,8 +447,17 @@ _dragon_run_step() {
                     _DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]:-}"
                 done
                 ;;
-            [1-9])
-                local idx=$(( key ))
+            [0-9])
+                local idx="$key"
+                if (( ${#vars} > 9 )); then
+                    local key2 _stty2
+                    _stty2=$(stty -g 2>/dev/null)
+                    stty -echo -icanon min 0 time 5 2>/dev/null
+                    IFS= read -rk1 key2 2>/dev/null || key2=""
+                    stty "$_stty2" 2>/dev/null
+                    [[ "$key2" == [0-9] ]] && idx="${key}${key2}"
+                fi
+                idx=$(( idx ))
                 if (( idx >= 1 && idx <= ${#vars} )); then
                     _dragon_edit_var "${vars[$idx]}"
                 fi
