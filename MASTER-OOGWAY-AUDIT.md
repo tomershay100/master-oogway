@@ -314,13 +314,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 * **Resolved:** Hoisted `_init_plugins` out of the dev-mode block into a top-level function. Replaced `${local_dir}` with `${INSTALL_DIR}` (correct in all modes). Now called from both update mode and dev mode, guaranteeing submodule recovery regardless of how the installer is invoked.
 
-#### H-4. `mo-search/frg` preview opens wrong file when ripgrep result path contains `:`
+#### H-4. ✅ RESOLVED — `frg` now uses `rg --null` for safe filename parsing
 
-* **Severity:** 🟠 High
-* **Location:** `omz-custom/plugins/mo-search/mo-search.plugin.zsh:54`
-* **Problem:** fzf preview uses `--delimiter ':'` and `{1}`, so `weird:file.txt:42:matched line` parses as file=`weird`, line=`file.txt`.
-* **Impact:** Wrong-file preview and wrong-file open on ripgrep results from filenames containing `:`. Real on Java/CI repos with `:`-named generated paths.
-* **Recommendation:** Use ripgrep `--null` and a NUL field delimiter, or pre-filter `:` filenames.
+* **Resolved:** Switched to `rg --null` which NUL-terminates filenames. awk splits on NUL (`FS="\0"`), strips ANSI, applies the security filter, then emits TAB-separated `file\tlineno\tcontent`. fzf uses `--delimiter '\t'` so `{1}` is always the bare filename regardless of colons in the path. Extraction uses `cut -f1`/`cut -f2` — no regex ambiguity.
 
 #### H-5. `dragon-configure --preset` leaks `DRAGON__*` exports to parent shell
 
@@ -738,7 +734,7 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 | Cache "host set up OK" in mo-lan-ssh wrapper | H-7 | S |
 | `MO_LAN_SSH_DISABLED=1` short-circuit | H-8 | S |
 | `MO_SAFE_MODE=1` plugin-array gate | M-32, F-2 | S |
-| `ssh -G`-style NUL-delim in `frg` | H-4 | S |
+| ~~`ssh -G`-style NUL-delim in `frg`~~ | H-4 ✅ | S |
 | Backup re-trigger when marker missing on update | M-4 | S |
 
 ### Fallback strategies
@@ -768,7 +764,7 @@ These are pure UX or robustness wins with minimal architectural impact. Recommen
 3. **F-1** — `mo-help` command using existing `# Provides:` headers. ~50 LOC. Surfaces ~80% of the framework that users currently don't discover.
 4. ~~**H-2 / M-2**~~ — not applicable; OMZ installer owns the shell-switch step.
 5. ~~**H-3**~~ — resolved: `_init_plugins` now runs in all modes.
-6. **H-4** — `frg` NUL-delim or filter `:` filenames.
+6. ~~**H-4**~~ — resolved: `frg` now uses `rg --null` + TAB-delimited fzf fields.
 7. **H-5** — `typeset -g` instead of `export` for `DRAGON__*` defaults (audit, then ship).
 8. **H-7** — `lan-hosts.keys-ok` cache in mo-lan-ssh wrapper.
 9. **H-8** — `MO_LAN_SSH_DISABLED=1` + `MO_LAN_SKIP_WRAPPER=1` + document `command ssh`.

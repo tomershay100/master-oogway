@@ -43,19 +43,30 @@ frg() {
     command -v fzf &>/dev/null || { echo "frg: fzf not installed" >&2; return 1; }
     command -v rg  &>/dev/null || { echo "frg: rg not installed (try: sudo apt install ripgrep)" >&2; return 1; }
     local result
-    # fzf substitutes {1} (path field) into the preview shell literally —
-    # a file named ';rm;.txt' would execute on cursor-move. Filter unsafe
-    # paths before they reach fzf. awk strips ANSI from the path field for
-    # the check; the original colorized line still goes to fzf for display.
-    result=$(rg --color=always --line-number "" 2>/dev/null \
-        | awk -F: '{ p=$1; gsub(/\033\[[0-9;]*m/, "", p); if (p ~ /[$`();|&<>"\x27\\]/) next; print }' \
+    # rg --null separates filename from "lineno:content" with a NUL byte,
+    # so filenames containing ':' are never misparsed. awk (FS="\0") splits
+    # on that NUL, strips ANSI from the filename for the security check, then
+    # emits TAB-separated "file TAB lineno TAB content" — fzf field {1} is
+    # always the bare filename, {2} is always the line number.
+    result=$(rg --color=always --line-number --null "" 2>/dev/null \
+        | awk 'BEGIN { FS="\0" }
+               NF == 2 {
+                   f = $1; rest = $2
+                   gsub(/\033\[[0-9;]*m/, "", f)
+                   if (f ~ /[$`();|&<>"\x27\\]/) next
+                   n = index(rest, ":")
+                   if (n == 0) next
+                   print f "\t" substr(rest, 1, n-1) "\t" substr(rest, n+1)
+               }' \
         | fzf --ansi --height=60% --reverse \
-              --delimiter ':' --nth='1,3..' \
-              --preview 'bat --color=always --highlight-line {2} {1} 2>/dev/null || batcat --color=always --highlight-line {2} {1} 2>/dev/null || cat {1}')
+              --delimiter '\t' --nth='1,3..' \
+              --preview 'bat --color=always --highlight-line {2} {1} 2>/dev/null \
+                         || batcat --color=always --highlight-line {2} {1} 2>/dev/null \
+                         || cat {1}')
     if [[ -n "$result" ]]; then
         local file linenum
-        file=$(awk 'match($0, /^(.+):([0-9]+):/, a) { print a[1] }' <<< "$result")
-        linenum=$(awk 'match($0, /^(.+):([0-9]+):/, a) { print a[2] }' <<< "$result")
+        file=$(cut -f1 <<< "$result")
+        linenum=$(cut -f2 <<< "$result")
         [[ -n "$file" ]] && ${EDITOR:-vim} "$file" "+${linenum}"
     fi
 }
