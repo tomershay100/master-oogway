@@ -104,6 +104,8 @@ shellcheck install.sh
 
 If any of these fail, fix the underlying issue — never commit a file that fails parsing.
 
+> **Note:** The wizard already validates its own output — `dragon-configure` runs `zsh -n` on the generated `conf.zsh` before writing it, so any wizard-produced config that fails syntax is rejected automatically (see `configure.zsh:653`). You only need to run the checks above on source files.
+
 ---
 
 ## Adding a plugin
