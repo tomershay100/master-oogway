@@ -334,21 +334,13 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **Impact:** Wizard feels sluggish (perceptibly so on slow machines, containers, SSH). Bad first impression.
 * **Recommendation:** Cache rendered previews keyed by `(group, mode, vars-hash)`; re-render only on actual value change.
 
-#### H-7. `mo-lan-ssh` ssh wrapper probes synchronously on every LAN ssh call
+#### H-7. ✅ WON'T FIX — probe latency accepted; `mo-lan-ssh trust` is the explicit alternative
 
-* **Severity:** 🟠 High
-* **Location:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:243-247`
-* **Problem:** For every LAN ssh invocation (not just first), the wrapper does a BatchMode probe (default 2s timeout) before the actual ssh. Doubles connection setup time.
-* **Impact:** Interactive: ~200ms extra per `ssh <lan-host>`. Scripts looping `ssh` over many hosts: noticeable. Compounds with H-8 below.
-* **Recommendation:** Cache "host is set up OK" in `~/.config/master-oogway/lan-hosts.keys-ok` with timestamp. Skip probe if `now - last-ok < 30 min` and host-key hash unchanged.
+* **Decision:** `mo-lan-ssh trust <host>` already handles key setup on demand. Adding a cache (state file) or in-session tracking adds complexity for a problem the user controls. The probe is only meaningful on first connect; subsequent connections succeed instantly (probe_rc=0 → straight through). Accepted.
 
-#### H-8. `mo-lan-ssh` ssh wrapper unconditionally installed, hard to bypass
+#### H-8. ✅ WON'T FIX — removing the plugin from `plugins=()` is the correct disable mechanism
 
-* **Severity:** 🟠 High (UX)
-* **Location:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:169-173`
-* **Problem:** `ssh()` function defined whenever `MO_LAN_AUTO_TRUST=true` (default) and any LAN host exists. `MO_LAN_AUTO_TRUST=false` only disables key-copy; the wrapper still wraps. Bypass requires `command ssh` (since `\ssh` only bypasses aliases, not functions) — not documented.
-* **Impact:** Debugging ssh inadvertently exercises the wrapper. The `MO_LAN_PLAN.md` is even staler now that the plugin is in production with no kill-switch.
-* **Recommendation:** Add `MO_LAN_SSH_DISABLED=1` short-circuit at top of plugin. Add `MO_LAN_SKIP_WRAPPER=1` one-shot bypass. Document `command ssh` in `mo-lan-ssh help`.
+* **Decision:** A `MO_LAN_SSH_DISABLED=1` env-var is a runtime escape hatch for a problem already solved at config time — comment out or remove `mo-lan-ssh` from `plugins=()`. Adding another knob adds surface area with no real benefit.
 
 ### 🟡 Medium-severity issues
 
@@ -731,8 +723,8 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 | ~~Lift `_init_plugins` out of dev-mode branch~~ | H-3 ✅ | S |
 | Replace `_dragon_render_preview` fresh-zsh with cache | H-6 | M |
 | `typeset -g` instead of `export` for DRAGON__* defaults | H-5 | S (audit needed) |
-| Cache "host set up OK" in mo-lan-ssh wrapper | H-7 | S |
-| `MO_LAN_SSH_DISABLED=1` short-circuit | H-8 | S |
+| ~~Cache "host set up OK" in mo-lan-ssh wrapper~~ | H-7 won't fix | — |
+| ~~`MO_LAN_SSH_DISABLED=1` short-circuit~~ | H-8 won't fix | — |
 | `MO_SAFE_MODE=1` plugin-array gate | M-32, F-2 | S |
 | ~~`ssh -G`-style NUL-delim in `frg`~~ | H-4 ✅ | S |
 | Backup re-trigger when marker missing on update | M-4 | S |
@@ -766,8 +758,8 @@ These are pure UX or robustness wins with minimal architectural impact. Recommen
 5. ~~**H-3**~~ — resolved: `_init_plugins` now runs in all modes.
 6. ~~**H-4**~~ — resolved: `frg` now uses `rg --null` + TAB-delimited fzf fields.
 7. **H-5** — `typeset -g` instead of `export` for `DRAGON__*` defaults (audit, then ship).
-8. **H-7** — `lan-hosts.keys-ok` cache in mo-lan-ssh wrapper.
-9. **H-8** — `MO_LAN_SSH_DISABLED=1` + `MO_LAN_SKIP_WRAPPER=1` + document `command ssh`.
+8. ~~**H-7**~~ — won't fix; `mo-lan-ssh trust` is the explicit path.
+9. ~~**H-8**~~ — won't fix; removing from `plugins=()` is the correct disable.
 10. **M-12** — `mo-safety-override/reboot` arg forwarding.
 11. **M-18** — **delete or relocate `MO-LAN-PLAN.md`**. Pick README as canonical source.
 12. **M-17** — implement `mo-lan-ssh forget <host>` (the most-needed phase-3 subcommand).
