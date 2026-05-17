@@ -137,36 +137,23 @@ __save_exit_code()
 	_DRAGON_CMD_RAN=false
 }
 
-__get_full_exit_code()
-{
-	if (( _DRAGON_EXIT_CODE > 128 )); then
-		local sig_name
-		sig_name="$(kill -l "$_DRAGON_EXIT_CODE" 2>/dev/null)"
-		local kill_status=$?
-		if [[ $kill_status -eq 0 && -n "$sig_name" ]]; then
-			echo "SIG$sig_name"
-			return
-		fi
-	fi
-	echo "$_DRAGON_EXIT_CODE"
-}
-
-__get_exit_status_content()
-{
-	if "$DRAGON__ENABLE_FULL_EXIT_STATUS"; then
-		__get_full_exit_code
-	else
-		echo "$_DRAGON_EXIT_CODE"
-	fi
-}
-
 dragon__set_exit_status()
 {
 	FINAL_DRAGON__EXIT_STATUS_CONTENT=""
 	! "$DRAGON__ENABLE_EXIT_STATUS" && return
 	(( _DRAGON_EXIT_CODE == 0 )) && return
 
-	REAL_DRAGON__EXIT_STATUS_CONTENT="$(__get_exit_status_content)"
+	if "$DRAGON__ENABLE_FULL_EXIT_STATUS" && (( _DRAGON_EXIT_CODE > 128 )); then
+		local sig_name
+		sig_name="$(kill -l "$_DRAGON_EXIT_CODE" 2>/dev/null)"
+		if [[ $? -eq 0 && -n "$sig_name" ]]; then
+			REAL_DRAGON__EXIT_STATUS_CONTENT="SIG${sig_name}"
+		else
+			REAL_DRAGON__EXIT_STATUS_CONTENT="${_DRAGON_EXIT_CODE}"
+		fi
+	else
+		REAL_DRAGON__EXIT_STATUS_CONTENT="${_DRAGON_EXIT_CODE}"
+	fi
 	__dragon_copy_defaults EXIT_STATUS
 	__dragon_finalize EXIT_STATUS
 }

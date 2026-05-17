@@ -260,7 +260,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 |---|---|---|
 | L-1 | `install.sh:163` | `exec bash` drops `"$@"` and hardcodes `bash` |
 | L-2 | `install.sh:74-86` | `copy_file` doesn't preserve perms; asymmetric with `bak`'s `cp -a` |
-| L-8 | `omz-custom/themes/dragon/parts/segments_right.zsh:140-161` | `__get_exit_status_content` uses double `$(...)` instead of the global-variable pattern used elsewhere |
 | L-9 | `omz-custom/themes/dragon/parts/transient.zsh:65-70` | `zle reset-prompt 2>/dev/null` outside ZLE — swallows error; should be `zle && zle reset-prompt` |
 | L-10 | `omz-custom/themes/dragon/configure.zsh:186` | `read -rk1` — `-r` is a no-op in zsh `read -k` |
 | L-11 | `omz-custom/themes/dragon/configure.zsh:34-39` | `_dragon_read_state` won't survive values containing `=` (no current bug) |
@@ -494,4 +493,4 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ---
 
-*Open issues: 30 🟢 Low. Feature proposals: 22. Audited: 5,729 LOC across 41 files.*
+*Open issues: 29 🟢 Low. Feature proposals: 22. Audited: 5,729 LOC across 41 files.*
