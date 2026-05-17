@@ -365,15 +365,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **Location:** `install.sh` (`_install_ssh_sendenv`)
 * **Fixed:** Replaces the `sed`-insert-after-first-match approach with a `# BEGIN/END master-oogway:sendenv`-wrapped `Host *` block appended at end-of-file. Uninstall removes by marker range. Migrates legacy bare-line installs automatically.
 
-#### M-6. `/etc/ssh/sshd_config` prompt fires on laptops without sshd
-* **Location:** `install.sh:535-562`
-* **Problem:** Every install asks every user; no "remember my no" mechanism.
-* **Recommendation:** Skip prompt if `systemctl is-active --quiet ssh` returns false. Persist user's "no" in `STATE_FILE`.
+#### M-6. ⏭ SKIPPED — `/etc/ssh/sshd_config` prompt on laptops without sshd
 
-#### M-7. Unverified clones; no GPG-signed tag verification
-* **Location:** `install.sh:161`, `README.md:37`
-* **Problem:** curl|bash one-liner trusts whatever GitHub serves. Repo or account compromise → every new install affected.
-* **Recommendation:** Document `git show --show-signature HEAD` for paranoid users. Long-term: sign release tags, install.sh verifies against pinned fingerprint.
+#### M-7. ⏭ SKIPPED — Unverified clones / GPG tag verification
 
 #### M-8. `bat`/`fdfind` etc. checked uniformly but no central capability cache
 * **Location:** Multiple plugins + install.sh + mo-cli doctor
