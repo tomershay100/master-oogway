@@ -355,10 +355,10 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **Location:** `install.sh:154-163`
 * **Fixed:** All three `git` call sites (clone, submodule update in bootstrap, submodule update in `_init_plugins`) now capture stderr and `die` with the exact recovery command: `rm -rf ~/.master-oogway` + re-run.
 
-#### M-4. `~/.zshrc` clobber on missing marker
-* **Location:** `install.sh:417`, `zshrc.master-oogway:1-5`
-* **Problem:** If user deletes the marker line, next install overwrites the file without re-running the backup logic (`.pre-master-oogway` already exists from first install).
-* **Recommendation:** If destination exists, lacks marker, AND contains `master-oogway`/`dragon` references, back up to timestamped `${ZSHRC}.replaced.$(date +%Y%m%d_%H%M%S)`.
+#### M-4. ✅ `~/.zshrc` backup always timestamped before overwrite
+
+* **Location:** `install.sh` (`_install_zshrc`)
+* **Fixed:** `_install_zshrc` now always backs up to `~/.zshrc.pre-master-oogway.YYYYMMDD_HHMMSS` whenever the file exists, regardless of whether a prior backup exists. No overwrite can silently discard a file.
 
 #### M-5. `SendEnv DRAGON__*` injected into wrong/multiple `Host *` blocks
 * **Location:** `install.sh:522`
