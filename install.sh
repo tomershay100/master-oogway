@@ -84,7 +84,7 @@ copy_file() {
         success "already up-to-date: ${dst}"
         return 0
     fi
-    cp "$src" "$dst"
+    cp -p "$src" "$dst"
     info "copied: ${src} → ${dst}"
 }
 
