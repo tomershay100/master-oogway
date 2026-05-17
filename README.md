@@ -261,10 +261,14 @@ Auto-discovers every SSH-listening host on your LAN, defines an `s-<hostname>` a
 | Command | Description |
 |---------|-------------|
 | `s-<host>` | shorthand for `ssh <host>` (one per discovered host) |
-| `mo-lan-ssh list` | print cached LAN hosts (one per line, with `:port` if non-22) |
+| `mo-lan-ssh list` | print all known hosts (auto + manual, with `:port` if non-22, source tagged) |
 | `mo-lan-ssh refresh [--background]` | re-scan the LAN; `--background` returns immediately |
-| `mo-lan-ssh status` | show cache age, network ID, host count, SSH config state |
+| `mo-lan-ssh status` | show cache age, network ID, host counts (auto + manual), SSH config state |
 | `mo-lan-ssh setup` | one-time: ensure `~/.ssh/config` has `Include config.d/*`, run first scan |
+| `mo-lan-ssh add <host>[:<port>]` | persist a host in the manual overlay (takes effect immediately) |
+| `mo-lan-ssh remove <host>` | remove from the manual overlay only (inverse of `add`) |
+| `mo-lan-ssh trust <host>` | run `ssh-copy-id` if no key works (any host, including non-LAN) |
+| `mo-lan-ssh forget <host>` | remove from auto cache + manual + `known_hosts` + ssh-config |
 | `mo-lan-ssh help` | show all subcommands + env-var configuration |
 
 **First-run behavior:** the first shell after install has no aliases (discovery runs in the background and takes ~3-15s depending on LAN size). The second shell you open has them.

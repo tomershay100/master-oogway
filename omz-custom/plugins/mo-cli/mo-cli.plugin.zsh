@@ -54,6 +54,8 @@ _mo_doctor() {
     _mo_check meld        "git difftool / mergetool GUI"                     meld
     _mo_check lsof        "the 'port' command"                               lsof
     _mo_check zoxide      "smarter cd ('z' command)"                         zoxide
+    _mo_check nmap        "LAN host discovery for mo-lan-ssh"                nmap
+    _mo_check dig         "DNS lookups for mo-lan-ssh (AXFR + reverse DNS)"  dnsutils
     print ""
     if (( missing == 0 )); then
         print -P "%F{green}All checked tools are installed.%f"
