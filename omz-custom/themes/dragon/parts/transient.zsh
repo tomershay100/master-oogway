@@ -66,7 +66,7 @@ __refresh_prompt()
 {
 	dragon__set_lprompt
 	dragon__set_rprompt
-	zle reset-prompt 2>/dev/null
+	zle && zle reset-prompt
 }
 
 _IS_GITSTATUS_RUNNING=false
