@@ -79,9 +79,7 @@ __add_separator_between_left_segments()
 	[[ -z $segment_content ]] && return
 
 	__get_xterm_color_by_name "$left_segment_left_bg_color"
-	if [[ -z "$XTERM_COLOR" ]]; then
-		left_segment_left_bg_color="$TERMINAL_BACKGROUND_COLOR"
-	fi
+	left_segment_left_bg_color="${XTERM_COLOR:-$TERMINAL_BACKGROUND_COLOR}"
 
 	if [[ "$left_segment_left_bg_color" == "$left_segment_right_bg_color" && "$left_segment_left_bg_color" == "$TERMINAL_BACKGROUND_COLOR" ]]; then
 		return
@@ -108,9 +106,7 @@ __add_separator_between_right_segments()
 	[[ -z $segment_content ]] && return
 
 	__get_xterm_color_by_name "$right_segment_right_bg_color"
-	if [[ -z "$XTERM_COLOR" ]]; then
-		right_segment_right_bg_color="$TERMINAL_BACKGROUND_COLOR"
-	fi
+	right_segment_right_bg_color="${XTERM_COLOR:-$TERMINAL_BACKGROUND_COLOR}"
 
 	if [[ "$right_segment_right_bg_color" == "$right_segment_left_bg_color" && "$right_segment_right_bg_color" == "$TERMINAL_BACKGROUND_COLOR" ]]; then
 		return

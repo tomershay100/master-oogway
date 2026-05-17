@@ -407,10 +407,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 * **Fixed:** Pattern widened from `[0-9;]#m` to `[0-9;]#[A-Za-z]` to catch all CSI final bytes, not just SGR. Removed the `*1.1` over-estimate which caused premature git-segment line wraps. Inlined into two one-liners.
 
-#### M-22. `__add_separator_between_left_segments` type-fragile color compare
-* **Location:** `omz-custom/themes/dragon/parts/separators.zsh:81-97`
-* **Problem:** Compares user color strings raw — `"navy"` vs `"012"` for the same effective color get treated as different, producing a spurious powerline arrow.
-* **Recommendation:** Normalize both sides through `__get_xterm_color_by_name` before equality check.
+#### M-22. ✅ Separator color compare — normalize via `__get_xterm_color_by_name`
+
+* **Fixed:** Both `__add_separator_between_left_segments` and `__add_separator_between_right_segments` now assign `${XTERM_COLOR:-$TERMINAL_BACKGROUND_COLOR}` back to the local color variable after lookup, so comparisons always use the normalized form.
 
 #### M-23. `_dragon_render_preview` env-leak on Ctrl+C
 * **Location:** `omz-custom/themes/dragon/configure.zsh:201-260`
