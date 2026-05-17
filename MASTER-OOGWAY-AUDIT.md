@@ -310,13 +310,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 * **Resolved:** `install.sh` requires oh-my-zsh to be pre-installed and `die`s if it isn't. OMZ's own installer already prompts the user to `chsh` to zsh. By the time master-oogway runs, the shell is already switched (or the user explicitly declined).
 
-#### H-3. Plugin submodule self-healing only runs in dev mode
+#### H-3. ✅ RESOLVED — `_init_plugins` now runs in all modes
 
-* **Severity:** 🟠 High
-* **Location:** `install.sh:197-214` (`_init_plugins` lives inside the dev-mode branch)
-* **Problem:** In curl-pipe / update mode, the only submodule init is `git -C … submodule update --init --recursive`. If a submodule path exists but is not a git checkout (e.g., user accidentally deleted its `.git`), production-mode install never recovers — only dev mode `rm -rf`s and re-clones.
-* **Impact:** Update mode can leave broken plugin dirs without recovery, surfacing as runtime errors when zsh tries to source the plugin.
-* **Recommendation:** Lift `_init_plugins` out of the dev-mode `if` and call unconditionally after both clone/pull branches.
+* **Resolved:** Hoisted `_init_plugins` out of the dev-mode block into a top-level function. Replaced `${local_dir}` with `${INSTALL_DIR}` (correct in all modes). Now called from both update mode and dev mode, guaranteeing submodule recovery regardless of how the installer is invoked.
 
 #### H-4. `mo-search/frg` preview opens wrong file when ripgrep result path contains `:`
 
@@ -713,7 +709,7 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 4. **Consolidate `command -v` probes** (M-8) into a single capability cache in `mo-utils`. Plugins consult `$MO_CAPS[…]`. Reduces fork count at shell start.
 
-5. **Lift `_init_plugins` out of dev-mode branch** (H-3) — call unconditionally so update-mode also self-heals broken submodules.
+5. ~~**Lift `_init_plugins` out of dev-mode branch** (H-3)~~ — resolved.
 
 6. **Extract drop-in loader** (zshrc.master-oogway:92, 190) into a helper function `_mo_source_dropins <dir>` to reduce template noise and make it easy to add a user-plugin dir (F-10).
 
@@ -736,7 +732,7 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 | Improvement | Issue addressed | Effort |
 |---|---|---|
-| Lift `_init_plugins` out of dev-mode branch | H-3 | S |
+| ~~Lift `_init_plugins` out of dev-mode branch~~ | H-3 ✅ | S |
 | Replace `_dragon_render_preview` fresh-zsh with cache | H-6 | M |
 | `typeset -g` instead of `export` for DRAGON__* defaults | H-5 | S (audit needed) |
 | Cache "host set up OK" in mo-lan-ssh wrapper | H-7 | S |
@@ -771,7 +767,7 @@ These are pure UX or robustness wins with minimal architectural impact. Recommen
 2. **F-2 / M-32** — `MO_SAFE_MODE=1` env-gated plugin array. 10 LOC + README section. Unlocks debugging.
 3. **F-1** — `mo-help` command using existing `# Provides:` headers. ~50 LOC. Surfaces ~80% of the framework that users currently don't discover.
 4. ~~**H-2 / M-2**~~ — not applicable; OMZ installer owns the shell-switch step.
-5. **H-3** — lift `_init_plugins` out of dev-mode branch.
+5. ~~**H-3**~~ — resolved: `_init_plugins` now runs in all modes.
 6. **H-4** — `frg` NUL-delim or filter `:` filenames.
 7. **H-5** — `typeset -g` instead of `export` for `DRAGON__*` defaults (audit, then ship).
 8. **H-7** — `lan-hosts.keys-ok` cache in mo-lan-ssh wrapper.

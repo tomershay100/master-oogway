@@ -163,12 +163,35 @@ if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_
     exec bash "${INSTALL_DIR}/install.sh"
 fi
 
+# ── Plugin submodule self-healing ──────────────────────────────────────────────
+# git submodule update --init --recursive skips dirs that already exist on disk,
+# even if their .git was deleted. This function pre-scans for that corruption and
+# wipes broken dirs so git can re-clone them cleanly.
+
+_init_plugins() {
+    local plugins_dir="${INSTALL_DIR}/omz-custom/plugins"
+    local -a missing=()
+    for plugin in gitstatus you-should-use zsh-autosuggestions zsh-syntax-highlighting; do
+        local plugin_dir="${plugins_dir}/${plugin}"
+        if [[ ! -e "${plugin_dir}/.git" ]]; then
+            [[ -d "${plugin_dir}" ]] && rm -rf "${plugin_dir}"
+            missing+=("${plugin}")
+        fi
+    done
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        info "Initializing missing plugin submodules: ${missing[*]}"
+        git -C "${INSTALL_DIR}" submodule update --init --recursive
+    else
+        success "Plugin submodules already initialized"
+    fi
+}
+
 # ── Mode: update (running from ~/.master-oogway/install.sh) ──────────────────
 
 if _running_from_install_dir; then
     info "Updating ${INSTALL_DIR}..."
     _git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
-    git -C "${INSTALL_DIR}" submodule update --init --recursive
+    _init_plugins
     success "Repository up-to-date"
 fi
 
@@ -193,24 +216,6 @@ if _running_from_master_oogway_clone && ! _running_from_install_dir; then
         ln -s "${local_dir}" "${INSTALL_DIR}"
         success "Linked ${INSTALL_DIR} → ${local_dir}"
     fi
-
-    _init_plugins() {
-        local plugins_dir="${INSTALL_DIR}/omz-custom/plugins"
-        local -a missing=()
-        for plugin in gitstatus you-should-use zsh-autosuggestions zsh-syntax-highlighting; do
-            local plugin_dir="${plugins_dir}/${plugin}"
-            if [[ ! -e "${plugin_dir}/.git" ]]; then
-                [[ -d "${plugin_dir}" ]] && rm -rf "${plugin_dir}"
-                missing+=("${plugin}")
-            fi
-        done
-        if [[ ${#missing[@]} -gt 0 ]]; then
-            info "Initializing missing plugin submodules: ${missing[*]}"
-            git -C "${local_dir}" submodule update --init --recursive
-        else
-            success "Plugin submodules already initialized"
-        fi
-    }
     _init_plugins
 fi
 
