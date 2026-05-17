@@ -350,10 +350,10 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 #### M-2. ✅ NOT APPLICABLE — see H-2; OMZ installer owns the shell-switch step
 
-#### M-3. Partial-clone recovery is cryptic
+#### M-3. ✅ Partial-clone recovery — explicit die with recovery command
+
 * **Location:** `install.sh:154-163`
-* **Problem:** Network failure mid-clone leaves `~/.master-oogway/` in partial state. Re-run takes update path (`git pull --ff-only`); if submodule update fails again, user is stuck with no error pointing them to `rm -rf ~/.master-oogway`.
-* **Recommendation:** On `submodule update` failure, `die` with the explicit recovery command.
+* **Fixed:** All three `git` call sites (clone, submodule update in bootstrap, submodule update in `_init_plugins`) now capture stderr and `die` with the exact recovery command: `rm -rf ~/.master-oogway` + re-run.
 
 #### M-4. `~/.zshrc` clobber on missing marker
 * **Location:** `install.sh:417`, `zshrc.master-oogway:1-5`

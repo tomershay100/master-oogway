@@ -154,11 +154,13 @@ if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_
     if [[ -d "${INSTALL_DIR}/.git" ]]; then
         info "Updating ${INSTALL_DIR}..."
         _git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
-        git -C "${INSTALL_DIR}" submodule update --init --recursive
+        _git_out=$(git -C "${INSTALL_DIR}" submodule update --init --recursive 2>&1) \
+            || die "Submodule update failed:\n${_git_out}\n\nTo recover: rm -rf ${INSTALL_DIR} and re-run the install command."
     else
         [[ -e "${INSTALL_DIR}" ]] && die "${INSTALL_DIR} exists but is not a git repo. Remove it and retry."
         info "Cloning master-oogway into ${INSTALL_DIR}..."
-        git clone --recurse-submodules "${REPO_URL}" "${INSTALL_DIR}"
+        _git_out=$(git clone --recurse-submodules "${REPO_URL}" "${INSTALL_DIR}" 2>&1) \
+            || die "Clone failed:\n${_git_out}\n\nTo recover: rm -rf ${INSTALL_DIR} and re-run the install command."
     fi
     exec bash "${INSTALL_DIR}/install.sh"
 fi
@@ -180,7 +182,8 @@ _init_plugins() {
     done
     if [[ ${#missing[@]} -gt 0 ]]; then
         info "Initializing missing plugin submodules: ${missing[*]}"
-        git -C "${INSTALL_DIR}" submodule update --init --recursive
+        _git_out=$(git -C "${INSTALL_DIR}" submodule update --init --recursive 2>&1) \
+            || die "Submodule update failed:\n${_git_out}\n\nTo recover: rm -rf ${INSTALL_DIR} and re-run the install command."
     else
         success "Plugin submodules already initialized"
     fi
