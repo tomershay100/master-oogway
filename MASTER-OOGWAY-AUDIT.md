@@ -360,10 +360,10 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **Location:** `install.sh` (`_install_zshrc`)
 * **Fixed:** `_install_zshrc` now always backs up to `~/.zshrc.pre-master-oogway.YYYYMMDD_HHMMSS` whenever the file exists, regardless of whether a prior backup exists. No overwrite can silently discard a file.
 
-#### M-5. `SendEnv DRAGON__*` injected into wrong/multiple `Host *` blocks
-* **Location:** `install.sh:522`
-* **Problem:** `sed` inserts after the *first* `^Host \*$` match; user with multiple stanzas (e.g. `Host *.work` then `Host *`) gets it in the wrong section. Tab-indented configs get inconsistent spacing.
-* **Recommendation:** Append a dedicated stanza at end-of-file with a comment marker so uninstall can find/remove it.
+#### M-5. ✅ `SendEnv DRAGON__*` — marker-wrapped stanza appended at EOF
+
+* **Location:** `install.sh` (`_install_ssh_sendenv`)
+* **Fixed:** Replaces the `sed`-insert-after-first-match approach with a `# BEGIN/END master-oogway:sendenv`-wrapped `Host *` block appended at end-of-file. Uninstall removes by marker range. Migrates legacy bare-line installs automatically.
 
 #### M-6. `/etc/ssh/sshd_config` prompt fires on laptops without sshd
 * **Location:** `install.sh:535-562`

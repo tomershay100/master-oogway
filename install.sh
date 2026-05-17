@@ -290,11 +290,14 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     rm -f "${HOME}/.gitconfig.master-oogway"
     success "Removed ~/.gitconfig.master-oogway"
 
-    # ~/.ssh/config — remove SendEnv DRAGON__* line
+    # ~/.ssh/config — remove master-oogway:sendenv block (marker or legacy bare line)
     _uninstall_ssh_config="${HOME}/.ssh/config"
-    if grep -qF 'SendEnv DRAGON__*' "$_uninstall_ssh_config" 2>/dev/null; then
+    if grep -qF '# BEGIN master-oogway:sendenv' "$_uninstall_ssh_config" 2>/dev/null; then
+        sed -i '/# BEGIN master-oogway:sendenv/,/# END master-oogway:sendenv/d' "$_uninstall_ssh_config"
+        success "Removed SendEnv DRAGON__* block from ~/.ssh/config"
+    elif grep -qF 'SendEnv DRAGON__*' "$_uninstall_ssh_config" 2>/dev/null; then
         sed -i '/SendEnv DRAGON__\*/d' "$_uninstall_ssh_config"
-        success "Removed SendEnv DRAGON__* from ~/.ssh/config"
+        success "Removed SendEnv DRAGON__* from ~/.ssh/config (legacy)"
     else
         success "SendEnv DRAGON__* not in ~/.ssh/config — nothing to remove"
     fi
@@ -504,33 +507,27 @@ _install_gitconfig
 
 _install_ssh_sendenv() {
     local ssh_config="${HOME}/.ssh/config"
-    local send_line="    SendEnv DRAGON__*"
+    local marker_begin="# BEGIN master-oogway:sendenv"
+    local marker_end="# END master-oogway:sendenv"
 
     mkdir -p "${HOME}/.ssh"
     chmod 700 "${HOME}/.ssh"
 
-    if [[ ! -f "$ssh_config" ]]; then
-        printf 'Host *\n%s\n' "$send_line" >> "$ssh_config"
-        chmod 600 "$ssh_config"
-        success "Created ~/.ssh/config with SendEnv DRAGON__*"
-        return
-    fi
-
-    # Already present anywhere in the file — nothing to do.
-    if grep -qF "SendEnv DRAGON__*" "$ssh_config"; then
+    # Already present (marker-based) — nothing to do.
+    if grep -qF "$marker_begin" "$ssh_config" 2>/dev/null; then
         success "SendEnv DRAGON__* already in ~/.ssh/config"
         return
     fi
 
-    # Insert SendEnv on the line after the first 'Host *' stanza header.
-    if grep -qE '^Host \*[[:space:]]*$' "$ssh_config"; then
-        sed -i "/^Host \*[[:space:]]*$/a\\${send_line}" "$ssh_config"
-        success "Added SendEnv DRAGON__* to existing Host * block in ~/.ssh/config"
-    else
-        # No Host * block — append one.
-        printf '\nHost *\n%s\n' "$send_line" >> "$ssh_config"
-        success "Appended Host * block with SendEnv DRAGON__* to ~/.ssh/config"
+    # Old install (no marker) — remove bare line before re-adding with markers.
+    if grep -qF "SendEnv DRAGON__*" "$ssh_config" 2>/dev/null; then
+        sed -i '/SendEnv DRAGON__\*/d' "$ssh_config"
+        info "Migrated existing SendEnv DRAGON__* to marker-wrapped stanza"
     fi
+
+    printf '\n%s\nHost *\n    SendEnv DRAGON__*\n%s\n' "$marker_begin" "$marker_end" >> "$ssh_config"
+    chmod 600 "$ssh_config"
+    success "Added SendEnv DRAGON__* to ~/.ssh/config"
 }
 
 _install_ssh_sendenv
