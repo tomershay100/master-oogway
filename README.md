@@ -132,7 +132,7 @@ These only add new commands and never change existing behavior.
 | `mo-git` | git aliases, repo summary, and fuzzy branch/log pickers |
 | `mo-navigation` | directory navigation helpers — mkcd, up, tmpcd, fcd |
 | `mo-network` | natip (public IP lookup) and sshto (fuzzy SSH host picker) |
-| `mo-lan-ssh` | `s-<host>` aliases + ssh tab-completion for every SSH host discovered on your LAN (auto-refreshed) |
+| `mo-lan-ssh` | bare-`<host>` aliases (fallback `s-<host>` on name collision) + ssh tab-completion for every SSH host discovered on your LAN (auto-refreshed) |
 | `mo-process` | psgrep (search processes), port (what's on a port), fkill (fuzzy kill) |
 | `mo-search` | grep aliases, find shortcut, and fuzzy history/man/ripgrep pickers |
 | `mo-shell-tools` | shell inspection and config helpers — h, ?, cwhich, vwhich, vizsh, soursh, please |
@@ -256,11 +256,11 @@ These only add new commands and never change existing behavior.
 
 ### mo-lan-ssh — LAN-wide SSH host discovery
 
-Auto-discovers every SSH-listening host on your LAN, defines an `s-<hostname>` alias per host, and feeds the hosts to zsh's ssh/scp tab-completion. Re-scans on its own when the cache is stale (default 24h TTL) or when you move to a different network.
+Auto-discovers every SSH-listening host on your LAN, defines a bare-`<hostname>` alias per host (or `s-<hostname>` if the bare name would clash with an existing command/alias/function/builtin/reserved-word), and feeds the hosts to zsh's ssh/scp tab-completion. Re-scans on its own when the cache is stale (default 24h TTL) or when you move to a different network.
 
 | Command | Description |
 |---------|-------------|
-| `s-<host>` | shorthand for `ssh <host>` (one per discovered host) |
+| `<host>` | shorthand for `ssh <host>` — one alias per discovered host (or `s-<host>` if the bare name conflicts) |
 | `mo-lan-ssh list` | print all known hosts (auto + manual, with `:port` if non-22, source tagged) |
 | `mo-lan-ssh refresh [--background]` | re-scan the LAN; `--background` returns immediately |
 | `mo-lan-ssh status` | show cache age, network ID, host counts (auto + manual), SSH config state |

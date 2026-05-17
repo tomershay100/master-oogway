@@ -167,7 +167,7 @@ plugins=(
     mo-files                   # extract, bak, sizeof, fp (fuzzy file picker)
     mo-search                  # grep aliases, f (find shortcut), fhist, fman, frg
     mo-network                 # natip (public IP), sshto (fuzzy SSH picker)
-    mo-lan-ssh                 # s-<host> aliases + ssh tab-completion for every LAN SSH host
+    mo-lan-ssh                 # bare-<host> (or s-<host> on collision) aliases + ssh completion for every LAN SSH host
     mo-process                 # psgrep, port, fkill (fuzzy process kill)
     mo-build                   # m (parallel make), mc (make clean)
     mo-dev                     # calc, epoch, serve (HTTP server), md2pdf

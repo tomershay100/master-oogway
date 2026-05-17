@@ -19,7 +19,7 @@ PROBE_PARALLEL="${MO_LAN_PROBE_PARALLEL:-20}"
 EXCLUDE="${MO_LAN_EXCLUDE:-}"
 TTL="${MO_LAN_TTL:-86400}"
 
-mkdir -p "${CACHE:h}"
+command mkdir -p "${CACHE:h}"
 
 # ── Network fingerprint (used to detect "laptop moved between LANs") ──────────
 
@@ -199,7 +199,7 @@ main() {
         echo "# TTL: ${TTL}s"
         echo "${probed}"
     } > "$tmp"
-    mv "$tmp" "$CACHE"
+    command mv "$tmp" "$CACHE"
 }
 
 main "$@"

@@ -1,7 +1,11 @@
-# Provides: per-LAN-host `s-<hostname>` aliases, ssh/scp tab completion, and a
-# managed ~/.ssh/config.d/lan-hosts (Port directive for non-22 listeners).
-# CLI: mo-lan-ssh list|refresh|status|setup|help.
-# Phase 1 — no ssh wrapper yet; key install is manual via ssh-copy-id.
+# Provides: per-LAN-host aliases for SSH targets — bare hostname when free,
+# `s-<hostname>` fallback when the bare name collides with an existing
+# command/alias/function/builtin. Tab-completion for ssh/scp/sftp/rsync.
+# Managed ~/.ssh/config.d/lan-hosts (Port directive for non-22 listeners).
+# CLI: mo-lan-ssh list|refresh|status|setup|add|remove|trust|forget|help.
+# An ssh wrapper auto-runs ssh-copy-id on first-password-prompt for LAN
+# hosts, and auto-purges changed host keys (LAN trust). Disable wrapper
+# with MO_LAN_AUTO_TRUST=false.
 #
 # Requires: dig (any one of strat_axfr/nmap/arp-scan/known_hosts for discovery)
 
@@ -125,7 +129,7 @@ _mo_lan_maybe_write_sshconf() {
     [[ -f "$_MO_LAN_SSH_SHA" ]] && last_sha=$(< "$_MO_LAN_SSH_SHA")
     [[ "$combined_sha" == "$last_sha" ]] && return
 
-    mkdir -p "$_MO_LAN_SSH_USER_CONFIG_DIR"
+    command mkdir -p "$_MO_LAN_SSH_USER_CONFIG_DIR"
     chmod 700 "$_MO_LAN_SSH_USER_CONFIG_DIR"
 
     local tmp="${_MO_LAN_SSH_OUTPUT}.tmp"
@@ -143,12 +147,27 @@ _mo_lan_maybe_write_sshconf() {
         done
     } > "$tmp"
     chmod 600 "$tmp"
-    mv "$tmp" "$_MO_LAN_SSH_OUTPUT"
+    command mv "$tmp" "$_MO_LAN_SSH_OUTPUT"
     print -- "$combined_sha" > "$_MO_LAN_SSH_SHA"
     _mo_lan_log "Wrote ${_MO_LAN_SSH_OUTPUT}"
 }
 
-# Apply the merged cache to the current shell: define s-<host> aliases,
+# Does `$1` already mean something in this shell? Checks every namespace
+# zsh resolves a bare word against: external commands on PATH, aliases,
+# functions, shell builtins, reserved words (if/for/select/…). Returns
+# 0 if any conflict; 1 otherwise.
+_mo_lan_name_conflicts() {
+    local n="$1"
+    (( ${+commands[$n]}  )) && return 0
+    (( ${+aliases[$n]}   )) && return 0
+    (( ${+functions[$n]} )) && return 0
+    (( ${+builtins[$n]}  )) && return 0
+    (( ${+reswords[$n]}  )) && return 0
+    return 1
+}
+
+# Apply the merged cache to the current shell: define <host> aliases (bare
+# hostname when no conflict, s-<host> prefix when the name is already taken),
 # rebuild the HOSTSET used by the ssh wrapper, feed zsh completion, and
 # rewrite the managed ssh-config file. Idempotent — safe to call multiple
 # times (subcommands like `add`/`remove`/`forget` re-call to take effect
@@ -157,11 +176,20 @@ _mo_lan_apply() {
     _mo_lan_load_caches
     (( ${#_MO_LAN_HOSTS[@]} == 0 )) && return
 
-    local h
-    # 1. s-<host> aliases — `s-` prefix guarantees zero conflict with anything.
-    #    alias re-definition is silent if already set.
+    typeset -gA _MO_LAN_ALIAS_NAMES=()   # hostname → actual alias name in this shell
+    local h alias_name
+    # 1. Aliases. Prefer the bare hostname for "just type momo" UX. Fall back
+    #    to s-<host> when the bare name conflicts with an existing command,
+    #    alias, function, builtin, or reserved word — so e.g. a LAN host named
+    #    `make` becomes `s-make`.
     for h in "${(@kon)_MO_LAN_HOSTS}"; do
-        alias -- "s-${h}=ssh ${h}"
+        if _mo_lan_name_conflicts "$h"; then
+            alias_name="s-${h}"
+        else
+            alias_name="$h"
+        fi
+        alias -- "${alias_name}=ssh ${h}"
+        _MO_LAN_ALIAS_NAMES[$h]="$alias_name"
     done
 
     # 2. Tab completion for ssh/scp/sftp/rsync via zsh's _hosts source.
@@ -390,12 +418,12 @@ _mo_lan_add() {
         return 1
     fi
 
-    mkdir -p "${_MO_LAN_SSH_MANUAL:h}"
+    command mkdir -p "${_MO_LAN_SSH_MANUAL:h}"
     # Strip any existing entry for this host, then append fresh.
     if [[ -f "$_MO_LAN_SSH_MANUAL" ]]; then
         local tmp="${_MO_LAN_SSH_MANUAL}.tmp"
         grep -vE "^${h}(:.*)?$" "$_MO_LAN_SSH_MANUAL" > "$tmp" 2>/dev/null || true
-        mv "$tmp" "$_MO_LAN_SSH_MANUAL"
+        command mv "$tmp" "$_MO_LAN_SSH_MANUAL"
     else
         echo "# mo-lan-ssh manual host overlay — edit freely; one host[:port] per line" \
             > "$_MO_LAN_SSH_MANUAL"
@@ -420,11 +448,12 @@ _mo_lan_remove() {
     fi
     local tmp="${_MO_LAN_SSH_MANUAL}.tmp"
     grep -vE "^${h}(:.*)?$" "$_MO_LAN_SSH_MANUAL" > "$tmp" 2>/dev/null || true
-    mv "$tmp" "$_MO_LAN_SSH_MANUAL"
+    command mv "$tmp" "$_MO_LAN_SSH_MANUAL"
 
     # Unalias only if the host won't reappear via the auto cache.
+    # Try both possible alias names — bare and s-prefixed.
     if ! grep -qE "^${h}(:.*)?$" "$_MO_LAN_SSH_CACHE" 2>/dev/null; then
-        unalias "s-${h}" 2>/dev/null
+        unalias "${h}" "s-${h}" 2>/dev/null
     fi
     _mo_lan_apply
     echo "Removed: $h from manual overlay"
@@ -457,14 +486,14 @@ _mo_lan_forget() {
     if [[ -f "$_MO_LAN_SSH_CACHE" ]] && grep -qE "^${h}(:.*)?$" "$_MO_LAN_SSH_CACHE" 2>/dev/null; then
         tmp="${_MO_LAN_SSH_CACHE}.tmp"
         grep -vE "^${h}(:.*)?$" "$_MO_LAN_SSH_CACHE" > "$tmp"
-        mv "$tmp" "$_MO_LAN_SSH_CACHE"
+        command mv "$tmp" "$_MO_LAN_SSH_CACHE"
         removed+=("auto-cache")
     fi
 
     if [[ -f "$_MO_LAN_SSH_MANUAL" ]] && grep -qE "^${h}(:.*)?$" "$_MO_LAN_SSH_MANUAL" 2>/dev/null; then
         tmp="${_MO_LAN_SSH_MANUAL}.tmp"
         grep -vE "^${h}(:.*)?$" "$_MO_LAN_SSH_MANUAL" > "$tmp"
-        mv "$tmp" "$_MO_LAN_SSH_MANUAL"
+        command mv "$tmp" "$_MO_LAN_SSH_MANUAL"
         removed+=("manual-overlay")
     fi
 
@@ -472,7 +501,8 @@ _mo_lan_forget() {
         removed+=("known_hosts")
     fi
 
-    unalias "s-${h}" 2>/dev/null
+    # Unalias both possible names — we don't track which one was used.
+    unalias "${h}" "s-${h}" 2>/dev/null
     _mo_lan_apply
 
     if (( ${#removed[@]} > 0 )); then
@@ -484,7 +514,7 @@ _mo_lan_forget() {
 }
 
 _mo_lan_setup() {
-    mkdir -p "$_MO_LAN_SSH_USER_CONFIG_DIR"
+    command mkdir -p "$_MO_LAN_SSH_USER_CONFIG_DIR"
     chmod 700 "$_MO_LAN_SSH_USER_CONFIG_DIR"
 
     if [[ ! -f "$_MO_LAN_SSH_USER_CONFIG" ]]; then
@@ -496,7 +526,7 @@ _mo_lan_setup() {
         local tmp="${_MO_LAN_SSH_USER_CONFIG}.tmp"
         { echo "Include config.d/*"; echo ""; cat "$_MO_LAN_SSH_USER_CONFIG"; } > "$tmp"
         chmod 600 "$tmp"
-        mv "$tmp" "$_MO_LAN_SSH_USER_CONFIG"
+        command mv "$tmp" "$_MO_LAN_SSH_USER_CONFIG"
         echo "Added 'Include config.d/*' to ${_MO_LAN_SSH_USER_CONFIG}"
     else
         echo "Include line already in ${_MO_LAN_SSH_USER_CONFIG}"
@@ -530,22 +560,23 @@ mo-lan-ssh() {
                 echo "mo-lan-ssh: no cache yet — run: mo-lan-ssh refresh" >&2
                 return 1
             fi
-            # Use the merged map so manual-wins applies + ports shown
+            # Read from _MO_LAN_ALIAS_NAMES (populated by the last apply)
+            # rather than re-running the conflict check — re-checking would
+            # detect our OWN aliases as conflicts and flag every host.
             _mo_lan_load_caches
-            local h p src
+            local h p src notes alias_name
             for h in "${(@kon)_MO_LAN_HOSTS}"; do
                 p="${_MO_LAN_PORTS[$h]:-22}"
-                # Mark source: manual / auto
                 if [[ -f "$_MO_LAN_SSH_MANUAL" ]] && grep -qE "^${h}(:.*)?$" "$_MO_LAN_SSH_MANUAL" 2>/dev/null; then
                     src="manual"
                 else
                     src="auto"
                 fi
-                if (( p == 22 )); then
-                    printf "%-30s  (%s)\n" "$h" "$src"
-                else
-                    printf "%-30s  (%s, port %s)\n" "$h" "$src" "$p"
-                fi
+                notes="$src"
+                (( p != 22 )) && notes="${notes}, port ${p}"
+                alias_name="${_MO_LAN_ALIAS_NAMES[$h]:-$h}"
+                [[ "$alias_name" != "$h" ]] && notes="${notes}, aliased as ${alias_name} (name conflicts)"
+                printf "%-30s  (%s)\n" "$h" "$notes"
             done
             ;;
         refresh)
