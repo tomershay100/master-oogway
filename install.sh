@@ -165,7 +165,7 @@ if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_
         _git_out=$(git clone --recurse-submodules "${REPO_URL}" "${INSTALL_DIR}" 2>&1) \
             || die "Clone failed:\n${_git_out}\n\nTo recover: rm -rf ${INSTALL_DIR} and re-run the install command."
     fi
-    exec bash "${INSTALL_DIR}/install.sh"
+    exec bash "${INSTALL_DIR}/install.sh" "$@"
 fi
 
 # ── Plugin submodule self-healing ──────────────────────────────────────────────
