@@ -306,14 +306,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 * **Resolved:** `mo-utils` plugin deleted. All 15 `_mo_require` call sites replaced with inline `command -v` checks. Each plugin is now fully self-contained with zero cross-plugin dependencies.
 
-#### H-2. `apt_install zsh` does not switch the user's login shell
+#### H-2. ✅ NOT APPLICABLE — shell switch handled by OMZ installer
 
-* **Severity:** 🟠 High (UX)
-* **Location:** `install.sh:358`
-* **Problem:** Installer ensures `zsh` is on PATH but never runs `chsh -s "$(command -v zsh)"`. README doesn't mention it either (`README.md:26-44`). OMZ's own installer prompts for it, but anything that goes wrong there leaves master-oogway looking broken.
-* **Impact:** First-time user on fresh Ubuntu finishes install, opens a new terminal, sees no change, and concludes the install failed.
-* **Recommendation:** After OMZ check, detect `$SHELL` (or `getent passwd "$USER" | cut -d: -f7`). If not zsh, prompt to `chsh -s "$(command -v zsh)"` with confirmation, or append it to the closing `todo_item` list.
-* **Suggested fix:** ~15 LOC + one README line.
+* **Resolved:** `install.sh` requires oh-my-zsh to be pre-installed and `die`s if it isn't. OMZ's own installer already prompts the user to `chsh` to zsh. By the time master-oogway runs, the shell is already switched (or the user explicitly declined).
 
 #### H-3. Plugin submodule self-healing only runs in dev mode
 
@@ -370,10 +365,7 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 * **Problem:** `local_dir="$(_script_dir)"` is parsed as a plain variable assignment (not `local`, which would error at file scope). Pollutes the global namespace and misleads readers.
 * **Recommendation:** Rename `_local_dir` or wrap the dev-mode block in a function with real `local`.
 
-#### M-2. README's "Installation" section omits the `chsh` step
-* **Location:** `README.md:26-44`
-* **Problem:** Same gap as H-2 on the docs side.
-* **Recommendation:** Add one line: "If `zsh` isn't already your default shell, run `chsh -s $(command -v zsh)` and log out/in."
+#### M-2. ✅ NOT APPLICABLE — see H-2; OMZ installer owns the shell-switch step
 
 #### M-3. Partial-clone recovery is cryptic
 * **Location:** `install.sh:154-163`
@@ -778,7 +770,7 @@ These are pure UX or robustness wins with minimal architectural impact. Recommen
 1. **H-1 / M-9 fix** — inline `_mo_require` fallback in every consumer plugin (5 LOC × 11 plugins). Closes a real cliff.
 2. **F-2 / M-32** — `MO_SAFE_MODE=1` env-gated plugin array. 10 LOC + README section. Unlocks debugging.
 3. **F-1** — `mo-help` command using existing `# Provides:` headers. ~50 LOC. Surfaces ~80% of the framework that users currently don't discover.
-4. **H-2 / M-2** — `chsh` step in installer + one README line.
+4. ~~**H-2 / M-2**~~ — not applicable; OMZ installer owns the shell-switch step.
 5. **H-3** — lift `_init_plugins` out of dev-mode branch.
 6. **H-4** — `frg` NUL-delim or filter `:` filenames.
 7. **H-5** — `typeset -g` instead of `export` for `DRAGON__*` defaults (audit, then ship).
