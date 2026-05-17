@@ -344,10 +344,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 ### 🟡 Medium-severity issues
 
-#### M-1. Top-level `local_dir=` assignment outside any function
-* **Location:** `install.sh:179`
-* **Problem:** `local_dir="$(_script_dir)"` is parsed as a plain variable assignment (not `local`, which would error at file scope). Pollutes the global namespace and misleads readers.
-* **Recommendation:** Rename `_local_dir` or wrap the dev-mode block in a function with real `local`.
+#### M-1. ✅ RESOLVED — `local_dir` renamed to `_MO_DEV_DIR`
+
+* **Resolved:** Renamed all 6 references. Uppercase signals global scope; underscore prefix signals internal. No behavior change.
 
 #### M-2. ✅ NOT APPLICABLE — see H-2; OMZ installer owns the shell-switch step
 

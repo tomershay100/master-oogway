@@ -199,22 +199,22 @@ fi
 # Symlinks the local clone → ~/.master-oogway/ so edits are live immediately.
 
 if _running_from_master_oogway_clone && ! _running_from_install_dir; then
-    local_dir="$(_script_dir)"
-    if [[ -L "${INSTALL_DIR}" && "$(readlink "${INSTALL_DIR}")" == "${local_dir}" ]]; then
+    _MO_DEV_DIR="$(_script_dir)"
+    if [[ -L "${INSTALL_DIR}" && "$(readlink "${INSTALL_DIR}")" == "${_MO_DEV_DIR}" ]]; then
         success "${INSTALL_DIR} already linked to this repo"
     elif [[ -L "${INSTALL_DIR}" ]]; then
         warn "${INSTALL_DIR} points elsewhere: $(readlink "${INSTALL_DIR}")"
-        if confirm "Re-link to ${local_dir}?"; then
-            ln -sfn "${local_dir}" "${INSTALL_DIR}"
-            success "Re-linked ${INSTALL_DIR} → ${local_dir}"
+        if confirm "Re-link to ${_MO_DEV_DIR}?"; then
+            ln -sfn "${_MO_DEV_DIR}" "${INSTALL_DIR}"
+            success "Re-linked ${INSTALL_DIR} → ${_MO_DEV_DIR}"
         else
             die "Aborted — ${INSTALL_DIR} still points to $(readlink "${INSTALL_DIR}")"
         fi
     elif [[ -e "${INSTALL_DIR}" ]]; then
         die "${INSTALL_DIR} exists and is not a symlink. Remove it and re-run."
     else
-        ln -s "${local_dir}" "${INSTALL_DIR}"
-        success "Linked ${INSTALL_DIR} → ${local_dir}"
+        ln -s "${_MO_DEV_DIR}" "${INSTALL_DIR}"
+        success "Linked ${INSTALL_DIR} → ${_MO_DEV_DIR}"
     fi
     _init_plugins
 fi
