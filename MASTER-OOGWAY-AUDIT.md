@@ -256,35 +256,155 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-| # | Location | Issue |
-|---|---|---|
-| L-1 | `install.sh:163` | `exec bash` drops `"$@"` and hardcodes `bash` |
-| L-2 | `install.sh:74-86` | `copy_file` doesn't preserve perms; asymmetric with `bak`'s `cp -a` |
-| L-11 | `omz-custom/themes/dragon/configure.zsh:34-39` | `_dragon_read_state` won't survive values containing `=` (no current bug) |
-| L-12 | `omz-custom/themes/dragon/configure.zsh:739` | `dragon-configure` doesn't warn when `$ZSH_THEME != dragon` |
-| L-13 | `omz-custom/themes/dragon/notifier.zsh:13-52` | `find . -name '*.zsh' -printf` walks tree on every shell start; could stat one sentinel |
-| L-14 | `omz-custom/themes/dragon/configure.zsh:662-675` | `_dragon_filter_changed_groups` confuses "differs from default" with "user-changed" — misleading after `--preset` switch |
-| L-15 | `omz-custom/plugins/mo-welcome/mo-welcome.plugin.zsh` | No `MO_WELCOME_QUIET` opt-out; multiple-pane spam |
-| L-16 | `omz-custom/plugins/mo-auto-ls` | Skips `/mnt/*` even for fast local mounts |
-| L-17 | `omz-custom/plugins/mo-safety-override:16` | `read -r ans` has no timeout |
-| L-18 | `omz-custom/plugins/mo-bat-override:14,18` | `pcat`/`pless` naming is non-obvious; document |
-| L-19 | `omz-custom/plugins/mo-eza-override:10` | `l`/`la` column-set differs between eza and ls fallback — document |
-| L-20 | `omz-custom/plugins/mo-network` | `Include` directives in `~/.ssh/config` not recursively resolved (comment acknowledges) |
-| L-21 | `omz-custom/plugins/mo-network` | `natip` has no `-6` IPv6 flag |
-| L-22 | `omz-custom/plugins/mo-files:63,76` | `extract` accepts symlinks; `gunzip` modifies the symlink target |
-| L-23 | `omz-custom/plugins/mo-files:95` | `bak ts=$(date +%N)` computed once outside loop — collisions possible |
-| L-24 | `omz-custom/plugins/mo-process:30` | `port N` for both-TCP-UDP shows UDP without state filter |
-| L-25 | `omz-custom/plugins/mo-navigation:25-28` | `up N` past root silently lands at `/` |
-| L-26 | `omz-custom/plugins/mo-cli:24-39` | `_mo_check` defined inside `_mo_doctor` as a global; leaks on Ctrl+C between def and `unset -f` |
-| L-27 | `omz-custom/plugins/mo-cli:72-74` | `master-oogway uninstall` no extra confirm (relies on `install.sh --uninstall`) |
-| L-28 | `omz-custom/plugins/mo-dev:65` | `serve` symlink traversal enabled by default |
-| L-29 | `omz-custom/plugins/mo-dev:97,103` | `md2pdf` doesn't pre-check pandoc/xelatex/JetBrains Mono |
-| L-30 | `omz-custom/plugins/mo-git:32` | `gsum` lacks `-C` support |
-| L-31 | `omz-custom/plugins/mo-git:60-63` | `fbranch` preview assumes `main`/`master` exists |
-| L-32 | `omz-custom/plugins/mo-lan-ssh:251,267,292` | `command ssh` wrapper doesn't `exec` on no-op pass-through |
-| L-33 | `omz-custom/plugins/mo-shell-tools:28` | `please` loses quoting via `$(fc -ln -1)`; doesn't detect existing `sudo` prefix |
-| L-34 | `omz-custom/plugins/mo-colorize-override` | No `rip`/`rdiff` escape-hatch aliases for scripts |
-| L-35 | `omz-custom/plugins/mo-process` | `psgrep` calls `pgrep` without inline precheck |
+#### L-11. `_dragon_read_state` splits on first `=` only — latent breakage for values containing `=`
+
+* **Location:** `omz-custom/themes/dragon/configure.zsh:34-39`
+* **Problem:** The state-file parser does `key="${line%%=*}" val="${line#*=}"`. `%%=*` strips the longest suffix starting with `=` (correct for the key), but `#*=` strips only the first `=` and keeps everything after it. For a value like `DRAGON__SOME_VAR=foo=bar`, the key parses correctly as `DRAGON__SOME_VAR` and the value parses correctly as `foo=bar`. **This is actually fine as-is.** The edge case that would break it is a key containing `=`, which is impossible since `DRAGON__*` variable names are `[A-Z_]+`. No current bug, and the pattern is a standard shell idiom. The audit entry is a latent-concern notice more than an actionable issue.
+* **Recommendation:** No change needed unless the state file format is extended to support non-`DRAGON__*` keys. Document the assumption in a comment.
+
+#### L-12. `dragon-configure` launches silently when `ZSH_THEME` is not `dragon`
+
+* **Location:** `omz-custom/themes/dragon/configure.zsh:739` (the `dragon-configure()` entry point)
+* **Problem:** The wizard runs, renders previews, and writes `~/.config/master-oogway/conf.zsh` even when the active theme is something other than `dragon`. The written `conf.zsh` has no effect until `ZSH_THEME=dragon` is set, but the user gets no indication of this. Someone who ran `dragon-configure` while testing a different theme would be confused when their changes don't appear.
+* **Recommendation:** At the top of `dragon-configure()`, after the `--help` check: `if [[ "$ZSH_THEME" != "dragon" ]]; then print -P "%F{yellow}[dragon]%f Warning: ZSH_THEME is '$ZSH_THEME', not 'dragon' — conf.zsh will have no effect until you switch themes.%f"; fi`. One warning line, no blocking.
+
+#### L-13. Notifier walks the entire themes directory tree on every shell start when mtime changed
+
+* **Location:** `omz-custom/themes/dragon/notifier.zsh:24-25`
+* **Problem:** The mtime guard (`stored_mtime == current_mtime`) skips the hash computation on the common path, but computing `current_mtime` itself requires `find "${themes_dir}" -name '*.zsh' -printf '%T@\n' | sort -n | tail -1` — a full directory walk that forks `find`, `sort`, and `tail` on every shell open. The guard avoids the hash, but not the stat scan. On most shell opens the mtime will match and `current_hash` is never computed, so the cost is just the `find` walk. On slow filesystems (NFS, encrypted home, Raspberry Pi SD card) this is measurable.
+* **Recommendation:** Stat a single sentinel file instead (e.g., the schema file, which changes whenever a new variable is added): `current_mtime=$(stat -c '%Y' "${themes_dir}/schema.zsh" 2>/dev/null)`. One stat instead of a recursive find + sort pipeline.
+
+#### L-14. `_dragon_filter_changed_groups` marks groups as "changed" when they merely differ from defaults, not when the user actually edited them
+
+* **Location:** `omz-custom/themes/dragon/configure.zsh:662-675`
+* **Problem:** The function compares `_DRAGON_CURRENT[$var]` against `_DRAGON_DEFAULTS[$var]`. After a `--preset` switch, every variable the preset touched now differs from the factory default — so all those groups are flagged "changed" even though the user never touched them via the wizard. In the `--new-only` wizard flow, this means the user sees every preset-touched group in the "changed" list alongside their real customizations. The two concepts — "differs from factory default" and "user explicitly edited" — are conflated.
+* **Recommendation:** Track user edits separately in the state file (`user_edited_groups=...`) and use that for the `--new-only` filter. The current comparison is correct for "show only non-default groups" but not for "show only user-customized groups."
+
+#### L-15. `mo-welcome` banner prints on every new pane with no opt-out
+
+* **Location:** `omz-custom/plugins/mo-welcome/mo-welcome.plugin.zsh`
+* **Problem:** The banner runs unconditionally on every interactive shell open. In a tmux session with 6 panes, it prints 6 times. There is no `MO_WELCOME_QUIET=1` env var, no `SHLVL` guard, and no check for whether stdin is a terminal. A user who opens many panes quickly finds the banner more noise than signal.
+* **Recommendation:** Add a guard: `[[ "${MO_WELCOME_QUIET:-0}" == "1" || "$SHLVL" -gt 1 ]] && return`. `SHLVL` is 1 in the first shell opened in a terminal window and increments for every nested shell or new pane — checking `> 1` suppresses the banner in all panes except the first. `MO_WELCOME_QUIET=1` in `~/.zshenv` gives a manual escape hatch.
+
+#### L-16. `mo-auto-ls` skips all `/mnt/*` paths, including fast local mounts
+
+* **Location:** `omz-custom/plugins/mo-auto-ls/mo-auto-ls.plugin.zsh:7-9`
+* **Problem:** The skip list `case "$PWD" in /mnt/*|/media/*|/run/user/*/gvfs/*)` is designed to avoid triggering `ls` on slow or remote mounts (network drives, FUSE filesystems, phone MTP mounts). But `/mnt/` is also commonly used for fast local bind-mounts, loopback mounts, and LVM volumes. A user who mounts a local ext4 partition at `/mnt/data` and `cd`s there gets no auto-ls despite the mount being instant.
+* **Recommendation:** The skip list is a reasonable heuristic but worth documenting. A more precise alternative is to skip only mounts whose filesystem type is known-slow: `findmnt -n -o FSTYPE --target "$PWD"` and skip if it's `nfs`, `cifs`, `fuse`, `gvfs`, etc. However, that adds a fork per `cd`. Documenting the current behavior and adding `/mnt/` to the list of paths users can override via `custom-zsh/` is the lighter fix.
+
+#### L-17. `_confirm_reboot` blocks forever — `read -r ans` has no timeout
+
+* **Location:** `omz-custom/plugins/mo-safety-override/mo-safety-override.plugin.zsh:16`
+* **Problem:** When `reboot` is typed in an automated or semi-interactive context where stdin is connected but not actively monitored (e.g., a terminal left open in a script that's waiting on the user), the confirmation `read` hangs indefinitely. There is no `read -t N` timeout, so the system stays up silently waiting. In a real reboot scenario this is fine, but in automation it's a footgun.
+* **Recommendation:** `read -r -t 30 ans || { echo "Timed out — reboot cancelled."; return 1; }`. 30 seconds is generous for an interactive user and safe for automation.
+
+#### L-18. `pcat` and `pless` alias names are undocumented and non-obvious
+
+* **Location:** `omz-custom/plugins/mo-bat-override/mo-bat-override.plugin.zsh:14,18`
+* **Problem:** `pcat` (bat with full style — headers, line numbers, git diff markers) and `pless` (bat with pager, plain style) are useful but their names don't follow any discoverable convention. A user reading `# Provides:` would see `cat/less` overrides listed but `pcat`/`pless` are invisible until they grep the plugin source. The `p` prefix is not explained anywhere.
+* **Recommendation:** Either add `pcat` and `pless` explicitly to the `# Provides:` header, or rename to `bat-full` / `bat-paged` which are self-describing. At minimum, add a one-line comment above each alias explaining the intent.
+
+#### L-19. `l` and `la` have different column sets depending on whether eza is installed
+
+* **Location:** `omz-custom/plugins/mo-eza-override/mo-eza-override.plugin.zsh:10,18`
+* **Problem:** With eza: `l="eza -F -l --no-user --smart-group --time-style=long-iso"` (no owner). Without eza: `l="ls -goth --time-style=long-iso"` (shows owner via `-o`). The columns shown are subtly different between the two paths, meaning the same alias behaves differently depending on whether eza is installed. A user who migrates machines and loses eza gets unexpected output from familiar aliases.
+* **Recommendation:** Document this in the plugin header comment so users aren't surprised. A stricter fix would align the column set explicitly via `ls` flags to match eza's output, but that's cosmetic and probably not worth the effort.
+
+#### L-20. `sshto` doesn't resolve `Include` directives in `~/.ssh/config`
+
+* **Location:** `omz-custom/plugins/mo-network/mo-network.plugin.zsh:21-23`
+* **Problem:** `sshto` parses `~/.ssh/config` and `~/.ssh/config.d/*` with a plain `awk` regex that finds `Host` lines. OpenSSH's `Include` directive can pull in additional config files; `sshto` doesn't follow those. A user with `Include ~/.ssh/work-hosts` in their main config will not see those hosts in the fuzzy picker. The plugin already acknowledges this with a comment.
+* **Recommendation:** The proper fix is `ssh -G <placeholder>` which resolves the full config including includes, but that requires a hostname. Alternatively, recursively follow `Include` lines in the awk script. The comment acknowledgment is good; the gap is real but narrow (most users keep their hosts directly in `~/.ssh/config.d/`).
+
+#### L-21. `natip` has no IPv6 flag
+
+* **Location:** `omz-custom/plugins/mo-network/mo-network.plugin.zsh:4-7`
+* **Problem:** `natip` hardcodes `ifconfig.me` which returns an IPv4 address. There is no `-6` flag to request the public IPv6 address. On dual-stack networks where the user wants to verify their IPv6 NAT64 or public IPv6, `natip` is unhelpful.
+* **Recommendation:** `natip -6` could use `curl -s --max-time 5 -6 ifconfig.me` or an IPv6-specific endpoint like `ipv6.icanhazip.com`. One extra flag, minimal code.
+
+#### L-22. `extract` accepts symlinks — `gunzip` modifies the symlink target
+
+* **Location:** `omz-custom/plugins/mo-files/mo-files.plugin.zsh:63,76`
+* **Problem:** The `[[ ! -f "$file" ]]` guard at line 63 returns true for symlinks (symlinks to regular files pass `-f`). For most formats this is harmless — `tar`, `unzip`, `7z` read the file and write a new directory. But `gunzip` (the `.gz` case) decompresses **in place**, replacing the file with its uncompressed content. If `$file` is a symlink, `gunzip` replaces the symlink target, modifying a file the user may not have intended to touch.
+* **Recommendation:** Add a `-L "$file"` symlink check with a warning before the `gunzip` branch: `[[ -L "$file" ]] && { echo "extract: '$file' is a symlink — gunzip would modify the target. Use 'gunzip $(realpath "$file")' explicitly." >&2; failed=1; continue; }`.
+
+#### L-23. `bak` computes the timestamp once outside the loop — parallel calls collide
+
+* **Location:** `omz-custom/plugins/mo-files/mo-files.plugin.zsh:95`
+* **Problem:** `ts=$(date +%Y%m%d_%H%M%S_%N)` runs once before the `for f in "$@"` loop. If the user runs `bak a b c`, all three backups get the identical timestamp: `a.bak.20260517_213300_000000000`, `b.bak.20260517_213300_000000000`, `c.bak.20260517_213300_000000000`. The nanosecond field (`%N`) makes real-world collisions extremely unlikely on one call, but if the filesystem doesn't support sub-second precision (FAT32, some NFS exports), `%N` returns `000000000` and all three names are truly identical — `cp -av` would overwrite them in sequence, leaving only the last file's backup.
+* **Recommendation:** Move `ts=$(date ...)` inside the loop body so each file gets its own timestamp. The loop is short (user-supplied files), so the extra `date` fork per file is negligible.
+
+#### L-24. `port` passes `-sTCP:LISTEN` to lsof but UDP entries bypass the state filter
+
+* **Location:** `omz-custom/plugins/mo-process/mo-process.plugin.zsh:30`
+* **Problem:** `lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN` applies the LISTEN-state filter only to TCP entries. UDP is connectionless and has no LISTEN state; lsof shows all UDP sockets on the port regardless of the `-sTCP:LISTEN` flag. For port 53 (DNS), this correctly shows both the TCP listener and the UDP socket. But for a port with only a UDP socket in a transient state (e.g., a client socket that happened to use the same ephemeral port), it would appear in the output, which may confuse the user into thinking something is "listening" when it isn't.
+* **Recommendation:** For UDP the closest equivalent filter is `-sUDP:Idle` or simply accepting that all UDP socket appearances are reported. Add a note in the `--help` output: "UDP sockets are shown without state filtering (UDP is connectionless)."
+
+#### L-25. `up N` past the filesystem root silently lands at `/`
+
+* **Location:** `omz-custom/plugins/mo-navigation/mo-navigation.plugin.zsh:25-28`
+* **Problem:** `up 10` from `/home/user/projects` constructs `../../../../../../../../../../..` (10 levels up) and calls `cd` on it. zsh's `cd` clamps at `/`, so the user ends up at `/` regardless. No error, no message. A user who mistypes `up 10` instead of `up 1` gets silently deposited at the root.
+* **Recommendation:** Cap the level at the current depth: `local max_depth=$(( ${#${(s:/:)PWD}} )); (( $1 > max_depth )) && { echo "up: can only go up ${max_depth} level(s) from here" >&2; return 1; }`.
+
+#### L-26. `_mo_check` is defined as a global function inside `_mo_doctor`, leaking if interrupted
+
+* **Location:** `omz-custom/plugins/mo-cli/mo-cli.plugin.zsh:24-39`
+* **Problem:** `_mo_doctor` defines `_mo_check` as a regular function inside its body, then calls `unset -f _mo_check` at line 65. If the user presses Ctrl+C between the function definition (line 24) and the `unset -f` call (line 65), `_mo_check` remains defined as a global function in the shell for the rest of the session. This is a minor leak — the function does nothing harmful if called directly — but it pollutes the function namespace.
+* **Recommendation:** Use `function _mo_check { ... }` inside a subshell, or define it as a local function using zsh's `local -f` pattern. Simplest fix: wrap the entire `_mo_doctor` body in `() { ... }` (anonymous subshell) so all internal function definitions are discarded on exit regardless of how the function terminates.
+
+#### L-27. `master-oogway uninstall` has no in-shell confirmation before delegating to `install.sh --uninstall`
+
+* **Location:** `omz-custom/plugins/mo-cli/mo-cli.plugin.zsh:72-74`
+* **Problem:** `master-oogway uninstall` immediately execs `install.sh --uninstall` with no "are you sure?" prompt in the CLI dispatcher itself. `install.sh --uninstall` does prompt the user for destructive steps (removing the cloned repo), but a user who accidentally types `master-oogway uninstall` instead of `master-oogway update` gets the uninstall flow without a moment to abort before the first prompt appears.
+* **Recommendation:** Add a `confirm "This will remove master-oogway from your system. Continue?"` call in the CLI dispatcher before exec-ing the installer. One line, same `confirm` helper already used in `install.sh`.
+
+#### L-28. `serve` enables symlink traversal by default
+
+* **Location:** `omz-custom/plugins/mo-dev/mo-dev.plugin.zsh:65`
+* **Problem:** `python3 -m http.server` follows symlinks by default. A user who runs `serve` in a directory that contains a symlink pointing outside the served tree (e.g., `ln -s /etc/passwd passwd`) exposes that target file to anyone who can reach the server. The default bind is `127.0.0.1` which limits exposure to localhost, but the `SERVE_BIND` env var allows binding to `0.0.0.0` for LAN sharing — at that point symlink traversal is a real information-disclosure risk.
+* **Recommendation:** Python's `http.server` has no built-in symlink-disable flag. The mitigation is the warning already printed when `bind != 127.0.0.1`, plus a note in the `--help` output that symlinks are followed. For a stricter fix, `python3 -c "..."` with a custom `SimpleHTTPRequestHandler` that overrides `translate_path` to reject out-of-tree paths.
+
+#### L-29. `md2pdf` invokes pandoc without pre-checking its dependencies
+
+* **Location:** `omz-custom/plugins/mo-dev/mo-dev.plugin.zsh:97,103`
+* **Problem:** `md2pdf` calls `pandoc --pdf-engine=xelatex -V monofont="JetBrains Mono"` without first checking that `pandoc`, `xelatex`, or `JetBrains Mono` are available. Missing `pandoc` → a clear error. Missing `xelatex` → a cryptic LaTeX engine error buried in pandoc output. Missing `JetBrains Mono` → pandoc succeeds but falls back to a different monospace font silently, producing a PDF that looks different from what the user expected.
+* **Recommendation:** Add three pre-checks: `command -v pandoc`, `kpsewhich xelatex` (or `command -v xelatex`), and `fc-list | grep -qi 'JetBrains Mono'`. Print a clear actionable error for each missing piece before running pandoc.
+
+#### L-30. `gsum` doesn't support `-C <path>` to run against a different repo
+
+* **Location:** `omz-custom/plugins/mo-git/mo-git.plugin.zsh:32`
+* **Problem:** `gsum` only operates on `$PWD`. There is no `-C <dir>` flag to inspect a repo without `cd`-ing into it, unlike `git` itself which accepts `-C` everywhere. A user who wants a summary of a sibling repo without leaving their current directory has no shorthand.
+* **Recommendation:** Accept an optional `-C <dir>` first argument: `local dir="."; if [[ "${1:-}" == "-C" ]]; then dir="$2"; shift 2; fi`. Pass `git -C "$dir"` to all subsequent git calls in the function.
+
+#### L-31. `fbranch` falls back to `main` if `origin/HEAD` is unset — silently wrong for non-`main` repos
+
+* **Location:** `omz-custom/plugins/mo-git/mo-git.plugin.zsh:60-63`
+* **Problem:** `default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||') || default_branch="main"`. If `origin/HEAD` isn't set (common for repos cloned with `--no-single-branch` or older git versions), the fallback is hardcoded `main`. For repos whose default branch is `master`, `develop`, or anything else, the fzf preview `git log HEAD..main --oneline` shows nothing or errors. The user sees an empty diff preview for every branch.
+* **Recommendation:** Try `origin/HEAD` first, then fall back to `git remote show origin | grep 'HEAD branch'` (slower, makes a network call), or ask git directly: `git symbolic-ref --short HEAD` as a last resort gives the current branch, not the default — not ideal. A pragmatic fix: try `origin/main`, then `origin/master`, then current branch: `for b in main master; do git rev-parse --verify "origin/$b" &>/dev/null && { default_branch="$b"; break; }; done`.
+
+#### L-32. `_mo_lan_ssh_wrapper` pass-through branches don't `exec ssh`
+
+* **Location:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:251,267,292`
+* **Problem:** The three early-return pass-through branches (non-interactive stdin, `MO_LAN_AUTO_TRUST=false`, non-LAN host) all do `command ssh "$@"; return`. This means the wrapper function runs in the parent shell process and `ssh` runs as a child. The `return` after `command ssh` is redundant since the function returns 0 after ssh exits regardless, but more importantly, the parent shell stays alive waiting for the child. Using `exec command ssh "$@"` instead would replace the wrapper with the ssh process, saving one process-table slot and returning the correct exit code directly.
+* **Recommendation:** Change the three `command ssh "$@"; return` pass-throughs to `exec command ssh "$@"`. Only the wrapped path (where post-ssh logic runs) should keep `command ssh` without `exec`.
+
+#### L-33. `please` loses argument quoting and doesn't detect an existing `sudo` prefix
+
+* **Location:** `omz-custom/plugins/mo-shell-tools/mo-shell-tools.plugin.zsh:28`
+* **Problem:** `alias please='sudo $(fc -ln -1)'`. Two issues: (1) `$(fc -ln -1)` captures the last command as a string and word-splits it when the alias expands — arguments with spaces (e.g., `grep "hello world" file`) are broken into separate words. The correct approach is `eval "sudo $(fc -ln -1)"` or using `fc -e` with a proper rerun mechanism. (2) If the last command already started with `sudo`, `please` prepends another `sudo`, producing `sudo sudo <cmd>` which is harmless but silly.
+* **Recommendation:** Replace the alias with a function: detect `sudo` prefix, use `${(z)$(fc -ln -1)}` (zsh word-splitting that respects quoting) to reconstruct the arguments safely, then `sudo "${cmd_array[@]}"`.
+
+#### L-34. `mo-colorize-override` provides no escape-hatch aliases for `ip` and `diff`
+
+* **Location:** `omz-custom/plugins/mo-colorize-override/mo-colorize-override.plugin.zsh`
+* **Problem:** The plugin overrides `ip` and `diff` with `--color=auto`. Unlike the other override plugins (`mo-bat-override`, `mo-eza-override`, `mo-safety-override`) which all provide `r*` escape-hatch aliases (`rcat`, `rls`, `rcp`, `rmv`), this plugin provides no `rip` or `rdiff` escape hatches. A script or pipeline that needs raw (uncolored) `ip` or `diff` output has no clean way to bypass the override without calling the full binary path (`/usr/bin/ip`) or disabling color via flags.
+* **Recommendation:** Add `alias rip='\ip'` and `alias rdiff='\diff'` for consistency with the rest of the override plugin convention.
+
+#### L-35. `psgrep` calls `pgrep` without a dependency precheck
+
+* **Location:** `omz-custom/plugins/mo-process/mo-process.plugin.zsh:4-11`
+* **Problem:** `psgrep` calls `pgrep -lif "$1"` with no `command -v pgrep` check beforehand. On a minimal system where `pgrep` isn't installed (it's part of `procps`, which is standard on Ubuntu but not on all Linux variants), `psgrep` would emit a cryptic `pgrep: command not found` error with no install hint. This is inconsistent with `fkill` (same file) which does check for `fzf` before calling it.
+* **Recommendation:** Add `command -v pgrep &>/dev/null || { echo "psgrep: pgrep not installed (try: sudo apt install procps)" >&2; return 1; }` at the top of the function body.
 
 ---
 
@@ -491,4 +611,4 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ---
 
-*Open issues: 27 🟢 Low. Feature proposals: 22. Audited: 5,729 LOC across 41 files.*
+*Open issues: 25 🟢 Low. Feature proposals: 22. Audited: 5,729 LOC across 41 files.*
