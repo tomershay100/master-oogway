@@ -411,10 +411,9 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 * **Fixed:** Both `__add_separator_between_left_segments` and `__add_separator_between_right_segments` now assign `${XTERM_COLOR:-$TERMINAL_BACKGROUND_COLOR}` back to the local color variable after lookup, so comparisons always use the normalized form.
 
-#### M-23. `_dragon_render_preview` env-leak on Ctrl+C
-* **Location:** `omz-custom/themes/dragon/configure.zsh:201-260`
-* **Problem:** Exports `_DRAGON_CURRENT` vars into parent shell; cleanup runs only on normal exit. Ctrl+C during the preview's `zsh -c` leaves exports in the parent.
-* **Recommendation:** Spawn preview as a subshell `( ... )` so cleanup is automatic.
+#### M-23. ✅ `_dragon_render_preview` — wrapped in subshell to prevent env-leak
+
+* **Fixed:** Entire function body wrapped in `( ... )`. All exports (`DRAGON__*`, `SSH_TTY`, `VCS_STATUS_*`) are automatically discarded when the subshell exits, including on Ctrl+C. Dead cleanup block removed.
 
 #### M-24. `__update_prompt` renders with stale `VCS_STATUS_*` after `cd`
 * **Location:** `omz-custom/themes/dragon/parts/transient.zsh:87-91`
