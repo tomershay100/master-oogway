@@ -369,25 +369,16 @@ Each plugin runs in the user's shell with full privilege. There is no sandboxing
 
 #### M-7. ⏭ SKIPPED — Unverified clones / GPG tag verification
 
-#### M-8. `bat`/`fdfind` etc. checked uniformly but no central capability cache
-* **Location:** Multiple plugins + install.sh + mo-cli doctor
-* **Problem:** `command -v bat` runs at ~13 sites independently. Fork overhead at shell start; no single source of truth.
-* **Recommendation:** `mo-utils` writes `~/.cache/master-oogway/capabilities.zsh` on first load (invalidated when `$PATH` mtime changes). Plugins consult `$MO_CAPS[bat]`; `doctor` reads from the same cache.
+#### M-8. ✅ NOT APPLICABLE — mo-utils removed; `command -v` is a shell built-in with hash-table cost, not a fork
 
-#### M-9. `mo-utils` removal not enforced (see also H-1)
-* **Location:** `omz-custom/plugins/mo-utils/mo-utils.plugin.zsh:2`
-* **Problem:** Documentation says "must be loaded first" but no enforcement.
-* **Recommendation:** Same fix as H-1 (fallback inline definition).
+#### M-9. ✅ NOT APPLICABLE — mo-utils removed entirely (H-1)
 
 #### M-10. No granular plugin enable/disable beyond editing `~/.zshrc`
 * **Location:** `zshrc.master-oogway:148-183`
 * **Problem:** Editing the marker-protected file triggers drift warning forever after.
 * **Recommendation:** Each plugin checks `[[ -e $HOME/.config/master-oogway/disabled/${0:t:r} ]] && return` as first line. 5 LOC × 21 plugins, no `~/.zshrc` edits needed for per-plugin disable.
 
-#### M-11. Alias collisions with single-letter commands
-* **Location:** mo-search (`f`), mo-eza-override (`l`), mo-shell-tools (`h`), mo-build (`m`), mo-git (`g*`)
-* **Problem:** Short aliases are convenient but conflict with user muscle memory and other dotfile ecosystems. Not documented as a single inventory.
-* **Recommendation:** Consolidate alias inventory in README. Add `MO_DISABLE_SHORT_ALIASES=true` honored by override plugins.
+#### M-11. ⏭ SKIPPED — Alias collisions with single-letter commands
 
 #### M-12. ✅ RESOLVED — `_confirm_reboot` now forwards `"$@"` to `command reboot`
 
