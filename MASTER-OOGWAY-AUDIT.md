@@ -268,30 +268,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 * **Problem:** `_mo_doctor` defines `_mo_check` as a regular function inside its body, then calls `unset -f _mo_check` at line 65. If the user presses Ctrl+C between the function definition (line 24) and the `unset -f` call (line 65), `_mo_check` remains defined as a global function in the shell for the rest of the session. This is a minor leak — the function does nothing harmful if called directly — but it pollutes the function namespace.
 * **Recommendation:** Use `function _mo_check { ... }` inside a subshell, or define it as a local function using zsh's `local -f` pattern. Simplest fix: wrap the entire `_mo_doctor` body in `() { ... }` (anonymous subshell) so all internal function definitions are discarded on exit regardless of how the function terminates.
 
-#### L-27. `master-oogway uninstall` has no in-shell confirmation before delegating to `install.sh --uninstall`
-
-* **Location:** `omz-custom/plugins/mo-cli/mo-cli.plugin.zsh:72-74`
-* **Problem:** `master-oogway uninstall` immediately execs `install.sh --uninstall` with no "are you sure?" prompt in the CLI dispatcher itself. `install.sh --uninstall` does prompt the user for destructive steps (removing the cloned repo), but a user who accidentally types `master-oogway uninstall` instead of `master-oogway update` gets the uninstall flow without a moment to abort before the first prompt appears.
-* **Recommendation:** Add a `confirm "This will remove master-oogway from your system. Continue?"` call in the CLI dispatcher before exec-ing the installer. One line, same `confirm` helper already used in `install.sh`.
-
-#### L-28. `serve` enables symlink traversal by default
-
-* **Location:** `omz-custom/plugins/mo-dev/mo-dev.plugin.zsh:65`
-* **Problem:** `python3 -m http.server` follows symlinks by default. A user who runs `serve` in a directory that contains a symlink pointing outside the served tree (e.g., `ln -s /etc/passwd passwd`) exposes that target file to anyone who can reach the server. The default bind is `127.0.0.1` which limits exposure to localhost, but the `SERVE_BIND` env var allows binding to `0.0.0.0` for LAN sharing — at that point symlink traversal is a real information-disclosure risk.
-* **Recommendation:** Python's `http.server` has no built-in symlink-disable flag. The mitigation is the warning already printed when `bind != 127.0.0.1`, plus a note in the `--help` output that symlinks are followed. For a stricter fix, `python3 -c "..."` with a custom `SimpleHTTPRequestHandler` that overrides `translate_path` to reject out-of-tree paths.
-
-#### L-29. `md2pdf` invokes pandoc without pre-checking its dependencies
-
-* **Location:** `omz-custom/plugins/mo-dev/mo-dev.plugin.zsh:97,103`
-* **Problem:** `md2pdf` calls `pandoc --pdf-engine=xelatex -V monofont="JetBrains Mono"` without first checking that `pandoc`, `xelatex`, or `JetBrains Mono` are available. Missing `pandoc` → a clear error. Missing `xelatex` → a cryptic LaTeX engine error buried in pandoc output. Missing `JetBrains Mono` → pandoc succeeds but falls back to a different monospace font silently, producing a PDF that looks different from what the user expected.
-* **Recommendation:** Add three pre-checks: `command -v pandoc`, `kpsewhich xelatex` (or `command -v xelatex`), and `fc-list | grep -qi 'JetBrains Mono'`. Print a clear actionable error for each missing piece before running pandoc.
-
-#### L-30. `gsum` doesn't support `-C <path>` to run against a different repo
-
-* **Location:** `omz-custom/plugins/mo-git/mo-git.plugin.zsh:32`
-* **Problem:** `gsum` only operates on `$PWD`. There is no `-C <dir>` flag to inspect a repo without `cd`-ing into it, unlike `git` itself which accepts `-C` everywhere. A user who wants a summary of a sibling repo without leaving their current directory has no shorthand.
-* **Recommendation:** Accept an optional `-C <dir>` first argument: `local dir="."; if [[ "${1:-}" == "-C" ]]; then dir="$2"; shift 2; fi`. Pass `git -C "$dir"` to all subsequent git calls in the function.
-
 #### L-31. `fbranch` falls back to `main` if `origin/HEAD` is unset — silently wrong for non-`main` repos
 
 * **Location:** `omz-custom/plugins/mo-git/mo-git.plugin.zsh:60-63`

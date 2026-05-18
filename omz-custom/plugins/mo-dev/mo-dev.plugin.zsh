@@ -79,6 +79,10 @@ function md2pdf() {
         echo "Usage: md2pdf <file.md> [file2.md ...]  (use -h for details)" >&2
         return 1
     fi
+    command -v pandoc   &>/dev/null || { echo "md2pdf: pandoc not installed (try: sudo apt install pandoc)" >&2; return 1; }
+    command -v xelatex  &>/dev/null || { echo "md2pdf: xelatex not installed (try: sudo apt install texlive-xetex)" >&2; return 1; }
+    fc-list 'JetBrains Mono' 2>/dev/null | grep -qi 'JetBrains' \
+        || echo "md2pdf: warning: JetBrains Mono font not found — output will use a fallback monospace font" >&2
     local failed=0
     for src in "$@"; do
         if [[ "${src##*.}" != "md" ]]; then
