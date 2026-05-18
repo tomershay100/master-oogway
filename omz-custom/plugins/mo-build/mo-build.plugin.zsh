@@ -1,4 +1,3 @@
-# Provides: m (parallel make with optional colormake+banner) and mc (make clean).
 # Requires: make. colormake and banner are optional — falls back to plain make.
 
 if command -v colormake &>/dev/null && command -v banner &>/dev/null; then

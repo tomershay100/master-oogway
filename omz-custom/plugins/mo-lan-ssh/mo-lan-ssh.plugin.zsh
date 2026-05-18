@@ -1,4 +1,3 @@
-# Provides: per-LAN-host aliases for SSH targets — bare hostname when free,
 # `s-<hostname>` fallback when the bare name collides with an existing
 # command/alias/function/builtin. Tab-completion for ssh/scp/sftp/rsync.
 # Managed ~/.ssh/config.d/lan-hosts (Port directive for non-22 listeners).

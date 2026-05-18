@@ -1,4 +1,3 @@
-# Provides: directory navigation helpers — mkcd, up, tmpcd, fcd.
 # Requires: fcd also requires fzf (skipped with an error if not installed).
 
 function mkcd() {

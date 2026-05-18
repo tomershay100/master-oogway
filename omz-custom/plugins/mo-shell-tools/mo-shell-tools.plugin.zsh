@@ -1,4 +1,3 @@
-# Provides: shell inspection and config helpers — h, ?, cwhich, vwhich, vizsh, soursh, zshtime, please (re-run last cmd with sudo), mo-where (find which plugin defines a command).
 
 alias h="history 50"                              # last 50 history entries
 

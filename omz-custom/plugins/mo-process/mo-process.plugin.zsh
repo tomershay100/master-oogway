@@ -1,4 +1,3 @@
-# Provides: psgrep (search processes), port (what's on a port), fkill (fuzzy kill).
 # Requires: fkill also requires fzf (skipped with an error if not installed).
 
 function psgrep() {

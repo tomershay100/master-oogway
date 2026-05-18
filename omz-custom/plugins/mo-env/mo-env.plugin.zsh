@@ -1,4 +1,3 @@
-# Provides: fenv — fuzzy browser and inline editor for environment variables.
 # Requires: fzf (skipped with an error if not installed).
 
 fenv() {

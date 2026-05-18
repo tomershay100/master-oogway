@@ -183,6 +183,17 @@ plugins=(
 
 source "$ZSH/oh-my-zsh.sh"
 
+# ── user plugins ───────────────────────────────────────────────────────────────
+# Drop a folder my-thing/my-thing.plugin.zsh into
+# ~/.config/master-oogway/custom-plugins/ to load it as a plugin — sourced
+# here, after oh-my-zsh and all built-in plugins.
+for __mo_plugin in "$HOME/.config/master-oogway/custom-plugins"/*(N/); do
+    __mo_name="${${__mo_plugin%/}:t}"
+    [[ -f "${__mo_plugin}${__mo_name}.plugin.zsh" ]] \
+        && source "${__mo_plugin}${__mo_name}.plugin.zsh"
+done
+unset __mo_plugin __mo_name
+
 # ── user post-plugin extensions ────────────────────────────────────────────────
 # Drop *.zsh files in ~/.config/master-oogway/custom-zsh/ to source them here,
 # after plugins and oh-my-zsh (good for aliases, functions, prompt tweaks).

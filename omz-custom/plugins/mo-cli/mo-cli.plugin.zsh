@@ -1,4 +1,3 @@
-# Provides: master-oogway CLI — update / uninstall / version / doctor / configure / edit / path / help.
 
 _MO_INSTALL_DIR="${HOME}/.master-oogway"
 

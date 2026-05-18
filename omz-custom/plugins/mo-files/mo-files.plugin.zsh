@@ -1,4 +1,3 @@
-# Provides: file management helpers — extract, bak, sizeof, fp.
 # Requires: fp also requires fzf (skipped with an error if not installed).
 
 # Tool name → apt package hint, used by extract() when a tool is missing.

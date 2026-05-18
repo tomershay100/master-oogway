@@ -1,4 +1,3 @@
-# Provides: grep aliases, find shortcut, and fuzzy history/man/ripgrep pickers.
 # Requires: fhist, fman, frg also require fzf (skipped with an error if not installed).
 # frg also requires rg (ripgrep).
 

@@ -1,4 +1,3 @@
-# Provides: eza as ls/ll/l/la/lsa/tree replacement.
 # Requires: eza (optional — falls back to ls --color if not installed)
 # Remove this file to use the system ls as-is.
 

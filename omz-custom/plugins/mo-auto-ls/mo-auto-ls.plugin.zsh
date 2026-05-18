@@ -1,4 +1,3 @@
-# Provides: auto-ls — runs ls automatically after every cd.
 # Works with whatever ls resolves to at runtime (plain ls, eza, etc.).
 # Load mo-eza-override before this plugin so auto-ls uses eza's ls.
 # Remove this file to disable automatic ls on directory change.

@@ -1,4 +1,3 @@
-# Provides: calc, epoch, serve, md2pdf — developer utility functions.
 # Requires: python3 for serve. bc for calc. pandoc + xelatex for md2pdf.
 
 function calc() {

@@ -1,4 +1,3 @@
-# Provides: bat as cat/less replacement with syntax highlighting.
 # Requires: bat or batcat (skipped silently if neither is installed)
 # Remove this file to use the system cat and less as-is.
 

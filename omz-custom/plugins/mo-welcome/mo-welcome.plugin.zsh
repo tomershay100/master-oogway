@@ -1,4 +1,3 @@
-# Provides: welcome banner — system snapshot printed on every shell open.
 
 # Wrapped in an anonymous function so locals don't leak into the shell.
 () {

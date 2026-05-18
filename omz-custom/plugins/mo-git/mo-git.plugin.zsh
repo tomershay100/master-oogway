@@ -1,4 +1,3 @@
-# Provides: git aliases, repo summary, and fuzzy branch/log pickers.
 # Requires: git. fbranch and flog also require fzf (skipped if not installed).
 
 alias ga="git add"

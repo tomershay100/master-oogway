@@ -1,4 +1,3 @@
-# Provides: safety overrides for cp, mv, mkdir, and reboot.
 # These change the default behavior of common system commands.
 # Remove this file to restore the original behavior of all four commands.
 # Escape-hatch aliases (rcp, rmv, rmkdir) bypass the overrides for scripting.

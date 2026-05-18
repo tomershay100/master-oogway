@@ -1,4 +1,3 @@
-# Provides: natip (public IP lookup) and sshto (fuzzy SSH host picker).
 # Requires: curl for natip. sshto also requires fzf and ~/.ssh/config (or ~/.ssh/config.d/*).
 
 natip() {
