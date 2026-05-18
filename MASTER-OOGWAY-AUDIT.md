@@ -267,25 +267,10 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 * **Design:** `DRAGON_LEFT_SEGMENTS=(ssh_prefix username … directory)` and `DRAGON_RPROMPT_SEGMENTS=(…)` arrays. `dragon__set_lprompt` iterates calling `dragon__set_$segment`. Users define function + append. Recovers ~40 LOC from `prompt.zsh`.
 * **Complexity:** M — **Risk:** Low
 
-#### F-10. `~/.master-oogway-user/plugins/` — first-class user plugin dir
-* **Value:** Extensibility
-* **Design:** Discovered by `~/.zshrc` and appended to `plugins=()`. Same convention. `mo-help` and `doctor` recognize them.
-* **Complexity:** M — **Risk:** Low (additive, opt-in)
-
-#### F-17. `master-oogway backup` / `restore`
-* **Value:** Robustness
-* **Design:** Tarball to `~/master-oogway-backup-YYYYMMDD.tar.gz`; restore reverses with confirmation.
-* **Complexity:** S — **Risk:** Low
-
 #### F-18. Terminal capability probe (`mo-term-detect`)
 * **Value:** UX (theme correctness out-of-box)
 * **Design:** Once per install: print 3 glyph rows (powerline, nerd-font, plain), ask "all render correctly?", persist answer, default `USE_NERD_FONT` accordingly.
 * **Complexity:** M — **Risk:** Medium
-
-#### F-19. Submodule SHA dashboard + auto-update workflow
-* **Value:** Robustness / supply-chain
-* **Design:** `master-oogway version --submodules` prints pinned SHA vs upstream HEAD per submodule. `master-oogway upgrade-plugins` interactive bumper.
-* **Complexity:** M — **Risk:** Low
 
 #### F-20. Hot-reload watcher (`mo-dev-watch`)
 * **Value:** Dev-XP (author + contributors)
@@ -388,4 +373,4 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ---
 
-*Open issues: 25 🟢 Low. Feature proposals: 8 (F-8, F-10, F-17–F-22). Audited: 5,729 LOC across 41 files.*
+*Open issues: 25 🟢 Low. Feature proposals: 5 (F-8, F-18, F-20, F-21, F-22). Audited: 5,729 LOC across 41 files.*
