@@ -657,7 +657,7 @@ HEADER
         return 1
     fi
 
-    mv "$tmp_file" "${_DRAGON_CONF_FILE}"
+    command mv "$tmp_file" "${_DRAGON_CONF_FILE}"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -777,7 +777,7 @@ EOF
             2>/dev/null > "${tmp_state}" || true
         printf 'dismissed_hash=%s\nthemes_mtime=%s\n' "${current_hash}" "${current_mtime}" \
             >> "${tmp_state}"
-        mv "${tmp_state}" "${_DRAGON_STATE_FILE}"
+        command mv "${tmp_state}" "${_DRAGON_STATE_FILE}"
         print -P "%F{green}✓%f Dragon notifier dismissed until next update."
         return 0
     fi
