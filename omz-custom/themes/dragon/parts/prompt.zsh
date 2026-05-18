@@ -52,7 +52,7 @@ dragon__set_lprompt()
 		dragon__set_multiline_new_line_prompt
 		curr_content="$FINAL_DRAGON__MULTILINE_NEW_LINE_SEPARATOR_CONTENT"
 		if [[ -n $curr_content ]]; then
-			__add_separator_between_left_segments " " "$TERMINAL_BACKGROUND_COLOR"
+			__add_separator_between_left_segments " " ""
 			PROMPT+="$left_prompt"
 			left_prompt=""
 			__add_separator_between_left_segments "$curr_content" "$DRAGON__PROMPT_SEPARATOR_BACKGROUND_COLOR"
@@ -60,7 +60,7 @@ dragon__set_lprompt()
 $left_prompt$curr_content"
 			left_prompt=""
 		else
-			__add_separator_between_left_segments " " "$TERMINAL_BACKGROUND_COLOR"
+			__add_separator_between_left_segments " " ""
 			PROMPT+="$left_prompt
 "
 			left_prompt=""
@@ -75,7 +75,7 @@ $left_prompt$curr_content"
 		dragon__set_multiline_last_line_prompt
 		curr_content="$FINAL_DRAGON__MULTILINE_LAST_LINE_SEPARATOR_CONTENT"
 		if [[ -n $curr_content ]]; then
-			__add_separator_between_left_segments " " "$TERMINAL_BACKGROUND_COLOR"
+			__add_separator_between_left_segments " " ""
 			PROMPT+="$left_prompt"
 			left_prompt=""
 			__add_separator_between_left_segments "$curr_content" "$DRAGON__PROMPT_SEPARATOR_BACKGROUND_COLOR"
@@ -83,7 +83,7 @@ $left_prompt$curr_content"
 $left_prompt$curr_content"
 			left_prompt=""
 		else
-			__add_separator_between_left_segments " " "$TERMINAL_BACKGROUND_COLOR"
+			__add_separator_between_left_segments " " ""
 			PROMPT+="$left_prompt
 "
 			left_prompt=""
@@ -94,7 +94,7 @@ $left_prompt$curr_content"
 	__add_separator_between_left_segments "$FINAL_PROMPT_CHAR_CONTENT" "$REAL_DRAGON__PROMPT_CHAR_BACKGROUND_COLOR"
 	left_prompt+="$FINAL_PROMPT_CHAR_CONTENT"
 
-	__add_separator_between_left_segments " " "$TERMINAL_BACKGROUND_COLOR"
+	__add_separator_between_left_segments " " ""
 
 	PROMPT+="$left_prompt"
 	left_prompt=""
