@@ -7,6 +7,7 @@ function psgrep() {
         echo "  Show running processes matching <name> (case-insensitive, full command line)."
         return
     fi
+    command -v pgrep &>/dev/null || { echo "psgrep: pgrep not installed (try: sudo apt install procps)" >&2; return 1; }
     pgrep -lif "$1"
 }
 

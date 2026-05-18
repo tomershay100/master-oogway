@@ -262,24 +262,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 * **Problem:** The three early-return pass-through branches (non-interactive stdin, `MO_LAN_AUTO_TRUST=false`, non-LAN host) all do `command ssh "$@"; return`. This means the wrapper function runs in the parent shell process and `ssh` runs as a child. The `return` after `command ssh` is redundant since the function returns 0 after ssh exits regardless, but more importantly, the parent shell stays alive waiting for the child. Using `exec command ssh "$@"` instead would replace the wrapper with the ssh process, saving one process-table slot and returning the correct exit code directly.
 * **Recommendation:** Change the three `command ssh "$@"; return` pass-throughs to `exec command ssh "$@"`. Only the wrapped path (where post-ssh logic runs) should keep `command ssh` without `exec`.
 
-#### L-33. `please` loses argument quoting and doesn't detect an existing `sudo` prefix
-
-* **Location:** `omz-custom/plugins/mo-shell-tools/mo-shell-tools.plugin.zsh:28`
-* **Problem:** `alias please='sudo $(fc -ln -1)'`. Two issues: (1) `$(fc -ln -1)` captures the last command as a string and word-splits it when the alias expands — arguments with spaces (e.g., `grep "hello world" file`) are broken into separate words. The correct approach is `eval "sudo $(fc -ln -1)"` or using `fc -e` with a proper rerun mechanism. (2) If the last command already started with `sudo`, `please` prepends another `sudo`, producing `sudo sudo <cmd>` which is harmless but silly.
-* **Recommendation:** Replace the alias with a function: detect `sudo` prefix, use `${(z)$(fc -ln -1)}` (zsh word-splitting that respects quoting) to reconstruct the arguments safely, then `sudo "${cmd_array[@]}"`.
-
-#### L-34. `mo-colorize-override` provides no escape-hatch aliases for `ip` and `diff`
-
-* **Location:** `omz-custom/plugins/mo-colorize-override/mo-colorize-override.plugin.zsh`
-* **Problem:** The plugin overrides `ip` and `diff` with `--color=auto`. Unlike the other override plugins (`mo-bat-override`, `mo-eza-override`, `mo-safety-override`) which all provide `r*` escape-hatch aliases (`rcat`, `rls`, `rcp`, `rmv`), this plugin provides no `rip` or `rdiff` escape hatches. A script or pipeline that needs raw (uncolored) `ip` or `diff` output has no clean way to bypass the override without calling the full binary path (`/usr/bin/ip`) or disabling color via flags.
-* **Recommendation:** Add `alias rip='\ip'` and `alias rdiff='\diff'` for consistency with the rest of the override plugin convention.
-
-#### L-35. `psgrep` calls `pgrep` without a dependency precheck
-
-* **Location:** `omz-custom/plugins/mo-process/mo-process.plugin.zsh:4-11`
-* **Problem:** `psgrep` calls `pgrep -lif "$1"` with no `command -v pgrep` check beforehand. On a minimal system where `pgrep` isn't installed (it's part of `procps`, which is standard on Ubuntu but not on all Linux variants), `psgrep` would emit a cryptic `pgrep: command not found` error with no install hint. This is inconsistent with `fkill` (same file) which does check for `fzf` before calling it.
-* **Recommendation:** Add `command -v pgrep &>/dev/null || { echo "psgrep: pgrep not installed (try: sudo apt install procps)" >&2; return 1; }` at the top of the function body.
-
 ---
 
 ## 7. Feature Proposals
