@@ -65,6 +65,19 @@ function extract() {
             failed=1
             continue
         fi
+        # .gz/.bz2/.xz/.zst (bare, not .tar.*) decompress in-place, replacing the source file.
+        # A symlink here would silently mutate the symlink target rather than the file in CWD.
+        if [[ -L "$file" ]]; then
+            case "$file" in
+                *.tar.*) ;; # tar reads non-destructively — symlinks are fine
+                *.gz|*.bz2|*.xz|*.zst)
+                    echo "extract: '$file' is a symlink — in-place decompression would modify the symlink target" >&2
+                    echo "  Run on the real file: $(realpath "$file")" >&2
+                    failed=1
+                    continue
+                    ;;
+            esac
+        fi
         local _tar_flags="--no-overwrite-dir --no-same-owner --no-same-permissions"
         case "$file" in
             *.tar.bz2)  _mo_extract_check tar     && tar xjf "$file"        ${=_tar_flags} || failed=1 ;;

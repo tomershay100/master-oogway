@@ -256,18 +256,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-#### L-21. `natip` has no IPv6 flag
-
-* **Location:** `omz-custom/plugins/mo-network/mo-network.plugin.zsh:4-7`
-* **Problem:** `natip` hardcodes `ifconfig.me` which returns an IPv4 address. There is no `-6` flag to request the public IPv6 address. On dual-stack networks where the user wants to verify their IPv6 NAT64 or public IPv6, `natip` is unhelpful.
-* **Recommendation:** `natip -6` could use `curl -s --max-time 5 -6 ifconfig.me` or an IPv6-specific endpoint like `ipv6.icanhazip.com`. One extra flag, minimal code.
-
-#### L-22. `extract` accepts symlinks — `gunzip` modifies the symlink target
-
-* **Location:** `omz-custom/plugins/mo-files/mo-files.plugin.zsh:63,76`
-* **Problem:** The `[[ ! -f "$file" ]]` guard at line 63 returns true for symlinks (symlinks to regular files pass `-f`). For most formats this is harmless — `tar`, `unzip`, `7z` read the file and write a new directory. But `gunzip` (the `.gz` case) decompresses **in place**, replacing the file with its uncompressed content. If `$file` is a symlink, `gunzip` replaces the symlink target, modifying a file the user may not have intended to touch.
-* **Recommendation:** Add a `-L "$file"` symlink check with a warning before the `gunzip` branch: `[[ -L "$file" ]] && { echo "extract: '$file' is a symlink — gunzip would modify the target. Use 'gunzip $(realpath "$file")' explicitly." >&2; failed=1; continue; }`.
-
 #### L-23. `bak` computes the timestamp once outside the loop — parallel calls collide
 
 * **Location:** `omz-custom/plugins/mo-files/mo-files.plugin.zsh:95`
