@@ -1,4 +1,4 @@
-# Provides: shell inspection and config helpers — h, ?, cwhich, vwhich, vizsh, soursh, zshtime, please (re-run last cmd with sudo).
+# Provides: shell inspection and config helpers — h, ?, cwhich, vwhich, vizsh, soursh, zshtime, please (re-run last cmd with sudo), mo-where (find which plugin defines a command).
 
 alias h="history 50"                              # last 50 history entries
 
@@ -45,6 +45,29 @@ zshtime() {
 # Uses ${(Q)${(z)...}} to split the history line into words respecting
 # quoting (e.g. grep "hello world" file stays three args, not four).
 # Strips a leading 'sudo' if the last command already had one.
+# Find which mo-* plugin defines a command (alias or function).
+# Prints plugin:line: content — e.g. "mo-git:12: alias gs='git status'"
+mo-where() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
+        echo "Usage: mo-where <name>"
+        echo "  Show which mo-* plugin defines <name> as an alias or function."
+        return
+    fi
+    local name="$1"
+    local dir="${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins"
+    local found=0 f plugin match
+    for f in "${dir}"/mo-*/*.plugin.zsh(N); do
+        plugin="${f:h:t}"
+        while IFS= read -r match; do
+            printf "%s:%s\n" "$plugin" "$match"
+            found=1
+        done < <(grep -nE \
+            "^alias ['\"]?${name}['\"]?=|^function ${name}([^a-zA-Z0-9_]|$)|^${name}[[:space:]]*\(\)" \
+            "$f" 2>/dev/null)
+    done
+    (( found == 0 )) && { echo "mo-where: '${name}' not found in any mo-* plugin" >&2; return 1; }
+}
+
 please() {
     local last
     last=$(fc -ln -1 2>/dev/null)
