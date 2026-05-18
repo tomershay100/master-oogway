@@ -256,18 +256,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-#### L-18. `pcat` and `pless` alias names are undocumented and non-obvious
-
-* **Location:** `omz-custom/plugins/mo-bat-override/mo-bat-override.plugin.zsh:14,18`
-* **Problem:** `pcat` (bat with full style — headers, line numbers, git diff markers) and `pless` (bat with pager, plain style) are useful but their names don't follow any discoverable convention. A user reading `# Provides:` would see `cat/less` overrides listed but `pcat`/`pless` are invisible until they grep the plugin source. The `p` prefix is not explained anywhere.
-* **Recommendation:** Either add `pcat` and `pless` explicitly to the `# Provides:` header, or rename to `bat-full` / `bat-paged` which are self-describing. At minimum, add a one-line comment above each alias explaining the intent.
-
-#### L-19. `l` and `la` have different column sets depending on whether eza is installed
-
-* **Location:** `omz-custom/plugins/mo-eza-override/mo-eza-override.plugin.zsh:10,18`
-* **Problem:** With eza: `l="eza -F -l --no-user --smart-group --time-style=long-iso"` (no owner). Without eza: `l="ls -goth --time-style=long-iso"` (shows owner via `-o`). The columns shown are subtly different between the two paths, meaning the same alias behaves differently depending on whether eza is installed. A user who migrates machines and loses eza gets unexpected output from familiar aliases.
-* **Recommendation:** Document this in the plugin header comment so users aren't surprised. A stricter fix would align the column set explicitly via `ls` flags to match eza's output, but that's cosmetic and probably not worth the effort.
-
 #### L-20. `sshto` doesn't resolve `Include` directives in `~/.ssh/config`
 
 * **Location:** `omz-custom/plugins/mo-network/mo-network.plugin.zsh:21-23`
