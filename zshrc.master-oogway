@@ -78,6 +78,7 @@ zstyle ':completion:*' menu select                                 # arrow-key n
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'          # case-insensitive matching
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"            # colorize the menu by file type
 zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'  # yellow header per group
+zstyle ':completion:*' group-name ''                               # keep each group's items under its own header
 
 # ── dragon theme config ────────────────────────────────────────────────────────
 # Sourced before oh-my-zsh so your overrides win over theme defaults.
