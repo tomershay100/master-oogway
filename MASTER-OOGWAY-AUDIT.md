@@ -262,18 +262,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### Ranked feature list
 
-#### F-1. `mo-help` / `master-oogway commands` — in-shell discovery surface ⭐
-* **Value:** UX (highest leverage; surfaces what already exists)
-* **Problem solved:** Users leave shell to remember what plugins/aliases exist; `# Provides:` headers never reach the user.
-* **Design:** Parse `# Provides:` lines and `^alias `/`^function ` declarations across `$ZSH_CUSTOM/plugins/mo-*/` on first invocation; cache. Colored two-column table (command → description). Optional substring/plugin filter.
-* **Complexity:** S (~50 LOC) — **Risk:** Very low
-
-#### F-2. Safe-mode bootstrapping (`MO_SAFE_MODE=1`) ⭐
-* **Value:** Robustness
-* **Problem solved:** Broken plugin or drop-in → no recovery path beyond editing `~/.zshrc`.
-* **Design:** Wrap plugin array + drop-in loops in `if [[ -z "$MO_SAFE_MODE" ]]`. Document `MO_SAFE_MODE=1 zsh` as the triage entry point.
-* **Complexity:** S (~10 LOC + docs) — **Risk:** Very low
-
 #### F-3. Plugin metadata header + `doctor` rewrite ⭐
 * **Value:** Robustness + extensibility
 * **Design:** Three-line header per plugin (`# mo-plugin:`, `# mo-deps:`, `# mo-desc:`). `master-oogway doctor` parses headers to compute dep report dynamically; eliminates the hardcoded list at `mo-cli.plugin.zsh:40-56`.
@@ -285,60 +273,15 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 * **Design:** `mo-utils` writes `~/.cache/master-oogway/capabilities.zsh` on first load (invalidated by `$PATH` mtime). Plugins consult `$MO_CAPS[bat]`.
 * **Complexity:** M (~120 LOC, careful invalidation) — **Risk:** Medium
 
-#### F-5. `master-oogway dump` — effective config snapshot
-* **Value:** Support / dev-XP
-* **Design:** Markdown-friendly dump of: version, install path, `$ZSH_THEME`, active plugins, all `DRAGON__*`, all `MO_*`, `doctor` output, git rev. Sanitize `MO_LAN_DNS_SERVER` etc. by default.
-* **Complexity:** S — **Risk:** Low
-
-#### F-6. `master-oogway profile-startup` — built-in startup profiler
-* **Value:** Performance + dev-XP
-* **Design:** Alias for `MO_ZPROF=1 zsh -ic exit` with `zmodload zsh/zprof` enabled when `$MO_ZPROF`.
-* **Complexity:** S — **Risk:** Very low
-
-#### F-7. `master-oogway bisect` — find the culprit plugin
-* **Value:** Dev-XP for end users
-* **Design:** Repeatedly spawn `MO_DISABLE=plugin1,plugin5 zsh -ic exit` measuring time/exit-code; halve the set each iteration. Depends on F-2.
-* **Complexity:** M — **Risk:** Low
-
 #### F-8. Pluggable segment registry for Dragon
 * **Value:** Power-user extensibility
 * **Design:** `DRAGON_LEFT_SEGMENTS=(ssh_prefix username … directory)` and `DRAGON_RPROMPT_SEGMENTS=(…)` arrays. `dragon__set_lprompt` iterates calling `dragon__set_$segment`. Users define function + append. Recovers ~40 LOC from `prompt.zsh`.
 * **Complexity:** M — **Risk:** Low
 
-#### F-9. `mo-where` — find which plugin defined a command
-* **Value:** Discoverability
-* **Design:** Grep `$ZSH_CUSTOM/plugins/mo-*/` for `^(alias|function) <name>`; print `mo-git:12: alias gs="git status"`.
-* **Complexity:** S (~30 LOC) — **Risk:** Very low
-
 #### F-10. `~/.master-oogway-user/plugins/` — first-class user plugin dir
 * **Value:** Extensibility
 * **Design:** Discovered by `~/.zshrc` and appended to `plugins=()`. Same convention. `mo-help` and `doctor` recognize them.
 * **Complexity:** M — **Risk:** Low (additive, opt-in)
-
-#### F-11. `master-oogway plugin enable/disable <name>`
-* **Value:** UX
-* **Design:** Drop-file `~/.config/master-oogway/disabled/<name>`; plugins check at top. CLI subcommand touches/removes file.
-* **Complexity:** S — **Risk:** Very low
-
-#### F-12. Environment-profile selector (`MO_PROFILE=desktop|server|pi|minimal`)
-* **Value:** UX + maintenance hygiene
-* **Design:** `~/.zshrc` switches `plugins=()` membership on `$MO_PROFILE` (default: `desktop`). Installer probes `$DISPLAY`, `/etc/rpi-issue`, `/.dockerenv` and writes a suggested value on first install.
-* **Complexity:** M — **Risk:** Medium (re-templates `~/.zshrc`; needs migration)
-
-#### F-13. `install.sh --dry-run`
-* **Value:** Onboarding / trust
-* **Design:** Print every file to create/modify/back-up, every sudo, every apt — without doing any.
-* **Complexity:** S — **Risk:** Low
-
-#### F-14. `dragon-configure --get VAR / --set VAR=VAL` non-interactive mode
-* **Value:** Power-user (Ansible / dotfiles bootstrap)
-* **Design:** Two new flags that read/write `conf.zsh` (already structured for sed-friendliness).
-* **Complexity:** S — **Risk:** Low
-
-#### F-15. Per-host config layer (`~/.config/master-oogway/conf.d/<hostname>.zsh`)
-* **Value:** UX for multi-host users
-* **Design:** Auto-source `conf.d/${HOST}.zsh` after `conf.zsh`. 3-line change to load path.
-* **Complexity:** S — **Risk:** Very low
 
 #### F-16. Async-evaluated user segments with TTL cache (Dragon)
 * **Value:** Power-user extensibility (p10k parity)
@@ -461,4 +404,4 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ---
 
-*Open issues: 25 🟢 Low. Feature proposals: 22. Audited: 5,729 LOC across 41 files.*
+*Open issues: 25 🟢 Low. Feature proposals: 11 (F-3, F-4, F-8, F-10, F-16–F-22). Audited: 5,729 LOC across 41 files.*
