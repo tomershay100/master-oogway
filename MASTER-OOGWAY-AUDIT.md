@@ -262,31 +262,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### Ranked feature list
 
-#### F-8. Pluggable segment registry for Dragon
-* **Value:** Power-user extensibility
-* **Design:** `DRAGON_LEFT_SEGMENTS=(ssh_prefix username … directory)` and `DRAGON_RPROMPT_SEGMENTS=(…)` arrays. `dragon__set_lprompt` iterates calling `dragon__set_$segment`. Users define function + append. Recovers ~40 LOC from `prompt.zsh`.
-* **Complexity:** M — **Risk:** Low
-
-#### F-18. Terminal capability probe (`mo-term-detect`)
-* **Value:** UX (theme correctness out-of-box)
-* **Design:** Once per install: print 3 glyph rows (powerline, nerd-font, plain), ask "all render correctly?", persist answer, default `USE_NERD_FONT` accordingly.
-* **Complexity:** M — **Risk:** Medium
-
-#### F-20. Hot-reload watcher (`mo-dev-watch`)
-* **Value:** Dev-XP (author + contributors)
-* **Design:** Dev-mode only (gated on `[[ -L ~/.master-oogway ]]`). `inotifywait` watches `$ZSH_CUSTOM`; on change, prints `soursh-recommended`. Advisory only, never auto-eval.
-* **Complexity:** S — **Risk:** Low
-
-#### F-21. Versioned `~/.zshrc` migration system
-* **Value:** Robustness — real upgrades, not "diff it yourself"
-* **Design:** Embed `# master-oogway:rc-version=N`. Per-version additive migration function (append a missing `plugins=()` entry, etc.).
-* **Complexity:** M — **Risk:** Medium
-
-#### F-22. Unified `mo-test` harness
-* **Value:** Reliability
-* **Design:** `tests/<plugin>.bats` per plugin. Test: aliases defined, `-h` works, missing-dep handling. Run via `master-oogway doctor --test`.
-* **Complexity:** L — **Risk:** Low
-
 ### Features deliberately not proposed
 - **Plugin marketplace / network-fetched plugins** — multiplies attack surface for a personal-dotfiles project.
 - **Telemetry of any kind** (even opt-in) — not appropriate here.
@@ -373,4 +348,4 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ---
 
-*Open issues: 25 🟢 Low. Feature proposals: 5 (F-8, F-18, F-20, F-21, F-22). Audited: 5,729 LOC across 41 files.*
+*Open issues: 25 🟢 Low. Feature proposals: 0 — all resolved. Audited: 5,729 LOC across 41 files.*
