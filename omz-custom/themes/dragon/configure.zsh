@@ -784,6 +784,10 @@ EOF
         return 0
     fi
 
+    if [[ "${ZSH_THEME:-}" != "dragon" ]]; then
+        print -P "%F{yellow}[dragon] Warning: ZSH_THEME is '${ZSH_THEME:-<unset>}', not 'dragon' — conf.zsh changes will have no effect until you switch themes.%f"
+    fi
+
     local new_only=false
     [[ "${1-}" == "--new-only" ]] && new_only=true
 

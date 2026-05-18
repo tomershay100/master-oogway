@@ -256,12 +256,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-#### L-12. `dragon-configure` launches silently when `ZSH_THEME` is not `dragon`
-
-* **Location:** `omz-custom/themes/dragon/configure.zsh:739` (the `dragon-configure()` entry point)
-* **Problem:** The wizard runs, renders previews, and writes `~/.config/master-oogway/conf.zsh` even when the active theme is something other than `dragon`. The written `conf.zsh` has no effect until `ZSH_THEME=dragon` is set, but the user gets no indication of this. Someone who ran `dragon-configure` while testing a different theme would be confused when their changes don't appear.
-* **Recommendation:** At the top of `dragon-configure()`, after the `--help` check: `if [[ "$ZSH_THEME" != "dragon" ]]; then print -P "%F{yellow}[dragon]%f Warning: ZSH_THEME is '$ZSH_THEME', not 'dragon' — conf.zsh will have no effect until you switch themes.%f"; fi`. One warning line, no blocking.
-
 #### L-13. Notifier walks the entire themes directory tree on every shell start when mtime changed
 
 * **Location:** `omz-custom/themes/dragon/notifier.zsh:24-25`
