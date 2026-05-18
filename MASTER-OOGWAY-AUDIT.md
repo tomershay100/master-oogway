@@ -256,12 +256,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-#### L-20. `sshto` doesn't resolve `Include` directives in `~/.ssh/config`
-
-* **Location:** `omz-custom/plugins/mo-network/mo-network.plugin.zsh:21-23`
-* **Problem:** `sshto` parses `~/.ssh/config` and `~/.ssh/config.d/*` with a plain `awk` regex that finds `Host` lines. OpenSSH's `Include` directive can pull in additional config files; `sshto` doesn't follow those. A user with `Include ~/.ssh/work-hosts` in their main config will not see those hosts in the fuzzy picker. The plugin already acknowledges this with a comment.
-* **Recommendation:** The proper fix is `ssh -G <placeholder>` which resolves the full config including includes, but that requires a hostname. Alternatively, recursively follow `Include` lines in the awk script. The comment acknowledgment is good; the gap is real but narrow (most users keep their hosts directly in `~/.ssh/config.d/`).
-
 #### L-21. `natip` has no IPv6 flag
 
 * **Location:** `omz-custom/plugins/mo-network/mo-network.plugin.zsh:4-7`
