@@ -277,8 +277,13 @@ _mo_lan_extract_target() {
 }
 
 _mo_lan_ssh_wrapper() {
-    # Non-interactive stdin (pipe/script) → don't interfere with the user's flow
-    [[ -t 0 ]] || { command ssh "$@"; return; }
+    # Non-interactive stdin (pipe/script) → exec replaces the wrapper process
+    # with the real ssh binary directly (no shell waiting for a child).
+    # exec is safe here because stdin is already not a tty — this is a
+    # script/pipe context where process replacement is expected behaviour.
+    # Interactive pass-throughs below keep command ssh (child process) so
+    # exec doesn't close the user's interactive shell on disconnect.
+    [[ -t 0 ]] || exec command ssh "$@"
 
     # MO_LAN_AUTO_TRUST=false → wrapper disabled, pass through
     [[ "${MO_LAN_AUTO_TRUST:-true}" == "false" ]] && { command ssh "$@"; return; }

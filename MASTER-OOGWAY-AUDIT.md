@@ -256,12 +256,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-#### L-32. `_mo_lan_ssh_wrapper` pass-through branches don't `exec ssh`
-
-* **Location:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:251,267,292`
-* **Problem:** The three early-return pass-through branches (non-interactive stdin, `MO_LAN_AUTO_TRUST=false`, non-LAN host) all do `command ssh "$@"; return`. This means the wrapper function runs in the parent shell process and `ssh` runs as a child. The `return` after `command ssh` is redundant since the function returns 0 after ssh exits regardless, but more importantly, the parent shell stays alive waiting for the child. Using `exec command ssh "$@"` instead would replace the wrapper with the ssh process, saving one process-table slot and returning the correct exit code directly.
-* **Recommendation:** Change the three `command ssh "$@"; return` pass-throughs to `exec command ssh "$@"`. Only the wrapped path (where post-ssh logic runs) should keep `command ssh` without `exec`.
-
 ---
 
 ## 7. Feature Proposals
