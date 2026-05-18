@@ -31,6 +31,8 @@ _dragon_read_state() {
     [[ -f "${_DRAGON_STATE_FILE}" ]] || return
     while IFS= read -r line; do
         [[ "$line" == '#'* || -z "$line" ]] && continue
+        # %%=* strips up to the first = for the key (keys are DRAGON__[A-Z_]+ — no = possible).
+        # #*=  strips only the first = and keeps everything after, so values like "foo=bar" survive.
         local key="${line%%=*}" val="${line#*=}"
         _DRAGON_STATE[$key]="$val"
     done < "${_DRAGON_STATE_FILE}"

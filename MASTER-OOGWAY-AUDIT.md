@@ -256,12 +256,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-#### L-11. `_dragon_read_state` splits on first `=` only — latent breakage for values containing `=`
-
-* **Location:** `omz-custom/themes/dragon/configure.zsh:34-39`
-* **Problem:** The state-file parser does `key="${line%%=*}" val="${line#*=}"`. `%%=*` strips the longest suffix starting with `=` (correct for the key), but `#*=` strips only the first `=` and keeps everything after it. For a value like `DRAGON__SOME_VAR=foo=bar`, the key parses correctly as `DRAGON__SOME_VAR` and the value parses correctly as `foo=bar`. **This is actually fine as-is.** The edge case that would break it is a key containing `=`, which is impossible since `DRAGON__*` variable names are `[A-Z_]+`. No current bug, and the pattern is a standard shell idiom. The audit entry is a latent-concern notice more than an actionable issue.
-* **Recommendation:** No change needed unless the state file format is extended to support non-`DRAGON__*` keys. Document the assumption in a comment.
-
 #### L-12. `dragon-configure` launches silently when `ZSH_THEME` is not `dragon`
 
 * **Location:** `omz-custom/themes/dragon/configure.zsh:739` (the `dragon-configure()` entry point)
