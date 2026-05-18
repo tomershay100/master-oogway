@@ -262,17 +262,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### Ranked feature list
 
-#### F-3. Plugin metadata header + `doctor` rewrite ⭐
-* **Value:** Robustness + extensibility
-* **Design:** Three-line header per plugin (`# mo-plugin:`, `# mo-deps:`, `# mo-desc:`). `master-oogway doctor` parses headers to compute dep report dynamically; eliminates the hardcoded list at `mo-cli.plugin.zsh:40-56`.
-* **Complexity:** M (~120 LOC) — **Risk:** Low
-
-#### F-4. Central capability cache populated by `mo-utils`
-* **Value:** Performance + dev-XP
-* **Problem solved:** `command -v bat` at 13 sites; wasted forks at shell start.
-* **Design:** `mo-utils` writes `~/.cache/master-oogway/capabilities.zsh` on first load (invalidated by `$PATH` mtime). Plugins consult `$MO_CAPS[bat]`.
-* **Complexity:** M (~120 LOC, careful invalidation) — **Risk:** Medium
-
 #### F-8. Pluggable segment registry for Dragon
 * **Value:** Power-user extensibility
 * **Design:** `DRAGON_LEFT_SEGMENTS=(ssh_prefix username … directory)` and `DRAGON_RPROMPT_SEGMENTS=(…)` arrays. `dragon__set_lprompt` iterates calling `dragon__set_$segment`. Users define function + append. Recovers ~40 LOC from `prompt.zsh`.
@@ -282,11 +271,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 * **Value:** Extensibility
 * **Design:** Discovered by `~/.zshrc` and appended to `plugins=()`. Same convention. `mo-help` and `doctor` recognize them.
 * **Complexity:** M — **Risk:** Low (additive, opt-in)
-
-#### F-16. Async-evaluated user segments with TTL cache (Dragon)
-* **Value:** Power-user extensibility (p10k parity)
-* **Design:** `dragon_register_async_segment <name> <cmd> <ttl>` runs `<cmd>` in background, caches in `typeset -gA`, refreshes when stale.
-* **Complexity:** M — **Risk:** Medium
 
 #### F-17. `master-oogway backup` / `restore`
 * **Value:** Robustness
@@ -404,4 +388,4 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ---
 
-*Open issues: 25 🟢 Low. Feature proposals: 11 (F-3, F-4, F-8, F-10, F-16–F-22). Audited: 5,729 LOC across 41 files.*
+*Open issues: 25 🟢 Low. Feature proposals: 8 (F-8, F-10, F-17–F-22). Audited: 5,729 LOC across 41 files.*
