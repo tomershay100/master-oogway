@@ -256,12 +256,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-#### L-17. `_confirm_reboot` blocks forever — `read -r ans` has no timeout
-
-* **Location:** `omz-custom/plugins/mo-safety-override/mo-safety-override.plugin.zsh:16`
-* **Problem:** When `reboot` is typed in an automated or semi-interactive context where stdin is connected but not actively monitored (e.g., a terminal left open in a script that's waiting on the user), the confirmation `read` hangs indefinitely. There is no `read -t N` timeout, so the system stays up silently waiting. In a real reboot scenario this is fine, but in automation it's a footgun.
-* **Recommendation:** `read -r -t 30 ans || { echo "Timed out — reboot cancelled."; return 1; }`. 30 seconds is generous for an interactive user and safe for automation.
-
 #### L-18. `pcat` and `pless` alias names are undocumented and non-obvious
 
 * **Location:** `omz-custom/plugins/mo-bat-override/mo-bat-override.plugin.zsh:14,18`
