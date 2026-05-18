@@ -42,8 +42,7 @@ _dragon_write_state() {
     local preset="${1:-default}"
     local hash mtime
     hash=$(_dragon_vars_hash)
-    mtime=$(find "${_DRAGON_THEMES_DIR}" -name '*.zsh' -printf '%T@\n' 2>/dev/null \
-        | sort -n | tail -1)
+    mtime=$(stat -c '%Y' "${_DRAGON_THEMES_DIR}/schema.zsh" 2>/dev/null)
     _dragon_read_state   # load current state so we can preserve dismissed_hash
     mkdir -p "${_DRAGON_STATE_DIR}"
     {
@@ -771,8 +770,7 @@ EOF
     if [[ "${1-}" == "--dismiss" ]]; then
         local current_hash current_mtime
         current_hash=$(_dragon_vars_hash)
-        current_mtime=$(find "${_DRAGON_THEMES_DIR}" -name '*.zsh' -printf '%T@\n' 2>/dev/null \
-            | sort -n | tail -1)
+        current_mtime=$(stat -c '%Y' "${_DRAGON_THEMES_DIR}/schema.zsh" 2>/dev/null)
         mkdir -p "${_DRAGON_STATE_DIR}"
         local tmp_state="${_DRAGON_STATE_FILE}.tmp"
         grep -v -e '^dismissed_hash=' -e '^themes_mtime=' "${_DRAGON_STATE_FILE}" \

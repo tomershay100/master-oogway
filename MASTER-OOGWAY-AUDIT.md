@@ -256,12 +256,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-#### L-13. Notifier walks the entire themes directory tree on every shell start when mtime changed
-
-* **Location:** `omz-custom/themes/dragon/notifier.zsh:24-25`
-* **Problem:** The mtime guard (`stored_mtime == current_mtime`) skips the hash computation on the common path, but computing `current_mtime` itself requires `find "${themes_dir}" -name '*.zsh' -printf '%T@\n' | sort -n | tail -1` — a full directory walk that forks `find`, `sort`, and `tail` on every shell open. The guard avoids the hash, but not the stat scan. On most shell opens the mtime will match and `current_hash` is never computed, so the cost is just the `find` walk. On slow filesystems (NFS, encrypted home, Raspberry Pi SD card) this is measurable.
-* **Recommendation:** Stat a single sentinel file instead (e.g., the schema file, which changes whenever a new variable is added): `current_mtime=$(stat -c '%Y' "${themes_dir}/schema.zsh" 2>/dev/null)`. One stat instead of a recursive find + sort pipeline.
-
 #### L-17. `_confirm_reboot` blocks forever — `read -r ans` has no timeout
 
 * **Location:** `omz-custom/plugins/mo-safety-override/mo-safety-override.plugin.zsh:16`

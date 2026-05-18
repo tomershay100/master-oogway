@@ -21,8 +21,9 @@
     stored_hash=$(grep -m1 '^vars_hash='     "${state_file}" 2>/dev/null | cut -d= -f2)
     dismissed_hash=$(grep -m1 '^dismissed_hash=' "${state_file}" 2>/dev/null | cut -d= -f2)
     stored_mtime=$(grep -m1 '^themes_mtime=' "${state_file}" 2>/dev/null | cut -d= -f2)
-    current_mtime=$(find "${themes_dir}" -name '*.zsh' -printf '%T@\n' 2>/dev/null \
-        | sort -n | tail -1)
+    # schema.zsh is the sentinel: it's the only file that changes when a new DRAGON__ variable
+    # is added. One stat call instead of a find|sort|tail pipeline on every shell open.
+    current_mtime=$(stat -c '%Y' "${themes_dir}/schema.zsh" 2>/dev/null)
 
     if [[ -n "$stored_mtime" && "$current_mtime" == "$stored_mtime" ]]; then
         # Theme files unchanged since last configure run — skip hash entirely.
