@@ -15,6 +15,7 @@ function port() {
         echo "Usage: port <number>"
         echo "  Show which process is listening on the given TCP/UDP port."
         echo "  Falls back to sudo if the port is not visible without elevated permissions."
+        echo "  Note: UDP sockets are shown without state filtering (UDP is connectionless)."
         return
     fi
     if [[ $# -eq 0 ]]; then

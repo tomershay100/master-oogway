@@ -256,18 +256,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-#### L-23. `bak` computes the timestamp once outside the loop — parallel calls collide
-
-* **Location:** `omz-custom/plugins/mo-files/mo-files.plugin.zsh:95`
-* **Problem:** `ts=$(date +%Y%m%d_%H%M%S_%N)` runs once before the `for f in "$@"` loop. If the user runs `bak a b c`, all three backups get the identical timestamp: `a.bak.20260517_213300_000000000`, `b.bak.20260517_213300_000000000`, `c.bak.20260517_213300_000000000`. The nanosecond field (`%N`) makes real-world collisions extremely unlikely on one call, but if the filesystem doesn't support sub-second precision (FAT32, some NFS exports), `%N` returns `000000000` and all three names are truly identical — `cp -av` would overwrite them in sequence, leaving only the last file's backup.
-* **Recommendation:** Move `ts=$(date ...)` inside the loop body so each file gets its own timestamp. The loop is short (user-supplied files), so the extra `date` fork per file is negligible.
-
-#### L-24. `port` passes `-sTCP:LISTEN` to lsof but UDP entries bypass the state filter
-
-* **Location:** `omz-custom/plugins/mo-process/mo-process.plugin.zsh:30`
-* **Problem:** `lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN` applies the LISTEN-state filter only to TCP entries. UDP is connectionless and has no LISTEN state; lsof shows all UDP sockets on the port regardless of the `-sTCP:LISTEN` flag. For port 53 (DNS), this correctly shows both the TCP listener and the UDP socket. But for a port with only a UDP socket in a transient state (e.g., a client socket that happened to use the same ephemeral port), it would appear in the output, which may confuse the user into thinking something is "listening" when it isn't.
-* **Recommendation:** For UDP the closest equivalent filter is `-sUDP:Idle` or simply accepting that all UDP socket appearances are reported. Add a note in the `--help` output: "UDP sockets are shown without state filtering (UDP is connectionless)."
-
 #### L-25. `up N` past the filesystem root silently lands at `/`
 
 * **Location:** `omz-custom/plugins/mo-navigation/mo-navigation.plugin.zsh:25-28`
