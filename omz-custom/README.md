@@ -16,7 +16,7 @@ themes/
     aliases.zsh            rezsh, reset_theme_variables
     parts/                 segment renderers, prompt assembly, gitstatus glue
 plugins/
-  mo-*/                  17 master-oogway plugins (5 overrides + 12 additive)
+  mo-*/                  20 master-oogway plugins (5 overrides + 15 additive)
   gitstatus/             vendored: gitstatus (submodule)
   you-should-use/        vendored: you-should-use (submodule)
   zsh-autosuggestions/   vendored: zsh-autosuggestions (submodule)

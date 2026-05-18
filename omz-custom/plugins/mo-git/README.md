@@ -32,4 +32,4 @@ Git aliases and fuzzy pickers.
 | `gclean` | remove untracked files and dirs |
 | `gsum` | print branch + staged/unstaged file summary |
 | `fbranch` | fuzzy-select a branch and switch to it |
-| `flog` | fuzzy-browse git log and show diff |
+| `flog` | fuzzy-browse git log (preview shows the commit's diff stat); copies the selected hash to the clipboard |

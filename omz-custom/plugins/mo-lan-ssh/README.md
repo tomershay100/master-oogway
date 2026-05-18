@@ -40,7 +40,7 @@ Set in `~/.zshrc` or `~/.config/master-oogway/custom-pre-zsh/` before the plugin
 |----------|---------|-------------|
 | `MO_LAN_TTL` | `86400` | cache TTL in seconds |
 | `MO_LAN_SSH_PORTS` | `22` | comma-separated ports to probe |
-| `MO_LAN_PROBE_TIMEOUT` | `1` | per-host SSH probe timeout (seconds) |
+| `MO_LAN_PROBE_TIMEOUT` | `2` | per-host SSH probe timeout (seconds) |
 | `MO_LAN_PROBE_PARALLEL` | `20` | parallel probe connections |
 | `MO_LAN_EXCLUDE` | — | comma-separated hosts/IPs to skip |
 | `MO_LAN_SUBNET` | auto | CIDR subnet to scan |

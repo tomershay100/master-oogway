@@ -1,6 +1,6 @@
 # master-oogway
 
-A complete zsh environment — dragon prompt theme, git aliases, fuzzy-finder functions, and 19 opt-in plugins — distributed as a standalone git repo.
+A complete zsh environment — dragon prompt theme, git aliases, fuzzy-finder functions, and 20 opt-in plugins — distributed as a standalone git repo.
 
 ## Installation
 
@@ -48,7 +48,7 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-dev](omz-custom/plugins/mo-dev/README.md) | `calc`, `epoch`, `serve`, `md2pdf` |
 | [mo-network](omz-custom/plugins/mo-network/README.md) | `natip`, `sshto` |
 | [mo-lan-ssh](omz-custom/plugins/mo-lan-ssh/README.md) | bare-`<host>` aliases for every SSH host on your LAN |
-| [mo-shell-tools](omz-custom/plugins/mo-shell-tools/README.md) | `h`, `?`, `cwhich`, `vwhich`, `soursh`, `please`, `mo-where` |
+| [mo-shell-tools](omz-custom/plugins/mo-shell-tools/README.md) | `h`, `?`, `cwhich`, `vwhich`, `vizsh`, `soursh`, `zshtime`, `please`, `mo-where` |
 | [mo-env](omz-custom/plugins/mo-env/README.md) | `fenv` |
 | [mo-build](omz-custom/plugins/mo-build/README.md) | `m`, `mc` |
 | [mo-apps](omz-custom/plugins/mo-apps/README.md) | GUI app launcher aliases |

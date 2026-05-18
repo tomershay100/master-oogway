@@ -1,6 +1,6 @@
 # dragon theme
 
-A fully configurable zsh prompt theme with ~120 tunable variables, an interactive wizard, and SSH forwarding.
+A fully configurable zsh prompt theme with ~130 tunable variables, an interactive wizard, and SSH forwarding.
 
 ## Configuration
 

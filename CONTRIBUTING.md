@@ -32,7 +32,7 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
         prompt.zsh                __calc_prompt_length, dragon__set_lprompt/set_rprompt
         transient.zsh             zle hooks, gitstatus glue, prompt refresh
   plugins/
-    mo-*/mo-*.plugin.zsh          19 oh-my-zsh plugins (override + additive)
+    mo-*/mo-*.plugin.zsh          20 oh-my-zsh plugins (5 override + 15 additive)
 ```
 
 ---
@@ -111,16 +111,18 @@ If any of these fail, fix the underlying issue — never commit a file that fail
 ## Adding a plugin
 
 1. Create `omz-custom/plugins/mo-<name>/mo-<name>.plugin.zsh`.
-2. First line must be a `# Provides:` comment — one line describing what it adds:
-
-   ```zsh
-   # Provides: mycommand (does X) and myalias (does Y).
-   ```
-
+2. If the plugin depends on external binaries, document them in a top-of-file
+   `# Requires: ...` comment so users grepping the source can see the
+   dependency upfront. See `mo-bat-override` or `mo-dev` for the pattern.
 3. Add `mo-<name>` to the plugins list in `zshrc.master-oogway` (override or additive group), with a one-line trailing comment summarising what it provides.
-4. **Update [README.md](README.md) by hand — there is no generator.** Two places to touch:
-   - The "Additive plugins" table (under `## Plugins → ### Additive plugins — new commands only`) — add a new row matching the format of its siblings: <code>&#124; `mo-&lt;name&gt;` &#124; one-line description &#124;</code>. Keep the table sorted alphabetically by plugin name.
-   - The "Command reference" section — add a new `### mo-<name> — short heading` subsection with a `Command | Description` table listing every command the plugin exposes.
+4. **Update the docs by hand — there is no generator.** Two places to touch:
+   - [README.md](README.md): add a new row to the "Override plugins" or
+     "Additive plugins" table with a short one-line description of what the
+     plugin adds. Keep each table sorted alphabetically by plugin name.
+   - `omz-custom/plugins/mo-<name>/README.md`: create a one-paragraph plugin
+     README with a `Command | Description` table listing every command (or
+     alias/escape-hatch) the plugin exposes. Follow the style of the other
+     plugin READMEs.
 5. Run the four validation checks above.
 
 Override plugins (those that shadow system commands) must appear **before** additive
