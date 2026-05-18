@@ -14,55 +14,58 @@ _mo_version() {
 }
 
 # Internal: report missing optional tools and which plugins they affect.
+# Runs in a subshell so _mo_check is discarded on exit regardless of
+# how the function terminates (clean return, error, or Ctrl+C).
 _mo_doctor() {
-    local missing=0
-    # _mo_check <name|alt|...> <desc> <apt-pkg>
-    # Accepts pipe-separated alternative binary names; succeeds if any is on
-    # PATH. The display shows whichever was found (so the user sees the
-    # actual binary they have, e.g. 'batcat' on Ubuntu, not the canonical
-    # 'bat'). On miss, shows the primary (first) name.
-    _mo_check() {
-        local cmds="$1" desc="$2" pkg="$3"
-        local found="" c
-        for c in ${(s:|:)cmds}; do
-            if command -v "$c" &>/dev/null; then
-                found="$c"
-                break
+    (
+        local missing=0
+        # _mo_check <name|alt|...> <desc> <apt-pkg>
+        # Accepts pipe-separated alternative binary names; succeeds if any is on
+        # PATH. The display shows whichever was found (so the user sees the
+        # actual binary they have, e.g. 'batcat' on Ubuntu, not the canonical
+        # 'bat'). On miss, shows the primary (first) name.
+        _mo_check() {
+            local cmds="$1" desc="$2" pkg="$3"
+            local found="" c
+            for c in ${(s:|:)cmds}; do
+                if command -v "$c" &>/dev/null; then
+                    found="$c"
+                    break
+                fi
+            done
+            if [[ -n "$found" ]]; then
+                print -P "  %F{green}✓%f $found — $desc"
+            else
+                print -P "  %F{red}✗%f ${cmds%%|*} — $desc (sudo apt install $pkg)"
+                missing=$((missing + 1))
             fi
-        done
-        if [[ -n "$found" ]]; then
-            print -P "  %F{green}✓%f $found — $desc"
+        }
+        print -P "%BMust-have:%b"
+        _mo_check zsh         "the shell itself"               zsh
+        _mo_check git         "for updates and gitstatus"      git
+        _mo_check curl        "for natip + the OMZ installer"  curl
+        print ""
+        print -P "%BNice-to-have:%b"
+        _mo_check fzf         "fuzzy pickers (Ctrl+R, fbranch, fkill, fcd, ...)" fzf
+        # Ubuntu's apt installs 'bat' as 'batcat' and 'fd-find' as 'fdfind' to
+        # avoid name collisions with other packages — accept both.
+        _mo_check "bat|batcat" "syntax-highlighted cat / less / man"             bat
+        _mo_check eza         "enhanced ls / tree"                               eza
+        _mo_check "fd|fdfind" "faster fzf file picker (Ctrl+T)"                  fd-find
+        _mo_check rg          "the 'frg' fuzzy ripgrep picker"                   ripgrep
+        _mo_check direnv      "auto-load .envrc per directory"                   direnv
+        _mo_check meld        "git difftool / mergetool GUI"                     meld
+        _mo_check lsof        "the 'port' command"                               lsof
+        _mo_check zoxide      "smarter cd ('z' command)"                         zoxide
+        _mo_check nmap        "LAN host discovery for mo-lan-ssh"                nmap
+        _mo_check dig         "DNS lookups for mo-lan-ssh (AXFR + reverse DNS)"  dnsutils
+        print ""
+        if (( missing == 0 )); then
+            print -P "%F{green}All checked tools are installed.%f"
         else
-            print -P "  %F{red}✗%f ${cmds%%|*} — $desc (sudo apt install $pkg)"
-            missing=$((missing + 1))
+            print -P "%F{yellow}${missing} optional tool(s) missing — install hints above.%f"
         fi
-    }
-    print -P "%BMust-have:%b"
-    _mo_check zsh         "the shell itself"               zsh
-    _mo_check git         "for updates and gitstatus"      git
-    _mo_check curl        "for natip + the OMZ installer"  curl
-    print ""
-    print -P "%BNice-to-have:%b"
-    _mo_check fzf         "fuzzy pickers (Ctrl+R, fbranch, fkill, fcd, ...)" fzf
-    # Ubuntu's apt installs 'bat' as 'batcat' and 'fd-find' as 'fdfind' to
-    # avoid name collisions with other packages — accept both.
-    _mo_check "bat|batcat" "syntax-highlighted cat / less / man"             bat
-    _mo_check eza         "enhanced ls / tree"                               eza
-    _mo_check "fd|fdfind" "faster fzf file picker (Ctrl+T)"                  fd-find
-    _mo_check rg          "the 'frg' fuzzy ripgrep picker"                   ripgrep
-    _mo_check direnv      "auto-load .envrc per directory"                   direnv
-    _mo_check meld        "git difftool / mergetool GUI"                     meld
-    _mo_check lsof        "the 'port' command"                               lsof
-    _mo_check zoxide      "smarter cd ('z' command)"                         zoxide
-    _mo_check nmap        "LAN host discovery for mo-lan-ssh"                nmap
-    _mo_check dig         "DNS lookups for mo-lan-ssh (AXFR + reverse DNS)"  dnsutils
-    print ""
-    if (( missing == 0 )); then
-        print -P "%F{green}All checked tools are installed.%f"
-    else
-        print -P "%F{yellow}${missing} optional tool(s) missing — install hints above.%f"
-    fi
-    unset -f _mo_check
+    )
 }
 
 master-oogway() {

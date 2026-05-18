@@ -256,24 +256,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 
 ### 🟢 Low-severity issues
 
-#### L-25. `up N` past the filesystem root silently lands at `/`
-
-* **Location:** `omz-custom/plugins/mo-navigation/mo-navigation.plugin.zsh:25-28`
-* **Problem:** `up 10` from `/home/user/projects` constructs `../../../../../../../../../../..` (10 levels up) and calls `cd` on it. zsh's `cd` clamps at `/`, so the user ends up at `/` regardless. No error, no message. A user who mistypes `up 10` instead of `up 1` gets silently deposited at the root.
-* **Recommendation:** Cap the level at the current depth: `local max_depth=$(( ${#${(s:/:)PWD}} )); (( $1 > max_depth )) && { echo "up: can only go up ${max_depth} level(s) from here" >&2; return 1; }`.
-
-#### L-26. `_mo_check` is defined as a global function inside `_mo_doctor`, leaking if interrupted
-
-* **Location:** `omz-custom/plugins/mo-cli/mo-cli.plugin.zsh:24-39`
-* **Problem:** `_mo_doctor` defines `_mo_check` as a regular function inside its body, then calls `unset -f _mo_check` at line 65. If the user presses Ctrl+C between the function definition (line 24) and the `unset -f` call (line 65), `_mo_check` remains defined as a global function in the shell for the rest of the session. This is a minor leak — the function does nothing harmful if called directly — but it pollutes the function namespace.
-* **Recommendation:** Use `function _mo_check { ... }` inside a subshell, or define it as a local function using zsh's `local -f` pattern. Simplest fix: wrap the entire `_mo_doctor` body in `() { ... }` (anonymous subshell) so all internal function definitions are discarded on exit regardless of how the function terminates.
-
-#### L-31. `fbranch` falls back to `main` if `origin/HEAD` is unset — silently wrong for non-`main` repos
-
-* **Location:** `omz-custom/plugins/mo-git/mo-git.plugin.zsh:60-63`
-* **Problem:** `default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||') || default_branch="main"`. If `origin/HEAD` isn't set (common for repos cloned with `--no-single-branch` or older git versions), the fallback is hardcoded `main`. For repos whose default branch is `master`, `develop`, or anything else, the fzf preview `git log HEAD..main --oneline` shows nothing or errors. The user sees an empty diff preview for every branch.
-* **Recommendation:** Try `origin/HEAD` first, then fall back to `git remote show origin | grep 'HEAD branch'` (slower, makes a network call), or ask git directly: `git symbolic-ref --short HEAD` as a last resort gives the current branch, not the default — not ideal. A pragmatic fix: try `origin/main`, then `origin/master`, then current branch: `for b in main master; do git rev-parse --verify "origin/$b" &>/dev/null && { default_branch="$b"; break; }; done`.
-
 #### L-32. `_mo_lan_ssh_wrapper` pass-through branches don't `exec ssh`
 
 * **Location:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:251,267,292`
