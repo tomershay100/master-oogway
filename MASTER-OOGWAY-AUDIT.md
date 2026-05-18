@@ -262,24 +262,6 @@ The system is *much closer to "production framework"* than to "personal dotfiles
 * **Problem:** The mtime guard (`stored_mtime == current_mtime`) skips the hash computation on the common path, but computing `current_mtime` itself requires `find "${themes_dir}" -name '*.zsh' -printf '%T@\n' | sort -n | tail -1` — a full directory walk that forks `find`, `sort`, and `tail` on every shell open. The guard avoids the hash, but not the stat scan. On most shell opens the mtime will match and `current_hash` is never computed, so the cost is just the `find` walk. On slow filesystems (NFS, encrypted home, Raspberry Pi SD card) this is measurable.
 * **Recommendation:** Stat a single sentinel file instead (e.g., the schema file, which changes whenever a new variable is added): `current_mtime=$(stat -c '%Y' "${themes_dir}/schema.zsh" 2>/dev/null)`. One stat instead of a recursive find + sort pipeline.
 
-#### L-14. `_dragon_filter_changed_groups` marks groups as "changed" when they merely differ from defaults, not when the user actually edited them
-
-* **Location:** `omz-custom/themes/dragon/configure.zsh:662-675`
-* **Problem:** The function compares `_DRAGON_CURRENT[$var]` against `_DRAGON_DEFAULTS[$var]`. After a `--preset` switch, every variable the preset touched now differs from the factory default — so all those groups are flagged "changed" even though the user never touched them via the wizard. In the `--new-only` wizard flow, this means the user sees every preset-touched group in the "changed" list alongside their real customizations. The two concepts — "differs from factory default" and "user explicitly edited" — are conflated.
-* **Recommendation:** Track user edits separately in the state file (`user_edited_groups=...`) and use that for the `--new-only` filter. The current comparison is correct for "show only non-default groups" but not for "show only user-customized groups."
-
-#### L-15. `mo-welcome` banner prints on every new pane with no opt-out
-
-* **Location:** `omz-custom/plugins/mo-welcome/mo-welcome.plugin.zsh`
-* **Problem:** The banner runs unconditionally on every interactive shell open. In a tmux session with 6 panes, it prints 6 times. There is no `MO_WELCOME_QUIET=1` env var, no `SHLVL` guard, and no check for whether stdin is a terminal. A user who opens many panes quickly finds the banner more noise than signal.
-* **Recommendation:** Add a guard: `[[ "${MO_WELCOME_QUIET:-0}" == "1" || "$SHLVL" -gt 1 ]] && return`. `SHLVL` is 1 in the first shell opened in a terminal window and increments for every nested shell or new pane — checking `> 1` suppresses the banner in all panes except the first. `MO_WELCOME_QUIET=1` in `~/.zshenv` gives a manual escape hatch.
-
-#### L-16. `mo-auto-ls` skips all `/mnt/*` paths, including fast local mounts
-
-* **Location:** `omz-custom/plugins/mo-auto-ls/mo-auto-ls.plugin.zsh:7-9`
-* **Problem:** The skip list `case "$PWD" in /mnt/*|/media/*|/run/user/*/gvfs/*)` is designed to avoid triggering `ls` on slow or remote mounts (network drives, FUSE filesystems, phone MTP mounts). But `/mnt/` is also commonly used for fast local bind-mounts, loopback mounts, and LVM volumes. A user who mounts a local ext4 partition at `/mnt/data` and `cd`s there gets no auto-ls despite the mount being instant.
-* **Recommendation:** The skip list is a reasonable heuristic but worth documenting. A more precise alternative is to skip only mounts whose filesystem type is known-slow: `findmnt -n -o FSTYPE --target "$PWD"` and skip if it's `nfs`, `cifs`, `fuse`, `gvfs`, etc. However, that adds a fork per `cd`. Documenting the current behavior and adding `/mnt/` to the list of paths users can override via `custom-zsh/` is the lighter fix.
-
 #### L-17. `_confirm_reboot` blocks forever — `read -r ans` has no timeout
 
 * **Location:** `omz-custom/plugins/mo-safety-override/mo-safety-override.plugin.zsh:16`
