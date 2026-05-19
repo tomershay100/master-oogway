@@ -49,40 +49,6 @@ For each finding:
 
 ## Section 1 — Bugs (real, reproducible)
 
-### B-1 — `rezsh` is a no-op after running `dragon-configure`
-**Severity:** P1  **Confidence:** HIGH
-**Files:** `omz-custom/themes/dragon/aliases.zsh:3-7`,
-`omz-custom/themes/dragon/configure.zsh:941-944`
-
-`reset_theme_variables` iterates `${(@k)_DRAGON_DEFAULTS}` to know which
-`DRAGON__*` variables to unset. But every call to `dragon-configure` ends
-with `_dragon_cleanup`, which `unset _DRAGON_DEFAULTS`. After the wizard
-runs in a shell, the array is gone, so the for-loop iterates over nothing —
-and the user's exported `DRAGON__*` overrides survive `rezsh`.
-
-**Repro:**
-```zsh
-$ dragon-configure --preset short          # wizard runs, exits, unsets _DRAGON_DEFAULTS
-$ export DRAGON__USERNAME_FOREGROUND_COLOR=red
-$ rezsh                                    # claims to reset, but doesn't
-$ echo $DRAGON__USERNAME_FOREGROUND_COLOR
-red                                        # ← should be unset, isn't
-```
-
-**Fix:** re-source the schema inside `reset_theme_variables` before iterating.
-~3 lines.
-
-```zsh
-function reset_theme_variables {
-    source "${0:a:h}/schema.zsh"; _dragon_init_defaults
-    for var in "${(@k)_DRAGON_DEFAULTS}"; do
-        unset "DRAGON__${var}"
-    done
-}
-```
-
----
-
 ### B-2 — Uninstall can never find the `.zshrc` backup
 **Severity:** P1  **Confidence:** HIGH
 **Files:** `install.sh:270` (uninstall) vs `install.sh:412` (install)
@@ -710,7 +676,6 @@ by category; check off in any order, but ship every category to green
 before tagging.
 
 ### Code quality
-- [ ] B-1 (rezsh) fixed
 - [ ] B-2 (uninstall backup glob) fixed
 - [ ] B-4 (lan-ssh port validation) fixed
 - [ ] All four vendored submodules pinned to specific commits in
@@ -755,30 +720,29 @@ previous and each step is independently shippable.
 
 | # | Item | LOC delta | Risk |
 |---|---|---|---|
-| 1 | B-1 rezsh fix | +3 | none |
-| 2 | B-2 uninstall backup glob | +5, -2 | none |
-| 3 | M-3 LICENSE | +21 | none |
-| 4 | M-2 CI lint workflow | +30 | none |
-| 5 | B-4 lan-ssh port validation | +10, -2 | none |
-| 6 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
-| 7 | U-1 reset-to-preset warning | +15 | none |
-| 8 | P-1 single ip route | -4, +4 | none |
-| 9 | P-2 drop chpwd hook (after measuring) | -1 | low |
-| 10 | U-3 `master-oogway selfcheck` | +40 | none |
-| 11 | S-2 AcceptEnv markers | +20, -10 | low (need to handle existing unmarked installs) |
-| 12 | M-1 first 5 bats tests | +200 | none |
-| 13 | U-2 diff drift detection | +30 | none |
-| 14 | M-4 CHANGELOG + v0.1 tag | new file | none |
+| 1 | B-2 uninstall backup glob | +5, -2 | none |
+| 2 | M-3 LICENSE | +21 | none |
+| 3 | M-2 CI lint workflow | +30 | none |
+| 4 | B-4 lan-ssh port validation | +10, -2 | none |
+| 5 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
+| 6 | U-1 reset-to-preset warning | +15 | none |
+| 7 | P-1 single ip route | -4, +4 | none |
+| 8 | P-2 drop chpwd hook (after measuring) | -1 | low |
+| 9 | U-3 `master-oogway selfcheck` | +40 | none |
+| 10 | S-2 AcceptEnv markers | +20, -10 | low (need to handle existing unmarked installs) |
+| 11 | M-1 first 5 bats tests | +200 | none |
+| 12 | U-2 diff drift detection | +30 | none |
+| 13 | M-4 CHANGELOG + v0.1 tag | new file | none |
 | … | wishlist items | as desired | low |
 
-**After step 4** (LICENSE + CI) you can publicly say "this is being actively
+**After step 3** (LICENSE + CI) you can publicly say "this is being actively
 maintained against a verified spec." That's the cheapest credibility step
 on the list and it's the one most users will look for.
 
-**After step 12** (first tests) you've crossed the line from "dotfiles
+**After step 11** (first tests) you've crossed the line from "dotfiles
 collection" to "actually-maintained tool."
 
-**After step 14** (CHANGELOG + tags) future-you can answer "what did I
+**After step 13** (CHANGELOG + tags) future-you can answer "what did I
 ship between Tuesday and now" without diff archaeology.
 
 ---
