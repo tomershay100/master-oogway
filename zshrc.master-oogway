@@ -172,10 +172,10 @@ plugins=(
     mo-build                   # m (parallel make), mc (make clean)
     mo-dev                     # calc, epoch, serve (HTTP server), md2pdf
     mo-env                     # fenv (fuzzy environment variable browser)
-    mo-shell-tools             # h, ?, cwhich, vwhich, vizsh, soursh, please
+    mo-shell-tools             # h, ?, cwhich, vwhich, vizsh, soursh, zshtime, please, mo-where
     mo-apps                    # GUI app launchers (gnucash via flatpak)
-    mo-cli                     # `master-oogway` CLI: update, uninstall, version, doctor, ...
-    mo-welcome                 # 2-line system snapshot banner on shell open
+    mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, path
+    mo-welcome                 # 5-line system snapshot banner on shell open (user@host, OS, kernel, date, uptime)
 
     # MUST BE LAST — wraps every ZLE widget defined above. See the note at the
     # top of this array.
