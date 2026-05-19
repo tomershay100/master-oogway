@@ -49,34 +49,6 @@ For each finding:
 
 ## Section 1 — Bugs (real, reproducible)
 
-### B-2 — Uninstall can never find the `.zshrc` backup
-**Severity:** P1  **Confidence:** HIGH
-**Files:** `install.sh:270` (uninstall) vs `install.sh:412` (install)
-
-`_install_zshrc` writes the backup to
-`${ZSHRC}.pre-master-oogway.$(date +%Y%m%d_%H%M%S)`. The uninstall block
-checks `${ZSHRC}.pre-master-oogway` — no timestamp. The names never match,
-so every uninstall hits the `elif grep` branch and either removes the
-managed file with "no backup found" or leaves an unmanaged `.zshrc` alone.
-The user's pre-install `.zshrc` is sitting on disk under a timestamped name,
-unrestored.
-
-**Verify:**
-```bash
-grep -n 'pre-master-oogway' install.sh
-# Compare the install path (line 412 — timestamped) with the uninstall
-# path (line 270 — no timestamp).
-```
-
-**Fix sketch:**
-```bash
-local _bk
-_bk=$(ls -1t "${ZSHRC}".pre-master-oogway* 2>/dev/null | head -1)
-if [[ -n "$_bk" ]]; then cp "$_bk" "${ZSHRC}"; rm -f "$_bk"; …
-```
-
----
-
 ### B-3 — Fresh-install uninstall leaves a 3-line stub `.gitconfig`
 **Severity:** P3  **Confidence:** HIGH (downgraded from previous draft —
 the sed surgery does work, it just leaves a husk file)
@@ -676,7 +648,6 @@ by category; check off in any order, but ship every category to green
 before tagging.
 
 ### Code quality
-- [ ] B-2 (uninstall backup glob) fixed
 - [ ] B-4 (lan-ssh port validation) fixed
 - [ ] All four vendored submodules pinned to specific commits in
       `.gitmodules` (verify with `git submodule status` — no `+` prefix)
@@ -720,29 +691,28 @@ previous and each step is independently shippable.
 
 | # | Item | LOC delta | Risk |
 |---|---|---|---|
-| 1 | B-2 uninstall backup glob | +5, -2 | none |
-| 2 | M-3 LICENSE | +21 | none |
-| 3 | M-2 CI lint workflow | +30 | none |
-| 4 | B-4 lan-ssh port validation | +10, -2 | none |
-| 5 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
-| 6 | U-1 reset-to-preset warning | +15 | none |
-| 7 | P-1 single ip route | -4, +4 | none |
-| 8 | P-2 drop chpwd hook (after measuring) | -1 | low |
-| 9 | U-3 `master-oogway selfcheck` | +40 | none |
-| 10 | S-2 AcceptEnv markers | +20, -10 | low (need to handle existing unmarked installs) |
-| 11 | M-1 first 5 bats tests | +200 | none |
-| 12 | U-2 diff drift detection | +30 | none |
-| 13 | M-4 CHANGELOG + v0.1 tag | new file | none |
+| 1 | M-3 LICENSE | +21 | none |
+| 2 | M-2 CI lint workflow | +30 | none |
+| 3 | B-4 lan-ssh port validation | +10, -2 | none |
+| 4 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
+| 5 | U-1 reset-to-preset warning | +15 | none |
+| 6 | P-1 single ip route | -4, +4 | none |
+| 7 | P-2 drop chpwd hook (after measuring) | -1 | low |
+| 8 | U-3 `master-oogway selfcheck` | +40 | none |
+| 9 | S-2 AcceptEnv markers | +20, -10 | low (need to handle existing unmarked installs) |
+| 10 | M-1 first 5 bats tests | +200 | none |
+| 11 | U-2 diff drift detection | +30 | none |
+| 12 | M-4 CHANGELOG + v0.1 tag | new file | none |
 | … | wishlist items | as desired | low |
 
-**After step 3** (LICENSE + CI) you can publicly say "this is being actively
+**After step 2** (LICENSE + CI) you can publicly say "this is being actively
 maintained against a verified spec." That's the cheapest credibility step
 on the list and it's the one most users will look for.
 
-**After step 11** (first tests) you've crossed the line from "dotfiles
+**After step 10** (first tests) you've crossed the line from "dotfiles
 collection" to "actually-maintained tool."
 
-**After step 13** (CHANGELOG + tags) future-you can answer "what did I
+**After step 12** (CHANGELOG + tags) future-you can answer "what did I
 ship between Tuesday and now" without diff archaeology.
 
 ---

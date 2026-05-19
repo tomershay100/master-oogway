@@ -88,6 +88,37 @@ copy_file() {
     info "copied: ${src} → ${dst}"
 }
 
+# Find the most recent backup created by this installer for $1 (the base path
+# without timestamp suffix, e.g. ~/.zshrc.pre-master-oogway). Echoes the
+# resolved path, or nothing if no backup exists.
+#
+# Why both forms: since 2026-05-17 _install_zshrc writes timestamped backups
+# (so a re-install doesn't clobber an existing one). Older installs left a
+# single .pre-master-oogway file with no timestamp. Restoring needs to find
+# either — newest timestamped wins; legacy bare name is the fallback.
+_find_backup() {
+    local base="$1"
+    # nullglob makes a no-match expand to an empty array instead of the
+    # literal pattern. Save + restore so toggling here can't surprise the
+    # caller. Pure bash + [[ -nt ]] avoids ls-parsing (shellcheck SC2012).
+    local _had_nullglob
+    shopt -q nullglob && _had_nullglob=true || _had_nullglob=false
+    shopt -s nullglob
+    local -a backups=( "${base}".* )
+    $_had_nullglob || shopt -u nullglob
+
+    local newest="" candidate
+    for candidate in "${backups[@]}"; do
+        [[ -f "$candidate" ]] || continue
+        [[ -z "$newest" || "$candidate" -nt "$newest" ]] && newest="$candidate"
+    done
+    if [[ -n "$newest" ]]; then
+        echo "$newest"
+        return
+    fi
+    [[ -f "$base" ]] && echo "$base"
+}
+
 confirm() {
     local prompt="$1" default="${2:-n}"
     if [[ ! -t 0 ]]; then
@@ -267,11 +298,11 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     info "Uninstalling dragon (master-oogway)..."
 
     # .zshrc
-    _uninstall_zshrc_backup="${ZSHRC}.pre-master-oogway"
-    if [[ -f "$_uninstall_zshrc_backup" ]]; then
+    _uninstall_zshrc_backup=$(_find_backup "${ZSHRC}.pre-master-oogway")
+    if [[ -n "$_uninstall_zshrc_backup" ]]; then
         cp "$_uninstall_zshrc_backup" "${ZSHRC}"
         rm -f "$_uninstall_zshrc_backup"
-        success "Restored ${ZSHRC} from backup (backup removed)"
+        success "Restored ${ZSHRC} from ${_uninstall_zshrc_backup} (backup removed)"
     elif grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
         rm -f "${ZSHRC}"
         warn "Removed managed ${ZSHRC} — no backup found. Recreate it manually."
@@ -280,11 +311,11 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     fi
 
     # .gitconfig
-    _uninstall_gitconfig_backup="${HOME}/.gitconfig.pre-master-oogway"
-    if [[ -f "$_uninstall_gitconfig_backup" ]]; then
+    _uninstall_gitconfig_backup=$(_find_backup "${HOME}/.gitconfig.pre-master-oogway")
+    if [[ -n "$_uninstall_gitconfig_backup" ]]; then
         cp "$_uninstall_gitconfig_backup" "${HOME}/.gitconfig"
         rm -f "$_uninstall_gitconfig_backup"
-        success "Restored ~/.gitconfig from backup (backup removed)"
+        success "Restored ~/.gitconfig from ${_uninstall_gitconfig_backup} (backup removed)"
     elif [[ -f "${HOME}/.gitconfig" ]]; then
         sed -i '/gitconfig\.master-oogway/d' "${HOME}/.gitconfig"
         sed -i '/^\[include\]$/{N;/^\[include\]\n[[:space:]]*$/d}' "${HOME}/.gitconfig"
