@@ -88,32 +88,6 @@ hashed `known_hosts`.
 
 ## Section 4 — Performance
 
-### P-2 — Prompt rendered twice on every `cd`
-**Severity:** P2  **Confidence:** MEDIUM (need to verify the chpwd hook is
-actually redundant in zsh's hook ordering)
-**File:** `omz-custom/themes/dragon/dragon.zsh:73`
-
-```zsh
-add-zsh-hook precmd  __update_prompt
-add-zsh-hook chpwd   __update_prompt
-```
-
-On `cd somedir`: zsh fires `chpwd` (calls `__update_prompt`), then `cd`
-completes, then `precmd` fires before drawing the next prompt (calls
-`__update_prompt` again). Both invocations call `__update_gitstatusd` +
-`dragon__update_zsh_prompt`. The first call's output is immediately
-overwritten by the second.
-
-**Fix:** drop the `chpwd __update_prompt` hook. Keep
-`chpwd __dragon_track_chpwd` (sets `_DRAGON_JUST_CHANGED_DIR` for transient
-prompt logic — unrelated).
-
-**Verify before committing:** `cd` between several directories, confirm
-prompt updates instantly (precmd should be plenty), and gitstatus updates
-correctly. A `zshtime 30` before/after would put a number on the savings.
-
----
-
 ### P-3 — `__set_ssh_connection_count_content` runs `who` on every prompt
 **Severity:** P3  **Confidence:** HIGH
 **File:** `omz-custom/themes/dragon/parts/segments_right.zsh:97`
@@ -467,19 +441,18 @@ previous and each step is independently shippable.
 | 1 | M-3 LICENSE | +21 | none |
 | 2 | M-2 CI lint workflow | +30 | none |
 | 3 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
-| 4 | P-2 drop chpwd hook (after measuring) | -1 | low |
-| 5 | M-1 first 5 bats tests | +200 | none |
-| 6 | M-4 CHANGELOG + v0.1 tag | new file | none |
+| 4 | M-1 first 5 bats tests | +200 | none |
+| 5 | M-4 CHANGELOG + v0.1 tag | new file | none |
 | … | wishlist items | as desired | low |
 
 **After step 2** (LICENSE + CI) you can publicly say "this is being actively
 maintained against a verified spec." That's the cheapest credibility step
 on the list and it's the one most users will look for.
 
-**After step 5** (first tests) you've crossed the line from "dotfiles
+**After step 4** (first tests) you've crossed the line from "dotfiles
 collection" to "actually-maintained tool."
 
-**After step 6** (CHANGELOG + tags) future-you can answer "what did I
+**After step 5** (CHANGELOG + tags) future-you can answer "what did I
 ship between Monday and now" without diff archaeology.
 
 ---

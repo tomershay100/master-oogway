@@ -68,9 +68,11 @@ autoload -U add-zsh-hook
 add-zsh-hook preexec __set_timer
 add-zsh-hook preexec __mark_cmd_ran
 add-zsh-hook precmd  __save_exit_code
+# precmd alone covers cd: zsh fires precmd before every prompt, including
+# after a directory change. A chpwd-triggered __update_prompt would just be
+# overwritten by the precmd one moments later (and double the gitstatus work).
 add-zsh-hook precmd  __update_prompt
 add-zsh-hook precmd  __reset_timer
-add-zsh-hook chpwd   __update_prompt
 add-zsh-hook chpwd   __dragon_track_chpwd
 
 zle -N zle-line-finish __dragon_zle_line_finish
