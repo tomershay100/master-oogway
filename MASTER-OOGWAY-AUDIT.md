@@ -86,24 +86,6 @@ hashed `known_hosts`.
 
 ## Section 3 — UX friction
 
-### U-3 — No `master-oogway selfcheck` / health command
-**Severity:** P2  **Confidence:** HIGH
-
-Memory has it that the original `doctor` subcommand was removed for being
-too heavy. The idea is still valuable — a single command that reports:
-- Marker present in `~/.zshrc`?
-- `conf.zsh` parses with `zsh -n`?
-- All four submodules initialised?
-- `SendEnv` / `AcceptEnv` markers present?
-- Locale resolves to UTF-8?
-- Schema hash matches `state` file?
-- `~/.ssh/config.d/lan-hosts` SHA matches recorded sentinel?
-
-~40 lines in `mo-cli.plugin.zsh`. Exit code 0 = healthy, non-zero = problem.
-Lets users (and CI) verify a working install non-interactively.
-
----
-
 ### U-4 — `dragon-configure --preset` shows backup command but doesn't make the backup
 **Severity:** P3  **Confidence:** HIGH
 **File:** `omz-custom/themes/dragon/configure.zsh:823-830`
@@ -514,7 +496,6 @@ before tagging.
       — but add a test that simulates `uname` returning Darwin)
 
 ### UX
-- [ ] U-3 (`master-oogway selfcheck`) implemented
 - [ ] Drift detection emits *something actionable*, not just "go diff it"
 
 ### Performance
@@ -550,19 +531,18 @@ previous and each step is independently shippable.
 | 3 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
 | 4 | P-1 single ip route | -4, +4 | none |
 | 5 | P-2 drop chpwd hook (after measuring) | -1 | low |
-| 6 | U-3 `master-oogway selfcheck` | +40 | none |
-| 7 | M-1 first 5 bats tests | +200 | none |
-| 8 | M-4 CHANGELOG + v0.1 tag | new file | none |
+| 6 | M-1 first 5 bats tests | +200 | none |
+| 7 | M-4 CHANGELOG + v0.1 tag | new file | none |
 | … | wishlist items | as desired | low |
 
 **After step 2** (LICENSE + CI) you can publicly say "this is being actively
 maintained against a verified spec." That's the cheapest credibility step
 on the list and it's the one most users will look for.
 
-**After step 7** (first tests) you've crossed the line from "dotfiles
+**After step 6** (first tests) you've crossed the line from "dotfiles
 collection" to "actually-maintained tool."
 
-**After step 8** (CHANGELOG + tags) future-you can answer "what did I
+**After step 7** (CHANGELOG + tags) future-you can answer "what did I
 ship between Monday and now" without diff archaeology.
 
 ---
