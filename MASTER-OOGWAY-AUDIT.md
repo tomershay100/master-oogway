@@ -84,20 +84,6 @@ hashed `known_hosts`.
 
 ---
 
-### S-3 — `master-oogway uninstall` doesn't ask before reading `sudo`
-**Severity:** P3  **Confidence:** HIGH
-**File:** `install.sh:311-321`
-
-The `confirm "Remove AcceptEnv … (sudo required)"` runs before any sudo
-invocation. If the user accepts, three `sudo` commands fire (sed, sshd -t,
-systemctl reload). On a freshly-rebooted box with no sudo cache, that's
-three password prompts — or one prompt if the sudo grace window is open.
-
-Not a bug, but a UX surprise. Better: cache a single `sudo -v` validation,
-then run the rest inside that 5-minute window.
-
----
-
 ### S-4 — `mo-lan-ssh` SSH wrapper auto-trusts LAN key changes
 **Severity:** **Informational, by design** — flagged so it doesn't get
 "fixed" by mistake.

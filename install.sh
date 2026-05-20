@@ -346,6 +346,9 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     fi
     if [[ -n "$_sshd_remove_cmd" ]]; then
         if confirm "Remove AcceptEnv DRAGON__* from /etc/ssh/sshd_config and reload sshd? (sudo required)"; then
+            # Prime sudo so sed/sshd-t/systemctl share one auth (see
+            # _install_sshd_acceptenv for the same idiom).
+            sudo -v || true
             sudo sed -i "$_sshd_remove_cmd" "$_uninstall_sshd_config"
             if sudo sshd -t 2>/dev/null; then
                 sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
@@ -599,6 +602,13 @@ _install_sshd_acceptenv() {
         info "Skipped — run install.sh again to configure later, or add manually."
         return
     fi
+
+    # Prime sudo so the chain of sudo calls below (sed migration, tee,
+    # sshd -t, sed revert, systemctl reload) share one auth — single
+    # prompt instead of up to five when the grace window is closed.
+    # `|| true` keeps the script flowing if the user cancels: subsequent
+    # sudo calls reprompt as before; no degradation versus the old code.
+    sudo -v || true
 
     # Old install (no marker) — strip bare line before re-adding with markers.
     # Mirrors the client-side migration in _install_ssh_sendenv.
