@@ -309,6 +309,7 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     else
         success "${ZSHRC} not managed by master-oogway — left untouched"
     fi
+    rm -f "${ZSHRC}.upstream-snapshot"
 
     # .gitconfig
     _uninstall_gitconfig_backup=$(_find_backup "${HOME}/.gitconfig.pre-master-oogway")
@@ -461,8 +462,8 @@ _check_zshrc_drift() {
     [[ -f "${template}" ]] || return
     if ! diff -q "${template}" "${ZSHRC}" &>/dev/null; then
         warn "Your ~/.zshrc differs from the current template."
-        warn "New features may have been added. To review:"
-        warn "  diff ${ZSHRC} ${template}"
+        warn "New features may have been added. Review with:"
+        warn "  master-oogway diff-zshrc"
         warn "Apply any changes you want manually — your file is never auto-overwritten."
     fi
 }
@@ -478,6 +479,10 @@ elif grep -q '\.master-oogway' "${ZSHRC}" 2>/dev/null; then
 else
     _install_zshrc
 fi
+
+# Snapshot the template alongside ~/.zshrc so `master-oogway diff-zshrc`
+# and future drift detection can compare against what shipped.
+copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}.upstream-snapshot"
 
 # ── .zshenv ────────────────────────────────────────────────────────────────────
 

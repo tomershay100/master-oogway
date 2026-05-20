@@ -174,7 +174,7 @@ plugins=(
     mo-env                     # fenv (fuzzy environment variable browser)
     mo-shell-tools             # h, ?, cwhich, vwhich, vizsh, soursh, zshtime, please, mo-where
     mo-apps                    # GUI app launchers (gnucash via flatpak)
-    mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, path
+    mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path
     mo-welcome                 # 5-line system snapshot banner on shell open (user@host, OS, kernel, date, uptime)
 
     # MUST BE LAST — wraps every ZLE widget defined above. See the note at the

@@ -35,18 +35,40 @@ master-oogway() {
         path)
             echo "$_MO_INSTALL_DIR"
             ;;
+        diff-zshrc)
+            local tool="${2:-}"
+            local template="${_MO_INSTALL_DIR}/zshrc.master-oogway"
+            local zshrc="${HOME}/.zshrc"
+            [[ -f "$template" ]] || { echo "master-oogway: template not found at $template" >&2; return 1; }
+            [[ -f "$zshrc" ]]    || { echo "master-oogway: $zshrc not found" >&2; return 1; }
+            if diff -q "$zshrc" "$template" &>/dev/null; then
+                echo "$zshrc matches the template — no diff."
+                return 0
+            fi
+            if [[ -n "$tool" ]]; then
+                # ${=tool} splits on whitespace so 'code --diff' works.
+                ${=tool} "$zshrc" "$template"
+            elif command -v git &>/dev/null && [[ -n "$(git config --get diff.tool 2>/dev/null)" ]]; then
+                git difftool --no-index "$zshrc" "$template"
+            else
+                diff -u "$zshrc" "$template"
+            fi
+            ;;
         help|-h|--help)
             cat <<EOF
 Usage: master-oogway <command> [args]
 
 Commands:
-  update              Pull latest master-oogway and re-run install.sh
-  uninstall           Run install.sh --uninstall (interactive)
-  version             Print the installed dragon version (date + commit)
-  configure [args]    Open dragon-configure (forwards args, e.g. --preset short)
-  edit                Open ~/.zshrc in \$EDITOR
-  path                Print the master-oogway install dir
-  help                Show this message
+  update               Pull latest master-oogway and re-run install.sh
+  uninstall            Run install.sh --uninstall (interactive)
+  version              Print the installed dragon version (date + commit)
+  configure [args]     Open dragon-configure (forwards args, e.g. --preset short)
+  edit                 Open ~/.zshrc in \$EDITOR
+  diff-zshrc [tool]    Show diff between your ~/.zshrc and the current template.
+                       [tool] overrides; otherwise uses git's diff.tool if set,
+                       else \`diff -u\`.
+  path                 Print the master-oogway install dir
+  help                 Show this message
 
 Install dir: $_MO_INSTALL_DIR
 EOF

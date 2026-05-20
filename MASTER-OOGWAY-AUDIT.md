@@ -86,29 +86,6 @@ hashed `known_hosts`.
 
 ## Section 3 — UX friction
 
-### U-2 — Drift detection tells the user "go diff it yourself"
-**Severity:** P2  **Confidence:** HIGH
-**File:** `install.sh:419-428`
-
-```bash
-warn "Your ~/.zshrc differs from the current template."
-warn "  diff ${ZSHRC} ${template}"
-warn "Apply any changes you want manually — your file is never auto-overwritten."
-```
-
-The user has to run `diff` manually, parse it manually, and merge manually.
-For a project that adds plugins frequently, this dumps a real maintenance
-burden on the user.
-
-**Better:**
-- Print the actual diff inline, capped to ~40 lines, with `+N more lines` tail.
-- Add `master-oogway diff-zshrc` to `mo-cli` so the user can see it any time.
-- Store a `~/.zshrc.upstream-snapshot` after each install — next install
-  computes `template-vs-snapshot` to surface what the *project* changed
-  rather than what the *user* changed.
-
----
-
 ### U-3 — No `master-oogway selfcheck` / health command
 **Severity:** P2  **Confidence:** HIGH
 
@@ -575,8 +552,7 @@ previous and each step is independently shippable.
 | 5 | P-2 drop chpwd hook (after measuring) | -1 | low |
 | 6 | U-3 `master-oogway selfcheck` | +40 | none |
 | 7 | M-1 first 5 bats tests | +200 | none |
-| 8 | U-2 diff drift detection | +30 | none |
-| 9 | M-4 CHANGELOG + v0.1 tag | new file | none |
+| 8 | M-4 CHANGELOG + v0.1 tag | new file | none |
 | … | wishlist items | as desired | low |
 
 **After step 2** (LICENSE + CI) you can publicly say "this is being actively
@@ -586,8 +562,8 @@ on the list and it's the one most users will look for.
 **After step 7** (first tests) you've crossed the line from "dotfiles
 collection" to "actually-maintained tool."
 
-**After step 9** (CHANGELOG + tags) future-you can answer "what did I
-ship between Tuesday and now" without diff archaeology.
+**After step 8** (CHANGELOG + tags) future-you can answer "what did I
+ship between Monday and now" without diff archaeology.
 
 ---
 
