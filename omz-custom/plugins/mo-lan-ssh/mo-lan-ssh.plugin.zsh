@@ -548,7 +548,10 @@ _mo_lan_setup() {
     fi
     if ! grep -qE '^[[:space:]]*Include[[:space:]]+config\.d/' "$_MO_LAN_SSH_USER_CONFIG"; then
         local tmp="${_MO_LAN_SSH_USER_CONFIG}.tmp"
-        { echo "Include config.d/*"; echo ""; cat "$_MO_LAN_SSH_USER_CONFIG"; } > "$tmp"
+        # Appended (not prepended) so the user's existing Host blocks win
+        # ssh_config(5)'s "first match wins" rule on collision with our
+        # auto-generated config.d/lan-hosts.
+        { cat "$_MO_LAN_SSH_USER_CONFIG"; echo ""; echo "Include config.d/*"; } > "$tmp"
         chmod 600 "$tmp"
         command mv "$tmp" "$_MO_LAN_SSH_USER_CONFIG"
         echo "Added 'Include config.d/*' to ${_MO_LAN_SSH_USER_CONFIG}"

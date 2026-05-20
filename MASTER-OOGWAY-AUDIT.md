@@ -86,32 +86,6 @@ hashed `known_hosts`.
 
 ## Section 3 — UX friction
 
-### U-5 — `mo-lan-ssh setup` prepends `Include config.d/*` — overrides existing user Host blocks
-**Severity:** P2  **Confidence:** HIGH
-**File:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:529-534`
-
-```zsh
-local tmp="${_MO_LAN_SSH_USER_CONFIG}.tmp"
-{ echo "Include config.d/*"; echo ""; cat "$_MO_LAN_SSH_USER_CONFIG"; } > "$tmp"
-```
-
-SSH applies the **first** matching value for each option (ssh_config(5)).
-By prepending `Include`, our `config.d/lan-hosts` is parsed before the
-user's existing config. If the user already has a `Host laptop` block with
-custom settings (e.g., a specific IdentityFile), and we generate a
-`Host laptop` in `config.d/lan-hosts`, **ours wins silently**.
-
-**Fix options:**
-1. Append `Include config.d/*` at the end of `~/.ssh/config` (after user's
-   Host blocks). User's specific configs take precedence.
-2. Before generating each `Host <name>` block in `config.d/lan-hosts`,
-   check the user's `~/.ssh/config` for an existing `Host <name>` and skip
-   it (with a `# skipped: defined in ~/.ssh/config` comment).
-
-Option 1 is one-line; option 2 is more correct.
-
----
-
 ## Section 4 — Performance
 
 ### P-1 — `ip route show default` called 4 times per shell (mo-lan-ssh)

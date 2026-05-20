@@ -34,6 +34,8 @@ Each candidate is then port-probed to confirm an SSH listener.
 
 **Invalid cache entries:** the manual overlay (`~/.config/master-oogway/lan-hosts.manual`) is hand-editable, so the cache loader validates each line. Hostnames must match `[a-zA-Z0-9_-]+` and ports must be 1–65535. Invalid lines are skipped with a yellow `[mo-lan-ssh] Skipped <file>:<lineno>: …` warning on stderr so you can clean them up.
 
+**`~/.ssh/config` Include placement:** `mo-lan-ssh setup` *appends* `Include config.d/*` at the bottom of `~/.ssh/config`. Per `ssh_config(5)`'s "first match wins" rule, any `Host <name>` you define above that Include takes precedence over the auto-generated `config.d/lan-hosts`. To override a discovered host, add a `Host <name>` block to your main `~/.ssh/config`.
+
 ## Configuration
 
 Set in `~/.zshrc` or `~/.config/master-oogway/custom-pre-zsh/` before the plugin loads:
