@@ -88,57 +88,6 @@ hashed `known_hosts`.
 
 ## Section 4 — Performance
 
-### P-3 — `__set_ssh_connection_count_content` runs `who` on every prompt
-**Severity:** P3  **Confidence:** HIGH
-**File:** `omz-custom/themes/dragon/parts/segments_right.zsh:97`
-
-`who` is fast on a desktop but can hang on systems with stale utmp records
-(observed on long-running servers with crashed processes that didn't clean
-utmp). For a per-prompt call, even 20ms is noticeable.
-
-The result doesn't change between commands; only on actual SSH connect/
-disconnect events. Could be cached for the lifetime of a `_DRAGON_SESSION_*`
-state and only refreshed when `$EPOCHSECONDS - last_check > 10` or on
-explicit `kill -SIGHUP` notification.
-
-Low impact in normal use, but trivially deferrable if it ever bites.
-
----
-
-### P-4 — `gitstatus_query -t 0.03` is hardcoded
-**Severity:** P3  **Confidence:** MEDIUM (the precise semantics of `-t` with
-`-c` callbacks vary across `gitstatus` versions)
-**File:** `omz-custom/themes/dragon/parts/transient.zsh:84`
-
-`-t 0.03` is the wait threshold before falling back to async. On a slow
-disk or large mono-repo, 30ms isn't enough — gitstatus returns nothing
-synchronously and the prompt is drawn without git info, then redrawn when
-the callback fires. Cosmetically noticeable.
-
-Add `DRAGON__GIT_STATUS_QUERY_TIMEOUT` to `schema.zsh`, default `0.03`.
-
----
-
-### P-5 — `__calc_prompt_length` undercounts nerd-font / double-wide glyphs
-**Severity:** P3  **Confidence:** MEDIUM
-**File:** `omz-custom/themes/dragon/parts/prompt.zsh:4-5`
-
-```zsh
-local zsh_prompt_length=${(m)#${${(%)PROMPT}//$'\e['[0-9;]#[A-Za-z]/}}
-```
-
-`(m)#` counts grapheme clusters, treating each as width 1. But some
-nerd-font glyphs (and most emoji) are double-wide in the terminal. The
-auto-multiline-git-status calculation uses this length to decide whether
-the right-side overflows; it will trigger multiline mode later than it
-should on terminals that show those glyphs as 2 columns.
-
-Hard to fix correctly (terminal width of arbitrary glyphs is genuinely
-non-portable). Document it; add a `DRAGON__PROMPT_WIDTH_FUDGE` int the user
-can bump if they see "almost-overflow but no break."
-
----
-
 ## Section 5 — Architecture / refactor observations
 
 ### A-1 — `mo-lan-ssh` is now 875 LOC across two files
