@@ -92,19 +92,31 @@ _mo_lan_check_network_async() {
 # Merge auto cache + manual overlay into _MO_LAN_HOSTS (set) + _MO_LAN_PORTS
 # (host→port map). Manual overlay wins on hostname collision. Lines are
 # either "hostname" (port 22) or "hostname:port". # and blank lines skipped.
+# Invalid lines (bad hostname or port) are skipped with a yellow warning to
+# stderr so the user can clean them up — see _mo_lan_valid_host/_port.
 _mo_lan_load_caches() {
     typeset -gA _MO_LAN_HOSTS=()
     typeset -gA _MO_LAN_PORTS=()
-    local file line h p
+    local file line h p lineno
     # Manual first so it wins the "already present" check below.
     for file in "$_MO_LAN_SSH_MANUAL" "$_MO_LAN_SSH_CACHE"; do
         [[ -f "$file" ]] || continue
+        lineno=0
         while IFS= read -r line; do
+            (( lineno++ ))
             [[ "$line" == '#'* || -z "$line" ]] && continue
             if [[ "$line" == *:* ]]; then
                 h="${line%%:*}"; p="${line##*:}"
             else
                 h="$line"; p="22"
+            fi
+            if ! _mo_lan_valid_host "$h"; then
+                print -P "%F{yellow}[mo-lan-ssh]%f Skipped ${file}:${lineno}: invalid hostname '${h}' (allowed: a-z A-Z 0-9 _ -)" >&2
+                continue
+            fi
+            if ! _mo_lan_valid_port "$p"; then
+                print -P "%F{yellow}[mo-lan-ssh]%f Skipped ${file}:${lineno}: invalid port '${p}' for host '${h}' (must be 1–65535)" >&2
+                continue
             fi
             [[ -z "${_MO_LAN_HOSTS[$h]:-}" ]] && {
                 _MO_LAN_HOSTS[$h]=1
@@ -150,6 +162,14 @@ _mo_lan_maybe_write_sshconf() {
     print -- "$combined_sha" > "$_MO_LAN_SSH_SHA"
     _mo_lan_log "Wrote ${_MO_LAN_SSH_OUTPUT}"
 }
+
+# Validate hostname / port — used by both the file-format reader and the
+# CLI `add` subcommand, so the rule lives in one place. The hostname regex
+# is intentionally narrow (no dots, no whitespace) because LAN hostnames
+# only ever pass through `ssh <host>` shorthand; FQDNs go in ~/.ssh/config
+# the normal way.
+_mo_lan_valid_host() { [[ "$1" =~ ^[a-zA-Z0-9_-]+$ ]] }
+_mo_lan_valid_port() { [[ "$1" =~ ^[0-9]+$ ]] && (( $1 >= 1 && $1 <= 65535 )) }
 
 # Does `$1` already mean something in this shell? Checks every namespace
 # zsh resolves a bare word against: external commands on PATH, aliases,
@@ -413,12 +433,12 @@ _mo_lan_add() {
     if [[ "$entry" == *:* ]]; then h="${entry%%:*}"; p="${entry##*:}"
     else h="$entry"; p=""; fi
 
-    if [[ ! "$h" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    if ! _mo_lan_valid_host "$h"; then
         echo "mo-lan-ssh: invalid hostname '$h' (allowed: a-z A-Z 0-9 _ -)" >&2
         return 1
     fi
-    if [[ -n "$p" && ! "$p" =~ ^[0-9]+$ ]]; then
-        echo "mo-lan-ssh: invalid port '$p' (must be numeric)" >&2
+    if [[ -n "$p" ]] && ! _mo_lan_valid_port "$p"; then
+        echo "mo-lan-ssh: invalid port '$p' (must be a number 1–65535)" >&2
         return 1
     fi
 

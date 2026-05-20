@@ -32,6 +32,8 @@ Each candidate is then port-probed to confirm an SSH listener.
 
 **First run:** aliases appear on the second shell open (first scan runs in the background).
 
+**Invalid cache entries:** the manual overlay (`~/.config/master-oogway/lan-hosts.manual`) is hand-editable, so the cache loader validates each line. Hostnames must match `[a-zA-Z0-9_-]+` and ports must be 1–65535. Invalid lines are skipped with a yellow `[mo-lan-ssh] Skipped <file>:<lineno>: …` warning on stderr so you can clean them up.
+
 ## Configuration
 
 Set in `~/.zshrc` or `~/.config/master-oogway/custom-pre-zsh/` before the plugin loads:
