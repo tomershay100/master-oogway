@@ -88,27 +88,6 @@ hashed `known_hosts`.
 
 ## Section 4 — Performance
 
-### P-1 — `ip route show default` called 4 times per shell (mo-lan-ssh)
-**Severity:** P3  **Confidence:** HIGH
-**Files:**
-- `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:45-46`
-- `omz-custom/plugins/mo-lan-ssh/_mo_lan_discover.zsh:28-29, 40`
-
-`_mo_lan_network_id` parses the default route twice (gw on line 45, iface on
-46). The same pattern recurs in the discover script. Each invocation is one
-fork + one awk = ~1-2ms × 4 = ~4-8ms per shell. Trivial in absolute terms
-but trivially fixable:
-
-```zsh
-local gw iface
-read gw iface < <(ip route show default 2>/dev/null \
-    | awk '/default/ { print $3, $5; exit }')
-```
-
-**Verify with `zshtime` before/after.**
-
----
-
 ### P-2 — Prompt rendered twice on every `cd`
 **Severity:** P2  **Confidence:** MEDIUM (need to verify the chpwd hook is
 actually redundant in zsh's hook ordering)
@@ -488,20 +467,19 @@ previous and each step is independently shippable.
 | 1 | M-3 LICENSE | +21 | none |
 | 2 | M-2 CI lint workflow | +30 | none |
 | 3 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
-| 4 | P-1 single ip route | -4, +4 | none |
-| 5 | P-2 drop chpwd hook (after measuring) | -1 | low |
-| 6 | M-1 first 5 bats tests | +200 | none |
-| 7 | M-4 CHANGELOG + v0.1 tag | new file | none |
+| 4 | P-2 drop chpwd hook (after measuring) | -1 | low |
+| 5 | M-1 first 5 bats tests | +200 | none |
+| 6 | M-4 CHANGELOG + v0.1 tag | new file | none |
 | … | wishlist items | as desired | low |
 
 **After step 2** (LICENSE + CI) you can publicly say "this is being actively
 maintained against a verified spec." That's the cheapest credibility step
 on the list and it's the one most users will look for.
 
-**After step 6** (first tests) you've crossed the line from "dotfiles
+**After step 5** (first tests) you've crossed the line from "dotfiles
 collection" to "actually-maintained tool."
 
-**After step 7** (CHANGELOG + tags) future-you can answer "what did I
+**After step 6** (CHANGELOG + tags) future-you can answer "what did I
 ship between Monday and now" without diff archaeology.
 
 ---

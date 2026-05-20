@@ -42,8 +42,8 @@ _mo_lan_log() {
 
 _mo_lan_network_id() {
     local gw iface subnet
-    gw=$(ip route show default 2>/dev/null | awk '/default/ { print $3; exit }')
-    iface=$(ip route show default 2>/dev/null | awk '/default/ { print $5; exit }')
+    read -r gw iface < <(ip route show default 2>/dev/null \
+        | awk '/default/ { print $3, $5; exit }')
     [[ -z "$iface" ]] && { echo "unknown"; return; }
     subnet=$(ip -o -f inet addr show "$iface" 2>/dev/null | awk '{ print $4 }' | head -1)
     print -- "${gw}-${subnet}" | md5sum | cut -d' ' -f1 | cut -c1-8
