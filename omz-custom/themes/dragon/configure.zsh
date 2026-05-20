@@ -679,6 +679,28 @@ _dragon_filter_changed_groups() {
     _DRAGON_GROUPS=("${changed[@]}")
 }
 
+# Shared backup-hints + y/N confirm for destructive preset resets. Caller
+# prints its own header so the question can be specific.
+_dragon_warn_preset_reset() {
+    local prompt="${1:-Continue?}"
+    if [[ -f "${_DRAGON_CONF_FILE}" ]]; then
+        print -P "  Your current settings will be replaced."
+        print ""
+        print -P "  %F{yellow}Back up first — restore any time by overwriting conf.zsh:%f"
+        print ""
+        print -P "    %B# back up%b"
+        print -P "    cp ${_DRAGON_CONF_FILE} ${_DRAGON_CONF_FILE}.bak"
+        print ""
+        print -P "    %B# restore later%b"
+        print -P "    cp ${_DRAGON_CONF_FILE}.bak ${_DRAGON_CONF_FILE} && soursh"
+        print ""
+    fi
+    printf "  %s [y/N] " "$prompt"
+    local _confirm
+    read -r _confirm
+    [[ "$_confirm" == y* || "$_confirm" == Y* ]]
+}
+
 _dragon_show_start_menu() {
     clear
     print -P "%B%F{cyan}── dragon Theme Configurator ────────────────────────────────────────%f%b"
@@ -704,7 +726,18 @@ _dragon_show_start_menu() {
             _DRAGON_CHOSEN_PRESET="${_DRAGON_STATE[preset]:-default}"
             ;;
         3)
-            # Reset to preset: discard current config, start fresh from a chosen preset
+            clear
+            print -P "%B%F{cyan}── dragon: Reset current config to preset ───────────────────────────%f%b"
+            print ""
+            print -P "  This will discard your current settings and step you through"
+            print -P "  choosing a preset (short / default / verbose)."
+            if ! _dragon_warn_preset_reset "Continue with reset?"; then
+                print ""
+                print -P "  %F{245}Cancelled — your current config is unchanged.%f"
+                sleep 0.6
+                _dragon_cleanup
+                return 1
+            fi
             print -P "  %F{green}✓ Reset to preset%f"
             sleep 0.4
             _dragon_select_preset
@@ -818,22 +851,7 @@ EOF
         print -P "%B%F{cyan}── dragon: Switch to '${_preset}' preset ────────────────────────────%f%b"
         print ""
         print -P "  This will reset your theme config to the %B${_preset}%b preset defaults."
-        if [[ -f "${_DRAGON_CONF_FILE}" ]]; then
-            print -P "  Your current settings will be replaced."
-            print ""
-            print -P "  %F{yellow}Back up first — restore any time by overwriting conf.zsh:%f"
-            print ""
-            print -P "    %B# back up%b"
-            print -P "    cp ${_DRAGON_CONF_FILE} ${_DRAGON_CONF_FILE}.bak"
-            print ""
-            print -P "    %B# restore later%b"
-            print -P "    cp ${_DRAGON_CONF_FILE}.bak ${_DRAGON_CONF_FILE} && soursh"
-            print ""
-        fi
-        printf "  Switch to %s preset now? [y/N] " "$_preset"
-        local _preset_confirm
-        read -r _preset_confirm
-        if [[ "$_preset_confirm" != y* && "$_preset_confirm" != Y* ]]; then
+        if ! _dragon_warn_preset_reset "Switch to ${_preset} preset now?"; then
             print ""
             print -P "  %F{245}Aborted. Back up first, then re-run:%f"
             print -P "  %F{245}  dragon-configure --preset ${_preset}%f"

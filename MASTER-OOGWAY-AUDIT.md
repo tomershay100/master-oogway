@@ -86,22 +86,6 @@ hashed `known_hosts`.
 
 ## Section 3 — UX friction
 
-### U-1 — Interactive "Reset to preset" has no destructive-change warning
-**Severity:** P2  **Confidence:** HIGH
-**File:** `omz-custom/themes/dragon/configure.zsh:706-711`
-
-The CLI path (`dragon-configure --preset short`) prints a multi-line
-warning, shows the backup `cp` command, and asks `[y/N]`. The interactive
-start-menu option `[3] Reset to preset` calls `_dragon_select_preset`
-directly with no warning of any kind.
-
-**Fix:** add the same warning block to the start-menu branch before calling
-`_dragon_select_preset`. Optionally: make the wizard auto-write
-`conf.zsh.bak` before destructive operations (it currently just *prints* the
-backup command for the user to copy).
-
----
-
 ### U-2 — Drift detection tells the user "go diff it yourself"
 **Severity:** P2  **Confidence:** HIGH
 **File:** `install.sh:419-428`
@@ -553,7 +537,6 @@ before tagging.
       — but add a test that simulates `uname` returning Darwin)
 
 ### UX
-- [ ] U-1 (reset-to-preset warning) added
 - [ ] U-3 (`master-oogway selfcheck`) implemented
 - [ ] Drift detection emits *something actionable*, not just "go diff it"
 
@@ -588,23 +571,22 @@ previous and each step is independently shippable.
 | 1 | M-3 LICENSE | +21 | none |
 | 2 | M-2 CI lint workflow | +30 | none |
 | 3 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
-| 4 | U-1 reset-to-preset warning | +15 | none |
-| 5 | P-1 single ip route | -4, +4 | none |
-| 6 | P-2 drop chpwd hook (after measuring) | -1 | low |
-| 7 | U-3 `master-oogway selfcheck` | +40 | none |
-| 8 | M-1 first 5 bats tests | +200 | none |
-| 9 | U-2 diff drift detection | +30 | none |
-| 10 | M-4 CHANGELOG + v0.1 tag | new file | none |
+| 4 | P-1 single ip route | -4, +4 | none |
+| 5 | P-2 drop chpwd hook (after measuring) | -1 | low |
+| 6 | U-3 `master-oogway selfcheck` | +40 | none |
+| 7 | M-1 first 5 bats tests | +200 | none |
+| 8 | U-2 diff drift detection | +30 | none |
+| 9 | M-4 CHANGELOG + v0.1 tag | new file | none |
 | … | wishlist items | as desired | low |
 
 **After step 2** (LICENSE + CI) you can publicly say "this is being actively
 maintained against a verified spec." That's the cheapest credibility step
 on the list and it's the one most users will look for.
 
-**After step 8** (first tests) you've crossed the line from "dotfiles
+**After step 7** (first tests) you've crossed the line from "dotfiles
 collection" to "actually-maintained tool."
 
-**After step 10** (CHANGELOG + tags) future-you can answer "what did I
+**After step 9** (CHANGELOG + tags) future-you can answer "what did I
 ship between Tuesday and now" without diff archaeology.
 
 ---
