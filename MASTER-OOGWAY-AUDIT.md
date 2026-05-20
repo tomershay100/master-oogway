@@ -49,36 +49,6 @@ For each finding:
 
 ## Section 1 — Bugs (real, reproducible)
 
-### B-3 — Fresh-install uninstall leaves a 3-line stub `.gitconfig`
-**Severity:** P3  **Confidence:** HIGH (downgraded from previous draft —
-the sed surgery does work, it just leaves a husk file)
-**File:** `install.sh:282-294`
-
-When a user installs `master-oogway` on a system with no prior `.gitconfig`,
-`_install_gitconfig` creates the file with `[include]` + `[user]`. On
-uninstall, no `~/.gitconfig.pre-master-oogway` exists (we never made one),
-so the `sed -i '/gitconfig\.master-oogway/d'` plus the
-`/^\[include\]$/{N;…}` cleanup runs. The result is a working `.gitconfig`
-that contains only:
-
-```
-# Bundle defaults — your settings below override these.
-
-# Your identity and personal overrides go here (or below the include above).
-[user]
-    name = ...
-    email = ...
-```
-
-Not broken (the `[user]` block survives), but if the user truly wanted no
-`.gitconfig`, we left them a husk we created.
-
-**Fix:** track in `~/.config/master-oogway/state` whether we created the
-file fresh (e.g., `gitconfig_created=true`). On uninstall, if so, remove it
-after asking.
-
----
-
 ### B-4 — `mo-lan-ssh` cache reader trusts the port field blindly
 **Severity:** P3  **Confidence:** HIGH
 **File:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:104-108`
