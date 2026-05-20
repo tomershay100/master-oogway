@@ -84,23 +84,6 @@ hashed `known_hosts`.
 
 ---
 
-### S-2 — `AcceptEnv` in `/etc/ssh/sshd_config` is not marker-wrapped
-**Severity:** P3  **Confidence:** HIGH
-**Files:** `install.sh:535` vs `install.sh:563`
-
-The user-side `SendEnv DRAGON__*` is wrapped in
-`# BEGIN/END master-oogway:sendenv` markers (line 535). The system-side
-`AcceptEnv DRAGON__*` is appended as a bare line (line 563).
-
-If a *different* tool adds an identical line, the uninstall's
-`sed '/AcceptEnv DRAGON__\*/d'` deletes it. Vanishingly small risk in
-practice, but inconsistent with the client-side discipline.
-
-**Fix:** wrap the `AcceptEnv` line in markers too, mirror the migration logic
-that already exists on the client side (line 530-533).
-
----
-
 ### S-3 — `master-oogway uninstall` doesn't ask before reading `sudo`
 **Severity:** P3  **Confidence:** HIGH
 **File:** `install.sh:311-321`
@@ -596,7 +579,6 @@ before tagging.
 
 ### Security
 - [ ] S-1 (HashKnownHosts) resolved (drop or scope or opt-in)
-- [ ] S-2 (AcceptEnv markers) resolved
 - [ ] Confirm `install.sh` won't run on macOS / non-Linux (already does this
       — but add a test that simulates `uname` returning Darwin)
 
@@ -640,20 +622,19 @@ previous and each step is independently shippable.
 | 5 | P-1 single ip route | -4, +4 | none |
 | 6 | P-2 drop chpwd hook (after measuring) | -1 | low |
 | 7 | U-3 `master-oogway selfcheck` | +40 | none |
-| 8 | S-2 AcceptEnv markers | +20, -10 | low (need to handle existing unmarked installs) |
-| 9 | M-1 first 5 bats tests | +200 | none |
-| 10 | U-2 diff drift detection | +30 | none |
-| 11 | M-4 CHANGELOG + v0.1 tag | new file | none |
+| 8 | M-1 first 5 bats tests | +200 | none |
+| 9 | U-2 diff drift detection | +30 | none |
+| 10 | M-4 CHANGELOG + v0.1 tag | new file | none |
 | … | wishlist items | as desired | low |
 
 **After step 2** (LICENSE + CI) you can publicly say "this is being actively
 maintained against a verified spec." That's the cheapest credibility step
 on the list and it's the one most users will look for.
 
-**After step 9** (first tests) you've crossed the line from "dotfiles
+**After step 8** (first tests) you've crossed the line from "dotfiles
 collection" to "actually-maintained tool."
 
-**After step 11** (CHANGELOG + tags) future-you can answer "what did I
+**After step 10** (CHANGELOG + tags) future-you can answer "what did I
 ship between Tuesday and now" without diff archaeology.
 
 ---

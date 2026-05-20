@@ -336,11 +336,17 @@ if [[ "${1:-}" == "--uninstall" ]]; then
         success "SendEnv DRAGON__* not in ~/.ssh/config — nothing to remove"
     fi
 
-    # /etc/ssh/sshd_config — remove AcceptEnv DRAGON__* (needs sudo)
+    # /etc/ssh/sshd_config — remove AcceptEnv DRAGON__* (marker or legacy bare line)
     _uninstall_sshd_config="/etc/ssh/sshd_config"
-    if grep -qF 'AcceptEnv DRAGON__*' "$_uninstall_sshd_config" 2>/dev/null; then
+    _sshd_remove_cmd=""
+    if grep -qF '# BEGIN master-oogway:acceptenv' "$_uninstall_sshd_config" 2>/dev/null; then
+        _sshd_remove_cmd='/# BEGIN master-oogway:acceptenv/,/# END master-oogway:acceptenv/d'
+    elif grep -qF 'AcceptEnv DRAGON__*' "$_uninstall_sshd_config" 2>/dev/null; then
+        _sshd_remove_cmd='/AcceptEnv DRAGON__\*/d'
+    fi
+    if [[ -n "$_sshd_remove_cmd" ]]; then
         if confirm "Remove AcceptEnv DRAGON__* from /etc/ssh/sshd_config and reload sshd? (sudo required)"; then
-            sudo sed -i '/AcceptEnv DRAGON__\*/d' "$_uninstall_sshd_config"
+            sudo sed -i "$_sshd_remove_cmd" "$_uninstall_sshd_config"
             if sudo sshd -t 2>/dev/null; then
                 sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
                 success "Removed AcceptEnv DRAGON__* and reloaded sshd"
@@ -574,14 +580,16 @@ _install_ssh_sendenv
 
 _install_sshd_acceptenv() {
     local sshd_config="/etc/ssh/sshd_config"
-    local accept_line="AcceptEnv DRAGON__*"
+    local marker_begin="# BEGIN master-oogway:acceptenv"
+    local marker_end="# END master-oogway:acceptenv"
 
     if [[ ! -f "$sshd_config" ]]; then
         info "sshd not found — skipping AcceptEnv (not a server or sshd not installed)"
         return
     fi
 
-    if grep -qF "$accept_line" "$sshd_config"; then
+    # Already present (marker-based) — nothing to do.
+    if grep -qF "$marker_begin" "$sshd_config" 2>/dev/null; then
         success "AcceptEnv DRAGON__* already in /etc/ssh/sshd_config"
         return
     fi
@@ -591,10 +599,19 @@ _install_sshd_acceptenv() {
         info "Skipped — run install.sh again to configure later, or add manually."
         return
     fi
-    printf '%s\n' "$accept_line" | sudo tee -a "$sshd_config" >/dev/null
+
+    # Old install (no marker) — strip bare line before re-adding with markers.
+    # Mirrors the client-side migration in _install_ssh_sendenv.
+    if grep -qF 'AcceptEnv DRAGON__*' "$sshd_config" 2>/dev/null; then
+        sudo sed -i '/AcceptEnv DRAGON__\*/d' "$sshd_config"
+        info "Migrated existing AcceptEnv DRAGON__* to marker-wrapped stanza"
+    fi
+
+    printf '\n%s\nAcceptEnv DRAGON__*\n%s\n' "$marker_begin" "$marker_end" \
+        | sudo tee -a "$sshd_config" >/dev/null
     if ! sudo sshd -t 2>/dev/null; then
         warn "sshd config validation failed — reverting change to avoid lockout"
-        sudo sed -i '/AcceptEnv DRAGON__\*/d' "$sshd_config"
+        sudo sed -i "/${marker_begin}/,/${marker_end}/d" "$sshd_config"
         return 1
     fi
     sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
