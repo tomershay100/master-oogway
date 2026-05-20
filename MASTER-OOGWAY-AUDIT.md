@@ -84,22 +84,6 @@ hashed `known_hosts`.
 
 ---
 
-### S-4 — `mo-lan-ssh` SSH wrapper auto-trusts LAN key changes
-**Severity:** **Informational, by design** — flagged so it doesn't get
-"fixed" by mistake.
-**File:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:317-330`
-
-When a LAN host's key changes (reinstalled box, MAC reuse), the wrapper runs
-`ssh-keygen -R` and reconnects. This is deliberate — LAN-only, you trust the
-network. The README documents it. Don't change without re-reading the
-threat model.
-
-(If the threat model gets stricter later: add `MO_LAN_AUTO_KEY_PURGE=false`
-as a separate knob from `MO_LAN_AUTO_TRUST` so the user can keep the
-ssh-copy-id helper but reject silent host-key rotation.)
-
----
-
 ## Section 3 — UX friction
 
 ### U-1 — Interactive "Reset to preset" has no destructive-change warning
