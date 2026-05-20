@@ -12,7 +12,7 @@ dragon-configure --dismiss         # silence the new-variables notifier
 dragon-configure --help            # show all options
 ```
 
-Settings are written to `~/.config/master-oogway/conf.zsh` — never overwritten after creation.
+Settings are written to `~/.config/master-oogway/conf.zsh` — never overwritten after creation, except by an explicit user-initiated reset (which always writes a timestamped backup first; see Presets below).
 
 ## Presets
 
@@ -26,10 +26,12 @@ Settings are written to `~/.config/master-oogway/conf.zsh` — never overwritten
 dragon-configure --preset default
 ```
 
-To revert after a preset switch, use the backup printed by the command:
+A preset switch (CLI `--preset` or interactive `[3] Reset to preset`) writes
+a timestamped backup at `~/.config/master-oogway/conf.zsh.bak.<YYYYMMDD_HHMMSS>`
+before overwriting. To revert:
 
 ```bash
-cp ~/.config/master-oogway/conf.zsh.bak ~/.config/master-oogway/conf.zsh && soursh
+cp ~/.config/master-oogway/conf.zsh.bak.<ts> ~/.config/master-oogway/conf.zsh && soursh
 ```
 
 ## SSH forwarding

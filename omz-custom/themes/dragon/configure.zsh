@@ -679,26 +679,26 @@ _dragon_filter_changed_groups() {
     _DRAGON_GROUPS=("${changed[@]}")
 }
 
-# Shared backup-hints + y/N confirm for destructive preset resets. Caller
-# prints its own header so the question can be specific.
+# Shared confirm-and-auto-backup for destructive preset resets. Caller prints
+# its own header so the question can be specific. Returns 0 if the user
+# accepts (and the backup, if any, succeeded); 1 if they decline.
 _dragon_warn_preset_reset() {
     local prompt="${1:-Continue?}"
     if [[ -f "${_DRAGON_CONF_FILE}" ]]; then
         print -P "  Your current settings will be replaced."
-        print ""
-        print -P "  %F{yellow}Back up first — restore any time by overwriting conf.zsh:%f"
-        print ""
-        print -P "    %B# back up%b"
-        print -P "    cp ${_DRAGON_CONF_FILE} ${_DRAGON_CONF_FILE}.bak"
-        print ""
-        print -P "    %B# restore later%b"
-        print -P "    cp ${_DRAGON_CONF_FILE}.bak ${_DRAGON_CONF_FILE} && soursh"
+        print -P "  %F{245}A timestamped backup will be saved to ${_DRAGON_CONF_FILE}.bak.<ts>%f"
         print ""
     fi
     printf "  %s [y/N] " "$prompt"
     local _confirm
     read -r _confirm
-    [[ "$_confirm" == y* || "$_confirm" == Y* ]]
+    [[ "$_confirm" == y* || "$_confirm" == Y* ]] || return 1
+    if [[ -f "${_DRAGON_CONF_FILE}" ]]; then
+        local _bak="${_DRAGON_CONF_FILE}.bak.$(date +%Y%m%d_%H%M%S)"
+        cp "${_DRAGON_CONF_FILE}" "$_bak"
+        print -P "  %F{green}✓%f Backup saved: %B${_bak}%b"
+    fi
+    return 0
 }
 
 _dragon_show_start_menu() {
@@ -853,8 +853,7 @@ EOF
         print -P "  This will reset your theme config to the %B${_preset}%b preset defaults."
         if ! _dragon_warn_preset_reset "Switch to ${_preset} preset now?"; then
             print ""
-            print -P "  %F{245}Aborted. Back up first, then re-run:%f"
-            print -P "  %F{245}  dragon-configure --preset ${_preset}%f"
+            print -P "  %F{245}Aborted. Your conf.zsh is unchanged. Re-run: dragon-configure --preset ${_preset}%f"
             _dragon_cleanup
             return 0
         fi

@@ -86,21 +86,6 @@ hashed `known_hosts`.
 
 ## Section 3 — UX friction
 
-### U-4 — `dragon-configure --preset` shows backup command but doesn't make the backup
-**Severity:** P3  **Confidence:** HIGH
-**File:** `omz-custom/themes/dragon/configure.zsh:823-830`
-
-The wizard prints `cp $conf $conf.bak` for the user to copy-paste, then
-overwrites the conf. If the user is excited and hits `y`, they've just lost
-their config (recoverable from git history if they've been committing it,
-but most people don't).
-
-**Fix:** auto-write `${_DRAGON_CONF_FILE}.bak` before applying the preset,
-print "Backup saved to …" instead of "Run cp …". Minor reduction in
-foot-shooting.
-
----
-
 ### U-5 — `mo-lan-ssh setup` prepends `Include config.d/*` — overrides existing user Host blocks
 **Severity:** P2  **Confidence:** HIGH
 **File:** `omz-custom/plugins/mo-lan-ssh/mo-lan-ssh.plugin.zsh:529-534`
