@@ -106,17 +106,6 @@ lands.
 
 ---
 
-### A-2 — Presets are hardcoded in `_dragon_apply_preset`
-**File:** `omz-custom/themes/dragon/configure.zsh:107-172`
-
-Adding a fourth preset means editing three places (the case statement, the
-`--preset` validation regex, and the help text). Data-driving this (presets
-in `schema.zsh` as `_DRAGON_PRESETS[<name>]="VAR1=val1 VAR2=val2 …"`) makes
-contribution easier. Low priority — three presets is probably enough
-forever.
-
----
-
 ### A-3 — `# Requires:` convention is inconsistent across plugins
 After this week's CONTRIBUTING update, the convention is documented:
 external dependencies go at the top of the plugin in a `# Requires: …`

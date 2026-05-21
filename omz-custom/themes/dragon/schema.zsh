@@ -389,3 +389,84 @@ _dragon_init_groups() {
         [exit_status]="ENABLE_EXIT_STATUS ENABLE_FULL_EXIT_STATUS EXIT_STATUS_FOREGROUND_COLOR EXIT_STATUS_BACKGROUND_COLOR EXIT_STATUS_BOLD EXIT_STATUS_UNDERLINE EXIT_STATUS_PREFIX EXIT_STATUS_SUFFIX"
     )
 }
+
+# Presets — names + descriptions + multi-line example shown in the wizard.
+# Add a new preset by:
+#   1. Appending its name to _DRAGON_PRESET_NAMES
+#   2. Adding _DRAGON_PRESET_DESC[<name>] and _DRAGON_PRESET_EXAMPLE[<name>]
+#   3. Defining _dragon_preset_<name> below
+# configure.zsh discovers all three by name; no changes needed there.
+_dragon_init_presets() {
+    typeset -ga _DRAGON_PRESET_NAMES=( short default verbose )
+    typeset -gA _DRAGON_PRESET_DESC=(
+        [short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
+        [default]='Balanced. username@hostname:dir ❯, git status, time & timer.'
+        [verbose]='Maximum info. Multiline, full paths, timestamps, rich git.'
+    )
+    typeset -gA _DRAGON_PRESET_EXAMPLE=(
+        [short]='hostname:~/projects ❯'
+        [default]='user@myhost:~/projects on main ✔
+              ❯'
+        [verbose]='╭ user at myhost in /home/user/projects
+              │  on ‹main› ✔
+              ╰╴❯'
+    )
+}
+
+_dragon_preset_short() {
+    _DRAGON_CURRENT[LEFT_SEGMENT_SEPARATOR]=""
+    _DRAGON_CURRENT[LEFT_SEGMENT_SEPARATOR_SAME_COLOR]=""
+    _DRAGON_CURRENT[RIGHT_SEGMENT_SEPARATOR]=""
+    _DRAGON_CURRENT[RIGHT_SEGMENT_SEPARATOR_SAME_COLOR]=""
+    _DRAGON_CURRENT[ENABLE_USERNAME]="false"
+    _DRAGON_CURRENT[DIRECTORY_FORMAT]="short"
+    _DRAGON_CURRENT[PROMPT_CHAR]='$'
+    _DRAGON_CURRENT[GIT_PROMPT_CHAR]='$'
+    _DRAGON_CURRENT[ENABLE_SSH_PREFIX]="false"
+    _DRAGON_CURRENT[USER_HOST_SEPARATOR]=""
+    _DRAGON_CURRENT[HOST_DIR_SEPARATOR]=":"
+    _DRAGON_CURRENT[ENABLE_MULTILINE]="false"
+    _DRAGON_CURRENT[GIT_STATUS_ON_NEW_LINE]="never"
+    _DRAGON_CURRENT[GIT_STATUS_PREFIX]=""
+    _DRAGON_CURRENT[GIT_STATUS_SUFFIX]=" "
+    _DRAGON_CURRENT[GIT_BRANCH_PREFIX]=""
+    _DRAGON_CURRENT[GIT_BRANCH_SUFFIX]=""
+    _DRAGON_CURRENT[GIT_CLEAN_SUFFIX]=""
+    _DRAGON_CURRENT[GIT_CLEAN_FOREGROUND_COLOR]="navy"
+    _DRAGON_CURRENT[GIT_CLEAN_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[GIT_DIRTY_SUFFIX]="*"
+    _DRAGON_CURRENT[GIT_DIRTY_FOREGROUND_COLOR]="navy"
+    _DRAGON_CURRENT[GIT_DIRTY_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[ENABLE_DATE_TIME]="false"
+    _DRAGON_CURRENT[ENABLE_EXEC_TIMER]="false"
+    _DRAGON_CURRENT[ENABLE_JOB_COUNT]="false"
+    _DRAGON_CURRENT[ENABLE_EXIT_STATUS]="false"
+}
+
+_dragon_preset_default() { : }  # defaults are sufficient
+
+_dragon_preset_verbose() {
+    _DRAGON_CURRENT[DIRECTORY_FORMAT]="full"
+    _DRAGON_CURRENT[USER_HOST_SEPARATOR]=" at "
+    _DRAGON_CURRENT[HOST_DIR_SEPARATOR]=" in "
+    _DRAGON_CURRENT[FIRST_LINE_SEPARATOR_CHAR]="╭ "
+    _DRAGON_CURRENT[NEW_LINE_SEPARATOR_CHAR]="│"
+    _DRAGON_CURRENT[LAST_LINE_SEPARATOR_CHAR]="╰╴"
+    _DRAGON_CURRENT[ENABLE_MULTILINE]="true"
+    _DRAGON_CURRENT[GIT_STATUS_ON_NEW_LINE]="always"
+    _DRAGON_CURRENT[GIT_STATUS_PREFIX]=" on "
+    _DRAGON_CURRENT[GIT_BRANCH_PREFIX]="‹"
+    _DRAGON_CURRENT[GIT_BRANCH_SUFFIX]="›"
+    _DRAGON_CURRENT[GIT_CLEAN_SUFFIX]="✔"
+    _DRAGON_CURRENT[GIT_DIRTY_SUFFIX]="✘"
+    _DRAGON_CURRENT[ENABLE_DATE_TIME]="true"
+    _DRAGON_CURRENT[DATE_TIME_FORMAT]='%D{%d/%m/%y | %H:%M:%S}'
+    _DRAGON_CURRENT[DATE_TIME_PREFIX]=" at "
+    _DRAGON_CURRENT[ENABLE_EXEC_TIMER]="true"
+    _DRAGON_CURRENT[EXEC_TIMER_PREFIX]=" took "
+    _DRAGON_CURRENT[EXEC_TIMER_THRESHOLD]="2"
+    _DRAGON_CURRENT[ENABLE_JOB_COUNT]="true"
+    _DRAGON_CURRENT[JOB_COUNT_SUFFIX]=" jobs "
+    _DRAGON_CURRENT[ENABLE_EXIT_STATUS]="true"
+    _DRAGON_CURRENT[EXIT_STATUS_PREFIX]=" code:"
+}

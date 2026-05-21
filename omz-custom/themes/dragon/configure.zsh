@@ -104,71 +104,16 @@ _dragon_load_current_conf() {
 # Presets
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Reset _DRAGON_CURRENT to defaults, then dispatch to the preset's
+# _dragon_preset_<name> function (registered in schema.zsh).
 _dragon_apply_preset() {
     local preset="$1"
-    # Reset to pure defaults first
     local var
     for var in "${(@k)_DRAGON_DEFAULTS}"; do
         _DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
     done
-
-    case "$preset" in
-        short)
-            _DRAGON_CURRENT[LEFT_SEGMENT_SEPARATOR]=""
-            _DRAGON_CURRENT[LEFT_SEGMENT_SEPARATOR_SAME_COLOR]=""
-            _DRAGON_CURRENT[RIGHT_SEGMENT_SEPARATOR]=""
-            _DRAGON_CURRENT[RIGHT_SEGMENT_SEPARATOR_SAME_COLOR]=""
-            _DRAGON_CURRENT[ENABLE_USERNAME]="false"
-            _DRAGON_CURRENT[DIRECTORY_FORMAT]="short"
-            _DRAGON_CURRENT[PROMPT_CHAR]='$'
-            _DRAGON_CURRENT[GIT_PROMPT_CHAR]='$'
-            _DRAGON_CURRENT[ENABLE_SSH_PREFIX]="false"
-            _DRAGON_CURRENT[USER_HOST_SEPARATOR]=""
-            _DRAGON_CURRENT[HOST_DIR_SEPARATOR]=":"
-            _DRAGON_CURRENT[ENABLE_MULTILINE]="false"
-            _DRAGON_CURRENT[GIT_STATUS_ON_NEW_LINE]="never"
-            _DRAGON_CURRENT[GIT_STATUS_PREFIX]=""
-            _DRAGON_CURRENT[GIT_STATUS_SUFFIX]=" "
-            _DRAGON_CURRENT[GIT_BRANCH_PREFIX]=""
-            _DRAGON_CURRENT[GIT_BRANCH_SUFFIX]=""
-            _DRAGON_CURRENT[GIT_CLEAN_SUFFIX]=""
-            _DRAGON_CURRENT[GIT_CLEAN_FOREGROUND_COLOR]="navy"
-            _DRAGON_CURRENT[GIT_CLEAN_BACKGROUND_COLOR]=""
-            _DRAGON_CURRENT[GIT_DIRTY_SUFFIX]="*"
-            _DRAGON_CURRENT[GIT_DIRTY_FOREGROUND_COLOR]="navy"
-            _DRAGON_CURRENT[GIT_DIRTY_BACKGROUND_COLOR]=""
-            _DRAGON_CURRENT[ENABLE_DATE_TIME]="false"
-            _DRAGON_CURRENT[ENABLE_EXEC_TIMER]="false"
-            _DRAGON_CURRENT[ENABLE_JOB_COUNT]="false"
-            _DRAGON_CURRENT[ENABLE_EXIT_STATUS]="false"
-            ;;
-        verbose)
-            _DRAGON_CURRENT[DIRECTORY_FORMAT]="full"
-            _DRAGON_CURRENT[USER_HOST_SEPARATOR]=" at "
-            _DRAGON_CURRENT[HOST_DIR_SEPARATOR]=" in "
-            _DRAGON_CURRENT[FIRST_LINE_SEPARATOR_CHAR]="╭ "
-            _DRAGON_CURRENT[NEW_LINE_SEPARATOR_CHAR]="│"
-            _DRAGON_CURRENT[LAST_LINE_SEPARATOR_CHAR]="╰╴"
-            _DRAGON_CURRENT[ENABLE_MULTILINE]="true"
-            _DRAGON_CURRENT[GIT_STATUS_ON_NEW_LINE]="always"
-            _DRAGON_CURRENT[GIT_STATUS_PREFIX]=" on "
-            _DRAGON_CURRENT[GIT_BRANCH_PREFIX]="‹"
-            _DRAGON_CURRENT[GIT_BRANCH_SUFFIX]="›"
-            _DRAGON_CURRENT[GIT_CLEAN_SUFFIX]="✔"
-            _DRAGON_CURRENT[GIT_DIRTY_SUFFIX]="✘"
-            _DRAGON_CURRENT[ENABLE_DATE_TIME]="true"
-            _DRAGON_CURRENT[DATE_TIME_FORMAT]='%D{%d/%m/%y | %H:%M:%S}'
-            _DRAGON_CURRENT[DATE_TIME_PREFIX]=" at "
-            _DRAGON_CURRENT[ENABLE_EXEC_TIMER]="true"
-            _DRAGON_CURRENT[EXEC_TIMER_PREFIX]=" took "
-            _DRAGON_CURRENT[EXEC_TIMER_THRESHOLD]="2"
-            _DRAGON_CURRENT[ENABLE_JOB_COUNT]="true"
-            _DRAGON_CURRENT[JOB_COUNT_SUFFIX]=" jobs "
-            _DRAGON_CURRENT[ENABLE_EXIT_STATUS]="true"
-            _DRAGON_CURRENT[EXIT_STATUS_PREFIX]=" code:"
-            ;;
-        # default: nothing extra — all set to _DRAGON_DEFAULTS above
-    esac
+    local fn="_dragon_preset_${preset}"
+    (( $+functions[$fn] )) && $fn
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -538,32 +483,35 @@ _dragon_select_preset() {
     print ""
     print -P "  Welcome! Choose a %Bstarting point%b for your prompt:"
     print ""
-    print -P "  %B[1] short%b   — Minimal. hostname:~\$ with git inline. No rprompt extras."
-    print -P "               hostname:~/projects ❯"
-    print ""
-    print -P "  %B[2] default%b — Balanced. username@hostname:dir ❯, git status, time & timer."
-    print -P "               user@myhost:~/projects on main ✔"
-    print -P "               ❯"
-    print ""
-    print -P "  %B[3] verbose%b — Maximum info. Multiline, full paths, timestamps, rich git."
-    print -P "               ╭ user at myhost in /home/user/projects"
-    print -P "               │  on ‹main› ✔"
-    print -P "               ╰╴❯"
-    print ""
+
+    # The "default" preset is the recommended starting point. By convention it
+    # is named "default" — if absent, we fall back to the first registered name.
+    local default_idx=1 i=1 name
+    for name in "${_DRAGON_PRESET_NAMES[@]}"; do
+        [[ "$name" == "default" ]] && default_idx=$i
+        print -P "  %B[${i}] ${name}%b — ${_DRAGON_PRESET_DESC[$name]}"
+        local line
+        while IFS= read -r line; do
+            print -- "               ${line}"
+        done <<< "${_DRAGON_PRESET_EXAMPLE[$name]}"
+        print ""
+        (( i++ ))
+    done
+
     print -P "  %F{245}You will step through each feature group and can change anything.%f"
     print -P "  %F{245}Defaults are pre-applied; you only need to change what you want.%f"
     print ""
-    printf "  Choice [1/2/3, default=2]: "
+    local n=${#_DRAGON_PRESET_NAMES}
+    printf "  Choice [1-%d, default=%d]: " "$n" "$default_idx"
 
-    local key
+    local key chosen_preset
     _dragon_read_key key
-
-    local chosen_preset
-    case "$key" in
-        1) chosen_preset="short";   print -P "\n  %F{green}✓ Starting from short preset%f"   ;;
-        3) chosen_preset="verbose"; print -P "\n  %F{green}✓ Starting from verbose preset%f" ;;
-        *) chosen_preset="default"; print -P "\n  %F{green}✓ Starting from default preset%f" ;;
-    esac
+    if [[ "$key" =~ ^[0-9]$ ]] && (( key >= 1 && key <= n )); then
+        chosen_preset="${_DRAGON_PRESET_NAMES[$key]}"
+    else
+        chosen_preset="${_DRAGON_PRESET_NAMES[$default_idx]}"
+    fi
+    print -P "\n  %F{green}✓ Starting from ${chosen_preset} preset%f"
 
     _DRAGON_CHOSEN_PRESET="$chosen_preset"
     _dragon_apply_preset "$chosen_preset"
@@ -827,6 +775,7 @@ EOF
     _dragon_init_types
     _dragon_init_hints
     _dragon_init_groups
+    _dragon_init_presets
     typeset -g _DRAGON_CHOSEN_PRESET="default"
     typeset -gA _DRAGON_STATE=()
 
@@ -836,16 +785,13 @@ EOF
     # ── Preset switcher: dragon-configure --preset <name>
     if [[ "${1-}" == "--preset" ]]; then
         local _preset="${2:-}"
-        case "$_preset" in
-            short|default|verbose) ;;
-            *)
-                print -P "%F{red}✗%f Invalid preset: '${_preset:-<none>}'"
-                print -P "  Valid presets: %Bshort%b  %Bdefault%b  %Bverbose%b"
-                print -P "  Usage: dragon-configure --preset <short|default|verbose>"
-                _dragon_cleanup
-                return 1
-                ;;
-        esac
+        if [[ -z "$_preset" || -z "${_DRAGON_PRESET_DESC[$_preset]:-}" ]]; then
+            print -P "%F{red}✗%f Invalid preset: '${_preset:-<none>}'"
+            print -P "  Valid presets: %B${(j:%b  %B:)_DRAGON_PRESET_NAMES[@]}%b"
+            print -P "  Usage: dragon-configure --preset <name>"
+            _dragon_cleanup
+            return 1
+        fi
 
         clear
         print -P "%B%F{cyan}── dragon: Switch to '${_preset}' preset ────────────────────────────%f%b"
@@ -958,4 +904,5 @@ EOF
 _dragon_cleanup() {
     unset _DRAGON_DEFAULTS _DRAGON_CURRENT _DRAGON_TYPE _DRAGON_HINT _DRAGON_STATE _DRAGON_CHOSEN_PRESET
     unset _DRAGON_GROUP_TITLE _DRAGON_GROUP_DESC _DRAGON_GROUP_VARS _DRAGON_GROUPS
+    unset _DRAGON_PRESET_NAMES _DRAGON_PRESET_DESC _DRAGON_PRESET_EXAMPLE
 }
