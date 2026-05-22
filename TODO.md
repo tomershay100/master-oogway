@@ -17,32 +17,10 @@ for each change:
 # FEATURES.md
 
 ## New Plugins
-* `clip` - i want a command that i could pipe a command output into, and it copies it into the clipboard. dont need those `clip`, `paste` or `clipfile` suggested. 
-* `mo-secret-scan` dont need it.
-* `mo-undo` dont need it.
-* `mo-bench` dont need it.
-* `mo-watch-files` dont need it.
-* `mo-recipe` dont need it.
-* `mo-bookmarks` dont need it.
-* `mo-since` dont need it.
-* `mo-context` dont need it.
 * `mo-projects` - i think of better idea i want. if this plugin is loaded: every directory in `MO_PROJECTS_PROJ_DIR` (default to `~/projects/` (allow also with capital `P`)) gets its own alias. for example if i have directory `~/projects/foo` then `foo` would alias to `cd ~/projects/foo`. also - `p` would be run fzf search between all project directories allow me to choose which proj directory to enter. 
-* `mo-emoji` dont need it.
-* `mo-passphrase` dont need it.
 * `mo-color` - great. lets add all the dragon colors by names to allow the user to print it. also - with piping into it, echo the text with the specified color. `color 0xff0080` prints `0xff0080` twice: once with BG color and one with FG color of the specified color (also works with dec colors and named colors!). `color palette` prints all 16 named colors (with their names), then all 256 colors with numbers (all with BG and FG). `color 0xff0080 0xf0f0f0` (or dec/named colors) would print the piped input with `0xff0080` fg and `0xf0f0f0` bg. if no pipe - prints `hello world`. if no bg is presented it should work with only fg.
-* `mo-share` dont need it
 * `mo-ssh-tunnel` - great idea. lets do it like this: `tunnel <host/ip>:<port> to <host/ip>:port`. using ssh -R or -L, depends on the sides: `tunnel momo:8989 to localhost:2020` would open 127.0.0.1:2020 and it would be tunneled into momo on port 8989. the host can be blank and it would be localhost. `tunnel 8080 to momo:9000` would open 9000 port on momo, tunneled to localhost 8080. `tunnel 9000 to 9001` and `tunnel momo:8700 to 0.0.0.0:9898` should work as well.
-* `mo-vpn`: dont need it.
-* `mo-pretty-curl`: dont need it.
-* `mo-dnscheck`: dont need it.
-* `mo-syslog`: dont need it.
-* `mo-debug`: dont need it.
-* `mo-trace`: dont need it.
-* `mo-diff-dirs`: dont need it.
-* `mo-largest/mo-disk`: dont need it.
 * `mo-archive` with `compress` - great! if no archive-name given - create it with the directory name and create it in the pwd path.
-* `mo-watch-cmd`: dont need it.
-* `mo-pomodoro`: dont need it.
 
 ## Dragon Theme Features
 * about 2.1 - explain better the plan.
@@ -159,6 +137,7 @@ command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 ## mo-navigation
 * why navigation? if there is `mo-files`, shouldn't this be `mo-dirs`?
 * `fcd` seems to not work. why?
+* `cwhich` can use just 'cat' and if there is bat/batcat it would use it?
 
 ## mo-shell-tools
 * `vizsh` for some reason is allways red in zsh-syntax-highlighter

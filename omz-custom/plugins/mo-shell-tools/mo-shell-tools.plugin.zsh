@@ -22,6 +22,29 @@ vwhich() {
     ${EDITOR:-vim} "$target"
 }
 
+# Copy stdin to the system clipboard (Wayland → X11 → echo fallback).
+clip() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        echo "Usage: <command> | clip"
+        echo "  Copy stdin to the system clipboard."
+        return
+    fi
+    local data
+    data=$(command cat)
+    if command -v wl-copy &>/dev/null; then
+        printf '%s' "$data" | wl-copy
+    elif command -v xclip &>/dev/null; then
+        printf '%s' "$data" | xclip -selection clipboard
+    else
+        echo "clip: no clipboard tool found (try: sudo apt install wl-clipboard)" >&2
+        printf '%s\n' "$data"
+        return 1
+    fi
+    local bytes=${#data}
+    local unit; (( bytes == 1 )) && unit="byte" || unit="bytes"
+    echo "Copied ${bytes} ${unit} to clipboard." >&2
+}
+
 alias vizsh='${EDITOR:-vim} ~/.zshrc'             # open ~/.zshrc in $EDITOR
 alias soursh="source ~/.zshrc"                    # reload ~/.zshrc
 
