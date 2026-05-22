@@ -61,34 +61,6 @@ For each finding:
 
 ## Section 6 — Infrastructure gaps (the real production-readiness story)
 
-### M-5 — No pre-commit hook
-**Severity:** P2
-
-CONTRIBUTING says "run `bash -n` / `zsh -n` / `shellcheck` before
-committing." A 10-line `tools/pre-commit` installed by `install.sh`
-into `.git/hooks/pre-commit` would prevent every parse-error landing
-locally. The `check-module-readme` skill (your Claude config) catches
-stale READMEs at commit time — same idea.
-
----
-
-### M-6 — No `dragon-configure --check`
-**Severity:** P2
-
-The notifier fires when `_DRAGON_DEFAULTS` keys are *added* to schema.
-It does **not** detect:
-- Variables *removed* from schema but still set in the user's `conf.zsh`
-  (dead config).
-- Variables *renamed* (old name lingers, new name uses default).
-- A `conf.zsh` that contains a `DRAGON__*` name that was never in any
-  schema version (typo, hand-edit gone wrong).
-
-`dragon-configure --check`: scan `conf.zsh` for `export DRAGON__*=` lines,
-intersect with current `_DRAGON_DEFAULTS` keys, list orphans, exit non-zero.
-Useful from cron or from M-6's selfcheck.
-
----
-
 ## Section 7 — Drop / cleanup
 
 ### D-3 — Aliases reference `vizsh` but mo-shell-tools is the only definition
@@ -184,7 +156,6 @@ previous and each step is independently shippable.
 |---|---|---|---|
 | 1 | M-3 LICENSE | +21 | none |
 | 2 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
-| 3 | M-4 CHANGELOG + v0.1 tag | new file | none |
 | … | wishlist items | as desired | low |
 
 **After step 2** (LICENSE + CI) you can publicly say "this is being actively
