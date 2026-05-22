@@ -173,6 +173,7 @@ plugins=(
     mo-build                   # m (parallel make), mc (make clean)
     mo-dev                     # calc, epoch, serve (HTTP server), md2pdf
     mo-env                     # fenv (fuzzy environment variable browser)
+    mo-mkscript                # mkscript — scaffold a new shell script from template
     mo-shell-tools             # h, ?, cwhich, vwhich, vizsh, soursh, zshtime, please, mo-where
     mo-apps                    # GUI app launchers (gnucash via flatpak)
     mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path

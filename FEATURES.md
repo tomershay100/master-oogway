@@ -134,24 +134,6 @@ Grouped by theme.
 
 ### Theme 1A — Safety & undo
 
-#### 1.2 `mo-mkscript` — scaffolded shell script from template  ·  P1 · XS · A
-
-The repo enforces a strict shell-script convention (shebang, `set -Eeuo
-pipefail`, 80-column header separator, em-dash section blocks). A scaffold
-helper makes that convention available to the user, not just the repo.
-
-```text
-mkscript deploy.sh
-  → creates ./deploy.sh with shebang + set + header, chmod +x'd
-mkscript -p ~/bin foo
-  → creates ~/bin/foo with the same template, no .sh extension
-  (matches CLAUDE.md's "installed commands use kebab-case, no .sh")
-```
-
-Template body is configurable via `~/.config/master-oogway/mkscript-template.sh`.
-Falls back to a baked-in default that matches `docs/bash_scripting_conventions.md`
-in the parent repo.
-
 #### 1.3 `mo-clipboard` — unified clipboard front  ·  P2 · XS · A (after App. A)
 
 Thin plugin on top of `_mo_clip` helper. Exists so the user has

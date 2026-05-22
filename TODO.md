@@ -17,7 +17,6 @@ for each change:
 # FEATURES.md
 
 ## New Plugins
-* `mkscript` - lets add it with only one arg: `mkscript /path/to/file` which creates it as a script then open it with $EDITOR.
 * `clip` - i want a command that i could pipe a command output into, and it copies it into the clipboard. dont need those `clip`, `paste` or `clipfile` suggested. 
 * `mo-secret-scan` dont need it.
 * `mo-undo` dont need it.
