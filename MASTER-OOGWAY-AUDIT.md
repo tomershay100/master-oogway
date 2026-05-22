@@ -51,72 +51,13 @@ For each finding:
 
 ## Section 2 — Security findings
 
-### S-1 — `HashKnownHosts no` is silently set for *all* SSH hosts, not just LAN
-**Severity:** P2  **Confidence:** HIGH
-**File:** `install.sh:535`
-
-```bash
-printf '\n%s\nHost *\n    SendEnv DRAGON__*\n    HashKnownHosts no\n%s\n' \
-    "$marker_begin" "$marker_end" >> "$ssh_config"
-```
-
-The installer adds `HashKnownHosts no` inside `Host *` — making it apply to
-every SSH connection on the box, including non-LAN, non-master-oogway hosts.
-This is presumably set so `mo-lan-ssh forget` can `ssh-keygen -R <hostname>`
-work (hashed entries can only be matched by their hashed form).
-
-**Why this matters:** OpenSSH defaults to `HashKnownHosts yes` on modern
-Debian/Ubuntu specifically because a stolen `~/.ssh/known_hosts` shouldn't
-leak an inventory of every server the user has touched. We're quietly
-reversing that posture for a convenience feature.
-
-**Fix options (in order of preference):**
-1. Drop the `HashKnownHosts no` line entirely. `mo-lan-ssh forget` can use
-   `ssh-keygen -F <host>` first to detect, then `-R` works against hashed
-   entries too (it does the hash match internally).
-2. Scope `HashKnownHosts no` to a `Host`-pattern matching only LAN hosts
-   (would need to know LAN host list at install time — chicken/egg).
-3. Document this as a deliberate trade-off in the README and gate it behind
-   an opt-out env var.
-
-**Recommendation:** option 1. Modern `ssh-keygen -R` works fine against
-hashed `known_hosts`.
-
----
-
 ## Section 3 — UX friction
 
 ## Section 4 — Performance
 
 ## Section 5 — Architecture / refactor observations
 
-### A-1 — `mo-lan-ssh` is now 875 LOC across two files
-The biggest plugin by far (next-largest is `mo-files` at 167). It does six
-things: discovery (4 strategies), caching, atomic ssh-config rewriting, the
-ssh wrapper, manual overlay, and the CLI. Each is solid; the bundle is
-getting hard to skim.
 
-Possible split:
-- `mo-lan-ssh-core` — alias generation + completion + caches
-- `mo-lan-ssh-trust` — ssh wrapper + key purge + ssh-copy-id
-
-Users who don't want auto-trust could disable the trust plugin without
-losing aliases. Don't split prematurely; revisit when the next feature
-lands.
-
----
-
-### A-3 — `# Requires:` convention is inconsistent across plugins
-After this week's CONTRIBUTING update, the convention is documented:
-external dependencies go at the top of the plugin in a `# Requires: …`
-comment. 14 of 20 plugins have it. The 6 that don't (`mo-cli`,
-`mo-shell-tools`, `mo-welcome`, `mo-colorize-override`, `mo-safety-override`,
-`mo-auto-ls`) have no deps — arguably the convention should be "always
-present, even if empty," so a grep audit returns 20/20.
-
-Pick a position; apply uniformly.
-
----
 
 ### A-4 — SSH-forwarding guard is duplicated in every generated `conf.zsh`
 **File:** `omz-custom/themes/dragon/configure.zsh:594-595`
@@ -341,7 +282,6 @@ before tagging.
       `.gitmodules` (verify with `git submodule status` — no `+` prefix)
 
 ### Security
-- [ ] S-1 (HashKnownHosts) resolved (drop or scope or opt-in)
 - [ ] Confirm `install.sh` won't run on macOS / non-Linux (already does this
       — but add a test that simulates `uname` returning Darwin)
 
