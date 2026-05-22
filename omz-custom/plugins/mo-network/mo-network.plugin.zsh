@@ -1,4 +1,3 @@
-# Requires: curl for natip. sshto also requires fzf and ~/.ssh/config (or ~/.ssh/config.d/*).
 
 natip() {
     command -v curl &>/dev/null || { echo "natip: curl not installed (try: sudo apt install curl)" >&2; return 1; }

@@ -1,4 +1,3 @@
-# Requires: fzf (skipped with an error if not installed).
 
 fenv() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then

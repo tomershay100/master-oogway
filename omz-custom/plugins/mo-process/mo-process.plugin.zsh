@@ -1,4 +1,3 @@
-# Requires: fkill also requires fzf (skipped with an error if not installed).
 
 function psgrep() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then

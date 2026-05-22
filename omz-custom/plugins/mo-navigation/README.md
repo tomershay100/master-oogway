@@ -2,6 +2,8 @@
 
 Directory navigation helpers.
 
+**Dependencies:** `fzf` (fcd) — checked at call time.
+
 | Command | Description |
 |---------|-------------|
 | `mkcd <dir>` | `mkdir -p` then `cd` into it |

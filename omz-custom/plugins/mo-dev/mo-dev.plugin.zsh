@@ -1,4 +1,3 @@
-# Requires: python3 for serve. bc for calc. pandoc + xelatex for md2pdf.
 
 function calc() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then

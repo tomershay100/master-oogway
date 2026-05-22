@@ -111,19 +111,17 @@ If any of these fail, fix the underlying issue — never commit a file that fail
 ## Adding a plugin
 
 1. Create `omz-custom/plugins/mo-<name>/mo-<name>.plugin.zsh`.
-2. If the plugin depends on external binaries, document them in a top-of-file
-   `# Requires: ...` comment so users grepping the source can see the
-   dependency upfront. See `mo-bat-override` or `mo-dev` for the pattern.
-3. Add `mo-<name>` to the plugins list in `zshrc.master-oogway` (override or additive group), with a one-line trailing comment summarising what it provides.
-4. **Update the docs by hand — there is no generator.** Two places to touch:
+2. Add `mo-<name>` to the plugins list in `zshrc.master-oogway` (override or additive group), with a one-line trailing comment summarising what it provides.
+3. **Update the docs by hand — there is no generator.** Two places to touch:
    - [README.md](README.md): add a new row to the "Override plugins" or
      "Additive plugins" table with a short one-line description of what the
      plugin adds. Keep each table sorted alphabetically by plugin name.
    - `omz-custom/plugins/mo-<name>/README.md`: create a one-paragraph plugin
      README with a `Command | Description` table listing every command (or
-     alias/escape-hatch) the plugin exposes. Follow the style of the other
-     plugin READMEs.
-5. Run the four validation checks above.
+     alias/escape-hatch) the plugin exposes. If any commands require external
+     tools, add a `**Dependencies:**` line (see other plugin READMEs for the
+     pattern). Follow the style of the other plugin READMEs.
+4. Run the four validation checks above.
 
 Override plugins (those that shadow system commands) must appear **before** additive
 plugins in `zshrc.master-oogway` so additive plugins inherit the overridden commands.

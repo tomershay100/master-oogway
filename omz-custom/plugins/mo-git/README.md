@@ -2,6 +2,8 @@
 
 Git aliases and fuzzy pickers.
 
+**Dependencies:** `git` (required). `fzf` (fbranch, flog) — checked at call time.
+
 | Command | Description |
 |---------|-------------|
 | `ga` | `git add` |

@@ -2,6 +2,8 @@
 
 Replaces `cat` and `less` with `bat` (syntax-highlighted viewer). Falls back to the system commands if `bat`/`batcat` is not installed.
 
+**Dependencies:** `bat` or `batcat` — falls back to system `cat`/`less` if neither is installed.
+
 | Escape hatch | Bypasses to |
 |---|---|
 | `rcat` or `\cat` | system `cat` |

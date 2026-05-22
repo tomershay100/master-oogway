@@ -1,4 +1,3 @@
-# Requires: eza (optional — falls back to ls --color if not installed)
 # Remove this file to use the system ls as-is.
 
 if command -v eza &>/dev/null; then

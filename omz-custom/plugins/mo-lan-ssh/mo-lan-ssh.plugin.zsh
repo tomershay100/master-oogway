@@ -6,7 +6,6 @@
 # hosts, and auto-purges changed host keys (LAN trust). Disable wrapper
 # with MO_LAN_AUTO_TRUST=false.
 #
-# Requires: dig (any one of strat_axfr/nmap/arp-scan/known_hosts for discovery)
 
 # EPOCHSECONDS lives in zsh/datetime; load once so loader paths don't fork date.
 # (b:EPOCHSECONDS is wrong — EPOCHSECONDS is a parameter, not a builtin.)

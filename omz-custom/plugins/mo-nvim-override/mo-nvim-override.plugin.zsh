@@ -1,4 +1,3 @@
-# Requires: nvim (skipped silently if not installed)
 # Remove this file to use the system vim as-is.
 
 if command -v nvim &>/dev/null; then

@@ -10,3 +10,5 @@ File management helpers.
 | `fp [dir]` | fuzzy-select a file and copy its full path to clipboard |
 
 `extract` runs a path-traversal scan before extracting zip files. `.zip` archives extract into a subdirectory named after the archive to avoid polluting the current directory.
+
+**Dependencies:** `fzf` (fp), plus archive-format tools (`unzip`, `tar`, `7z`, etc.) for `extract` — each checked at call time with an install hint.

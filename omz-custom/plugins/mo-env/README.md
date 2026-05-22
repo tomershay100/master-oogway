@@ -1,6 +1,8 @@
 # mo-env
 
-Fuzzy environment variable browser. Requires `fzf`.
+Fuzzy environment variable browser.
+
+**Dependencies:** `fzf` — checked at call time.
 
 | Command | Description |
 |---------|-------------|

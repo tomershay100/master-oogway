@@ -1,4 +1,3 @@
-# Requires: git. fbranch and flog also require fzf (skipped if not installed).
 
 alias ga="git add"
 alias gaa="git add --all"

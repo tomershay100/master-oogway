@@ -265,9 +265,6 @@ Called out explicitly so they don't get "cleaned up" by accident.
   semantics, `BASH_SOURCE`).
 - **Plugin file size (mo-lan-ssh ≈ 8× the average).** Documented in A-1 as
   worth splitting *eventually*, not now.
-- **`# Requires:` comment at top of plugin files instead of code.** Looked
-  weird at first; it's a deliberate grep-friendly contract that contributors
-  read before opening the file.
 
 ---
 
@@ -303,7 +300,6 @@ before tagging.
       above are green)
 
 ### Documentation
-- [ ] CHANGELOG documents the `# Provides:` → `# Requires:` convention change
 - [ ] README links to CHANGELOG from a "What's new" line
 - [ ] `master-oogway --version` mentions the tag if HEAD == tag
 
@@ -397,11 +393,6 @@ done
 for f in omz-custom/plugins/mo-*-override/mo-*-override.plugin.zsh; do
     grep -q "alias r" "$f" || echo "NO ESCAPE HATCH: $f"
 done
-
-# `# Requires:` convention coverage
-grep -l '^# Requires:' omz-custom/plugins/mo-*/mo-*.plugin.zsh | wc -l
-# vs total plugins
-ls omz-custom/plugins/mo-*/mo-*.plugin.zsh | wc -l
 ```
 
 ---

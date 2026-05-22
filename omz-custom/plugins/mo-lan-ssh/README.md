@@ -2,6 +2,8 @@
 
 Auto-discovers every SSH host on your LAN, creates a short alias per host, and adds them to tab-completion. Re-scans when the cache is stale (default 24h) or you change networks.
 
+**Dependencies:** `dig` (AXFR strategy). Discovery also uses whichever of `nmap`, `arp-scan`, or `~/.ssh/known_hosts` is available — at least one is needed for host discovery.
+
 ## Commands
 
 | Command | Description |

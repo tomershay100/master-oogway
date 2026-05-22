@@ -1,4 +1,3 @@
-# Requires: bat or batcat (skipped silently if neither is installed)
 # Remove this file to use the system cat and less as-is.
 
 if command -v batcat &>/dev/null; then

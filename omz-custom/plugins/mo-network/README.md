@@ -2,6 +2,8 @@
 
 Network helpers.
 
+**Dependencies:** `curl` (natip), `fzf` (sshto) — each checked at call time.
+
 | Command | Description |
 |---------|-------------|
 | `natip` | print your public IP address |
