@@ -3,9 +3,6 @@
 # Remove this file to disable automatic ls on directory change.
 
 _ls_after_cd() {
-    case "$PWD" in
-        /mnt/*|/media/*|/run/user/*/gvfs/*) return ;;
-    esac
     ls
 }
 [[ ${chpwd_functions[(Ie)_ls_after_cd]:-0} -eq 0 ]] && chpwd_functions+=(_ls_after_cd)
