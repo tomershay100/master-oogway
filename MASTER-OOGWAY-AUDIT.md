@@ -63,14 +63,6 @@ For each finding:
 
 ## Section 7 — Drop / cleanup
 
-### D-3 — Aliases reference `vizsh` but mo-shell-tools is the only definition
-Not a bug. Just noting that grep for `vizsh` returns one definition + no
-docs in CONTRIBUTING (the convention "every command shows up in plugin
-README" is satisfied, but no top-level grep-friendly index).
-
-If a `mo-where` / `master-oogway commands` listing existed (U-3 / wishlist),
-this becomes a non-issue.
-
 ---
 
 ## Section 8 — Wishlist

@@ -35,6 +35,7 @@ Override plugins replace system commands. Comment out any you don't want. Each p
 | [mo-nvim-override](omz-custom/plugins/mo-nvim-override/README.md) | `vim` → nvim |
 | [mo-safety-override](omz-custom/plugins/mo-safety-override/README.md) | `cp/mv/mkdir/reboot` with confirmation prompts |
 | [mo-colorize-override](omz-custom/plugins/mo-colorize-override/README.md) | `ip/diff` → colorized output |
+| [mo-trash](omz-custom/plugins/mo-trash/README.md) | `rm` → trash-put (restorable); `rrm` bypasses |
 
 Additive plugins add new commands and never change existing behavior.
 
