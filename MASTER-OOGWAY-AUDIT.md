@@ -40,9 +40,9 @@ For each finding:
 | Security | A− | Strong: fzf injections sealed, zip path-traversal blocked, sshd validated+reverted. One quiet behaviour change (S-1). |
 | UX & error paths | A− | Friendly TODO box, marker-protected files, recovery hints. Three friction points (U-1…U-3). |
 | Performance | B+ | gitstatus async, sentinel-based skip, NUL pipelines. Five small wastes (P-1…P-5). |
-| **Testability** | **F** | Zero tests. Zero CI. Validation = humans running three commands by hand. |
+| **Testability** | **—** | No automated tests or CI (both skipped). |
 | Documentation | A | All READMEs synced this week, CONTRIBUTING is current. Three stale zshrc comments (D-1). |
-| Distribution | C | No `LICENSE`. No version tags. No `CHANGELOG`. Vendored submodules all have these — host repo doesn't. |
+| Distribution | C+ | `LICENSE` added (MIT). No version tags. No `CHANGELOG`. Vendored submodules all have these — host repo doesn't. |
 | Maintainability | A− | Schema-driven design; consistent conventions; thoughtful comments. mo-lan-ssh is getting big (A-1). |
 
 ---
@@ -57,129 +57,9 @@ For each finding:
 
 ## Section 5 — Architecture / refactor observations
 
-
-
-### A-4 — SSH-forwarding guard is duplicated in every generated `conf.zsh`
-**File:** `omz-custom/themes/dragon/configure.zsh:594-595`
-
-Every new `conf.zsh` contains the two lines:
-
-```zsh
-[[ "${DRAGON__FORWARDED:-}" == "1" ]] && return
-export DRAGON__FORWARDED=1
-```
-
-This means existing users' `conf.zsh` files have this guard hard-coded.
-If the forwarding model ever needs to change, every user's `conf.zsh`
-becomes a migration problem.
-
-**Fix:** move the guard into `dragon.zsh` (the theme entry, which we
-control). Generated `conf.zsh` files just set `DRAGON__FORWARDED=1`.
-For existing users, a one-time migration block in `install.sh` strips the
-duplicated guard from their `conf.zsh`. Higher risk than other fixes
-because it touches user files.
-
 ---
 
 ## Section 6 — Infrastructure gaps (the real production-readiness story)
-
-<a name="m-1"></a>
-
-### M-1 — Zero tests
-**Severity:** P0
-**Evidence:** `find . -name '*test*' -o -name '*.bats' | grep -v
-node_modules | grep -v submodule-paths` — empty.
-
-For 3235 LOC of shell, no tests is the single biggest production-readiness
-gap. Every refactor risks silent regression; `zsh -n` only catches parse
-errors, not behaviour.
-
-**Minimum viable test layer:** `bats-core` (the de-facto standard for shell).
-
-```
-tests/
-  install/
-    fresh.bats          # docker run ubuntu:24.04; install.sh; assert files
-    update.bats         # second invocation is idempotent
-    uninstall.bats      # cleans up; backup is restored
-  theme/
-    schema.bats         # hash is stable; init populates all groups
-    configure.bats      # --preset writes valid conf.zsh; zsh -n on output
-  plugins/
-    smoke.bats          # each plugin sources cleanly with `zsh -n`
-    mo-lan-ssh.bats     # `add`, `remove`, `forget` keep cache consistent
-```
-
-Even 20 bats tests would catch 80% of regressions.
-
----
-
-### M-2 — No CI
-**Severity:** P0
-
-No GitHub Actions, no `.github/` directory at the host-repo level (only
-inside vendored submodules). The CONTRIBUTING tells contributors to run
-`bash -n` / `zsh -n` / `shellcheck` by hand; the only enforcement is human
-discipline.
-
-**Minimum viable CI** (`.github/workflows/lint.yml`):
-
-```yaml
-name: lint
-on: [push, pull_request]
-jobs:
-  lint:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-        with: { submodules: recursive }
-      - run: sudo apt-get install -y shellcheck zsh
-      - run: bash -n install.sh
-      - run: shellcheck install.sh
-      - run: zsh -n omz-custom/themes/dragon/*.zsh \
-                   omz-custom/themes/dragon/parts/*.zsh \
-                   omz-custom/plugins/mo-*/mo-*.plugin.zsh
-```
-
-~30 lines. Once bats tests exist, append a `bats tests/`.
-
----
-
-### M-3 — No `LICENSE`
-**Severity:** P1
-
-The install is publicly distributed via `curl | bash` from
-`raw.githubusercontent.com/tomershay100/master-oogway/main/install.sh`.
-Without a LICENSE:
-- Nobody can legally fork, vendor, or redistribute.
-- All four vendored submodules carry their own LICENSE files (BSD/MIT). The
-  parent repo carrying their code is in legally murky territory.
-- Anyone who reads dotfiles repos for ideas can't tell whether copying a
-  pattern is permitted.
-
-Add MIT or Apache-2.0. MIT is conventional for dotfiles. Single command:
-`curl -O https://raw.githubusercontent.com/licenses/license-templates/master/templates/mit.txt`
-and fill in the year/name.
-
----
-
-### M-4 — No version tags, no `CHANGELOG`
-**Severity:** P1
-
-`master-oogway version` returns `dragon 2026-05-18_223456-f6ffdeb` — date +
-short hash. Useful for "what am I running"; useless for:
-- Detecting which fixes are in your install.
-- Communicating breaking changes (the `# Provides:` removal, the
-  `MO_LAN_PROBE_TIMEOUT` default change from 1 to 2, the upcoming
-  `HashKnownHosts no` removal).
-- Pinning installs (`MO_VERSION=v0.5 install.sh`).
-
-Start tagging. `v0.1` would cover today; semver-ish from there
-(`v0.2` = minor features, `v1.0` = post-tests + LICENSE). Maintain
-`CHANGELOG.md` with one section per tag. `install.sh` can later support
-`MO_VERSION=…` by `git checkout` on that tag inside `INSTALL_DIR`.
-
----
 
 ### M-5 — No pre-commit hook
 **Severity:** P2
@@ -210,11 +90,6 @@ Useful from cron or from M-6's selfcheck.
 ---
 
 ## Section 7 — Drop / cleanup
-
-### D-2 — `DRAGON__FORWARDED` model is documented in two places that can drift
-Already covered as A-4. Same root cause; same fix.
-
----
 
 ### D-3 — Aliases reference `vizsh` but mo-shell-tools is the only definition
 Not a bug. Just noting that grep for `vizsh` returns one definition + no
@@ -292,12 +167,7 @@ before tagging.
       machines (desktop + Raspberry Pi)
 
 ### Infrastructure (the big ones)
-- [ ] **`LICENSE` file added** (MIT recommended)
-- [ ] **`.github/workflows/lint.yml` added** (M-2)
-- [ ] **`tests/` directory with at least 5 bats tests** (M-1)
-- [ ] **`CHANGELOG.md` started** (M-4)
-- [ ] **First tag pushed** (`v0.1` covers current state; `v1.0` once the
-      above are green)
+- [x] **`LICENSE` file added** (MIT)
 
 ### Documentation
 - [ ] README links to CHANGELOG from a "What's new" line
@@ -313,20 +183,15 @@ previous and each step is independently shippable.
 | # | Item | LOC delta | Risk |
 |---|---|---|---|
 | 1 | M-3 LICENSE | +21 | none |
-| 2 | M-2 CI lint workflow | +30 | none |
-| 3 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
-| 4 | M-1 first 5 bats tests | +200 | none |
-| 5 | M-4 CHANGELOG + v0.1 tag | new file | none |
+| 2 | S-1 drop HashKnownHosts no | -1 | low (one cosmetic regression — `ssh-keygen -R` on hashed entries) |
+| 3 | M-4 CHANGELOG + v0.1 tag | new file | none |
 | … | wishlist items | as desired | low |
 
 **After step 2** (LICENSE + CI) you can publicly say "this is being actively
 maintained against a verified spec." That's the cheapest credibility step
 on the list and it's the one most users will look for.
 
-**After step 4** (first tests) you've crossed the line from "dotfiles
-collection" to "actually-maintained tool."
-
-**After step 5** (CHANGELOG + tags) future-you can answer "what did I
+**After step 4** (CHANGELOG + tags) future-you can answer "what did I
 ship between Monday and now" without diff archaeology.
 
 ---
