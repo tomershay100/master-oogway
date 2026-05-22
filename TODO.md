@@ -17,7 +17,6 @@ for each change:
 # FEATURES.md
 
 ## New Plugins
-* `mo-projects` - i think of better idea i want. if this plugin is loaded: every directory in `MO_PROJECTS_PROJ_DIR` (default to `~/projects/` (allow also with capital `P`)) gets its own alias. for example if i have directory `~/projects/foo` then `foo` would alias to `cd ~/projects/foo`. also - `p` would be run fzf search between all project directories allow me to choose which proj directory to enter. 
 * `mo-color` - great. lets add all the dragon colors by names to allow the user to print it. also - with piping into it, echo the text with the specified color. `color 0xff0080` prints `0xff0080` twice: once with BG color and one with FG color of the specified color (also works with dec colors and named colors!). `color palette` prints all 16 named colors (with their names), then all 256 colors with numbers (all with BG and FG). `color 0xff0080 0xf0f0f0` (or dec/named colors) would print the piped input with `0xff0080` fg and `0xf0f0f0` bg. if no pipe - prints `hello world`. if no bg is presented it should work with only fg.
 * `mo-ssh-tunnel` - great idea. lets do it like this: `tunnel <host/ip>:<port> to <host/ip>:port`. using ssh -R or -L, depends on the sides: `tunnel momo:8989 to localhost:2020` would open 127.0.0.1:2020 and it would be tunneled into momo on port 8989. the host can be blank and it would be localhost. `tunnel 8080 to momo:9000` would open 9000 port on momo, tunneled to localhost 8080. `tunnel 9000 to 9001` and `tunnel momo:8700 to 0.0.0.0:9898` should work as well.
 * `mo-archive` with `compress` - great! if no archive-name given - create it with the directory name and create it in the pwd path.
@@ -137,7 +136,6 @@ command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 ## mo-navigation
 * why navigation? if there is `mo-files`, shouldn't this be `mo-dirs`?
 * `fcd` seems to not work. why?
-* `cwhich` can use just 'cat' and if there is bat/batcat it would use it?
 
 ## mo-shell-tools
 * `vizsh` for some reason is allways red in zsh-syntax-highlighter
@@ -147,3 +145,23 @@ command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 * for the plugins that override. does `r<command>` really needed? i think that the user would know to use `\<command>`. lets think about it.
 * read the bash-scripting-conventions.md, then read the install and all bash scripts in this repo. dont make any changes - but write down to a file: are there anything to change on files in the repo? and - are there anything to change/add from the bash-scripting-conventions.md file itself?
 * change the 'about' of this repo on GitHub to match the project.
+* Lets go through all the comments in the project and make sure they arent over telling. i want comments to be short and to the point.
+* lets go and explain in CONTRIBUTION file how the readmes should look like. (suggest to me your thoughts). then - update all readmes to match!
+* ❯ mkscript hello                                                       23:26:57
+Command 'cat' is available in the following places
+ /bin/cat
+ /usr/bin/cat
+The command could not be located because '/usr/bin:/bin' is not included in the PATH environment variable.
+cat: command not found
+Command 'chmod' is available in the following places
+ /bin/chmod
+ /usr/bin/chmod
+The command could not be located because '/bin:/usr/bin' is not included in the PATH environment variable.
+chmod: command not found
+Created: hello
+Command 'nvim' is available in the following places
+ /bin/nvim
+ /usr/bin/nvim
+The command could not be located because '/usr/bin:/bin' is not included in the PATH environment variable.
+nvim: command not found
+* `cwhich` can use just 'cat' and if there is bat/batcat it would use it?

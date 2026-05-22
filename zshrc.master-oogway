@@ -65,7 +65,7 @@ ZSH_CUSTOM="$HOME/.master-oogway/omz-custom"  # where master-oogway stores its p
 HYPHEN_INSENSITIVE="true"        # treat - and _ as identical in tab-completion (e.g. my-cmd = my_cmd)
 COMPLETION_WAITING_DOTS="true"   # show ... while tab-completion is computing
 DISABLE_UNTRACKED_FILES_DIRTY="true"  # don't mark the prompt dirty for untracked files (faster in large repos)
-CASE_SENSITIVE="false"           # tab-completion ignores case (READ → README.md)
+CASE_SENSITIVE="false"           # tab-completion ignores case (read → README.md)
 DISABLE_AUTO_UPDATE="true"       # never auto-check for OMZ updates — quieter shell start
 
 # ── Completion (zsh native + zstyle tweaks) ────────────────────────────────────
@@ -162,6 +162,9 @@ plugins=(
 
     # Additive plugins add new commands and never change existing behavior.
     # Safe to comment out any you don't use.
+    # NOTE: mo-projects is first so its directory aliases lose gracefully to
+    # any plugin listed below it that defines the same name.
+    mo-projects                # <project-name> aliases + p (fzf picker) for every dir in ~/projects
     mo-auto-ls                 # run ls automatically after every cd
     mo-git                     # git aliases (ga, gs, gp, ...) + gsum, fbranch, flog
     mo-navigation              # mkcd, up, tmpcd, fcd (fuzzy cd)

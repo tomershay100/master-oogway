@@ -136,13 +136,6 @@ Grouped by theme.
 
 ### Theme 1C — Discovery & navigation
 
-#### 1.12 `mo-projects` — project hub  ·  P2 · S · A
-
-Per the user's design: every subdirectory of `MO_PROJECTS_PROJ_DIR`
-(default `~/projects/`, also honours `~/Projects/`) gets its own alias
-(`foo` → `cd ~/projects/foo`). `p` runs an fzf picker across all project
-directories.
-
 #### 1.15 `mo-color` — color preview & palette  ·  P3 · XS · A
 
 See TODO.md for the full spec.
