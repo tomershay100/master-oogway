@@ -157,6 +157,99 @@ print_todos()
     echo ""
 }
 
+# ── Optional dependency report ─────────────────────────────────────────────────
+# Reads optional-deps.zsh from every plugin, checks which commands are missing,
+# and prints a grouped table + one-liner install command.
+
+_check_optional_deps()
+{
+    local plugins_dir="${INSTALL_DIR}/omz-custom/plugins"
+    declare -A missing_cmds=()
+    declare -A descriptions=()
+    declare -A apt_pkgs=()
+
+    local plugin_dir dep_file plugin_name raw_deps raw_apt cmd desc pkg
+    for dep_file in "${plugins_dir}"/*/optional-deps.zsh; do
+        [[ -f "$dep_file" ]] || continue
+        plugin_dir="${dep_file%/optional-deps.zsh}"
+        plugin_name="${plugin_dir##*/}"
+
+        raw_deps=$(zsh -c '
+            source "$1"
+            for k in "${(@k)MO_OPTIONAL_DEPS}"; do
+                printf "%s\t%s\n" "$k" "${MO_OPTIONAL_DEPS[$k]}"
+            done
+        ' -- "$dep_file" 2>/dev/null) || continue
+
+        raw_apt=$(zsh -c '
+            source "$1"
+            for k in "${(@k)MO_OPTIONAL_APT}"; do
+                printf "%s\t%s\n" "$k" "${MO_OPTIONAL_APT[$k]}"
+            done
+        ' -- "$dep_file" 2>/dev/null) || continue
+
+        while IFS=$'\t' read -r cmd desc; do
+            [[ -n "$cmd" ]] || continue
+            descriptions["$cmd"]="$desc"
+        done <<< "$raw_deps"
+
+        while IFS=$'\t' read -r cmd pkg; do
+            [[ -n "$cmd" ]] || continue
+            apt_pkgs["$cmd"]="$pkg"
+        done <<< "$raw_apt"
+
+        local missing_for_plugin=""
+        while IFS=$'\t' read -r cmd _; do
+            [[ -n "$cmd" ]] || continue
+            command -v "$cmd" &>/dev/null && continue
+            case "$cmd" in
+                fd)  command -v fdfind &>/dev/null && continue ;;
+                bat) command -v batcat &>/dev/null && continue ;;
+            esac
+            missing_for_plugin="${missing_for_plugin} ${cmd}"
+        done <<< "$raw_deps"
+
+        missing_for_plugin="${missing_for_plugin# }"
+        [[ -n "$missing_for_plugin" ]] && missing_cmds["$plugin_name"]="$missing_for_plugin"
+    done
+
+    [[ ${#missing_cmds[@]} -eq 0 ]] && return 0
+
+    echo ""
+    echo -e "${COLOR_YELLOW}┌─────────────────────────────────────────────────────┐${COLOR_RESET}"
+    echo -e "${COLOR_YELLOW}│  Optional packages not installed                    │${COLOR_RESET}"
+    echo -e "${COLOR_YELLOW}└─────────────────────────────────────────────────────┘${COLOR_RESET}"
+
+    local all_missing_pkgs=()
+    local plugin first
+    for plugin in "${!missing_cmds[@]}"; do
+        first=true
+        for cmd in ${missing_cmds[$plugin]}; do
+            desc="${descriptions[$cmd]:-$cmd}"
+            pkg="${apt_pkgs[$cmd]:-$cmd}"
+            if $first; then
+                printf "  ${COLOR_YELLOW}%-20s${COLOR_RESET}  %-12s  %s\n" "$plugin" "$cmd" "$desc"
+                first=false
+            else
+                printf "  %-20s  %-12s  %s\n" "" "$cmd" "$desc"
+            fi
+            all_missing_pkgs+=("$pkg")
+        done
+    done
+
+    local unique_pkgs=()
+    declare -A seen_pkg=()
+    for p in "${all_missing_pkgs[@]}"; do
+        [[ -z "${seen_pkg[$p]+set}" ]] || continue
+        seen_pkg["$p"]=1
+        unique_pkgs+=("$p")
+    done
+
+    echo ""
+    echo -e "  To install all:  ${COLOR_CYAN}sudo apt install ${unique_pkgs[*]}${COLOR_RESET}"
+    echo ""
+}
+
 # ── Mode detection ─────────────────────────────────────────────────────────────
 
 _SCRIPT_SOURCE="${BASH_SOURCE[0]:-}"
@@ -439,27 +532,6 @@ if [[ ! -f "${HOME}/.oh-my-zsh/oh-my-zsh.sh" ]]; then
     die "oh-my-zsh not found — please install it first, then re-run this script:
 
   sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
-fi
-
-# Nice-to-have packages — silently skipped at runtime when missing (each plugin
-# guards its own dependency). Just remind the user via the post-install todo
-# list so they know the option exists.
-command -v fzf    &>/dev/null || todo_item "Install fzf for fuzzy history search: sudo apt install fzf"
-command -v meld   &>/dev/null || todo_item "Install meld for git difftool: sudo apt install meld"
-command -v direnv &>/dev/null || todo_item "Install direnv for per-directory envs: sudo apt install direnv"
-command -v lsof   &>/dev/null || todo_item "Install lsof for the 'port' command: sudo apt install lsof"
-command -v rg     &>/dev/null || todo_item "Install ripgrep for the 'frg' fuzzy ripgrep picker: sudo apt install ripgrep"
-if ! command -v fd &>/dev/null && ! command -v fdfind &>/dev/null; then
-    todo_item "Install fd for faster fzf file picker (Ctrl+T): sudo apt install fd-find"
-fi
-if ! command -v dig &>/dev/null && ! command -v nmap &>/dev/null; then
-    todo_item "Install nmap for mo-lan-ssh LAN host discovery: sudo apt install nmap"
-fi
-if ! command -v eza &>/dev/null && ! command -v exa &>/dev/null; then
-    todo_item "Install eza (Ubuntu) or exa (Raspberry Pi) for enhanced ls: sudo apt install eza"
-fi
-if ! command -v batcat &>/dev/null && ! command -v bat &>/dev/null; then
-    todo_item "Install bat for syntax-highlighted cat/less/man: sudo apt install bat"
 fi
 
 # ── .zshrc: first install replaces; subsequent runs leave it alone ─────────────
@@ -745,6 +817,7 @@ EOF
 
 # ── Done ───────────────────────────────────────────────────────────────────────
 
+_check_optional_deps
 print_todos
 _print_backup_tip
 success "dragon installation complete. Open a new terminal to apply changes."
