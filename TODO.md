@@ -23,11 +23,6 @@ for each change:
 
 # Existing plugins
 
-## mo-build
-* i want `m` to work with make arguments. like `m -C dir`, or `m all`.
-* maybe we dont need to check of `nproc` every time we runs m. we can compute this on zsh loading, what do you say?
-* if we have banner but no colormake..?
-
 ## mo-cli
 * `master-oogway version` is the master-oogway version or dragon version?
 

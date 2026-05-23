@@ -1,10 +1,10 @@
 # mo-build
 
-Parallel make aliases.
+Parallel make wrapper. Accepts all make arguments (`m -C dir`, `m all`, etc.).
 
-**Dependencies:** `make` (required). `colormake` + `banner` are optional — falls back to plain `make` if absent.
+**Dependencies:** `make` (required). `colormake` and `banner` are optional and independent — each is used when available.
 
 | Command | Description |
 |---------|-------------|
-| `m` | `make -j$(nproc)` — build using all CPU cores |
+| `m [args]` | build using all CPU cores; colored output if `colormake` installed; PASSED/FAILED banner if `banner` installed |
 | `mc` | `make clean` |

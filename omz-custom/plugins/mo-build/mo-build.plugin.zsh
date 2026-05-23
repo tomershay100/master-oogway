@@ -1,7 +1,19 @@
 
-if command -v colormake &>/dev/null && command -v banner &>/dev/null; then
-    alias m="colormake -j\$(( \$(nproc) > 0 ? \$(nproc) : 1 )) && banner PASSED || (banner FAILED; false)"
-else
-    alias m="make -j\$(( \$(nproc) > 0 ? \$(nproc) : 1 ))"
-fi
+_mo_build_jobs=$(( $(nproc 2>/dev/null || echo 1) > 0 ? $(nproc 2>/dev/null || echo 1) : 1 ))
+_mo_build_has_colormake=false; command -v colormake &>/dev/null && _mo_build_has_colormake=true
+_mo_build_has_banner=false;    command -v banner    &>/dev/null && _mo_build_has_banner=true
+
+m() {
+    if $_mo_build_has_colormake; then
+        colormake -j"$_mo_build_jobs" "$@"
+    else
+        make -j"$_mo_build_jobs" "$@"
+    fi
+    local ret=$?
+    if $_mo_build_has_banner; then
+        (( ret == 0 )) && banner PASSED || banner FAILED
+    fi
+    return $ret
+}
+
 alias mc="make clean"
