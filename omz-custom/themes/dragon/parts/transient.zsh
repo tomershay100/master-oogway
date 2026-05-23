@@ -66,7 +66,9 @@ __refresh_prompt()
 {
 	dragon__set_lprompt
 	dragon__set_rprompt
-	zle && zle reset-prompt
+	# zle -F callbacks run inside ZLE; zle (no args) may return false here
+	# even though we are in a ZLE context, so call reset-prompt unconditionally.
+	zle reset-prompt 2>/dev/null
 }
 
 _IS_GITSTATUS_RUNNING=false

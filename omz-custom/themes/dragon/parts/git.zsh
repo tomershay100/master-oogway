@@ -58,7 +58,7 @@ dragon__set_git_prompt()
 {
 	FINAL_GIT_STATUS_CONTENT=""
 	! $DRAGON__ENABLE_GIT_STATUS && return
-	[[ $VCS_STATUS_RESULT != "ok-sync" ]] && return
+	[[ $VCS_STATUS_RESULT != ok-sync && $VCS_STATUS_RESULT != ok-async ]] && return
 
 	__set_git_status_content
 	__set_git_status_color
