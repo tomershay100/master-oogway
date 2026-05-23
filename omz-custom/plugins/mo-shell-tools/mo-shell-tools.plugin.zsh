@@ -46,20 +46,6 @@ clip() {
 vizsh() { ${EDITOR:-vim} ~/.zshrc; }
 alias soursh="source ~/.zshrc"
 
-# Greps `total` lines from `time` output — one per run, shows variance across runs.
-zshtime() {
-    local n="${1:-5}"
-    if [[ ! "$n" =~ ^[0-9]+$ ]] || (( n < 1 )); then
-        echo "Usage: zshtime [runs]  (default: 5)" >&2
-        return 1
-    fi
-    echo "Measuring zsh startup time (${n} run$(( n == 1 ? 0 : 1 ))s)..."
-    local i
-    for (( i = 1; i <= n; i++ )); do
-        { time zsh -i -c exit } 2>&1
-    done | grep total
-}
-
 mo-where() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
         echo "Usage: mo-where <name>"

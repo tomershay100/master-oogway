@@ -11,7 +11,6 @@ Shell inspection and utility helpers.
 | `clip` | copy stdin to the system clipboard (`echo foo \| clip`) |
 | `vizsh` | open `~/.zshrc` in `$EDITOR` |
 | `soursh` | reload `~/.zshrc` |
-| `zshtime [n]` | measure zsh startup time over `n` runs (default 5) |
 | `calc <expr>` | evaluate a math expression via `bc -l` (supports `sqrt`, `s`, `c`, `l`, `e`) |
 | `epoch [ts]` | convert unix timestamp ↔ human date; no arg = current timestamp |
 | `please` | re-run the previous command with sudo |

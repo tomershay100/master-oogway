@@ -35,7 +35,7 @@ Override plugins replace system commands. Comment out any you don't want.
 | [mo-nvim-override](omz-custom/plugins/mo-nvim-override/README.md) | `vim` → nvim |
 | [mo-safety-override](omz-custom/plugins/mo-safety-override/README.md) | `cp/mv/mkdir/reboot` with confirmation prompts |
 | [mo-colorize-override](omz-custom/plugins/mo-colorize-override/README.md) | `ip/diff` → colorized output |
-| [mo-trash](omz-custom/plugins/mo-trash/README.md) | `rm` → trash-put (restorable); `rrm` bypasses |
+| [mo-trash](omz-custom/plugins/mo-trash/README.md) | `rm` → trash-put (restorable) |
 
 Additive plugins add new commands and never change existing behavior.
 
@@ -51,7 +51,7 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-lan-ssh](omz-custom/plugins/mo-lan-ssh/README.md) | bare-`<host>` aliases for every SSH host on your LAN |
 | [mo-projects](omz-custom/plugins/mo-projects/README.md) | `<project-name>` aliases + `p` (fzf picker) for every dir in `~/projects` |
 | [mo-mkscript](omz-custom/plugins/mo-mkscript/README.md) | `mkscript` — scaffold a new shell script from template |
-| [mo-shell-tools](omz-custom/plugins/mo-shell-tools/README.md) | `h`, `?`, `cwhich`, `vwhich`, `clip`, `vizsh`, `soursh`, `zshtime`, `calc`, `epoch`, `please`, `mo-where` |
+| [mo-shell-tools](omz-custom/plugins/mo-shell-tools/README.md) | `h`, `?`, `cwhich`, `vwhich`, `clip`, `vizsh`, `soursh`, `calc`, `epoch`, `please`, `mo-where` |
 | [mo-env](omz-custom/plugins/mo-env/README.md) | `fenv` |
 | [mo-build](omz-custom/plugins/mo-build/README.md) | `m`, `mc` |
 | [mo-apps](omz-custom/plugins/mo-apps/README.md) | GUI app launcher aliases |
