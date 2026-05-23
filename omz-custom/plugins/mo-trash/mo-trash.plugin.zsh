@@ -1,8 +1,4 @@
-
-# Skips silently when not installed — `rm` stays untouched.
-if ! command -v trash-put &>/dev/null; then
-    return 0
-fi
+source "${0:h}/requirements.zsh" || return
 
 typeset -g MO_TRASH_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/Trash"
 
