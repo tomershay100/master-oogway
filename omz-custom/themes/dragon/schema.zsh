@@ -396,7 +396,12 @@ _dragon_init_groups() {
 #   3. Dropping a presets/<name>.conf.zsh file with export DRAGON__VAR='value' lines
 # configure.zsh discovers all three by name; no changes needed there.
 _dragon_init_presets() {
-    typeset -ga _DRAGON_PRESET_NAMES=( short default verbose tokyonight dracula minimal corporate )
+    typeset -ga _DRAGON_PRESET_NAMES=(
+        short default verbose tokyonight dracula minimal corporate
+        cyberpunk retro-terminal pastel high-contrast zen focus
+        catppuccin-mocha catppuccin-latte solarized-dark synthwave matrix
+        paper prod-server portrait rainbow kanagawa ascii multiplexer everforest
+    )
     typeset -gA _DRAGON_PRESET_DESC=(
         [short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
         [default]='Balanced. username@hostname:dir ❯, git status, time & timer.'
@@ -405,6 +410,25 @@ _dragon_init_presets() {
         [dracula]='Colored BG segments, no text separators, single line. Dracula colors.'
         [minimal]='No color, no glyphs. Plain ASCII, single line — works everywhere.'
         [corporate]='Muted & safe. ASCII prompt, minimal rprompt, no nerd glyphs.'
+        [cyberpunk]='Neon magenta/cyan/yellow, bold, chunky powerline. Decker-night console.'
+        [retro-terminal]='Green-on-black VT220 vibe. No nerd glyphs, monochrome, single line.'
+        [pastel]='Soft peach/lavender/mint. Rounded multiline. Friendly, low-contrast.'
+        [high-contrast]='WCAG accessibility mode. Black on bright yellow, bold throughout.'
+        [zen]='Minimalist sage-green. One prompt char, no rprompt clutter. Deep focus.'
+        [focus]='Developer-tuned. Full git state + exec timer always visible, no clock.'
+        [catppuccin-mocha]='Catppuccin Mocha — mauve/peach/teal/sapphire. Multiline, git on its own line.'
+        [catppuccin-latte]='Catppuccin Latte light mode. Same layout as mocha, daytime palette.'
+        [solarized-dark]='Classic Ethan Schoonover solarized. Base02 backbone, seven accents.'
+        [synthwave]='Hot pink + neon purple + cyan. Background-heavy 80s wave.'
+        [matrix]='Pure green-on-black hacker-movie aesthetic. Same-color powerline.'
+        [paper]='White-paper bg, ink-blue and ink-red. Working Copy / Tinderbox inspired.'
+        [prod-server]='Tiny when local; hostname becomes red banner over SSH. Server-tuned.'
+        [portrait]='Narrow tmux-pane mode. Always multiline. Shortest directory. Minimal rprompt.'
+        [rainbow]='Each segment a different bright hue. Screenshot / demo mode.'
+        [kanagawa]='Japanese ink-wash. Indigo blacks, washi creams, sakura accents.'
+        [ascii]='Zero glyphs, zero colors, zero non-ASCII. Maximum portability — works in tty1.'
+        [multiplexer]='Built for tmux. Tiny lprompt, rich rprompt, transient off for scrollback.'
+        [everforest]='Sauce Code Pro–era greens. Calm but readable, soft and natural.'
     )
     typeset -gA _DRAGON_PRESET_EXAMPLE=(
         [short]='hostname:~/projects ❯'
@@ -421,5 +445,46 @@ _dragon_init_presets() {
               $'
         [corporate]='user@myhost ~/projects (main)
               >'
+        [cyberpunk]=' user  myhost  ~/projects  main ✗  »'
+        [retro-terminal]='user@myhost:/home/user/projects [main]
+              $'
+        [pastel]='╭─ user · myhost · ~/projects
+              │  on ❀ main ✓
+              ╰─ ✿'
+        [high-contrast]=' user @ myhost : ~/projects
+              [git: CLEAN]
+              >'
+        [zen]='myhost ~/projects  main ∙'
+        [focus]=' myhost ~/projects on  main
+              λ'
+        [catppuccin-mocha]='╭─ user at myhost in ~/projects
+              │ on ‹main› ✔
+              ╰─ ❯'
+        [catppuccin-latte]='╭─ user at myhost in ~/projects
+              │ on ‹main› ✔
+              ╰─ ❯'
+        [solarized-dark]='user@myhost:~/projects
+              on ‹main› ✔
+              ❯'
+        [synthwave]=' user  myhost  ~/projects  main  ▶'
+        [matrix]=' user  myhost  /home/user/projects
+              git:main
+              █'
+        [paper]='user • myhost — ~/projects [main] ›'
+        [prod-server]='user@myhost ~/projects (main)
+              #'
+        [portrait]='myhost ~/projects
+               main
+              ❯'
+        [rainbow]=' user  myhost  ~/projects  main  ❯'
+        [kanagawa]='┌─ user · myhost · ~/projects
+              │  on ⎇ main
+              └─ ⟶'
+        [ascii]='user@myhost:/home/user/projects [main]
+              $'
+        [multiplexer]='myhost ~/projects  main ❯   14:32   ⏱ 1s   1 jobs '
+        [everforest]='╭─ user on myhost in ~/projects
+              │ on  main
+              ╰─ ❯'
     )
 }

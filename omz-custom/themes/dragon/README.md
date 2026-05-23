@@ -16,6 +16,8 @@ Settings are written to `~/.config/master-oogway/conf.zsh` — never overwritten
 
 ## Presets
 
+Recommended starting points:
+
 | Preset | Style |
 |--------|-------|
 | `short` | minimal — `hostname:dir$`, inline git, no rprompt extras |
@@ -25,6 +27,19 @@ Settings are written to `~/.config/master-oogway/conf.zsh` — never overwritten
 ```bash
 dragon-configure --preset default
 ```
+
+26 presets ship in [`presets/`](presets/), grouped into four flavours:
+
+- **Layouts.** `short` `default` `verbose` `minimal` `portrait` `multiplexer`
+- **Themed palettes.** `tokyonight` `dracula` `catppuccin-mocha` `catppuccin-latte`
+  `solarized-dark` `kanagawa` `everforest` `paper`
+- **Moods.** `cyberpunk` `retro-terminal` `pastel` `zen` `focus`
+  `synthwave` `matrix` `rainbow`
+- **Special-purpose.** `high-contrast` (WCAG) `ascii` (no glyphs)
+  `prod-server` (SSH banner) `corporate` (muted)
+
+Browse all of them in the interactive picker with `dragon-configure`, or jump
+straight to one with `dragon-configure --preset <name>`.
 
 A preset switch (CLI `--preset` or interactive `[3] Reset to preset`) writes
 a timestamped backup at `~/.config/master-oogway/conf.zsh.bak.<YYYYMMDD_HHMMSS>`
