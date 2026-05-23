@@ -32,7 +32,7 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
         prompt.zsh                __calc_prompt_length, dragon__set_lprompt/set_rprompt
         transient.zsh             zle hooks, gitstatus glue, prompt refresh
   plugins/
-    mo-*/mo-*.plugin.zsh          20 oh-my-zsh plugins (5 override + 15 additive)
+    mo-*/mo-*.plugin.zsh          26 oh-my-zsh plugins (6 override + 20 additive)
 ```
 
 ---
@@ -125,9 +125,8 @@ If any of these fail, fix the underlying issue — never commit a file that fail
 
 Override plugins (those that shadow system commands) must appear **before** additive
 plugins in `zshrc.master-oogway` so additive plugins inherit the overridden commands.
-Each override should also define an escape-hatch alias (`r<name>`) that calls the
-original binary directly. Override plugins go in the "Override plugins" table at the top
-of the README's `## Plugins` section, not in the additive table.
+Override plugins go in the "Override plugins" table at the top of the README's
+`## Plugins` section, not in the additive table.
 
 **Plugin-order constraints in `zshrc.master-oogway`:**
 

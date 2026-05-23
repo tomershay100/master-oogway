@@ -1,6 +1,6 @@
 # master-oogway
 
-A complete zsh environment — dragon prompt theme, git aliases, fuzzy-finder functions, and 20 opt-in plugins — distributed as a standalone git repo.
+A complete zsh environment — dragon prompt theme, git aliases, fuzzy-finder functions, and 26 opt-in plugins — distributed as a standalone git repo.
 
 ## Installation
 
@@ -26,7 +26,7 @@ The installer sets up `~/.zshrc`, `~/.gitconfig`, `~/.editorconfig`, `~/.zshenv`
 
 ## Plugins
 
-Override plugins replace system commands. Comment out any you don't want. Each provides an `r<name>` escape-hatch alias to reach the original.
+Override plugins replace system commands. Comment out any you don't want.
 
 | Plugin | Replaces |
 |--------|----------|
@@ -42,8 +42,8 @@ Additive plugins add new commands and never change existing behavior.
 | Plugin | What it adds |
 |--------|-------------|
 | [mo-git](omz-custom/plugins/mo-git/README.md) | git aliases (`gs`, `gp`, `gl`, …) and fuzzy branch/log pickers |
-| [mo-navigation](omz-custom/plugins/mo-navigation/README.md) | `mkcd`, `up`, `tmpcd`, `fcd` |
-| [mo-files](omz-custom/plugins/mo-files/README.md) | `extract`, `bak`, `sizeof`, `fp` |
+| [mo-dirs](omz-custom/plugins/mo-dirs/README.md) | `mkcd`, `up`, `tmpcd`, `fcd` |
+| [mo-files](omz-custom/plugins/mo-files/README.md) | `extract`, `compress`, `bak`, `sizeof`, `fp` |
 | [mo-search](omz-custom/plugins/mo-search/README.md) | `grep` aliases, `f`, `fhist`, `fman`, `frg` |
 | [mo-process](omz-custom/plugins/mo-process/README.md) | `psgrep`, `port`, `fkill` |
 | [mo-docs](omz-custom/plugins/mo-docs/README.md) | `md2pdf` — Markdown to PDF |
