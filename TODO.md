@@ -24,12 +24,6 @@ for each change:
 * 2.9 - lets do this
 * 2.10 - lets do this
 
-# My new ideas
-
-## `no-man`
-another feature/plugin: `mo-man` for plugins that let the user view (less/batcat less) the README of the mo-plugin specified.
-where can we add it? or create new plugin?
-
 # Existing plugins
 
 ## zshrc

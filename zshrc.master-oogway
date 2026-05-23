@@ -189,6 +189,7 @@ plugins=(
     mo-env                     # fenv (fuzzy environment variable browser)
     mo-mkscript                # mkscript — scaffold a new shell script from template
     mo-color                   # color — terminal color preview, palette, and text colorizer
+    mo-man                     # mo-man <plugin> — view a mo-* plugin README (bat/less)
     mo-shell-tools             # h, ?, cwhich, vwhich, vizsh, soursh, zshtime, please, mo-where
     mo-apps                    # GUI app launchers (gnucash via flatpak)
     mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path
