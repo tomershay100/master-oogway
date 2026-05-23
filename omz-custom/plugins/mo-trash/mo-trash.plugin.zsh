@@ -47,7 +47,7 @@ trash-empty() {
     local size
     size=$(du -sh "${MO_TRASH_DIR}/files" 2>/dev/null | cut -f1)
     echo "Trash size: ${size:-0}"
-    echo -n "Permanently delete everything in the trash? [y/N] "
+    printf '%s' "Permanently delete everything in the trash? [y/N] "
     local ans
     read -r ans
     [[ "$ans" =~ ^[Yy]([Ee][Ss])?$ ]] && command trash-empty

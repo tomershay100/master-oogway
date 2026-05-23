@@ -262,12 +262,14 @@ _mo_lan_status() {
     # Auto cache
     print -P "%BAuto cache:%b $_MO_LAN_SSH_CACHE"
     if [[ -f "$_MO_LAN_SSH_CACHE" ]]; then
-        local age=$(_mo_lan_cache_age)
-        local hours=$(( age / 3600 )) mins=$(( (age % 3600) / 60 ))
-        local refreshed=$(grep -m1 '^# Refreshed:' "$_MO_LAN_SSH_CACHE" | sed 's/^# Refreshed: //')
-        local auto_count=$(grep -cvE '^(#|$)' "$_MO_LAN_SSH_CACHE")
-        local cur_net=$(_mo_lan_network_id) cache_net=$(_mo_lan_cache_network)
-        local net_status
+        local age hours mins refreshed auto_count cur_net cache_net net_status
+        age=$(_mo_lan_cache_age)
+        hours=$(( age / 3600 ))
+        mins=$(( (age % 3600) / 60 ))
+        refreshed=$(grep -m1 '^# Refreshed:' "$_MO_LAN_SSH_CACHE" | sed 's/^# Refreshed: //')
+        auto_count=$(grep -cvE '^(#|$)' "$_MO_LAN_SSH_CACHE")
+        cur_net=$(_mo_lan_network_id)
+        cache_net=$(_mo_lan_cache_network)
         if [[ "$cur_net" == "$cache_net" ]]; then
             net_status="%F{green}✓ stable%f"
         else
@@ -284,7 +286,8 @@ _mo_lan_status() {
     # Manual overlay
     print -P "%BManual overlay:%b $_MO_LAN_SSH_MANUAL"
     if [[ -f "$_MO_LAN_SSH_MANUAL" ]]; then
-        local manual_count=$(grep -cvE '^(#|$)' "$_MO_LAN_SSH_MANUAL")
+        local manual_count
+        manual_count=$(grep -cvE '^(#|$)' "$_MO_LAN_SSH_MANUAL")
         print -P "  Hosts:     ${manual_count}"
     else
         print -P "  %F{245}(none — use 'mo-lan-ssh add <host>[:<port>]' to add)%f"

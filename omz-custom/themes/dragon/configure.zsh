@@ -63,11 +63,12 @@ _dragon_write_state() {
 _dragon_load_current_conf_from() {
     local src="$1"
     [[ -f "$src" ]] || return
-    local line
+    local line varname raw q=\'
     while IFS= read -r line; do
         [[ "$line" == '#'* || "$line" =~ ^[[:space:]]*$ ]] && continue
         if [[ "$line" =~ "^[[:space:]]*export DRAGON__([A-Z_]+)='(.*)'[[:space:]]*(#.*)?$" ]]; then
-            local varname="${match[1]}" raw="${match[2]}" q=\'
+            varname="${match[1]}"
+            raw="${match[2]}"
             raw="${raw//$q\\$q$q/$q}"
             _DRAGON_CURRENT[$varname]="$raw"
         fi
@@ -85,7 +86,7 @@ _dragon_load_current_conf() {
     [[ -f "${_DRAGON_CONF_FILE}" ]] || return
 
     # Override with any active (uncommented) settings from the conf file
-    local line
+    local line varname raw q=\'
     while IFS= read -r line; do
         [[ "$line" == '#'* || "$line" =~ ^[[:space:]]*$ ]] && continue
 
@@ -95,9 +96,8 @@ _dragon_load_current_conf() {
         # comment, so values containing the escape sequence '\'' round-trip
         # cleanly.
         if [[ "$line" =~ "^[[:space:]]*export DRAGON__([A-Z_]+)='(.*)'[[:space:]]*(#.*)?$" ]]; then
-            local varname="${match[1]}"
-            local raw="${match[2]}"
-            local q=\'
+            varname="${match[1]}"
+            raw="${match[2]}"
             raw="${raw//$q\\$q$q/$q}"       # unescape '\'' → '
             _DRAGON_CURRENT[$varname]="$raw"
         # Legacy format (double-quoted, pre-2026-05-16): read-only — we no
@@ -105,8 +105,8 @@ _dragon_load_current_conf() {
         # Greedy (.*)" matches up to LAST " before optional comment, so this
         # also fixes the old reader's '" #'-substring truncation bug.
         elif [[ "$line" =~ "^[[:space:]]*export DRAGON__([A-Z_]+)=\"(.*)\"[[:space:]]*(#.*)?$" ]]; then
-            local varname="${match[1]}"
-            local raw="${match[2]}"
+            varname="${match[1]}"
+            raw="${match[2]}"
             raw="${raw//\\\"/\"}"           # unescape \" → "
             raw="${raw//\\\\/\\}"           # unescape \\ → \
             _DRAGON_CURRENT[$varname]="$raw"
