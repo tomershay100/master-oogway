@@ -60,6 +60,20 @@ _dragon_write_state() {
 # Conf file loader — fills _DRAGON_CURRENT from existing conf
 # ─────────────────────────────────────────────────────────────────────────────
 
+_dragon_load_current_conf_from() {
+    local src="$1"
+    [[ -f "$src" ]] || return
+    local line
+    while IFS= read -r line; do
+        [[ "$line" == '#'* || "$line" =~ ^[[:space:]]*$ ]] && continue
+        if [[ "$line" =~ "^[[:space:]]*export DRAGON__([A-Z_]+)='(.*)'[[:space:]]*(#.*)?$" ]]; then
+            local varname="${match[1]}" raw="${match[2]}" q=\'
+            raw="${raw//$q\\$q$q/$q}"
+            _DRAGON_CURRENT[$varname]="$raw"
+        fi
+    done < "$src"
+}
+
 _dragon_load_current_conf() {
     # Start from defaults
     typeset -gA _DRAGON_CURRENT=()
@@ -729,12 +743,14 @@ Usage: dragon-configure [options]
 Options:
   (none)              Full interactive wizard — step through every setting
   --new-only          Only configure variables added since the last run
-  --preset <name>     Instantly switch to a preset (short / default / verbose)
+  --preset <name>     Instantly switch to a preset (built-in or personal)
+  --export <name>     Save current config as a personal preset
   --dismiss           Silence the "new variables" notifier until next update
   --version, -v       Print the installed dragon version
   --help, -h          Show this help
 
-Config file: ~/.config/master-oogway/conf.zsh
+Config file:    ~/.config/master-oogway/conf.zsh
+Personal presets: ~/.config/master-oogway/presets/<name>.conf.zsh
 EOF
         return 0
     fi
@@ -781,12 +797,78 @@ EOF
     # Load existing conf (sets _DRAGON_CURRENT from defaults + active conf values)
     _dragon_load_current_conf
 
+    # ── Export current config as a personal preset
+    if [[ "${1-}" == "--export" ]]; then
+        local _export_name="${2:-}"
+        if [[ -z "$_export_name" ]]; then
+            print -P "%F{red}✗%f Usage: dragon-configure --export <name>"
+            _dragon_cleanup
+            return 1
+        fi
+        if [[ ! "$_export_name" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+            print -P "%F{red}✗%f Invalid name '${_export_name}' — use letters, numbers, hyphens, underscores only."
+            _dragon_cleanup
+            return 1
+        fi
+        if [[ -z "${_DRAGON_CONF_FILE}" || ! -f "${_DRAGON_CONF_FILE}" ]]; then
+            print -P "%F{red}✗%f No conf.zsh found — run %Bdragon-configure%b first."
+            _dragon_cleanup
+            return 1
+        fi
+        local _presets_dir="${_DRAGON_STATE_DIR}/presets"
+        local _export_dst="${_presets_dir}/${_export_name}.conf.zsh"
+        mkdir -p "$_presets_dir"
+        if [[ -f "$_export_dst" ]]; then
+            printf "  '%s' already exists — overwrite? [y/N] " "$_export_name"
+            local _ow; read -r _ow
+            [[ "$_ow" == y* || "$_ow" == Y* ]] || { print -P "  %F{245}Aborted.%f"; _dragon_cleanup; return 0; }
+        fi
+        # Write only the non-default values as a compact, sourceable conf fragment.
+        {
+            printf '# dragon personal preset: %s\n' "$_export_name"
+            printf '# Created: %s\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+            printf '# Load with: dragon-configure --preset %s\n\n' "$_export_name"
+            local var val default q=\'
+            for var val in "${(@kv)_DRAGON_CURRENT}"; do
+                default="${_DRAGON_DEFAULTS[$var]:-}"
+                [[ "$val" == "$default" ]] && continue
+                local safe_val="${val//$q/$q\\$q$q}"
+                printf "export DRAGON__%s='%s'\n" "$var" "$safe_val"
+            done
+        } > "$_export_dst"
+        print ""
+        print -P "  %F{green}✓ Saved preset '%B${_export_name}%b%F{green}' to:%f"
+        print -P "    %B${_export_dst}%b"
+        print ""
+        print -P "  %F{245}Reload it any time with: %Bdragon-configure --preset ${_export_name}%f"
+        print ""
+        print -P "  %B%F{cyan}Want to share this preset with everyone?%f%b"
+        print -P "  %F{245}Submit a PR to the master-oogway repo:%f"
+        print -P "  %F{245}  1. Add a %B_dragon_preset_${_export_name}()%b function to %Bschema.zsh%b"
+        print -P "  %F{245}  2. Add its name, desc, and example to %B_dragon_init_presets%b"
+        print -P "  %F{245}  3. Open a PR at: %Bhttps://github.com/tomer-w/master-oogway%b%f"
+        print ""
+        _dragon_cleanup
+        return 0
+    fi
+
     # ── Preset switcher: dragon-configure --preset <name>
     if [[ "${1-}" == "--preset" ]]; then
         local _preset="${2:-}"
-        if [[ -z "$_preset" || -z "${_DRAGON_PRESET_DESC[$_preset]:-}" ]]; then
+        local _user_preset_file="${_DRAGON_STATE_DIR}/presets/${_preset}.conf.zsh"
+        local _is_builtin=false _is_user=false
+        [[ -n "${_DRAGON_PRESET_DESC[$_preset]:-}" ]] && _is_builtin=true
+        [[ -f "$_user_preset_file" ]]                 && _is_user=true
+
+        if [[ -z "$_preset" ]] || ! ( $_is_builtin || $_is_user ); then
             print -P "%F{red}✗%f Invalid preset: '${_preset:-<none>}'"
-            print -P "  Valid presets: %B${(j:%b  %B:)_DRAGON_PRESET_NAMES[@]}%b"
+            print -P "  Built-in presets: %B${(j:%b  %B:)_DRAGON_PRESET_NAMES[@]}%b"
+            local _user_presets=( "${_DRAGON_STATE_DIR}"/presets/*.conf.zsh(N) )
+            if (( ${#_user_presets} > 0 )); then
+                local _unames=( "${_user_presets[@]##*/}" )
+                _unames=( "${_unames[@]%.conf.zsh}" )
+                print -P "  Personal presets: %B${(j:%b  %B:)_unames[@]}%b"
+            fi
             print -P "  Usage: dragon-configure --preset <name>"
             _dragon_cleanup
             return 1
@@ -795,20 +877,29 @@ EOF
         clear
         print -P "%B%F{cyan}── dragon: Switch to '${_preset}' preset ────────────────────────────%f%b"
         print ""
-        print -P "  This will reset your theme config to the %B${_preset}%b preset defaults."
+        if $_is_user && ! $_is_builtin; then
+            print -P "  Personal preset from: %B${_user_preset_file}%b"
+        fi
+        print -P "  This will reset your theme config to the %B${_preset}%b preset."
         if ! _dragon_warn_preset_reset "Switch to ${_preset} preset now?"; then
             print ""
-            print -P "  %F{245}Aborted. Your conf.zsh is unchanged. Re-run: dragon-configure --preset ${_preset}%f"
+            print -P "  %F{245}Aborted. Your conf.zsh is unchanged.%f"
             _dragon_cleanup
             return 0
         fi
 
         # Preserve USE_NERD_FONT — it reflects terminal capability, not style preference.
-        # _dragon_apply_preset resets all vars to schema defaults; we restore it afterward.
-        # Only restore if the saved value is non-empty — otherwise let the preset default win
-        # (avoids zero-ing USE_NERD_FONT on a never-configured system).
         local _saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]-}"
-        _dragon_apply_preset "$_preset"
+        if $_is_builtin; then
+            _dragon_apply_preset "$_preset"
+        else
+            # User preset: reset to defaults then source the preset file into _DRAGON_CURRENT.
+            local var
+            for var in "${(@k)_DRAGON_DEFAULTS}"; do
+                _DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
+            done
+            _dragon_load_current_conf_from "$_user_preset_file"
+        fi
         [[ -n "$_saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$_saved_nerd_font"
         _dragon_write_conf
         _dragon_write_state "$_preset"

@@ -19,7 +19,6 @@ for each change:
 ## New Plugins
 
 ## Dragon Theme Features
-* 2.9 - lets do this
 * 2.10 - lets do this
 
 # Existing plugins

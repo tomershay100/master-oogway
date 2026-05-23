@@ -147,13 +147,6 @@ transient prompts, SSH-aware, exec-timer, exit-status, jobs, ssh-conn-
 count). What's missing is *content variety* — more useful segments — and
 *convenience* around sharing presets and palettes.
 
-### 2.9 `dragon-configure --export <name>`  ·  P2 · S · A
-
-Save current `conf.zsh` as
-`~/.config/master-oogway/presets/<name>.conf.zsh`. Then `--preset
-<name>` can load it. Personal presets — never committed to the repo —
-sit alongside the bundled gallery from §2.8.
-
 ### 2.10 Palette files separated from layout  ·  P3 · M · B
 
 Today, presets bundle *both* "what shows" (layout) and "what colour"
