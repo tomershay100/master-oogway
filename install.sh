@@ -23,10 +23,10 @@ readonly ZSHRC="${HOME}/.zshrc"
 # ── Colors & logging ───────────────────────────────────────────────────────────
 
 if [[ -t 1 ]] && [[ "${NO_COLOR:-}" == "" ]] && [[ "${TERM:-}" != "dumb" ]]; then
-    COLOR_RESET='\033[0m'
-    COLOR_GREEN='\033[0;32m' COLOR_YELLOW='\033[1;33m' COLOR_RED='\033[0;31m' COLOR_CYAN='\033[0;36m' COLOR_MAGENTA='\033[0;35m'
+    readonly COLOR_RESET='\033[0m'
+    readonly COLOR_GREEN='\033[0;32m' COLOR_YELLOW='\033[1;33m' COLOR_RED='\033[0;31m' COLOR_CYAN='\033[0;36m' COLOR_MAGENTA='\033[0;35m'
 else
-    COLOR_RESET='' COLOR_GREEN='' COLOR_YELLOW='' COLOR_RED='' COLOR_CYAN='' COLOR_MAGENTA=''
+    readonly COLOR_RESET='' COLOR_GREEN='' COLOR_YELLOW='' COLOR_RED='' COLOR_CYAN='' COLOR_MAGENTA=''
 fi
 
 success() { echo -e "${COLOR_GREEN}[OK ]${COLOR_RESET} $*"; }
@@ -37,17 +37,21 @@ _ask()    { echo -en "${COLOR_MAGENTA}[ASK]${COLOR_RESET} $*" > /dev/tty; }
 
 # ── Error handling ─────────────────────────────────────────────────────────────
 
-_on_error() {
+_on_error()
+{
     local exit_code=$?
+    local func="${FUNCNAME[1]:-main}"
+    local file="${BASH_SOURCE[1]:-unknown}"
     trap - ERR
-    die "${BASH_SOURCE[1]:-unknown}: command failed (exit ${exit_code}) at line $1: ${BASH_COMMAND}"
+    die "${file} (${func}): command failed (exit ${exit_code}) at line $1: ${BASH_COMMAND}"
 }
 trap '_on_error $LINENO' ERR
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-require_cmd() {
+require_cmd()
+{
     local cmd="$1" pkg="${2:-$1}"
     command -v "$cmd" &>/dev/null || die "'${cmd}' not found. Install: sudo apt install ${pkg}"
 }
@@ -55,7 +59,8 @@ require_cmd() {
 # Try to install a package via apt-get if it's missing. Returns 0 if the command
 # is now on PATH (either was already, or installed successfully), 1 otherwise.
 # Caller decides whether to die() or continue.
-apt_install() {
+apt_install()
+{
     local cmd="$1" pkg="${2:-$1}"
     command -v "$cmd" &>/dev/null && return 0
     if ! command -v apt-get &>/dev/null; then
@@ -74,7 +79,8 @@ apt_install() {
     return 1
 }
 
-copy_file() {
+copy_file()
+{
     local src="$1" dst="$2"
     [[ -e "$src" ]] || die "Source does not exist: ${src}"
     mkdir -p "$(dirname "$dst")"
@@ -119,7 +125,8 @@ _find_backup() {
     [[ -f "$base" ]] && echo "$base"
 }
 
-confirm() {
+confirm()
+{
     local prompt="$1" default="${2:-n}"
     if [[ ! -t 0 ]]; then
         [[ "$default" =~ ^[Yy] ]] && return 0 || return 1
@@ -128,13 +135,15 @@ confirm() {
     [[ "$default" =~ ^[Yy] ]] && suffix="[Y/n]"
     stty sane < /dev/tty 2>/dev/null || true
     _ask "$prompt $suffix "
-    local reply; read -r reply < /dev/tty
+    local reply
+    read -r reply < /dev/tty
     [[ "$reply" =~ ^[Yy]([Ee][Ss])?$ ]]
 }
 
 _TODO_ITEMS=()
 todo_item()  { _TODO_ITEMS+=("$*"); }
-print_todos() {
+print_todos()
+{
     [[ ${#_TODO_ITEMS[@]} -eq 0 ]] && return 0
     echo ""
     echo -e "${COLOR_YELLOW}┌─────────────────────────────────────────────────────┐${COLOR_RESET}"
@@ -143,7 +152,7 @@ print_todos() {
     local i=1
     for item in "${_TODO_ITEMS[@]}"; do
         echo -e "${COLOR_YELLOW}  ${i}. ${item}${COLOR_RESET}"
-        (( i++ ))
+        i=$(( i + 1 ))
     done
     echo ""
 }
@@ -152,25 +161,29 @@ print_todos() {
 
 _SCRIPT_SOURCE="${BASH_SOURCE[0]:-}"
 
-_running_via_pipe() {
+_running_via_pipe()
+{
     case "${_SCRIPT_SOURCE}" in
         ""|bash|/dev/stdin|/dev/fd/*|/proc/self/fd/*) return 0 ;;
     esac
     return 1
 }
 
-_script_dir() {
+_script_dir()
+{
     local dir
     dir=$(cd "$(dirname "${_SCRIPT_SOURCE}")" 2>/dev/null && pwd)
     [[ -n "$dir" ]] || { echo "error: cannot resolve script directory" >&2; return 1; }
     echo "$dir"
 }
 
-_running_from_install_dir() {
+_running_from_install_dir()
+{
     [[ "$(_script_dir)" == "${INSTALL_DIR}" ]]
 }
 
-_running_from_master_oogway_clone() {
+_running_from_master_oogway_clone()
+{
     local dir; dir="$(_script_dir)" || return 1
     local remote
     remote=$(git -C "$dir" remote get-url origin 2>/dev/null) || return 1
@@ -181,6 +194,8 @@ _running_from_master_oogway_clone() {
 # Triggered when piped through bash, OR when the script is run from a directory
 # that is not a master-oogway clone (e.g. a copied script, /tmp, a random path).
 # Clones (or pulls) the repo, then re-execs the real install.sh from INSTALL_DIR.
+
+_git_out=""
 
 if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_oogway_clone; }; then
     _running_via_pipe || info "Script is not running from a master-oogway clone — bootstrapping..."
@@ -204,7 +219,8 @@ fi
 # even if their .git was deleted. This function pre-scans for that corruption and
 # wipes broken dirs so git can re-clone them cleanly.
 
-_init_plugins() {
+_init_plugins()
+{
     local plugins_dir="${INSTALL_DIR}/omz-custom/plugins"
     local -a missing=()
     for plugin in gitstatus you-should-use zsh-autosuggestions zsh-syntax-highlighting; do
@@ -258,7 +274,8 @@ fi
 
 # ── Version ────────────────────────────────────────────────────────────────────
 
-_print_version() {
+_print_version()
+{
     local version
     version=$(git -C "${INSTALL_DIR}" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
         || echo "unknown")
@@ -447,7 +464,8 @@ fi
 
 # ── .zshrc: first install replaces; subsequent runs leave it alone ─────────────
 
-_install_zshrc() {
+_install_zshrc()
+{
     if [[ -f "${ZSHRC}" ]]; then
         local backup
         backup="${ZSHRC}.pre-master-oogway.$(date +%Y%m%d_%H%M%S)"
@@ -457,7 +475,8 @@ _install_zshrc() {
     copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}"
 }
 
-_check_zshrc_drift() {
+_check_zshrc_drift()
+{
     local template="${INSTALL_DIR}/zshrc.master-oogway"
     [[ -f "${template}" ]] || return
     if ! diff -q "${template}" "${ZSHRC}" &>/dev/null; then
@@ -502,7 +521,8 @@ copy_file "${INSTALL_DIR}/editorconfig.master-oogway" "${HOME}/.editorconfig"
 readonly GITCONFIG="${HOME}/.gitconfig"
 readonly GITCONFIG_BUNDLE="${HOME}/.gitconfig.master-oogway"
 
-_install_gitconfig() {
+_install_gitconfig()
+{
     # Always update the bundle-managed file.
     copy_file "${INSTALL_DIR}/gitconfig.master-oogway" "${GITCONFIG_BUNDLE}"
 
@@ -557,7 +577,8 @@ _install_gitconfig
 
 # ── ~/.ssh/config — SendEnv for dragon theme forwarding ───────────────────────
 
-_install_ssh_sendenv() {
+_install_ssh_sendenv()
+{
     local ssh_config="${HOME}/.ssh/config"
     local marker_begin="# BEGIN master-oogway:sendenv"
     local marker_end="# END master-oogway:sendenv"
@@ -586,7 +607,8 @@ _install_ssh_sendenv
 
 # ── /etc/ssh/sshd_config — AcceptEnv for dragon theme forwarding ──────────────
 
-_install_sshd_acceptenv() {
+_install_sshd_acceptenv()
+{
     local sshd_config="/etc/ssh/sshd_config"
     local marker_begin="# BEGIN master-oogway:acceptenv"
     local marker_end="# END master-oogway:acceptenv"
@@ -637,7 +659,8 @@ _install_sshd_acceptenv
 
 # ── dragon theme: check for new variables ───────────────────────────────────
 
-_check_theme_vars() {
+_check_theme_vars()
+{
     local themes_dir="${INSTALL_DIR}/omz-custom/themes/dragon"
     local current_hash
     # Hash sorted _DRAGON_DEFAULTS keys via a one-shot zsh — immune to
@@ -666,7 +689,8 @@ _check_theme_vars
 
 # ── User extension directories ─────────────────────────────────────────────────
 
-_install_user_ext_dirs() {
+_install_user_ext_dirs()
+{
     local pre_dir="${CONF_DIR}/custom-pre-zsh"
     local post_dir="${CONF_DIR}/custom-zsh"
     mkdir -p "$pre_dir" "$post_dir"
@@ -686,7 +710,8 @@ _install_user_ext_dirs
 # already initialised a git repo there (or hasn't installed anything customisable
 # there yet — fresh installs land here before conf.zsh exists).
 
-_print_backup_tip() {
+_print_backup_tip()
+{
     [[ -d "${CONF_DIR}" ]] || return
     [[ -d "${CONF_DIR}/.git" ]] && return
     local short="${CONF_DIR/#$HOME/~}"
