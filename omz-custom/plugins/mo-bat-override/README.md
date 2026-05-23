@@ -11,4 +11,4 @@ Replaces `cat` and `less` with `bat` (syntax-highlighted viewer). Also sets `BAT
 
 To bypass: use `\cat` or `\less` (backslash-quoting skips aliases in any shell).
 
-**Dependencies:** `bat` or `batcat` — falls back to system `cat`/`less` if neither is installed.
+**Dependencies:** `bat` or `batcat`.

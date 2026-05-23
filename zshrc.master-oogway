@@ -68,9 +68,9 @@ setopt MENU_COMPLETE     # first Tab inserts the first match
 
 # zstyle configures the completion system — see `man zshcompsys`.
 zstyle ':completion:*' menu select                                 # arrow-key navigable menu
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'         # case-insensitive matching
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"           # colorize menu by file type
-zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f' # yellow header per group
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'          # case-insensitive matching
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"            # colorize menu by file type
+zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'  # yellow header per group
 zstyle ':completion:*' group-name ''                               # group items under their header
 
 # ── dragon theme config ────────────────────────────────────────────────────────
