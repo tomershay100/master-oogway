@@ -4,6 +4,24 @@ natip() {
     curl -s --max-time 5 ifconfig.me
 }
 
+serve() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        echo "Usage: serve [port]"
+        echo "  Start an HTTP server in the current directory."
+        echo "  port — port to listen on (default: 8000)"
+        echo ""
+        echo "  Binds to 127.0.0.1 by default (localhost only)."
+        echo "  Set SERVE_BIND=0.0.0.0 to expose to the local network."
+        return
+    fi
+    command -v python3 &>/dev/null || { echo "serve: python3 not installed" >&2; return 1; }
+    local port="${1:-8000}"
+    local bind="${SERVE_BIND:-127.0.0.1}"
+    echo "Serving $(pwd) on http://${bind}:${port}"
+    [[ "$bind" != "127.0.0.1" ]] && echo "  WARNING: exposed to all network interfaces on ${bind}"
+    python3 -m http.server "$port" --bind "$bind"
+}
+
 sshto() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: sshto"

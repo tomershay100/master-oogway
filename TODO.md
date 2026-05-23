@@ -23,9 +23,6 @@ for each change:
 
 # Existing plugins
 
-## mo-dev
-* i dont think that `calc`, `epoch`, `serve` and `md2pdf` actually should be placed together. think where to put each (in an existing plugin or new one.)
-
 ## mo-files
 * some functions has `function` and some no. please to through the entire code and fix it.
 

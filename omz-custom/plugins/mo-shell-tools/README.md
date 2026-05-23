@@ -12,7 +12,9 @@ Shell inspection and config helpers.
 | `vizsh` | open `~/.zshrc` in `$EDITOR` |
 | `soursh` | reload `~/.zshrc` |
 | `zshtime [n]` | measure zsh startup time over `n` runs (default 5) |
+| `calc <expr>` | evaluate a math expression via `bc -l` (supports `sqrt`, `s`, `c`, `l`, `e`) |
+| `epoch [ts]` | convert unix timestamp ↔ human date; no arg = current timestamp |
 | `please` | re-run the previous command with sudo |
 | `mo-where <name>` | show which mo-* plugin defines `<name>` as an alias or function |
 
-**Dependencies:** `wl-clipboard` (`sudo apt install wl-clipboard`) or `xclip` (`sudo apt install xclip`) for `clip` — falls back to printing an error if neither is installed. `bat`/`batcat` for `cwhich` syntax highlighting (optional).
+**Dependencies:** `wl-clipboard` or `xclip` for `clip`; `bc` for `calc`; `bat`/`batcat` for `cwhich` syntax highlighting — all optional.

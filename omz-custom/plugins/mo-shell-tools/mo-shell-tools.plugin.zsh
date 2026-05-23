@@ -90,6 +90,46 @@ mo-where() {
     (( found == 0 )) && { echo "mo-where: '${name}' not found in any mo-* plugin" >&2; return 1; }
 }
 
+calc() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        echo "Usage: calc <expression>"
+        echo "  Evaluate a math expression using bc -l."
+        echo "  Examples:"
+        echo "    calc '2 ^ 10'"
+        echo "    calc 'sqrt(2)'"
+        echo "    calc 's(3.14159/4)'   # sin"
+        return
+    fi
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: calc <expression>  (use -h for details)" >&2
+        return 1
+    fi
+    command -v bc &>/dev/null || { echo "calc: bc not installed" >&2; return 1; }
+    local expr="$*"
+    if [[ ! "$expr" =~ '^[-0-9a-zA-Z_ +*/^().,%]+$' ]]; then
+        echo "calc: expression contains invalid characters" >&2
+        return 1
+    fi
+    bc -l <<< "$expr"
+}
+
+epoch() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        echo "Usage: epoch [timestamp | date-string]"
+        echo "  (no args)         — print current unix timestamp"
+        echo "  epoch 1700000000  — convert unix timestamp to human-readable date"
+        echo "  epoch 'yesterday' — convert date string to unix timestamp"
+        return
+    fi
+    if [[ $# -eq 0 ]]; then
+        date +%s
+    elif [[ "$1" =~ '^[0-9]+$' ]]; then
+        date -d "@$1"
+    else
+        date -d "$*" +%s
+    fi
+}
+
 please() {
     local last
     last=$(fc -ln -1 2>/dev/null)

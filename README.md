@@ -46,12 +46,12 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-files](omz-custom/plugins/mo-files/README.md) | `extract`, `bak`, `sizeof`, `fp` |
 | [mo-search](omz-custom/plugins/mo-search/README.md) | `grep` aliases, `f`, `fhist`, `fman`, `frg` |
 | [mo-process](omz-custom/plugins/mo-process/README.md) | `psgrep`, `port`, `fkill` |
-| [mo-dev](omz-custom/plugins/mo-dev/README.md) | `calc`, `epoch`, `serve`, `md2pdf` |
-| [mo-network](omz-custom/plugins/mo-network/README.md) | `natip`, `sshto` |
+| [mo-docs](omz-custom/plugins/mo-docs/README.md) | `md2pdf` — Markdown to PDF |
+| [mo-network](omz-custom/plugins/mo-network/README.md) | `natip`, `serve`, `sshto` |
 | [mo-lan-ssh](omz-custom/plugins/mo-lan-ssh/README.md) | bare-`<host>` aliases for every SSH host on your LAN |
 | [mo-projects](omz-custom/plugins/mo-projects/README.md) | `<project-name>` aliases + `p` (fzf picker) for every dir in `~/projects` |
 | [mo-mkscript](omz-custom/plugins/mo-mkscript/README.md) | `mkscript` — scaffold a new shell script from template |
-| [mo-shell-tools](omz-custom/plugins/mo-shell-tools/README.md) | `clip`, `h`, `?`, `cwhich`, `vwhich`, `vizsh`, `soursh`, `zshtime`, `please`, `mo-where` |
+| [mo-shell-tools](omz-custom/plugins/mo-shell-tools/README.md) | `h`, `?`, `cwhich`, `vwhich`, `clip`, `vizsh`, `soursh`, `zshtime`, `calc`, `epoch`, `please`, `mo-where` |
 | [mo-env](omz-custom/plugins/mo-env/README.md) | `fenv` |
 | [mo-build](omz-custom/plugins/mo-build/README.md) | `m`, `mc` |
 | [mo-apps](omz-custom/plugins/mo-apps/README.md) | GUI app launcher aliases |
