@@ -1,4 +1,4 @@
-# dragon preset: boxed
+# dragon preset: tokyonight
 # Multiline ╭/│/╰╴ border, git on new line, ⏱ timer. Tokyo Night palette.
 export DRAGON__USERNAME_FOREGROUND_COLOR='39'
 export DRAGON__USERNAME_BACKGROUND_COLOR=''

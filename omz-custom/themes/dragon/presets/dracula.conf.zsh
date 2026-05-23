@@ -1,4 +1,4 @@
-# dragon preset: blocks
+# dragon preset: dracula
 # Colored BG segments, no text separators, single line. Dracula palette.
 export DRAGON__USERNAME_FOREGROUND_COLOR='white'
 export DRAGON__USERNAME_BACKGROUND_COLOR='63'

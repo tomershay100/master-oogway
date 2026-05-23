@@ -396,13 +396,13 @@ _dragon_init_groups() {
 #   3. Dropping a presets/<name>.conf.zsh file with export DRAGON__VAR='value' lines
 # configure.zsh discovers all three by name; no changes needed there.
 _dragon_init_presets() {
-    typeset -ga _DRAGON_PRESET_NAMES=( short default verbose boxed blocks minimal corporate )
+    typeset -ga _DRAGON_PRESET_NAMES=( short default verbose tokyonight dracula minimal corporate )
     typeset -gA _DRAGON_PRESET_DESC=(
         [short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
         [default]='Balanced. username@hostname:dir ❯, git status, time & timer.'
         [verbose]='Maximum info. Multiline, full paths, timestamps, rich git.'
-        [boxed]='Multiline ╭/│/╰╴ border, git on new line, ⏱ timer. Tokyo Night colors.'
-        [blocks]='Colored BG segments, no text separators, single line. Dracula colors.'
+        [tokyonight]='Multiline ╭/│/╰╴ border, git on new line, ⏱ timer. Tokyo Night colors.'
+        [dracula]='Colored BG segments, no text separators, single line. Dracula colors.'
         [minimal]='No color, no glyphs. Plain ASCII, single line — works everywhere.'
         [corporate]='Muted & safe. ASCII prompt, minimal rprompt, no nerd glyphs.'
     )
@@ -413,10 +413,10 @@ _dragon_init_presets() {
         [verbose]='╭ user at myhost in /home/user/projects
               │  on ‹main› ✔
               ╰╴❯'
-        [boxed]='╭ user at myhost in ~/projects
+        [tokyonight]='╭ user at myhost in ~/projects
               │  on ‹main› ✔
               ╰╴❯'
-        [blocks]=' user  myhost  ~/projects  main ✔  ❯'
+        [dracula]=' user  myhost  ~/projects  main ✔  ❯'
         [minimal]='user@myhost:~/projects [main]
               $'
         [corporate]='user@myhost ~/projects (main)
