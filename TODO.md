@@ -19,8 +19,6 @@ for each change:
 ## New Plugins
 
 ## Dragon Theme Features
-* about 2.1 - explain better the plan.
-* 2.8 - add new presets!
 * 2.9 - lets do this
 * 2.10 - lets do this
 

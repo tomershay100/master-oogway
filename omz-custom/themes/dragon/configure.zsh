@@ -815,7 +815,7 @@ EOF
         _dragon_write_state "$_preset"
         print ""
         print -P "  %F{green}✓ Switched to ${_preset} preset.%f"
-        print -P "  %F{245}Reload to apply: %Bsoursh%b"
+        print -P "  %F{245}Reload to apply: %Brezsh%b"
         print -P "  %F{245}Fine-tune with:  %Bdragon-configure%b%f"
         _dragon_cleanup
         return 0
