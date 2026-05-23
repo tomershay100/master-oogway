@@ -136,19 +136,7 @@ Grouped by theme.
 
 ### Theme 1C — Discovery & navigation
 
-#### 1.15 `mo-color` — color preview & palette  ·  P3 · XS · A
-
-See TODO.md for the full spec.
-
----
-
 ### Theme 1D — Network & SSH
-
-#### 1.17 `mo-ssh-tunnel` — SSH port forwards  ·  P2 · M · B
-
-See TODO.md for the full spec.
-
----
 
 ### Theme 1F — Quality of life
 

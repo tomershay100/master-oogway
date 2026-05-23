@@ -17,8 +17,6 @@ for each change:
 # FEATURES.md
 
 ## New Plugins
-* `mo-color` - great. lets add all the dragon colors by names to allow the user to print it. also - with piping into it, echo the text with the specified color. `color 0xff0080` prints `0xff0080` twice: once with BG color and one with FG color of the specified color (also works with dec colors and named colors!). `color palette` prints all 16 named colors (with their names), then all 256 colors with numbers (all with BG and FG). `color 0xff0080 0xf0f0f0` (or dec/named colors) would print the piped input with `0xff0080` fg and `0xf0f0f0` bg. if no pipe - prints `hello world`. if no bg is presented it should work with only fg.
-* `mo-ssh-tunnel` - great idea. lets do it like this: `tunnel <host/ip>:<port> to <host/ip>:port`. using ssh -R or -L, depends on the sides: `tunnel momo:8989 to localhost:2020` would open 127.0.0.1:2020 and it would be tunneled into momo on port 8989. the host can be blank and it would be localhost. `tunnel 8080 to momo:9000` would open 9000 port on momo, tunneled to localhost 8080. `tunnel 9000 to 9001` and `tunnel momo:8700 to 0.0.0.0:9898` should work as well.
 * `mo-archive` with `compress` - great! if no archive-name given - create it with the directory name and create it in the pwd path.
 
 ## Dragon Theme Features

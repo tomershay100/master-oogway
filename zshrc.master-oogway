@@ -106,7 +106,17 @@ ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(forward-word emacs-forward-word vi-forwa
 
 # zsh-syntax-highlighting — green=valid, red=invalid commands as you type.
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor)  # main=core, brackets=()/[], pattern=user, cursor=under-cursor
-ZSH_HIGHLIGHT_PATTERNS=('rm -rf *' 'fg=white,bold,bg=red')  # scream visually when typing dangerous patterns
+typeset -A ZSH_HIGHLIGHT_PATTERNS
+ZSH_HIGHLIGHT_PATTERNS+=(
+    'sudo'             'fg=yellow,bold'
+    '--force'          'fg=white,bg=yellow,bold'
+    'rm -rf'           'fg=white,bg=red,bold'
+    'rm -fr'           'fg=white,bg=red,bold'
+    'shred'            'fg=white,bg=yellow,bold'
+    'wipefs'           'fg=white,bg=yellow,bold'
+    'git push --force' 'fg=white,bg=yellow,bold'
+    'git reset --hard' 'fg=white,bg=yellow,bold'
+)
 
 # you-should-use — nags you when you type a command that has an alias defined.
 YSU_MESSAGE_POSITION="after"     # show hint AFTER the command output (less interruptive)
@@ -171,12 +181,14 @@ plugins=(
     mo-files                   # extract, bak, sizeof, fp (fuzzy file picker)
     mo-search                  # grep aliases, f (find shortcut), fhist, fman, frg
     mo-network                 # natip (public IP), sshto (fuzzy SSH picker)
+    mo-ssh-tunnel              # tunnel <left> to <right> — SSH port-forward helper
     mo-lan-ssh                 # bare-<host> (or s-<host> on collision) aliases + ssh completion for every LAN SSH host
     mo-process                 # psgrep, port, fkill (fuzzy process kill)
     mo-build                   # m (parallel make), mc (make clean)
     mo-dev                     # calc, epoch, serve (HTTP server), md2pdf
     mo-env                     # fenv (fuzzy environment variable browser)
     mo-mkscript                # mkscript — scaffold a new shell script from template
+    mo-color                   # color — terminal color preview, palette, and text colorizer
     mo-shell-tools             # h, ?, cwhich, vwhich, vizsh, soursh, zshtime, please, mo-where
     mo-apps                    # GUI app launchers (gnucash via flatpak)
     mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path
