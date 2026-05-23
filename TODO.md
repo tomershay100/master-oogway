@@ -23,9 +23,6 @@ for each change:
 
 # Existing plugins
 
-## mo-cli
-* `master-oogway version` is the master-oogway version or dragon version?
-
 ## mo-dev
 * i dont think that `calc`, `epoch`, `serve` and `md2pdf` actually should be placed together. think where to put each (in an existing plugin or new one.)
 

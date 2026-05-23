@@ -1,14 +1,12 @@
 
 _MO_INSTALL_DIR="${HOME}/.master-oogway"
 
-# Internal: print the current dragon version from git metadata, with a graceful
-# fallback when the install dir isn't a git repo (shouldn't happen in practice).
 _mo_version() {
     if git -C "$_MO_INSTALL_DIR" rev-parse --git-dir &>/dev/null; then
         git -C "$_MO_INSTALL_DIR" log -1 \
-            --format="dragon %cd-%h" --date=format:"%Y-%m-%d_%H%M%S"
+            --format="master-oogway %cd-%h" --date=format:"%Y-%m-%d_%H%M%S"
     else
-        echo "dragon (unknown — $_MO_INSTALL_DIR is not a git repo)"
+        echo "master-oogway (unknown — $_MO_INSTALL_DIR is not a git repo)"
     fi
 }
 
