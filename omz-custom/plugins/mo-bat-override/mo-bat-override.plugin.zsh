@@ -17,6 +17,6 @@ if [[ -n "${_bat_cmd:-}" ]]; then
 
     alias rless='\less'                                        # escape hatch: bypasses override
     alias less="${_bat_cmd} --paging always --style=plain"
-    alias pless="less --style=numbers"                        # paged with line numbers, no other chrome
+    alias pless="less --style=header,grid,changes"            # pretty paged: headers + grid + git markers, no line numbers
 fi
 unset _bat_cmd

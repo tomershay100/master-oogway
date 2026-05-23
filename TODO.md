@@ -23,11 +23,6 @@ for each change:
 
 # Existing plugins
 
-## mo-bat-override
-* there is a declaration of `_bat_cmd` in zshrc. is there something to do with this duplicated code?
-* `--theme`: be dont need it, aren't we? there is `export BAT_THEME='Coldark-Dark'` in `zshrc`.
-* lets make pless pretty and less like cat without the line-numbers.
-
 ## mo-build
 * i want `m` to work with make arguments. like `m -C dir`, or `m all`.
 * maybe we dont need to check of `nproc` every time we runs m. we can compute this on zsh loading, what do you say?

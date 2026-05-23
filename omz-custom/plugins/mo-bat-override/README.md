@@ -14,4 +14,4 @@ Also sets `BAT_THEME` and `MANPAGER` so `man` pages render through bat.
 | Command | Description |
 |---------|-------------|
 | `pcat` | `bat` with full decorations (headers, line numbers, git markers) |
-| `pless` | `bat` pager with line numbers |
+| `pless` | `bat` pager with headers, grid, and git markers (no line numbers) |
