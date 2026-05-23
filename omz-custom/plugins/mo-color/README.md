@@ -1,24 +1,23 @@
 # mo-color
 
-Color preview and palette tool.
+Terminal color preview, palette, and text colorizer.
 
 | Command | Description |
 |---------|-------------|
-| `color palette` | print all 16 named colors + all 256 xterm swatches (BG swatch + FG label each) |
-| `color <c>` | print `<c>` as a BG swatch and a FG label |
+| `color palette` | print all 16 named colors + all 256 xterm swatches |
+| `color <c>` | print a background swatch and foreground label for color `<c>` |
 | `color <fg>` | print piped text in `<fg>` foreground |
 | `color <fg> <bg>` | print piped text with `<fg>` foreground on `<bg>` background; no pipe → prints `hello world` |
 
-**Color formats:** `0xRRGGBB` · `#RRGGBB` · `0–255` (xterm index) · named (`black` `navy` `fuchsia` `aqua` `silver` `maroon` `lime` `olive` `gray` `red` `green` `yellow` `blue` `magenta` `cyan` `white`)
+**Color formats:** `0xRRGGBB` · `#RRGGBB` · `0–255` (xterm index) · named (`black` `red` `green` `yellow` `blue` `magenta` `cyan` `white` `navy` `olive` `maroon` `lime` `fuchsia` `aqua` `silver` `gray`)
 
-**Examples:**
+## Examples
 
 ```zsh
 color palette
 color 0xff0080
 color navy
 color 200
-color 0xff0080 0xf0f0f0
 echo "danger" | color white red
 color 0x00ff88 0x1a1a2e
 ```

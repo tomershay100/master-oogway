@@ -6,4 +6,4 @@ Document conversion utilities.
 |---------|-------------|
 | `md2pdf <file.md> [...]` | convert Markdown to PDF via pandoc + xelatex |
 
-**Dependencies:** `pandoc` + `xelatex` — checked at call time.
+**Dependencies:** `pandoc` and `xelatex` — checked at call time.

@@ -116,12 +116,57 @@ If any of these fail, fix the underlying issue — never commit a file that fail
    - [README.md](README.md): add a new row to the "Override plugins" or
      "Additive plugins" table with a short one-line description of what the
      plugin adds. Keep each table sorted alphabetically by plugin name.
-   - `omz-custom/plugins/mo-<name>/README.md`: create a one-paragraph plugin
-     README with a `Command | Description` table listing every command (or
-     alias/escape-hatch) the plugin exposes. If any commands require external
-     tools, add a `**Dependencies:**` line (see other plugin READMEs for the
-     pattern). Follow the style of the other plugin READMEs.
-4. Run the four validation checks above.
+   - `omz-custom/plugins/mo-<name>/README.md`: write the plugin README
+     following the structure described in [Plugin README format](#plugin-readme-format) below.
+4. Run the validation checks above.
+
+---
+
+## Plugin README format
+
+Every plugin README follows this structure — in this order, only including sections that apply:
+
+```markdown
+# mo-<name>
+
+One sentence describing what the plugin does. For override plugins, say what
+it replaces and what happens when the dependency is absent.
+
+| Command | Description |
+|---------|-------------|
+| `cmd [args]` | what it does |
+
+[For override plugins only — omit if no bypass is needed:]
+To bypass: use `\cmd` (backslash-quoting skips aliases in any shell).
+
+[Optional — only when there are user-settable variables:]
+## Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VAR` | `value` | what it controls |
+
+[Optional — only when the syntax is non-obvious from the table alone:]
+## Examples
+
+```zsh
+cmd foo bar   # shows the non-obvious case
+```
+
+[Always last:]
+**Dependencies:** `tool1` for `cmd1`; `tool2` for `cmd2` — each checked at call time.
+```
+
+### Rules
+
+- **One-line intro** — describes what the plugin does, not how. For override plugins, always mention the fallback behaviour when the dependency is absent.
+- **Command table** — every alias, function, and subcommand the plugin exposes. Include argument placeholders (`<file>`, `[n]`). For override plugins, list both the replaced command and any additive commands (like `pcat`/`pless` in `mo-bat-override`).
+- **Bypass line** — override plugins only. Use the `\cmd` backslash form. Never document `r<name>` aliases that don't exist in the code.
+- **Configuration section** — only when the plugin reads env vars or has user-settable state. Don't add a section just to say there's nothing to configure.
+- **Examples section** — only when the command syntax is non-obvious from the table. Don't duplicate simple cases that the table already makes clear.
+- **Dependencies line** — always last. List each tool, which commands need it, and whether it's required or optional. Use the form: `` `tool` for `cmd` — checked at call time `` for optional deps, `` `tool` (required) `` for hard deps.
+- **No prose restating the table** — if the table already says it, don't say it again in a paragraph.
+- **Plugins with no user-facing commands** (like `mo-auto-ls`, `mo-welcome`, `mo-colorize-override`) — two-sentence README maximum: what it does, and how to disable or bypass it.
 
 Override plugins (those that shadow system commands) must appear **before** additive
 plugins in `zshrc.master-oogway` so additive plugins inherit the overridden commands.

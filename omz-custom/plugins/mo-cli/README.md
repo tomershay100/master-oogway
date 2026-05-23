@@ -1,14 +1,14 @@
 # mo-cli
 
-The `master-oogway` command dispatcher — meta CLI for managing the framework.
+The `master-oogway` meta CLI — manage the framework from the command line.
 
 | Command | Description |
 |---------|-------------|
 | `master-oogway update` | pull latest master-oogway and re-run `install.sh` |
 | `master-oogway uninstall` | run `install.sh --uninstall` (interactive) |
-| `master-oogway version` | print the installed dragon version (date + commit) |
+| `master-oogway version` | print the installed version (date + commit) |
 | `master-oogway configure [args]` | open `dragon-configure` (forwards args, e.g. `--preset short`) |
 | `master-oogway edit` | open `~/.zshrc` in `$EDITOR` |
-| `master-oogway diff-zshrc [tool]` | diff `~/.zshrc` against the current template; `[tool]` overrides, else uses git's `diff.tool` (e.g. meld), else `diff -u` |
-| `master-oogway path` | print the master-oogway install dir |
-| `master-oogway help` | show all subcommands |
+| `master-oogway diff-zshrc [tool]` | diff `~/.zshrc` against the current template; uses `[tool]`, else git's `diff.tool`, else `diff -u` |
+| `master-oogway path` | print the master-oogway install directory |
+| `master-oogway help` | list all subcommands |

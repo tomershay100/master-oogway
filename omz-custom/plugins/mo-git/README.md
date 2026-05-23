@@ -2,8 +2,6 @@
 
 Git aliases and fuzzy pickers.
 
-**Dependencies:** `git` (required). `fzf` (fbranch, flog, gtag) — checked at call time.
-
 | Command | Description |
 |---------|-------------|
 | `ga` | `git add` |
@@ -16,6 +14,7 @@ Git aliases and fuzzy pickers.
 | `gls` | `glc --stat` |
 | `glog` | compact one-line graph log |
 | `gcm` / `gc` | `git commit -m` |
+| `gca` | `git commit --amend` (opens editor) |
 | `gco` | `git checkout` |
 | `gcb` | `git checkout -b` |
 | `gsw` | `git switch` |
@@ -30,11 +29,12 @@ Git aliases and fuzzy pickers.
 | `gst` | `git stash` |
 | `grb` | `git rebase` |
 | `gcp` | `git cherry-pick` |
-| `gundo` | undo last commit (keep changes staged) |
-| `gca` | `git commit --amend` (opens editor to rewrite message) |
+| `gundo` | undo last commit, keep changes staged |
 | `gclean` | remove untracked files and dirs |
-| `groot` / `cdb` | cd to repo root; if already at root, cd to outer repo root (submodule case); stays put if not in a git repo |
+| `groot` / `cdb` | cd to repo root; if already at root, cd to outer repo root (submodule case); no-op if not in a git repo |
 | `gsum` | print branch + staged/unstaged file summary |
 | `fbranch` | fuzzy-select a branch and switch to it |
-| `flog` | fuzzy-browse git log (preview shows the commit's diff stat); copies the selected hash to the clipboard |
-| `gtag` | fuzzy-select a tag and check it out (preview shows commit and diff stat) |
+| `flog` | fuzzy-browse git log with diff-stat preview; copies selected hash to clipboard |
+| `gtag` | fuzzy-select a tag and check it out |
+
+**Dependencies:** `git` (required). `fzf` for `fbranch`, `flog`, `gtag` — checked at call time.

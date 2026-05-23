@@ -1,5 +1,5 @@
 # mo-auto-ls
 
-Runs `ls` automatically after every `cd`.
+Runs `ls` automatically after every `cd`. No commands to invoke — behaviour is always-on.
 
-Works with whatever `ls` resolves to at runtime — load `mo-eza-override` before this plugin to get eza's output. Comment out this plugin in `~/.zshrc` to disable.
+Load `mo-eza-override` before this plugin to get eza output instead of plain `ls`. Comment out this plugin in `~/.zshrc` to disable entirely.

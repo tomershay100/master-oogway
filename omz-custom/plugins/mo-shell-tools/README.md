@@ -1,12 +1,12 @@
 # mo-shell-tools
 
-Shell inspection and config helpers.
+Shell inspection and utility helpers.
 
 | Command | Description |
 |---------|-------------|
 | `h` | last 50 history entries |
 | `?` | print the exit code of the last command |
-| `cwhich <cmd>` | print the source of a command (syntax-highlighted via bat if installed) |
+| `cwhich <cmd>` | print the source of a command (syntax-highlighted via bat if available) |
 | `vwhich <cmd>` | open the source of a command in `$EDITOR` |
 | `clip` | copy stdin to the system clipboard (`echo foo \| clip`) |
 | `vizsh` | open `~/.zshrc` in `$EDITOR` |
