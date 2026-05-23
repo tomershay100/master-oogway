@@ -45,7 +45,7 @@ clip() {
     echo "Copied ${bytes} ${unit} to clipboard." >&2
 }
 
-alias vizsh='${EDITOR:-vim} ~/.zshrc'             # open ~/.zshrc in $EDITOR
+vizsh() { ${EDITOR:-vim} ~/.zshrc; }              # open ~/.zshrc in $EDITOR
 alias soursh="source ~/.zshrc"                    # reload ~/.zshrc
 
 # Measure interactive zsh startup time over N runs (default 5).
@@ -61,7 +61,7 @@ zshtime() {
     local i
     for (( i = 1; i <= n; i++ )); do
         { time zsh -i -c exit } 2>&1
-    done | grep real
+    done | grep total
 }
 # Re-run the previous command with sudo.
 # Uses ${(Q)${(z)...}} to split the history line into words respecting

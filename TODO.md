@@ -23,20 +23,6 @@ for each change:
 
 # Existing plugins
 
-## mo-files
-* some functions has `function` and some no. please to through the entire code and fix it.
-
-## mo-git
-* add `gac="git add ."`
-
-## mo-navigation
-* why navigation? if there is `mo-files`, shouldn't this be `mo-dirs`?
-* `fcd` seems to not work. why?
-
-## mo-shell-tools
-* `vizsh` for some reason is allways red in zsh-syntax-highlighter
-* what exactly is `zshtime`? it is not seems to work and always returns error code 1.
-
 # Another Things
 * for the plugins that override. does `r<command>` really needed? i think that the user would know to use `\<command>`. lets think about it.
 * read the bash-scripting-conventions.md, then read the install and all bash scripts in this repo. dont make any changes - but write down to a file: are there anything to change on files in the repo? and - are there anything to change/add from the bash-scripting-conventions.md file itself?
