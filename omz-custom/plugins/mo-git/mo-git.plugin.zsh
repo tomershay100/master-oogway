@@ -67,6 +67,24 @@ function gsum() {
     (( untracked > 0 )) && echo "untracked: $untracked file(s)"
 }
 
+gtag() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        echo "Usage: gtag"
+        echo "  Fuzzy-select a git tag and check it out."
+        echo "  Preview shows the tag's commit and diff stat."
+        return
+    fi
+    command -v fzf &>/dev/null || { echo "gtag: fzf not installed" >&2; return 1; }
+    git rev-parse --git-dir &>/dev/null || { echo "gtag: not a git repo" >&2; return 1; }
+    local tag
+    tag=$(git tag --sort=-version:refname 2>/dev/null \
+        | fzf --height=60% --reverse \
+              --preview 'git show --color=always --stat {}' \
+              --preview-window=right:60%:wrap)
+    [[ -z "$tag" ]] && return
+    git checkout "$tag"
+}
+
 fbranch() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: fbranch"

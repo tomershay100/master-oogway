@@ -268,12 +268,10 @@ Ordered by host plugin. P1/P2 first within each.
 | # | Command | What | Effort | Priority |
 |---|---|---|---|---|
 | 3.1 | `gpr` | Open current branch's PR. Uses `gh pr view --web` if installed; otherwise constructs URL from `origin` remote + branch | XS | P1 |
-| 3.2 | `groot` | `cd` to repo root (toplevel) | XS | P1 |
 | 3.3 | `gwip` / `gunwip` | WIP commit / amend-and-uncommit cycle for fast stash-less context switches | XS | P2 |
 | 3.4 | `gcofb` | Fuzzy-pick a file from another branch, check it out into cwd | S | P2 |
 | 3.5 | `gprune` | Interactive delete of merged local branches with confirmation | S | P2 |
 | 3.6 | `gconflicts` | Open all files in merge conflict in `$EDITOR` (with `+/<<<<<<<` jump) | XS | P2 |
-| 3.7 | `gtag` | Fuzzy-pick a tag and check it out | XS | P3 |
 | 3.8 | `gfix <hash>` | `git commit --fixup <hash>` then offer to `git rebase -i --autosquash` | XS | P3 |
 | 3.9 | `gca` | `git commit --amend --no-edit` (very common, currently absent) | XS | P2 |
 

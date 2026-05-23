@@ -25,8 +25,6 @@ for each change:
 * 2.10 - lets do this
 
 ## Existing Plugins
-* `groot` - cd to git root. if currently on git root - cd up to another root (it could be a submodule). i want another name `cdb=groot` (cdb = cd to base).
-* `gtag` add it
 * `gca` should be `git commit --amend` (without `--no-edit`).
 
 # My new ideas

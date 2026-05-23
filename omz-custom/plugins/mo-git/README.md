@@ -2,7 +2,7 @@
 
 Git aliases and fuzzy pickers.
 
-**Dependencies:** `git` (required). `fzf` (fbranch, flog) — checked at call time.
+**Dependencies:** `git` (required). `fzf` (fbranch, flog, gtag) — checked at call time.
 
 | Command | Description |
 |---------|-------------|
@@ -32,6 +32,8 @@ Git aliases and fuzzy pickers.
 | `gcp` | `git cherry-pick` |
 | `gundo` | undo last commit (keep changes staged) |
 | `gclean` | remove untracked files and dirs |
+| `groot` / `cdb` | cd to repo root; if already at root, cd to outer repo root (submodule case); stays put if not in a git repo |
 | `gsum` | print branch + staged/unstaged file summary |
 | `fbranch` | fuzzy-select a branch and switch to it |
 | `flog` | fuzzy-browse git log (preview shows the commit's diff stat); copies the selected hash to the clipboard |
+| `gtag` | fuzzy-select a tag and check it out (preview shows commit and diff stat) |
