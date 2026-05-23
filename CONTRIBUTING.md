@@ -111,14 +111,56 @@ If any of these fail, fix the underlying issue — never commit a file that fail
 ## Adding a plugin
 
 1. Create `omz-custom/plugins/mo-<name>/mo-<name>.plugin.zsh`.
-2. Add `mo-<name>` to the plugins list in `zshrc.master-oogway` (override or additive group), with a one-line trailing comment summarising what it provides.
-3. **Update the docs by hand — there is no generator.** Two places to touch:
+
+2. **Declare hard dependencies** — if the plugin has no purpose without a package,
+   create `omz-custom/plugins/mo-<name>/requirements.zsh` and source it at the
+   top of the plugin:
+
+   ```zsh
+   # requirements.zsh
+   local _missing=()
+   command -v <tool> &>/dev/null || _missing+=(<apt-package>)
+   if (( ${#_missing} )); then
+       print -P "%F{yellow}[mo-<name>]%f missing: ${_missing[*]} (try: sudo apt install ${_missing[*]}) — plugin not loaded"
+       return 1
+   fi
+   ```
+
+   In the plugin:
+   ```zsh
+   source "${0:h}/requirements.zsh" || return
+   ```
+
+3. **Declare soft dependencies** — if the plugin degrades gracefully without a
+   package (it loads fine, but some commands won't work), create
+   `omz-custom/plugins/mo-<name>/optional-deps.zsh`. This file is **never sourced
+   at runtime** — only read by `install.sh` to report missing packages to the user
+   after an update:
+
+   ```zsh
+   # optional-deps.zsh
+   typeset -gA MO_OPTIONAL_DEPS=(
+       [<cmd>]="what it enables in this plugin"
+   )
+   typeset -gA MO_OPTIONAL_APT=(
+       [<cmd>]="<apt-package-name>"   # apt name if different from the command
+   )
+   ```
+
+   Key = the command name checked by `command -v`. Use the canonical command
+   name (`fd` not `fdfind`, `bat` not `batcat`) — `install.sh` handles known
+   alternates automatically.
+
+4. Add `mo-<name>` to the plugins list in `zshrc.master-oogway` (override or additive group), with a one-line trailing comment summarising what it provides.
+
+5. **Update the docs by hand — there is no generator.** Two places to touch:
    - [README.md](README.md): add a new row to the "Override plugins" or
      "Additive plugins" table with a short one-line description of what the
      plugin adds. Keep each table sorted alphabetically by plugin name.
    - `omz-custom/plugins/mo-<name>/README.md`: write the plugin README
      following the structure described in [Plugin README format](#plugin-readme-format) below.
-4. Run the validation checks above.
+
+6. Run the validation checks above.
 
 ---
 
@@ -155,7 +197,6 @@ cmd foo bar   # shows the non-obvious case
 
 [Always last:]
 **Dependencies:** `tool1` for `cmd1`; `tool2` for `cmd2` — each checked at call time.
-```
 
 ### Rules
 
@@ -182,9 +223,10 @@ Override plugins go in the "Override plugins" table at the top of the README's
    it, never below.
 3. Override plugins (`mo-*-override`) come before additive plugins.
 
-If a plugin requires a tool that may not be installed, **always guard usage with
-`command -v <tool> &>/dev/null`** so the plugin loads silently when the dependency
-is absent. See `mo-bat-override` for the canonical pattern.
+If a plugin requires a tool that may not be installed:
+
+- **Hard dep** (plugin is useless without it): use `requirements.zsh` + `source "${0:h}/requirements.zsh" || return`. The plugin prints a yellow warning and does not load. See `mo-bat-override` for the canonical pattern.
+- **Soft dep** (plugin loads and degrades gracefully): guard usage inline with `command -v <tool> &>/dev/null`, and declare the dep in `optional-deps.zsh` so `install.sh` can report it. See `mo-search` for the canonical pattern.
 
 **Plugins that write outside `~/.config/master-oogway/`** (introduced by
 `mo-lan-ssh`, which writes `~/.ssh/config.d/lan-hosts`) should:
