@@ -22,8 +22,6 @@ _mo_projects_register_aliases() {
     for name in "$proj_dir"/*(N/); do
         name="${name:t}"
         # Skip if already taken by a builtin, command, function, or alias.
-        # Load order matters: place mo-projects early in plugins=() to avoid
-        # being overridden by later plugins, or late to intentionally lose.
         (( $+builtins[$name] || $+commands[$name] || $+functions[$name] || $+aliases[$name] )) && continue
         # shellcheck disable=SC2139
         alias "$name"="cd ${(q)proj_dir}/${(q)name}"
