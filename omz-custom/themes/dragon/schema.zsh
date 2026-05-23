@@ -401,8 +401,8 @@ _dragon_init_presets() {
         [short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
         [default]='Balanced. username@hostname:dir ❯, git status, time & timer.'
         [verbose]='Maximum info. Multiline, full paths, timestamps, rich git.'
-        [boxed]='Multiline ╭/│/╰╴ border, git on new line, ⏱ timer.'
-        [blocks]='Colored BG segments, no text separators, single line.'
+        [boxed]='Multiline ╭/│/╰╴ border, git on new line, ⏱ timer. Tokyo Night colors.'
+        [blocks]='Colored BG segments, no text separators, single line. Dracula colors.'
         [minimal]='No color, no glyphs. Plain ASCII, single line — works everywhere.'
         [corporate]='Muted & safe. ASCII prompt, minimal rprompt, no nerd glyphs.'
     )
@@ -421,20 +421,5 @@ _dragon_init_presets() {
               $'
         [corporate]='user@myhost ~/projects (main)
               >'
-    )
-}
-
-# Palettes — color vars only. Add a new palette by:
-#   1. Appending its name to _DRAGON_PALETTE_NAMES
-#   2. Adding _DRAGON_PALETTE_DESC[<name>]
-#   3. Dropping a palettes/<name>.conf.zsh file with export DRAGON__*_COLOR lines
-_dragon_init_palettes() {
-    typeset -ga _DRAGON_PALETTE_NAMES=( default tokyonight dracula gruvbox nord )
-    typeset -gA _DRAGON_PALETTE_DESC=(
-        [default]='Schema defaults. Resets colors without changing layout.'
-        [tokyonight]='Soft dark: sky-blue, purple, teal, salmon.'
-        [dracula]='Purple BG segments, cyan dir, pink accents.'
-        [gruvbox]='Warm earthy: amber, orange, olive, rust.'
-        [nord]='Cool Arctic: steel-blue, frost, polar-teal, dusty-rose.'
     )
 }
