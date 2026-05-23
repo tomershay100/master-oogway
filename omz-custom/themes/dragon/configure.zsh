@@ -486,13 +486,12 @@ _dragon_select_preset() {
 
     # The "default" preset is the recommended starting point. By convention it
     # is named "default" — if absent, we fall back to the first registered name.
-    local default_idx=1 i=1 name
+    local default_idx=1 i=1 name line
     for name in "${_DRAGON_PRESET_NAMES[@]}"; do
         [[ "$name" == "default" ]] && default_idx=$i
         print -P "  %B[${i}] ${name}%b — ${_DRAGON_PRESET_DESC[$name]}"
-        local line
         while IFS= read -r line; do
-            print -- "               ${line}"
+            print -- "      ${line}"
         done <<< "${_DRAGON_PRESET_EXAMPLE[$name]}"
         print ""
         (( i++ ))

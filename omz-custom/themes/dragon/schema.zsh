@@ -397,7 +397,7 @@ _dragon_init_groups() {
 #   3. Defining _dragon_preset_<name> below
 # configure.zsh discovers all three by name; no changes needed there.
 _dragon_init_presets() {
-    typeset -ga _DRAGON_PRESET_NAMES=( short default verbose tokyonight dracula minimal corporate )
+    typeset -ga _DRAGON_PRESET_NAMES=( short default verbose tokyonight dracula minimal corporate gruvbox nord )
     typeset -gA _DRAGON_PRESET_DESC=(
         [short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
         [default]='Balanced. username@hostname:dir ❯, git status, time & timer.'
@@ -406,6 +406,8 @@ _dragon_init_presets() {
         [dracula]='Dracula palette. Purple & cyan accents, powerline segments.'
         [minimal]='No color, no glyphs. Plain ASCII, single line — works everywhere.'
         [corporate]='Muted & safe. ASCII prompt, minimal rprompt, no nerd glyphs.'
+        [gruvbox]='Gruvbox palette. Warm amber/orange/olive — default layout.'
+        [nord]='Nord palette. Cool Arctic steel-blue/frost/teal — default layout.'
     )
     typeset -gA _DRAGON_PRESET_EXAMPLE=(
         [short]='hostname:~/projects ❯'
@@ -423,6 +425,10 @@ _dragon_init_presets() {
               $'
         [corporate]='user@myhost ~/projects (main)
               >'
+        [gruvbox]='user@myhost:~/projects on main ✔
+              ❯'
+        [nord]='user@myhost:~/projects on main ✔
+              ❯'
     )
 }
 
@@ -652,4 +658,52 @@ _dragon_preset_corporate() {
     _DRAGON_CURRENT[EXIT_STATUS_PREFIX]=" ✗ "
     _DRAGON_CURRENT[EXIT_STATUS_SUFFIX]=" "
     _DRAGON_CURRENT[ENABLE_SSH_CONNECTION_COUNT]="false"
+}
+
+# Gruvbox — warm earthy palette. Amber/orange/olive, default layout.
+_dragon_preset_gruvbox() {
+    _DRAGON_CURRENT[USERNAME_FOREGROUND_COLOR]="214"      # amber
+    _DRAGON_CURRENT[USERNAME_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[HOSTNAME_FOREGROUND_COLOR]="208"      # orange
+    _DRAGON_CURRENT[HOSTNAME_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[ENABLE_HOSTNAME_COLORING_VIA_SSH]="true"
+    _DRAGON_CURRENT[HOSTNAME_VIA_SSH_FOREGROUND_COLOR]="167"  # rust red
+    _DRAGON_CURRENT[DIRECTORY_FOREGROUND_COLOR]="142"     # yellow-green
+    _DRAGON_CURRENT[DIRECTORY_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[GIT_CLEAN_FOREGROUND_COLOR]="108"     # muted sage green
+    _DRAGON_CURRENT[GIT_CLEAN_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[GIT_DIRTY_FOREGROUND_COLOR]="167"     # rust red
+    _DRAGON_CURRENT[GIT_DIRTY_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[PROMPT_CHAR_DEFAULT_FOREGROUND_COLOR]="243"
+    _DRAGON_CURRENT[PROMPT_CHAR_SUCCESS_FOREGROUND_COLOR]="142"
+    _DRAGON_CURRENT[PROMPT_CHAR_FAILURE_FOREGROUND_COLOR]="167"
+    _DRAGON_CURRENT[DATE_TIME_FOREGROUND_COLOR]="243"
+    _DRAGON_CURRENT[EXEC_TIMER_FOREGROUND_COLOR]="black"
+    _DRAGON_CURRENT[EXEC_TIMER_BACKGROUND_COLOR]="94"     # dark brown
+    _DRAGON_CURRENT[EXIT_STATUS_FOREGROUND_COLOR]="black"
+    _DRAGON_CURRENT[EXIT_STATUS_BACKGROUND_COLOR]="167"
+}
+
+# Nord — cool Arctic palette. Steel-blue/frost/teal, default layout.
+_dragon_preset_nord() {
+    _DRAGON_CURRENT[USERNAME_FOREGROUND_COLOR]="68"       # steel blue
+    _DRAGON_CURRENT[USERNAME_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[HOSTNAME_FOREGROUND_COLOR]="153"      # frost white-blue
+    _DRAGON_CURRENT[HOSTNAME_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[ENABLE_HOSTNAME_COLORING_VIA_SSH]="true"
+    _DRAGON_CURRENT[HOSTNAME_VIA_SSH_FOREGROUND_COLOR]="110"  # muted blue-gray
+    _DRAGON_CURRENT[DIRECTORY_FOREGROUND_COLOR]="109"     # polar teal
+    _DRAGON_CURRENT[DIRECTORY_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[GIT_CLEAN_FOREGROUND_COLOR]="108"     # arctic green
+    _DRAGON_CURRENT[GIT_CLEAN_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[GIT_DIRTY_FOREGROUND_COLOR]="174"     # dusty rose
+    _DRAGON_CURRENT[GIT_DIRTY_BACKGROUND_COLOR]=""
+    _DRAGON_CURRENT[PROMPT_CHAR_DEFAULT_FOREGROUND_COLOR]="245"
+    _DRAGON_CURRENT[PROMPT_CHAR_SUCCESS_FOREGROUND_COLOR]="108"
+    _DRAGON_CURRENT[PROMPT_CHAR_FAILURE_FOREGROUND_COLOR]="174"
+    _DRAGON_CURRENT[DATE_TIME_FOREGROUND_COLOR]="245"
+    _DRAGON_CURRENT[EXEC_TIMER_FOREGROUND_COLOR]="black"
+    _DRAGON_CURRENT[EXEC_TIMER_BACKGROUND_COLOR]="67"     # deep nord blue
+    _DRAGON_CURRENT[EXIT_STATUS_FOREGROUND_COLOR]="white"
+    _DRAGON_CURRENT[EXIT_STATUS_BACKGROUND_COLOR]="110"
 }
