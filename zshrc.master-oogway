@@ -178,7 +178,7 @@ plugins=(
     mo-auto-ls                 # run ls automatically after every cd
     mo-git                     # git aliases (ga, gs, gp, ...) + gsum, fbranch, flog
     mo-navigation              # mkcd, up, tmpcd, fcd (fuzzy cd)
-    mo-files                   # extract, bak, sizeof, fp (fuzzy file picker)
+    mo-files                   # extract, compress, bak, sizeof, fp (fuzzy file picker)
     mo-search                  # grep aliases, f (find shortcut), fhist, fman, frg
     mo-network                 # natip (public IP), sshto (fuzzy SSH picker)
     mo-ssh-tunnel              # tunnel <left> to <right> — SSH port-forward helper

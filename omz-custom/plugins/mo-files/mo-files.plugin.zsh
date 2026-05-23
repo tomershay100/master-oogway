@@ -1,10 +1,13 @@
 
-# Tool name → apt package hint, used by extract() when a tool is missing.
+# Tool name → apt package hint, shared by extract() and compress().
 typeset -gA _MO_EXTRACT_HINTS=(
     [tar]="tar"
     [bunzip2]="bzip2"
     [gunzip]="gzip"
+    [gzip]="gzip"
+    [bzip2]="bzip2"
     [unzip]="unzip"
+    [zip]="zip"
     [7z]="p7zip-full"
     [unrar]="unrar"
     [xz]="xz-utils"
@@ -163,4 +166,84 @@ fp() {
     else
         echo "$fullpath"
     fi
+}
+
+_mo_compress_check() {
+    command -v "$1" &>/dev/null && return 0
+    echo "compress: '$1' not installed (try: sudo apt install ${_MO_EXTRACT_HINTS[$1]:-$1})" >&2
+    return 1
+}
+
+compress() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        cat <<'EOF'
+Usage: compress [<archive>] <file|dir> [file2 ...]
+
+  Format is chosen by the archive extension:
+    .tar.zst  .tar.gz  .tar.bz2  .tar.xz  .tar  .zip  .7z
+
+  If no archive name is given, uses the current directory name and
+  creates a .tar.zst in the current directory.
+
+Examples:
+  compress backup.tar.gz src/ config/
+  compress archive.zip *.txt
+  compress src/                        # → <dirname>.tar.zst in cwd
+EOF
+        return
+    fi
+
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: compress [<archive>] <file|dir> [file2 ...]  (use -h for details)" >&2
+        return 1
+    fi
+
+    local archive=""
+    local -a sources
+
+    case "$1" in
+        *.tar.zst|*.tar.gz|*.tar.bz2|*.tar.xz|*.tar|*.zip|*.7z)
+            archive="$1"; shift ;;
+    esac
+
+    if [[ $# -eq 0 ]]; then
+        echo "compress: no source files specified" >&2
+        return 1
+    fi
+
+    sources=( "$@" )
+
+    [[ -z "$archive" ]] && archive="${PWD:t}.tar.zst"
+
+    if [[ -e "$archive" ]]; then
+        echo "compress: '$archive' already exists — remove it first" >&2
+        return 1
+    fi
+
+    local src
+    for src in "${sources[@]}"; do
+        [[ -e "$src" ]] || { echo "compress: '$src' not found" >&2; return 1; }
+    done
+
+    case "$archive" in
+        *.tar.zst)  _mo_compress_check tar  && _mo_compress_check zstd  \
+                        && tar --zstd -cf "$archive" "${sources[@]}" ;;
+        *.tar.gz)   _mo_compress_check tar  && _mo_compress_check gzip  \
+                        && tar czf "$archive" "${sources[@]}" ;;
+        *.tar.bz2)  _mo_compress_check tar  && _mo_compress_check bzip2 \
+                        && tar cjf "$archive" "${sources[@]}" ;;
+        *.tar.xz)   _mo_compress_check tar  && _mo_compress_check xz    \
+                        && tar cJf "$archive" "${sources[@]}" ;;
+        *.tar)      _mo_compress_check tar  \
+                        && tar cf  "$archive" "${sources[@]}" ;;
+        *.zip)      _mo_compress_check zip  \
+                        && zip -r  "$archive" "${sources[@]}" ;;
+        *.7z)       _mo_compress_check 7z   \
+                        && 7z a    "$archive" "${sources[@]}" ;;
+        *)
+            echo "compress: unknown format for '$archive'" >&2
+            echo "  Supported: .tar.zst .tar.gz .tar.bz2 .tar.xz .tar .zip .7z" >&2
+            return 1
+            ;;
+    esac && echo "Created: $archive"
 }

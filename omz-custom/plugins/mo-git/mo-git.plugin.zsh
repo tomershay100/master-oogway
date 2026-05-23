@@ -27,6 +27,26 @@ alias glog="git log --oneline --decorate --graph"
 alias gundo="git reset --soft HEAD~1"
 alias gclean="git clean -fd"
 
+groot() {
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+        echo "Usage: groot"
+        echo "  cd to the root of the current git repo."
+        echo "  If already at root, cd to the outer repo root (submodule case)."
+        echo "  Stays in current directory if not in a git repo."
+        return
+    fi
+    local toplevel
+    toplevel=$(git rev-parse --show-toplevel 2>/dev/null) || return 0
+    if [[ "$PWD" == "$toplevel" ]]; then
+        local outer
+        outer=$(git -C "${toplevel}/.." rev-parse --show-toplevel 2>/dev/null) || return 0
+        cd "$outer"
+    else
+        cd "$toplevel"
+    fi
+}
+alias cdb=groot
+
 function gsum() {
     git rev-parse --git-dir &>/dev/null || { echo "Not a git repo" >&2; return 1; }
     local branch remote ahead behind

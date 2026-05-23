@@ -140,15 +140,6 @@ Grouped by theme.
 
 ### Theme 1F — Quality of life
 
-#### 1.26 `mo-archive` — `extract`'s missing sibling  ·  P3 · XS · A
-
-`compress <archive-name> <files...>` — format chosen by extension.
-Defaults to `.tar.zst` (best ratio/speed). Mirrors the dispatch table in
-`mo-files` `_MO_EXTRACT_HINTS`. If no archive name given, uses the
-directory name and creates it in the current directory. ~30 LOC.
-
----
-
 ## 2. Dragon theme features
 
 The theme machinery is heavy already (schema-driven, async gitstatus,

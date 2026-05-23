@@ -17,7 +17,6 @@ for each change:
 # FEATURES.md
 
 ## New Plugins
-* `mo-archive` with `compress` - great! if no archive-name given - create it with the directory name and create it in the pwd path.
 
 ## Dragon Theme Features
 * about 2.1 - explain better the plan.
