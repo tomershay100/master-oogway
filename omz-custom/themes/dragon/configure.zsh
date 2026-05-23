@@ -190,6 +190,7 @@ _dragon_render_preview() {
             gitstatus_query() { :; }
             gitstatus_stop()  { :; }
             add-zsh-hook()    { :; }
+            [[ '${ssh_mode}' != true ]] && unset SSH_TTY SSH_CONNECTION SSH_CLIENT
             HOME='${HOME}'
             PWD='/home/${USER}/projects/myapp/src/components'
             VCS_STATUS_RESULT='ok-sync'
@@ -472,8 +473,7 @@ _dragon_guided_tour() {
     print ""
     printf "  Do both characters render as a solid arrow and a folder icon? [y/N] "
     local _nf_key
-    _dragon_read_key _nf_key
-    print ""
+    read -r _nf_key
     if [[ "$_nf_key" == y || "$_nf_key" == Y ]]; then
         print -P "  %F{green}✓ Nerd Font glyphs enabled.%f"
     else
