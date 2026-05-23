@@ -58,6 +58,9 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-welcome](omz-custom/plugins/mo-welcome/README.md) | system snapshot banner on shell open |
 | [mo-cli](omz-custom/plugins/mo-cli/README.md) | `master-oogway` meta CLI |
 | [mo-auto-ls](omz-custom/plugins/mo-auto-ls/README.md) | auto-`ls` after `cd` |
+| [mo-color](omz-custom/plugins/mo-color/README.md) | terminal color preview, palette, and text colorizer |
+| [mo-ssh-tunnel](omz-custom/plugins/mo-ssh-tunnel/README.md) | `tunnel` — SSH port-forward helper |
+| [mo-man](omz-custom/plugins/mo-man/README.md) | `mo-man` — view any mo-* plugin README in the terminal |
 
 ## User extensions
 

@@ -4,7 +4,7 @@ Open the README of any `mo-*` plugin in the terminal.
 
 **Dependencies:** `bat` or `batcat` (optional, falls back to `less`).
 
-Tab completion splits candidates into **active plugins** (currently loaded) and **available plugins** (exist in the plugin dir but not loaded). Run `rm -f ~/.zcompdump* && exec zsh` once after install to register the completion.
+Tab completion splits candidates into **active plugins** (currently loaded) and **available plugins** (exist in the plugin dir but not loaded).
 
 | Command | Description |
 |---------|-------------|
