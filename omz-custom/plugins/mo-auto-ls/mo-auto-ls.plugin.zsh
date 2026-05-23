@@ -1,2 +1,3 @@
+autoload -Uz add-zsh-hook
 _ls_after_cd() { ls; }
-[[ ${chpwd_functions[(Ie)_ls_after_cd]:-0} -eq 0 ]] && chpwd_functions+=(_ls_after_cd)
+add-zsh-hook chpwd _ls_after_cd
