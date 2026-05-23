@@ -25,6 +25,7 @@ alias grb="git rebase"
 alias gcp="git cherry-pick"
 alias glog="git log --oneline --decorate --graph"
 alias gundo="git reset --soft HEAD~1"
+alias gca="git commit --amend"
 alias gclean="git clean -fd"
 
 groot() {

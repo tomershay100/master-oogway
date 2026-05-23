@@ -31,6 +31,7 @@ Git aliases and fuzzy pickers.
 | `grb` | `git rebase` |
 | `gcp` | `git cherry-pick` |
 | `gundo` | undo last commit (keep changes staged) |
+| `gca` | `git commit --amend` (opens editor to rewrite message) |
 | `gclean` | remove untracked files and dirs |
 | `groot` / `cdb` | cd to repo root; if already at root, cd to outer repo root (submodule case); stays put if not in a git repo |
 | `gsum` | print branch + staged/unstaged file summary |

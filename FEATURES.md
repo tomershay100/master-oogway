@@ -273,7 +273,6 @@ Ordered by host plugin. P1/P2 first within each.
 | 3.5 | `gprune` | Interactive delete of merged local branches with confirmation | S | P2 |
 | 3.6 | `gconflicts` | Open all files in merge conflict in `$EDITOR` (with `+/<<<<<<<` jump) | XS | P2 |
 | 3.8 | `gfix <hash>` | `git commit --fixup <hash>` then offer to `git rebase -i --autosquash` | XS | P3 |
-| 3.9 | `gca` | `git commit --amend --no-edit` (very common, currently absent) | XS | P2 |
 
 ### `mo-files` (currently 167 LOC)
 

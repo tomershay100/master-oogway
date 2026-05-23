@@ -24,9 +24,6 @@ for each change:
 * 2.9 - lets do this
 * 2.10 - lets do this
 
-## Existing Plugins
-* `gca` should be `git commit --amend` (without `--no-edit`).
-
 # My new ideas
 
 ## `no-man`
