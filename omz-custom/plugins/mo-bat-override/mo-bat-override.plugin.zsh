@@ -1,5 +1,7 @@
 # Remove this file to use the system cat and less as-is.
 
+export BAT_THEME='Coldark-Dark'  # `bat --list-themes` to see options
+
 if command -v batcat &>/dev/null; then
     _bat_cmd="batcat"
 elif command -v bat &>/dev/null; then
@@ -7,12 +9,14 @@ elif command -v bat &>/dev/null; then
 fi
 
 if [[ -n "${_bat_cmd:-}" ]]; then
-    alias rcat='\cat'   # escape hatch: rcat bypasses this override
-    alias cat="${_bat_cmd} --theme Coldark-Dark --paging never --style=plain"
-    alias pcat="cat --style=full"    # p = "pretty": adds headers, line numbers, and git diff markers
+    export MANPAGER="sh -c \"col -bx | ${_bat_cmd} -l man -p\""
 
-    alias rless='\less'  # escape hatch: rless bypasses this override
-    alias less="${_bat_cmd} --theme Coldark-Dark --paging always"
-    alias pless="less --style=plain" # p = "paged plain": bat pager without decorations
+    alias rcat='\cat'                                          # escape hatch: bypasses override
+    alias cat="${_bat_cmd} --paging never --style=plain"
+    alias pcat="cat --style=full"                             # pretty: headers, line numbers, git markers
+
+    alias rless='\less'                                        # escape hatch: bypasses override
+    alias less="${_bat_cmd} --paging always --style=plain"
+    alias pless="less --style=numbers"                        # paged with line numbers, no other chrome
 fi
 unset _bat_cmd

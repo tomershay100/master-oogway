@@ -217,37 +217,6 @@ unset __mo_file
 # ── pager + viewer environment ─────────────────────────────────────────────────
 export LESS='-FRX'   # -F exit if fits screen, -R pass color, -X don't clear on exit
 
-# Ubuntu ships bat/fd as 'batcat'/'fdfind' to avoid conflicts; resolve once here.
-typeset _mo_bat="" _mo_fd=""
-if command -v bat    &>/dev/null; then _mo_bat="bat"
-elif command -v batcat &>/dev/null; then _mo_bat="batcat"; fi
-if command -v fd     &>/dev/null; then _mo_fd="fd"
-elif command -v fdfind &>/dev/null; then _mo_fd="fdfind"; fi
-
-[[ -n "$_mo_bat" ]] && export MANPAGER="sh -c \"col -bx | $_mo_bat -l man -p\""
-
-export BAT_THEME='Coldark-Dark'   # `bat --list-themes` to see options
-
-# ── tool initializations ───────────────────────────────────────────────────────
-export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
-# Ctrl+T file picker: preview with bat if available, otherwise cat.
-if [[ -n "$_mo_bat" ]]; then
-    export FZF_CTRL_T_OPTS="
-  --preview '$_mo_bat --color=always --style=plain {} 2>/dev/null || cat {}'
-  --preview-window=right:60%:wrap"
-else
-    export FZF_CTRL_T_OPTS="
-  --preview 'cat {}'
-  --preview-window=right:60%:wrap"
-fi
-# Use fd (or Ubuntu's fdfind) if installed — faster than find, respects .gitignore.
-[[ -n "$_mo_fd" ]] && export FZF_DEFAULT_COMMAND="$_mo_fd --type f --hidden --strip-cwd-prefix --exclude .git"
-unset _mo_bat _mo_fd
-# Alt+C directory picker: eza tree preview, fallback to ls.
-export FZF_ALT_C_OPTS="
-  --preview 'eza --tree --color=always --level=2 {} 2>/dev/null || ls -la {}'
-  --preview-window=right:50%:wrap"
-
 # ── key bindings ───────────────────────────────────────────────────────────────
 # history-substring-search: Up/Down arrows search by the prefix already typed.
 # terminfo values map to the correct escape sequences for your terminal.

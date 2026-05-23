@@ -1,4 +1,28 @@
 
+# ── fzf environment ────────────────────────────────────────────────────────────
+if command -v fzf &>/dev/null; then
+    export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
+
+    # Ctrl+T file picker: preview with bat if available, otherwise cat.
+    if command -v bat &>/dev/null; then
+        export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=plain {} 2>/dev/null || cat {}' --preview-window=right:60%:wrap"
+    elif command -v batcat &>/dev/null; then
+        export FZF_CTRL_T_OPTS="--preview 'batcat --color=always --style=plain {} 2>/dev/null || cat {}' --preview-window=right:60%:wrap"
+    else
+        export FZF_CTRL_T_OPTS="--preview 'cat {}' --preview-window=right:60%:wrap"
+    fi
+
+    # Alt+C directory picker: eza tree preview, fallback to ls.
+    export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --level=2 {} 2>/dev/null || ls -la {}' --preview-window=right:50%:wrap"
+
+    # Default command: fd respects .gitignore and is faster than find.
+    if command -v fd &>/dev/null; then
+        export FZF_DEFAULT_COMMAND="fd --type f --hidden --strip-cwd-prefix --exclude .git"
+    elif command -v fdfind &>/dev/null; then
+        export FZF_DEFAULT_COMMAND="fdfind --type f --hidden --strip-cwd-prefix --exclude .git"
+    fi
+fi
+
 unalias grep 2>/dev/null
 grep()  { command grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} --exclude={'*.so','*.apd','*.pd'} "$@"; }
 grepi() { grep -i "$@"; }

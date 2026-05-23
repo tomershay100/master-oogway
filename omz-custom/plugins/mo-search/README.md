@@ -10,4 +10,6 @@ Search helpers and fuzzy pickers.
 | `fman` | fuzzy-select and open a man page |
 | `frg` | fuzzy ripgrep across file contents; opens result in `$EDITOR` |
 
-**Dependencies:** `fzf` (fhist, fman, frg), `rg` (frg) — checked at call time.
+Also configures `FZF_DEFAULT_OPTS`, `FZF_CTRL_T_OPTS`, `FZF_ALT_C_OPTS`, and `FZF_DEFAULT_COMMAND` — all guarded, silently skipped if fzf/fd/bat are not installed.
+
+**Dependencies:** `fzf` (fhist, fman, frg, env vars), `rg` (frg), `bat`/`batcat` (preview), `fd`/`fdfind` (default command) — all optional.
