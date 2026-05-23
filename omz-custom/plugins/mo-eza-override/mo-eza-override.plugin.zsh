@@ -1,5 +1,7 @@
 # Remove this file to use the system ls as-is.
 
+source "${0:h}/requirements.zsh" || return
+
 if command -v eza &>/dev/null; then
     alias ls="eza -F"   # --hyperlink has a known bug when piping
     alias lsa="ls -A"
