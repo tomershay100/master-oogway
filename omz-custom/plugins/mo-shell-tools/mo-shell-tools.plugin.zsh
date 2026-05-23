@@ -1,5 +1,5 @@
 
-alias h="history 50"
+h() { fc -l -50 -1; }
 
 '?'() { echo $?; }
 

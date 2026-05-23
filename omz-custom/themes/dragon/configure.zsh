@@ -323,7 +323,7 @@ _dragon_edit_var() {
             fi
             printf "  New value (Enter = keep '%s'): " "${current:-(empty)}"
             local val
-            read -r val
+            IFS= read -r val
             if [[ "$val" == e || "$val" == E ]]; then
                 _DRAGON_CURRENT[$var]=""
             elif [[ -n "$val" ]]; then

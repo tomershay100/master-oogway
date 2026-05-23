@@ -81,7 +81,7 @@ __start_gitstatus_once()
 __update_gitstatusd()
 {
 	__start_gitstatus_once
-	gitstatus_query -d "$PWD" -c __refresh_prompt -t 0.03 "$_GITSTATUS_NAME"
+	gitstatus_query -d "$PWD" -c __refresh_prompt -t 0 "$_GITSTATUS_NAME"
 }
 
 __update_prompt()
