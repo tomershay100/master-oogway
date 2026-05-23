@@ -11,11 +11,9 @@ fi
 if [[ -n "${_bat_cmd:-}" ]]; then
     export MANPAGER="sh -c \"col -bx | ${_bat_cmd} -l man -p\""
 
-    alias rcat='\cat'                                          # escape hatch: bypasses override
     alias cat="${_bat_cmd} --paging never --style=plain"
     alias pcat="cat --style=full"                             # pretty: headers, line numbers, git markers
 
-    alias rless='\less'                                        # escape hatch: bypasses override
     alias less="${_bat_cmd} --paging always --style=plain"
     alias pless="less --style=full"                           # pretty paged: headers, line numbers, grid, git markers
 fi

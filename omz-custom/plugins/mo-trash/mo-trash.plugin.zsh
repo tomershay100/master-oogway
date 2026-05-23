@@ -6,9 +6,7 @@ fi
 
 typeset -g MO_TRASH_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/Trash"
 
-# Override rm with trash-put. Use `rrm` to bypass (e.g. in scripts).
 alias rm="trash-put"
-alias rrm='\rm'
 
 trash-list() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then

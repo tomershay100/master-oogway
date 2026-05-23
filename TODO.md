@@ -24,7 +24,6 @@ for each change:
 # Existing plugins
 
 # Another Things
-* for the plugins that override. does `r<command>` really needed? i think that the user would know to use `\<command>`. lets think about it.
 * read the bash-scripting-conventions.md, then read the install and all bash scripts in this repo. dont make any changes - but write down to a file: are there anything to change on files in the repo? and - are there anything to change/add from the bash-scripting-conventions.md file itself?
 * change the 'about' of this repo on GitHub to match the project.
 * Lets go through all the comments in the project and make sure they arent over telling. i want comments to be short and to the point.
