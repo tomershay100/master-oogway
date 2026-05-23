@@ -1,0 +1,27 @@
+#compdef mo-man
+
+_mo-man() {
+    local plugin_base="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins"
+    local -a active available
+    local p dir short
+
+    for p in "${plugins[@]}"; do
+        [[ "$p" == mo-* ]] || continue
+        short="${p#mo-}"
+        [[ -f "$plugin_base/$p/README.md" ]] || continue
+        active+=( "$short" )
+    done
+
+    for dir in "$plugin_base"/mo-*(N/); do
+        p="${dir:t}"
+        short="${p#mo-}"
+        [[ -f "$dir/README.md" ]] || continue
+        (( ${active[(Ie)$short]} )) && continue
+        available+=( "$short" )
+    done
+
+    (( ${#active} ))    && compadd -X 'active plugins'    -a active
+    (( ${#available} )) && compadd -X 'available plugins' -a available
+}
+
+_mo-man "$@"
