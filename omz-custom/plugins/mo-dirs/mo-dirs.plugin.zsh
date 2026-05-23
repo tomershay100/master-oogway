@@ -1,5 +1,5 @@
 
-function mkcd() {
+mkcd() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
         echo "Usage: mkcd <dir>"
         echo "  Create <dir> (including parents) and cd into it."
@@ -8,7 +8,7 @@ function mkcd() {
     mkdir -p "$1" && cd "$1"
 }
 
-function up() {
+up() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: up [n | dirname]"
         echo "  up          — go up one level (same as cd ..)"
@@ -38,7 +38,7 @@ function up() {
     return 1
 }
 
-function tmpcd() {
+tmpcd() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: tmpcd"
         echo "  Create a temporary directory and cd into it."
@@ -71,3 +71,5 @@ fcd() {
         | fzf --read0 --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
     && cd "$dir"
 }
+
+alias n="open ."

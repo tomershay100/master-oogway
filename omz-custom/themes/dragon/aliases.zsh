@@ -5,7 +5,7 @@
 # Re-populate from the schema first; the source + init are both idempotent.
 typeset -g _DRAGON_THEME_DIR="${0:a:h}"
 
-function reset_theme_variables {
+reset_theme_variables() {
     source "${_DRAGON_THEME_DIR}/schema.zsh"
     _dragon_init_defaults
     for var in "${(@k)_DRAGON_DEFAULTS}"; do
