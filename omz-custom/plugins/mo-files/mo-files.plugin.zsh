@@ -47,7 +47,7 @@ _mo_extract_zip() {
     unzip -K -d "$outdir" "$f"
 }
 
-function extract() {
+extract() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: extract <file> [file2 ...]"
         echo "  Extracts archives of any format:"
@@ -99,7 +99,7 @@ function extract() {
     return $failed
 }
 
-function bak() {
+bak() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: bak <file> [file ...]"
         echo "  Copy each file to <file>.bak.YYYYMMDD_HHMMSS"
@@ -115,7 +115,7 @@ function bak() {
     done
 }
 
-function sizeof() {
+sizeof() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: sizeof <path> [path2 ...]"
         echo "  Print the disk usage of each path, sorted by size."
@@ -148,12 +148,7 @@ fp() {
         preview_cmd='cat {}'
     fi
     local file
-    # NUL-delimited pipeline so filenames with spaces or newlines survive
-    # intact (line-delimited would fragment them across fzf entries).
-    # The grep -zvF filter drops shell-unsafe names (newline included) so
-    # fzf's literal {} substitution can't be turned into code-execution.
     file=$(find "$base" -type f -not -path '*/.git/*' -print0 2>/dev/null \
-        | grep -zvF -e '$' -e '`' -e '(' -e ')' -e ';' -e '|' -e '&' -e '<' -e '>' -e '"' -e "'" -e '\' -e $'\n' \
         | fzf --read0 --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
     || return
     local fullpath="${file:a}"

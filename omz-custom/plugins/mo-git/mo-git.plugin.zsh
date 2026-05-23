@@ -49,7 +49,7 @@ groot() {
 }
 alias cdb=groot
 
-function gsum() {
+gsum() {
     git rev-parse --git-dir &>/dev/null || { echo "Not a git repo" >&2; return 1; }
     local branch remote ahead behind
     branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD)

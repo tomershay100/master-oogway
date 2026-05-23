@@ -1,5 +1,5 @@
 
-function md2pdf() {
+md2pdf() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: md2pdf <file.md> [file2.md ...]"
         echo "  Convert Markdown files to PDF using pandoc + xelatex."

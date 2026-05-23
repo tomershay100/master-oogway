@@ -47,3 +47,4 @@ Command 'nvim' is available in the following places
 The command could not be located because '/usr/bin:/bin' is not included in the PATH environment variable.
 nvim: command not found
 * `cwhich` can use just 'cat' and if there is bat/batcat it would use it?
+* when the cursor is on a middle of a word and i press 'enter' to run it. there is a block on the char where the cursor was. why?

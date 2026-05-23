@@ -1,5 +1,5 @@
 
-function psgrep() {
+psgrep() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
         echo "Usage: psgrep <name>"
         echo "  Show running processes matching <name> (case-insensitive, full command line)."
@@ -9,7 +9,7 @@ function psgrep() {
     pgrep -lif "$1"
 }
 
-function port() {
+port() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: port <number>"
         echo "  Show which process is listening on the given TCP/UDP port."
