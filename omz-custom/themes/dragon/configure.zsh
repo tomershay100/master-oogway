@@ -39,15 +39,18 @@ _dragon_read_state() {
 }
 
 _dragon_write_state() {
-    local preset="${1:-default}"
+    local preset="${1:-default}" palette="${2:-}"
     local hash mtime
     hash=$(_dragon_vars_hash)
     mtime=$(stat -c '%Y' "${_DRAGON_THEMES_DIR}/schema.zsh" 2>/dev/null)
-    _dragon_read_state   # load current state so we can preserve dismissed_hash
+    _dragon_read_state   # load current state so we can preserve dismissed_hash and palette
     mkdir -p "${_DRAGON_STATE_DIR}"
     {
         echo "configured=true"
         echo "preset=${preset}"
+        # Preserve palette: caller passes it explicitly; fall back to stored value.
+        local _pal="${palette:-${_DRAGON_STATE[palette]:-}}"
+        [[ -n "$_pal" ]] && echo "palette=${_pal}"
         echo "vars_hash=${hash}"
         echo "themes_mtime=${mtime}"
         # Preserve dismissed_hash across configure runs so --dismiss stays effective
@@ -126,6 +129,11 @@ _dragon_apply_preset() {
         _DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
     done
     _dragon_load_current_conf_from "${_DRAGON_THEMES_DIR}/presets/${preset}.conf.zsh"
+}
+
+# Layer palette colors on top of current _DRAGON_CURRENT (no reset — layout is preserved).
+_dragon_apply_palette() {
+    _dragon_load_current_conf_from "${_DRAGON_THEMES_DIR}/palettes/${1}.conf.zsh"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -741,14 +749,16 @@ Usage: dragon-configure [options]
 Options:
   (none)              Full interactive wizard — step through every setting
   --new-only          Only configure variables added since the last run
-  --preset <name>     Instantly switch to a preset (built-in or personal)
+  --preset <name>     Instantly switch to a preset (layout only)
+  --palette <name>    Apply a color palette on top of the current layout
   --export <name>     Save current config as a personal preset
   --dismiss           Silence the "new variables" notifier until next update
   --version, -v       Print the installed dragon version
   --help, -h          Show this help
 
-Config file:    ~/.config/master-oogway/conf.zsh
+Config file:      ~/.config/master-oogway/conf.zsh
 Personal presets: ~/.config/master-oogway/presets/<name>.conf.zsh
+Personal palettes: ~/.config/master-oogway/palettes/<name>.conf.zsh
 EOF
         return 0
     fi
@@ -789,6 +799,7 @@ EOF
     _dragon_init_hints
     _dragon_init_groups
     _dragon_init_presets
+    _dragon_init_palettes
     typeset -g _DRAGON_CHOSEN_PRESET="default"
     typeset -gA _DRAGON_STATE=()
 
@@ -840,11 +851,7 @@ EOF
         print ""
         print -P "  %F{245}Reload it any time with: %Bdragon-configure --preset ${_export_name}%f"
         print ""
-        print -P "  %B%F{cyan}Want to share this preset with everyone?%f%b"
-        print -P "  %F{245}Submit a PR to the master-oogway repo:%f"
-        print -P "  %F{245}  1. Copy %B${_export_dst}%b to %Bpresets/${_export_name}.conf.zsh%b in the repo"
-        print -P "  %F{245}  2. Add its name, desc, and example to %B_dragon_init_presets%b in %Bschema.zsh%b"
-        print -P "  %F{245}  3. Open a PR at: %Bhttps://github.com/tomer-w/master-oogway%b%f"
+        print -P "  %F{245}Love it? Consider submitting it as a PR to the master-oogway repo.%f"
         print ""
         _dragon_cleanup
         return 0
@@ -903,6 +910,57 @@ EOF
         _dragon_write_state "$_preset"
         print ""
         print -P "  %F{green}✓ Switched to ${_preset} preset.%f"
+        print -P "  %F{245}Reload to apply: %Brezsh%b"
+        print -P "  %F{245}Fine-tune with:  %Bdragon-configure%b%f"
+        _dragon_cleanup
+        return 0
+    fi
+
+    # ── Palette switcher: dragon-configure --palette <name>
+    if [[ "${1-}" == "--palette" ]]; then
+        local _palette="${2:-}"
+        local _builtin_palette_file="${_DRAGON_THEMES_DIR}/palettes/${_palette}.conf.zsh"
+        local _user_palette_file="${_DRAGON_STATE_DIR}/palettes/${_palette}.conf.zsh"
+        local _is_builtin=false _is_user=false
+        [[ -n "${_DRAGON_PALETTE_DESC[$_palette]:-}" ]] && _is_builtin=true
+        [[ -f "$_user_palette_file" ]]                  && _is_user=true
+
+        if [[ -z "$_palette" ]] || ! ( $_is_builtin || $_is_user ); then
+            print -P "%F{red}✗%f Invalid palette: '${_palette:-<none>}'"
+            print -P "  Built-in palettes: %B${(j:%b  %B:)_DRAGON_PALETTE_NAMES[@]}%b"
+            local _user_palettes=( "${_DRAGON_STATE_DIR}"/palettes/*.conf.zsh(N) )
+            if (( ${#_user_palettes} > 0 )); then
+                local _upnames=( "${_user_palettes[@]##*/}" )
+                _upnames=( "${_upnames[@]%.conf.zsh}" )
+                print -P "  Personal palettes: %B${(j:%b  %B:)_upnames[@]}%b"
+            fi
+            print -P "  Usage: dragon-configure --palette <name>"
+            _dragon_cleanup
+            return 1
+        fi
+
+        clear
+        print -P "%B%F{cyan}── dragon: Apply '${_palette}' palette ──────────────────────────────%f%b"
+        print ""
+        print -P "  This will update the colors in your current theme config."
+        print -P "  Your layout settings will not change."
+        if ! _dragon_warn_preset_reset "Apply ${_palette} palette now?"; then
+            print ""
+            print -P "  %F{245}Aborted. Your conf.zsh is unchanged.%f"
+            _dragon_cleanup
+            return 0
+        fi
+
+        if $_is_builtin; then
+            _dragon_apply_palette "$_palette"
+        else
+            _dragon_load_current_conf_from "$_user_palette_file"
+        fi
+        _dragon_write_conf
+        _dragon_read_state
+        _dragon_write_state "${_DRAGON_STATE[preset]:-default}" "$_palette"
+        print ""
+        print -P "  %F{green}✓ Applied ${_palette} palette.%f"
         print -P "  %F{245}Reload to apply: %Brezsh%b"
         print -P "  %F{245}Fine-tune with:  %Bdragon-configure%b%f"
         _dragon_cleanup

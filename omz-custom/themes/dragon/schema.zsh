@@ -390,24 +390,21 @@ _dragon_init_groups() {
     )
 }
 
-# Presets — names + descriptions + multi-line example shown in the wizard.
-# Add a new preset by:
+# Presets — layout only. Add a new preset by:
 #   1. Appending its name to _DRAGON_PRESET_NAMES
 #   2. Adding _DRAGON_PRESET_DESC[<name>] and _DRAGON_PRESET_EXAMPLE[<name>]
 #   3. Dropping a presets/<name>.conf.zsh file with export DRAGON__VAR='value' lines
 # configure.zsh discovers all three by name; no changes needed there.
 _dragon_init_presets() {
-    typeset -ga _DRAGON_PRESET_NAMES=( short default verbose tokyonight dracula minimal corporate gruvbox nord )
+    typeset -ga _DRAGON_PRESET_NAMES=( short default verbose boxed blocks minimal corporate )
     typeset -gA _DRAGON_PRESET_DESC=(
         [short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
         [default]='Balanced. username@hostname:dir ❯, git status, time & timer.'
         [verbose]='Maximum info. Multiline, full paths, timestamps, rich git.'
-        [tokyonight]='Tokyo Night palette. Navy/aqua/fuchsia, multiline, clean git.'
-        [dracula]='Dracula palette. Purple & cyan accents, powerline segments.'
+        [boxed]='Multiline ╭/│/╰╴ border, git on new line, ⏱ timer.'
+        [blocks]='Colored BG segments, no text separators, single line.'
         [minimal]='No color, no glyphs. Plain ASCII, single line — works everywhere.'
         [corporate]='Muted & safe. ASCII prompt, minimal rprompt, no nerd glyphs.'
-        [gruvbox]='Gruvbox palette. Warm amber/orange/olive — default layout.'
-        [nord]='Nord palette. Cool Arctic steel-blue/frost/teal — default layout.'
     )
     typeset -gA _DRAGON_PRESET_EXAMPLE=(
         [short]='hostname:~/projects ❯'
@@ -416,18 +413,27 @@ _dragon_init_presets() {
         [verbose]='╭ user at myhost in /home/user/projects
               │  on ‹main› ✔
               ╰╴❯'
-        [tokyonight]='╭ user at myhost in ~/projects
+        [boxed]='╭ user at myhost in ~/projects
               │  on ‹main› ✔
               ╰╴❯'
-        [dracula]='user@myhost:~/projects on main *
-              ❯'
+        [blocks]=' user  myhost  ~/projects  main ✔  ❯'
         [minimal]='user@myhost:~/projects [main]
               $'
         [corporate]='user@myhost ~/projects (main)
               >'
-        [gruvbox]='user@myhost:~/projects on main ✔
-              ❯'
-        [nord]='user@myhost:~/projects on main ✔
-              ❯'
+    )
+}
+
+# Palettes — color vars only. Add a new palette by:
+#   1. Appending its name to _DRAGON_PALETTE_NAMES
+#   2. Adding _DRAGON_PALETTE_DESC[<name>]
+#   3. Dropping a palettes/<name>.conf.zsh file with export DRAGON__*_COLOR lines
+_dragon_init_palettes() {
+    typeset -ga _DRAGON_PALETTE_NAMES=( tokyonight dracula gruvbox nord )
+    typeset -gA _DRAGON_PALETTE_DESC=(
+        [tokyonight]='Soft dark: sky-blue, purple, teal, salmon.'
+        [dracula]='Purple BG segments, cyan dir, pink accents.'
+        [gruvbox]='Warm earthy: amber, orange, olive, rust.'
+        [nord]='Cool Arctic: steel-blue, frost, polar-teal, dusty-rose.'
     )
 }

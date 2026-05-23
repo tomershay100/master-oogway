@@ -1,5 +1,5 @@
-# dragon preset: nord
-# Nord palette. Cool Arctic steel-blue/frost/teal — default layout.
+# dragon palette: nord
+# Nord. Cool Arctic: steel-blue username, frost hostname, polar-teal dir, dusty-rose accents.
 export DRAGON__USERNAME_FOREGROUND_COLOR='68'
 export DRAGON__USERNAME_BACKGROUND_COLOR=''
 export DRAGON__HOSTNAME_FOREGROUND_COLOR='153'

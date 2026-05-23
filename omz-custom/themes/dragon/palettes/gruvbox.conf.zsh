@@ -1,5 +1,5 @@
-# dragon preset: gruvbox
-# Gruvbox palette. Warm amber/orange/olive — default layout.
+# dragon palette: gruvbox
+# Gruvbox. Warm earthy: amber username, orange hostname, olive dir, rust accents.
 export DRAGON__USERNAME_FOREGROUND_COLOR='214'
 export DRAGON__USERNAME_BACKGROUND_COLOR=''
 export DRAGON__HOSTNAME_FOREGROUND_COLOR='208'
