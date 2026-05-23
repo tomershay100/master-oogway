@@ -23,10 +23,6 @@ for each change:
 
 # Existing plugins
 
-## mo-auto-ls
-* the comments in the plugin file - consider write it in the readme.
-* does `chpwd_functions` can contain the same function twice? if yes - is there a better way to make it unique?
-
 ## mo-bat-override
 * there is a declaration of `_bat_cmd` in zshrc. is there something to do with this duplicated code?
 * `--theme`: be dont need it, aren't we? there is `export BAT_THEME='Coldark-Dark'` in `zshrc`.
