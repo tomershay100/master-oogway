@@ -1,4 +1,4 @@
-# mo-navigation
+# mo-dirs
 
 Directory navigation helpers.
 

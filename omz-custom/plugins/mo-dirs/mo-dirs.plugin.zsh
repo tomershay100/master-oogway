@@ -67,13 +67,7 @@ fcd() {
         preview_cmd='\ls -1 --color=always {}'
     fi
     local dir
-    # NUL-delimited pipeline so directory names with spaces or newlines
-    # survive intact (line-delimited would fragment them across fzf
-    # entries). The grep -zvF filter drops shell-unsafe names (newline
-    # included) so fzf's literal {} substitution can't be turned into
-    # code-execution.
     dir=$(find "$base" -type d -not -path '*/.git/*' -print0 2>/dev/null \
-        | grep -zvF -e '$' -e '`' -e '(' -e ')' -e ';' -e '|' -e '&' -e '<' -e '>' -e '"' -e "'" -e '\' -e $'\n' \
         | fzf --read0 --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
     && cd "$dir"
 }
