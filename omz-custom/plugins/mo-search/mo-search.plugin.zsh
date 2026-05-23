@@ -1,24 +1,24 @@
 
+source "${0:h}/requirements.zsh" || return
+
 # ── fzf environment ────────────────────────────────────────────────────────────
-if command -v fzf &>/dev/null; then
-    export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 
-    if command -v bat &>/dev/null; then
-        export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=plain {} 2>/dev/null || cat {}' --preview-window=right:60%:wrap"
-    elif command -v batcat &>/dev/null; then
-        export FZF_CTRL_T_OPTS="--preview 'batcat --color=always --style=plain {} 2>/dev/null || cat {}' --preview-window=right:60%:wrap"
-    else
-        export FZF_CTRL_T_OPTS="--preview 'cat {}' --preview-window=right:60%:wrap"
-    fi
+if command -v bat &>/dev/null; then
+    export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=plain {} 2>/dev/null || cat {}' --preview-window=right:60%:wrap"
+elif command -v batcat &>/dev/null; then
+    export FZF_CTRL_T_OPTS="--preview 'batcat --color=always --style=plain {} 2>/dev/null || cat {}' --preview-window=right:60%:wrap"
+else
+    export FZF_CTRL_T_OPTS="--preview 'cat {}' --preview-window=right:60%:wrap"
+fi
 
-    export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --level=2 {} 2>/dev/null || ls -la {}' --preview-window=right:50%:wrap"
+export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --level=2 {} 2>/dev/null || ls -la {}' --preview-window=right:50%:wrap"
 
-    # Default command: fd respects .gitignore and is faster than find.
-    if command -v fd &>/dev/null; then
-        export FZF_DEFAULT_COMMAND="fd --type f --hidden --strip-cwd-prefix --exclude .git"
-    elif command -v fdfind &>/dev/null; then
-        export FZF_DEFAULT_COMMAND="fdfind --type f --hidden --strip-cwd-prefix --exclude .git"
-    fi
+# Default command: fd respects .gitignore and is faster than find.
+if command -v fd &>/dev/null; then
+    export FZF_DEFAULT_COMMAND="fd --type f --hidden --strip-cwd-prefix --exclude .git"
+elif command -v fdfind &>/dev/null; then
+    export FZF_DEFAULT_COMMAND="fdfind --type f --hidden --strip-cwd-prefix --exclude .git"
 fi
 
 unalias grep 2>/dev/null

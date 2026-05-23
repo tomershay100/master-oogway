@@ -1,4 +1,6 @@
 
+source "${0:h}/requirements.zsh" || return
+
 alias ga="git add"
 alias gaa="git add --all"
 alias gac="git add ."

@@ -226,7 +226,8 @@ Override plugins go in the "Override plugins" table at the top of the README's
 If a plugin requires a tool that may not be installed:
 
 - **Hard dep** (plugin is useless without it): use `requirements.zsh` + `source "${0:h}/requirements.zsh" || return`. The plugin prints a yellow warning and does not load. See `mo-bat-override` for the canonical pattern.
-- **Soft dep** (plugin loads and degrades gracefully): guard usage inline with `command -v <tool> &>/dev/null`, and declare the dep in `optional-deps.zsh` so `install.sh` can report it. See `mo-search` for the canonical pattern.
+- **Soft dep** (plugin loads and degrades gracefully, but a feature is silently missing): guard usage inline with `command -v <tool> &>/dev/null`, and declare the dep in `optional-deps.zsh` so `install.sh` can report it. See `mo-search` for the canonical pattern.
+- **Per-function dep** (only one function needs a tool, and it already errors clearly when missing): guard inline with `command -v <tool> &>/dev/null || { echo "cmd: tool not installed" >&2; return 1; }` inside the function itself. No `requirements.zsh` or `optional-deps.zsh` needed — the function is self-documenting. See `mo-network` (`natip`, `serve`, `sshto`) for the canonical pattern.
 
 **Plugins that write outside `~/.config/master-oogway/`** (introduced by
 `mo-lan-ssh`, which writes `~/.ssh/config.d/lan-hosts`) should:

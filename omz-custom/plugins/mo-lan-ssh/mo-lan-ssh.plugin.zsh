@@ -7,6 +7,8 @@
 # with MO_LAN_AUTO_TRUST=false.
 #
 
+source "${0:h}/requirements.zsh" || return
+
 # EPOCHSECONDS lives in zsh/datetime; load once so loader paths don't fork date.
 # (b:EPOCHSECONDS is wrong — EPOCHSECONDS is a parameter, not a builtin.)
 zmodload -F zsh/datetime p:EPOCHSECONDS 2>/dev/null
