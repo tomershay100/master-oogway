@@ -429,8 +429,9 @@ _dragon_init_presets() {
 #   2. Adding _DRAGON_PALETTE_DESC[<name>]
 #   3. Dropping a palettes/<name>.conf.zsh file with export DRAGON__*_COLOR lines
 _dragon_init_palettes() {
-    typeset -ga _DRAGON_PALETTE_NAMES=( tokyonight dracula gruvbox nord )
+    typeset -ga _DRAGON_PALETTE_NAMES=( default tokyonight dracula gruvbox nord )
     typeset -gA _DRAGON_PALETTE_DESC=(
+        [default]='Schema defaults. Resets colors without changing layout.'
         [tokyonight]='Soft dark: sky-blue, purple, teal, salmon.'
         [dracula]='Purple BG segments, cyan dir, pink accents.'
         [gruvbox]='Warm earthy: amber, orange, olive, rust.'
