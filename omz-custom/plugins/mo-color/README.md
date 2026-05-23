@@ -5,9 +5,22 @@ Terminal color preview, palette, and text colorizer.
 | Command | Description |
 |---------|-------------|
 | `color palette` | print all 16 named colors + all 256 xterm swatches |
+| `color pick` | interactive 16×16 swatch picker; prints `idx\t#hex\tname` on Enter, exits 130 on cancel |
 | `color <c>` | print a background swatch and foreground label for color `<c>` |
 | `color <fg>` | print piped text in `<fg>` foreground |
 | `color <fg> <bg>` | print piped text with `<fg>` foreground on `<bg>` background; no pipe → prints `hello world` |
+
+### `color pick` keys
+
+`←→↑↓` move by 1 · `PgUp/PgDn` ±16 (whole row) · `Home/g` jump to 0 · `End/G` jump to 255 ·
+digits then `Enter` jump to that index (e.g. `200⏎`) · `Enter` confirm · `q` / `Esc` cancel.
+
+Output is tab-separated so you can pipe it:
+
+```zsh
+read -r idx hex name < <(color pick) || return
+echo "picked #$idx — $hex (${name})"
+```
 
 **Color formats:** `0xRRGGBB` · `#RRGGBB` · `0–255` (xterm index) · named (`black` `red` `green` `yellow` `blue` `magenta` `cyan` `white` `navy` `olive` `maroon` `lime` `fuchsia` `aqua` `silver` `gray`)
 

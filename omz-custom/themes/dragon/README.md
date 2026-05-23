@@ -8,6 +8,7 @@ A fully configurable zsh prompt theme with ~130 tunable variables, an interactiv
 dragon-configure                   # full interactive wizard
 dragon-configure --new-only        # step through only newly added variables
 dragon-configure --preset <name>   # switch to a preset instantly
+dragon-configure --gallery         # print every preset stacked with a labeled banner
 dragon-configure --dismiss         # silence the new-variables notifier
 dragon-configure --help            # show all options
 ```

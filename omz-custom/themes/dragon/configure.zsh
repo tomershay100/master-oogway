@@ -231,6 +231,24 @@ _dragon_render_preview() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Gallery renderer
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Walk every registered preset, swap _DRAGON_CURRENT to its values, and print
+# a banner + framed preview. Mutates _DRAGON_CURRENT — caller should _cleanup
+# afterwards (or not care, e.g. one-shot --gallery flag).
+_dragon_render_gallery() {
+    local preset desc
+    for preset in "${_DRAGON_PRESET_NAMES[@]}"; do
+        desc="${_DRAGON_PRESET_DESC[$preset]:-}"
+        _dragon_apply_preset "$preset"
+        print ""
+        print -P "%B%F{cyan}── ${preset} ──%f%b  %F{245}${desc}%f"
+        _dragon_render_preview
+    done
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Variable editor
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -744,6 +762,7 @@ Options:
   --new-only          Only configure variables added since the last run
   --preset <name>     Instantly switch to a preset (built-in or personal)
   --export <name>     Save current config as a personal preset
+  --gallery           Print every preset stacked, with a labeled banner
   --dismiss           Silence the "new variables" notifier until next update
   --version, -v       Print the installed dragon version
   --help, -h          Show this help
@@ -843,6 +862,16 @@ EOF
         print ""
         print -P "  %F{245}Love it? Consider submitting it as a PR to the master-oogway repo.%f"
         print ""
+        _dragon_cleanup
+        return 0
+    fi
+
+    # ── Gallery: dragon-configure --gallery
+    if [[ "${1-}" == "--gallery" ]]; then
+        print -P "%B%F{cyan}── dragon: Preset gallery ───────────────────────────────────────────%f%b"
+        _dragon_render_gallery
+        print ""
+        print -P "  %F{245}Apply one with: %Bdragon-configure --preset <name>%b%f"
         _dragon_cleanup
         return 0
     fi
