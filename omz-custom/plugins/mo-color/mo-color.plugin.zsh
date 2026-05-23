@@ -81,12 +81,11 @@ _mo_color_palette() {
         gray maroon lime olive navy fuchsia aqua silver
     )
     echo "── Named colors ──────────────────────────────────────────"
-    local name idx r g b col=0
+    local name idx r g b lum cfr cfg cfb col=0
     for name in "${names[@]}"; do
         idx="${_MO_COLORS[$name]}"
         read -r r g b < <(_mo_xterm_to_rgb "$idx")
-        local lum=$(( r * 299 + g * 587 + b * 114 ))
-        local cfr cfb cfg
+        lum=$(( r * 299 + g * 587 + b * 114 ))
         if (( lum >= 128000 )); then cfr=0; cfg=0; cfb=0; else cfr=255; cfg=255; cfb=255; fi
         printf '%s %-9s%s%s%-9s%s' \
             "$(_mo_bg "$r" "$g" "$b")$(_mo_fg $cfr $cfg $cfb)"  "$name"  "$(_mo_reset)" \
@@ -97,10 +96,10 @@ _mo_color_palette() {
 
     echo ""
     echo "── 256 xterm colors ──────────────────────────────────────"
-    local i cfr cfg cfb
+    local i
     for (( i = 0; i <= 255; i++ )); do
         read -r r g b < <(_mo_xterm_to_rgb "$i")
-        local lum=$(( r * 299 + g * 587 + b * 114 ))
+        lum=$(( r * 299 + g * 587 + b * 114 ))
         if (( lum >= 128000 )); then cfr=0; cfg=0; cfb=0; else cfr=255; cfg=255; cfb=255; fi
         printf '%s %3d %s%s%3d%s' \
             "$(_mo_bg "$r" "$g" "$b")$(_mo_fg $cfr $cfg $cfb)"  "$i"  "$(_mo_reset)" \
@@ -119,7 +118,7 @@ Usage:
   color <c>                         print <c> as a BG swatch and a FG label
   color <fg> [<bg>]                 print piped text (or "hello world") in <fg> on <bg>
 
-Color formats:  0xRRGGBB  |  #RRGGBB  |  0-255  |  named (black navy fuchsia…)
+Color formats:  0xRRGGBB  |  '#RRGGBB' (quote — # is a shell comment)  |  0-255  |  named (black navy fuchsia…)
 EOF
         return
     fi
