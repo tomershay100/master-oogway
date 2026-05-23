@@ -3,7 +3,6 @@
 if command -v fzf &>/dev/null; then
     export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 
-    # Ctrl+T file picker: preview with bat if available, otherwise cat.
     if command -v bat &>/dev/null; then
         export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=plain {} 2>/dev/null || cat {}' --preview-window=right:60%:wrap"
     elif command -v batcat &>/dev/null; then
@@ -12,7 +11,6 @@ if command -v fzf &>/dev/null; then
         export FZF_CTRL_T_OPTS="--preview 'cat {}' --preview-window=right:60%:wrap"
     fi
 
-    # Alt+C directory picker: eza tree preview, fallback to ls.
     export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --level=2 {} 2>/dev/null || ls -la {}' --preview-window=right:50%:wrap"
 
     # Default command: fd respects .gitignore and is faster than find.

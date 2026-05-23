@@ -23,14 +23,12 @@ mkscript() {
 
     local sep='# ------------------------------------------------------------------------------'
 
-    command cat > "$path" <<TEMPLATE
-#!/usr/bin/env bash
+    >"$path" print -r -- "#!/usr/bin/env bash
 ${sep}
 # ${name} -
 ${sep}
 set -Eeuo pipefail
-
-TEMPLATE
+"
 
     chmod +x "$path"
     echo "Created: $path"

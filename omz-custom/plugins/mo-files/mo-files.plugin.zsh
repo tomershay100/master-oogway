@@ -14,7 +14,6 @@ typeset -gA _MO_EXTRACT_HINTS=(
     [zstd]="zstd"
 )
 
-# Internal: returns 0 if `$1` is on PATH, else prints a clean install hint and returns 1.
 _mo_extract_check() {
     command -v "$1" &>/dev/null && return 0
     echo "extract: '$1' not installed (try: sudo apt install ${_MO_EXTRACT_HINTS[$1]:-$1})" >&2

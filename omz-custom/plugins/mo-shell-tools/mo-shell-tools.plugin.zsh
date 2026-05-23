@@ -1,16 +1,15 @@
 
-alias h="history 50"                              # last 50 history entries
+alias h="history 50"
 
-'?'() { echo $?; }                                # print exit code of the last command
+'?'() { echo $?; }
 
-# cat the source of a command — prefers bat/batcat for syntax highlighting if installed.
 cwhich() {
     local target
     target="$(whence -p "$1")" || { echo "cwhich: '$1' not found as a file" >&2; return 1; }
-    if command -v batcat &>/dev/null; then
-        batcat "$target"
-    elif command -v bat &>/dev/null; then
+    if command -v bat &>/dev/null; then
         bat "$target"
+    elif command -v batcat &>/dev/null; then
+        batcat "$target"
     else
         cat "$target"
     fi
@@ -22,7 +21,6 @@ vwhich() {
     ${EDITOR:-vim} "$target"
 }
 
-# Copy stdin to the system clipboard (Wayland → X11 → echo fallback).
 clip() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
         echo "Usage: <command> | clip"
@@ -45,12 +43,10 @@ clip() {
     echo "Copied ${bytes} ${unit} to clipboard." >&2
 }
 
-vizsh() { ${EDITOR:-vim} ~/.zshrc; }              # open ~/.zshrc in $EDITOR
-alias soursh="source ~/.zshrc"                    # reload ~/.zshrc
+vizsh() { ${EDITOR:-vim} ~/.zshrc; }
+alias soursh="source ~/.zshrc"
 
-# Measure interactive zsh startup time over N runs (default 5).
-# Uses `time` built-in to capture real elapsed time per run, then prints
-# all "total" lines so the user can see variance across runs.
+# Greps `total` lines from `time` output — one per run, shows variance across runs.
 zshtime() {
     local n="${1:-5}"
     if [[ ! "$n" =~ ^[0-9]+$ ]] || (( n < 1 )); then
@@ -63,12 +59,7 @@ zshtime() {
         { time zsh -i -c exit } 2>&1
     done | grep total
 }
-# Re-run the previous command with sudo.
-# Uses ${(Q)${(z)...}} to split the history line into words respecting
-# quoting (e.g. grep "hello world" file stays three args, not four).
-# Strips a leading 'sudo' if the last command already had one.
-# Find which mo-* plugin defines a command (alias or function).
-# Prints plugin:line: content — e.g. "mo-git:12: alias gs='git status'"
+
 mo-where() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
         echo "Usage: mo-where <name>"
@@ -130,6 +121,7 @@ epoch() {
     fi
 }
 
+# ${(Q)${(z)...}} splits respecting quoting; strips leading 'sudo' if already present.
 please() {
     local last
     last=$(fc -ln -1 2>/dev/null)

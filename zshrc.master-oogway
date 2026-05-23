@@ -98,7 +98,7 @@ ZSH_AUTOSUGGEST_USE_ASYNC=1                                                     
 ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(forward-word emacs-forward-word vi-forward-word)  # Ctrl+→ accepts one word of a suggestion
 
 # zsh-syntax-highlighting — green=valid, red=invalid commands as you type.
-ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor)  # main, brackets, pattern=user rules, cursor=under-cursor
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)  # main=command colors, brackets=matching pairs, pattern=user rules
 typeset -A ZSH_HIGHLIGHT_PATTERNS
 ZSH_HIGHLIGHT_PATTERNS+=(
     'sudo'             'fg=yellow,bold'
