@@ -1,5 +1,7 @@
 # Remove this file to use the system cat and less as-is.
 
+source "${0:h}/requirements.zsh" || return
+
 export BAT_THEME='Coldark-Dark'  # `bat --list-themes` to see options
 
 if command -v batcat &>/dev/null; then
