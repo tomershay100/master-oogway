@@ -118,16 +118,14 @@ _dragon_load_current_conf() {
 # Presets
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Reset _DRAGON_CURRENT to defaults, then dispatch to the preset's
-# _dragon_preset_<name> function (registered in schema.zsh).
+# Reset _DRAGON_CURRENT to defaults, then load overrides from the preset file.
 _dragon_apply_preset() {
     local preset="$1"
     local var
     for var in "${(@k)_DRAGON_DEFAULTS}"; do
         _DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
     done
-    local fn="_dragon_preset_${preset}"
-    (( $+functions[$fn] )) && $fn
+    _dragon_load_current_conf_from "${_DRAGON_THEMES_DIR}/presets/${preset}.conf.zsh"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -844,8 +842,8 @@ EOF
         print ""
         print -P "  %B%F{cyan}Want to share this preset with everyone?%f%b"
         print -P "  %F{245}Submit a PR to the master-oogway repo:%f"
-        print -P "  %F{245}  1. Add a %B_dragon_preset_${_export_name}()%b function to %Bschema.zsh%b"
-        print -P "  %F{245}  2. Add its name, desc, and example to %B_dragon_init_presets%b"
+        print -P "  %F{245}  1. Copy %B${_export_dst}%b to %Bpresets/${_export_name}.conf.zsh%b in the repo"
+        print -P "  %F{245}  2. Add its name, desc, and example to %B_dragon_init_presets%b in %Bschema.zsh%b"
         print -P "  %F{245}  3. Open a PR at: %Bhttps://github.com/tomer-w/master-oogway%b%f"
         print ""
         _dragon_cleanup
