@@ -8,4 +8,4 @@ Replaces `vim` with `nvim`. No-op if `nvim` is not installed.
 
 To bypass: use `\vim` (backslash-quoting skips aliases in any shell).
 
-**Dependencies:** `nvim` — falls back to system `vim` if not installed.
+**Dependencies:** `nvim` — plugin is skipped if not installed.
