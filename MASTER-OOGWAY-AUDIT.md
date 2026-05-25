@@ -99,7 +99,7 @@ that fit today's design.
 | **mo-docs** | Only `md2pdf`. Underspecced for the name — add `md2html`, `md2docx`, `pdf-merge`, `pdf-split`. |
 | **mo-mkscript** | Bash-only template. Add `--lang python|node|go|rust` and auto-`shellcheck` for bash. |
 | **mo-color** | Solid. Missing: contrast (WCAG ratio), hex → nearest-named, gradient generator. |
-| **mo-welcome** | Hardcoded 5 fields. Make it config-driven: `MO_WELCOME_FIELDS=(host os kernel date uptime weather ip)`. |
+| **mo-welcome** | ✓ env-configurable via `MO_WELCOME_FIELDS`. |
 | **mo-cli** | Add `master-oogway plugins` (list + on/off toggle), `master-oogway theme <preset>` (one-shot apply), `master-oogway doctor` (env health). |
 | **mo-auto-ls** | Always runs `ls`. **Real issue:** in directories with > 5000 entries this is noticeably slow on first `cd`. Add `MO_AUTO_LS_MAX_ENTRIES=500`. |
 | **mo-man** | Solid. Add `mo-man --list` (no-arg lists all plugins), and integrate fzf as picker. |
@@ -125,8 +125,7 @@ that fit today's design.
 6. `mo-ssh-tunnel` — `tunnel --list` / `--kill`.
 7. `mo-dirs` — `back` (toggle to previous dir),
    `MO_TMPCD_AUTO_CLEAN=true` exit hook.
-8. `mo-welcome` — env-configurable field list.
-9. `mo-man` — no-arg → fzf picker.
+8. `mo-man` — no-arg → fzf picker.
 
 **P2 (capability expansion):**
 
