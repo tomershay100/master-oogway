@@ -223,11 +223,9 @@ If a developer manually copies (rather than git-submodule-clones) gitstatus into
 
 **Fixed**: `please` now scans the token array for shell metacharacters (`|`, `||`, `&`, `&&`, `;`, `>`, `>>`, `<`, `2>`, `2>>`, `2>&1`, `&>`, `&>>`). If any are found, falls back to `sudo zsh -c "$last"` so the syntax is evaluated by a real shell. Simple commands still use `sudo "${cmd[@]}"` directly.
 
-### MED-8 — `psgrep` matches case-insensitively against the full command line — false positives for common substrings
+### MED-8 — `psgrep` matches case-insensitively against the full command line — false positives for common substrings ✓ FIXED
 
-`mo-process.plugin.zsh:8-9`: `pgrep -lif "$1"` matches anywhere in any arg. `psgrep ssh` will match every Chrome tab whose URL contains `ssh`. Cosmetic, but it cuts the utility of the tool.
-
-**Fix**: default to matching against `comm` (`pgrep -lf` without `-i`, or with `-x` for exact); add an `-a/--all` flag for the current behavior.
+**Fixed**: default is now `pgrep -lf` (full command line, case-sensitive) — reduces false positives for common substrings. Added `-a/--all` flag to restore the old wide case-insensitive behavior when needed.
 
 ### MED-9 — `mo-welcome` reads `/etc/os-release` into the shell with `. /etc/os-release`
 
