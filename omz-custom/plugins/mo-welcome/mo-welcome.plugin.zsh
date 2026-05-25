@@ -38,17 +38,28 @@ _mo_welcome_field_shell() {
 }
 
 _mo_welcome_field_load() {
-    local load
-    read -r load _ < /proc/loadavg
-    print -P "  %F{245}load%f   %F{yellow}${load}%f"
+    local load1 cores pct color
+    read -r load1 _ < /proc/loadavg
+    cores=$(nproc)
+    pct=$(( int(load1 * 100 / cores) ))
+    if   (( pct >= 80 )); then color=red
+    elif (( pct >= 50 )); then color=yellow
+    else                       color=green
+    fi
+    printf -v load1 "%.2f" "$load1"
+    print -P "  %F{245}load%f   %F{${color}}${load1} load  ·  ${cores} cores  ·  ${pct}%% busy%f"
 }
 
 _mo_welcome_field_mem() {
-    local total avail
+    local total avail used_kb pct
     total=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
     avail=$(awk '/^MemAvailable:/{print $2}' /proc/meminfo)
-    local used=$(( (total - avail) / 1024 )) total_mb=$(( total / 1024 ))
-    print -P "  %F{245}mem %f   %F{magenta}${used}MB / ${total_mb}MB%f"
+    used_kb=$(( total - avail ))
+    pct=$(( used_kb * 100 / total ))
+    local used_gb total_gb
+    printf -v used_gb  "%.1f" "$(( used_kb  / 1024.0 / 1024.0 ))"
+    printf -v total_gb "%.1f" "$(( total / 1024.0 / 1024.0 ))"
+    print -P "  %F{245}mem %f   %F{magenta}${used_gb} / ${total_gb} GB (${pct}%%)%f"
 }
 
 _mo_welcome_field_tmux() {

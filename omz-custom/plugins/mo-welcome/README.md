@@ -33,8 +33,8 @@ MO_WELCOME_FIELDS=""                        # silence the banner
 | `up`   | uptime | |
 | `ip`   | local LAN IP | first non-loopback address |
 | `shell`| zsh version | |
-| `load` | 1-min load average | from `/proc/loadavg` |
-| `mem`  | used / total RAM | from `/proc/meminfo` |
+| `load` | `0.91 load · 4 cores · 23% busy` | green/yellow/red by % |
+| `mem`  | `8.3 / 15.4 GB (54%)` | from `/proc/meminfo` |
 | `tmux` | tmux session name | hidden when not in tmux |
 | `ssh`  | remote user@host label | hidden when not in an SSH session |
 
