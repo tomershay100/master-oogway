@@ -205,9 +205,9 @@ If a developer manually copies (rather than git-submodule-clones) gitstatus into
 
 **Assessment**: fzf v0.44+ single-quotes all `{1}` substitutions before passing them to `sh -c`, so the word-split concern (`foo bar.txt` → two args) does not exist in practice. The existing `[$\`();|&<>"\x27\\]` filter is retained as defense-in-depth. No code change made.
 
-### MED-4 — fbranch / sshto / fzf-using functions do not check for `nul` filename injection
+### MED-4 — fbranch / sshto / fzf-using functions do not check for `nul` filename injection ✓ FIXED
 
-None of the fzf pickers using line-separated input (`printf '%s\n' branches`) handle filenames or values containing actual newlines. For LAN hostnames this is impossible (filter restricts charset). For project dirs (`mo-projects`) any directory named with a literal newline would split into two entries. **Practical impact: zero.** Worth noting only because new contributors might add a fzf picker over an unvalidated source.
+**Fixed** for the only affected picker: `mo-projects p` now uses `printf '%s\0'` + `fzf --read0` so directory names containing newlines are handled correctly. All other pickers (fbranch, gtag, flog, mo-man, fkill, frg) feed sources where newlines are structurally impossible.
 
 ### MED-5 — `_dragon_render_preview` interpolates `$HOME` / `$USER` into a zsh -c heredoc
 

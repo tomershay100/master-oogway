@@ -63,7 +63,8 @@ fi"
         names+=( "${_n:t}" )
     done
     local selected
-    selected=$(printf '%s\n' "${names[@]}" | fzf \
+    selected=$(printf '%s\0' "${names[@]}" | fzf \
+        --read0 \
         --prompt="Project> " \
         --height=60% \
         --preview="$preview_cmd" \
