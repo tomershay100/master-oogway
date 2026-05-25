@@ -86,6 +86,20 @@ frg() {
         local file linenum
         file=$(cut -f1 <<< "$result")
         linenum=$(cut -f2 <<< "$result")
-        [[ -n "$file" ]] && ${EDITOR:-vim} "$file" "+${linenum}"
+        if [[ -n "$file" ]]; then
+            # EDITOR_LINENO_FMT lets users override the flag for editors that
+            # don't use vim's "+N" syntax (e.g. "code -g {file}:{line}" for VSCode,
+            # "hx {file}:{line}" for Helix). %f = file, %l = line number.
+            # Defaults: code → "code -g %f:%l", everything else → vim "+%l %f".
+            if [[ -n "${EDITOR_LINENO_FMT:-}" ]]; then
+                local open_cmd="${EDITOR_LINENO_FMT//%f/$file}"
+                open_cmd="${open_cmd//%l/$linenum}"
+                eval "$open_cmd"
+            elif [[ "${EDITOR:-}" == *code* ]]; then
+                code -g "${file}:${linenum}"
+            else
+                ${EDITOR:-vim} "+${linenum}" "$file"
+            fi
+        fi
     fi
 }
