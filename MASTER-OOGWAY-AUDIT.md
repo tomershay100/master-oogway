@@ -41,8 +41,8 @@ distinction in `zshrc`, mature ssh-config workflow (`mo-lan-ssh`),
 
 - Theme presets only configure *colors and separators* — none exercise the
   rich SSH-override / transient / stash / remote-state variable space.
-- Several plugins have only 1–2 commands and feel under-grown (`mo-apps`,
-  `mo-build`, `mo-docs`, `mo-nvim-override`, `mo-auto-ls`).
+- Several plugins have only 1–2 commands and feel under-grown (`mo-build`,
+  `mo-docs`, `mo-nvim-override`, `mo-auto-ls`).
 - No central command palette / discovery — `mo-where` exists but is
   reverse-lookup only.
 - No theme-preview gallery; you have to flip presets one at a time.
@@ -103,7 +103,6 @@ that fit today's design.
 | **mo-cli** | Add `master-oogway plugins` (list + on/off toggle), `master-oogway theme <preset>` (one-shot apply), `master-oogway doctor` (env health). |
 | **mo-auto-ls** | Always runs `ls`. **Real issue:** in directories with > 5000 entries this is noticeably slow on first `cd`. Add `MO_AUTO_LS_MAX_ENTRIES=500`. |
 | **mo-man** | ✓ no-arg fzf picker with live preview. |
-| **mo-apps** | One alias. Delete or absorb into a `mo-launchers` plugin. |
 
 ---
 
@@ -136,7 +135,7 @@ that fit today's design.
 
 **P3 (sparse plugins — merge or expand):**
 
-15. `mo-apps` + `mo-nvim-override` + `mo-colorize-override` → leave as-is
+15. `mo-nvim-override` + `mo-colorize-override` → leave as-is
     OR consolidate the trivial ones into `mo-defaults`.
 
 ---

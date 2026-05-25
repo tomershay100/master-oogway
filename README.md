@@ -54,7 +54,6 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-shell-tools](omz-custom/plugins/mo-shell-tools/README.md) | `h`, `?`, `cwhich`, `vwhich`, `clip`, `vizsh`, `soursh`, `calc`, `epoch`, `please`, `mo-where` |
 | [mo-env](omz-custom/plugins/mo-env/README.md) | `fenv` |
 | [mo-build](omz-custom/plugins/mo-build/README.md) | `m`, `mc` |
-| [mo-apps](omz-custom/plugins/mo-apps/README.md) | GUI app launcher aliases |
 | [mo-welcome](omz-custom/plugins/mo-welcome/README.md) | system snapshot banner on shell open |
 | [mo-cli](omz-custom/plugins/mo-cli/README.md) | `master-oogway` meta CLI |
 | [mo-auto-ls](omz-custom/plugins/mo-auto-ls/README.md) | auto-`ls` after `cd` |
