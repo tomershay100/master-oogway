@@ -173,19 +173,9 @@ This is by design — the README explicitly calls LAN hosts "trusted" — but it
 
 **Fixed**: piped path now streams — emits the color escape, pipes stdin through `command cat` directly, then emits reset. No shell variable buffers stdin. Interactive path (`[[ -t 0 ]]`) still uses `"hello world"` + `printf` unchanged.
 
-### HIGH-7 — `_check_optional_deps` sources every `optional-deps.zsh` found in the plugin tree under a sub-shell
+### HIGH-7 — `_check_optional_deps` sources every `optional-deps.zsh` found in the plugin tree under a sub-shell ✓ FIXED
 
-`install.sh:177-189`: runs `zsh -c 'source "$1"; ...' -- "$dep_file"` for every `optional-deps.zsh` found via glob. The file is expected to be pure data (two assoc arrays), but the installer happily sources arbitrary code from anything named `optional-deps.zsh` in `omz-custom/plugins/*/`.
-
-**Impact**: any future supply-chain compromise of *any* plugin submodule (or any mistakenly-added plugin folder under the plugins dir) gets unprivileged code execution at install time. Today the four submodules don't contain `optional-deps.zsh` so this is dormant.
-
-**Severity**: high in a supply-chain sense, low in practice.
-
-**Fix**: restrict to the explicitly-shipped mo-* plugin names, or parse the file as data rather than `source`-ing it:
-```bash
-for dep_file in "${plugins_dir}"/mo-*/optional-deps.zsh; do
-```
-(currently `${plugins_dir}/*/optional-deps.zsh`).
+**Fixed**: glob restricted from `plugins/*/optional-deps.zsh` to `plugins/mo-*/optional-deps.zsh`. Vendor submodules (`gitstatus`, `you-should-use`, etc.) are now excluded by construction.
 
 ### MED-1 — `_init_plugins` silently `rm -rf`s plugin directories with no `.git`
 
@@ -465,7 +455,7 @@ When the bundle is installed on both sides, SendEnv/AcceptEnv pass user-edited v
 | Privilege escalation | None introduced. `sudo` calls are explicit, scoped, surfaced to user. |
 | Secrets on disk | Two minor cases: `mo-env -E` (MED-6), `fenv` editor flow. |
 | MITM resistance | SSH wrapper trades resistance for convenience (HIGH-4). Documented choice. |
-| Supply chain | Four upstream submodules; install.sh sources arbitrary `optional-deps.zsh` (HIGH-7). |
+| Supply chain | Four upstream submodules; `optional-deps.zsh` scanning now restricted to `mo-*` plugins (HIGH-7 ✓). |
 | curl-pipe-bash bootstrap | Standard practice, no integrity check (no SHA256 / no signed tag verification). Not worse than the OMZ install line it mirrors. |
 | Setuid / setgid creation | None. |
 | /tmp race conditions | None I could reach (mktemp creates 0600). |
@@ -544,7 +534,7 @@ I'd implement these in this order (rough days of work):
 7. **MED-6** — `mo-env -E` to `$XDG_RUNTIME_DIR` (10 min).
 8. **MED-11** — fix `_check_zshrc_drift` to compare against `${ZSHRC}.upstream-snapshot` (15 min).
 9. **HIGH-4** — log purged keys to a file before `ssh-keygen -R` (30 min). Optionally gate on network-id stability (1 h).
-10. **HIGH-7** — restrict `optional-deps.zsh` scanning to `mo-*` glob (1 line change).
+10. **HIGH-7** ✓ — restrict `optional-deps.zsh` scanning to `mo-*` glob.
 11. **INFO-5** — add a `.github/workflows/lint.yml` running `bash -n`, `shellcheck`, `zsh -n` on every PR (1 h).
 
 ---

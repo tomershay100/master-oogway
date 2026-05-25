@@ -169,7 +169,7 @@ _check_optional_deps()
     declare -A apt_pkgs=()
 
     local plugin_dir dep_file plugin_name raw_deps raw_apt cmd desc pkg
-    for dep_file in "${plugins_dir}"/*/optional-deps.zsh; do
+    for dep_file in "${plugins_dir}"/mo-*/optional-deps.zsh; do
         [[ -f "$dep_file" ]] || continue
         plugin_dir="${dep_file%/optional-deps.zsh}"
         plugin_name="${plugin_dir##*/}"
