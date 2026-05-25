@@ -270,21 +270,21 @@ Bash/zsh editorconfig says `indent_style = tab` for `*.zsh`, but configure.zsh a
 
 `aliases.zsh:6`: `typeset -g _DRAGON_THEME_DIR="${0:a:h}"`. Add `-r` if you intend it to be immutable post-load.
 
-### LOW-4 — `m()` (parallel make) hardcodes `nproc` at plugin source time
+### LOW-4 — `m()` (parallel make) hardcodes `nproc` at plugin source time ✓ FIXED (via MED-10)
 
-`mo-build.plugin.zsh:3`: `_mo_build_jobs=$(( $(nproc 2>/dev/null || echo 1) > 0 ? $(nproc 2>/dev/null || echo 1) : 1 ))`. Calls `nproc` twice. If the user changes CPU affinity later (e.g., via cgroups), `m` keeps the original count. Acceptable, but `nproc` is cheap enough to evaluate every call.
+Double `nproc` call eliminated — now uses `grep -c '^processor' /proc/cpuinfo` once at source time.
 
 ### LOW-5 — `tunnel`'s parse regex accepts `0.0.0.0:port` only as a *bind* address, not as a "remote IP that's actually local"
 
 `mo-ssh-tunnel.plugin.zsh:92-95`: the locality check treats `0.0.0.0` as local. That's right for `-L` bind. But `tunnel remote:80 to 0.0.0.0:8080` will pick `-R` and bind `0.0.0.0:80` on the remote side — exposing a port on the remote that the remote sshd may refuse (`GatewayPorts no`). The error from sshd will surface confusingly. Add a note in the help text.
 
-### LOW-6 — `mo-trash`'s `trash-restore` does line-number-to-selection mapping by re-running `trash-list` twice
+### LOW-6 — `mo-trash`'s `trash-restore` does line-number-to-selection mapping by re-running `trash-list` twice ✓ FIXED
 
-`mo-trash.plugin.zsh:28-37`: runs `trash-list` once for fzf, then again to find the line number. If a delete happens between the two calls (concurrent shell), the line number is wrong. Edge case but worth `nl -b a` once and using the indexed output for both.
+**Fixed**: `trash-list` is now called once, numbered with `nl -b a`, shown in fzf, and the line number is extracted from the selected entry with `awk '{print $1}'`.
 
-### LOW-7 — `frg` invokes `${EDITOR:-vim}` with `"+${linenum}"` syntax that nvim/vim understand but VSCode (`code -g file:line`) does not
+### LOW-7 — `frg` invokes `${EDITOR:-vim}` with `"+${linenum}"` syntax that nvim/vim understand but VSCode (`code -g file:line`) does not ✓ FIXED
 
-`mo-search.plugin.zsh:82`: assumes vim-family editor flag. `code`, `helix`, `kakoune` use different syntax. Add a small `EDITOR_LINENO_FMT` env or check `$EDITOR` against a known list.
+**Fixed**: auto-detects `code` and uses `code -g file:line`. Users can set `EDITOR_LINENO_FMT` with `%f`/`%l` placeholders for other editors (e.g. `hx %f:%l` for Helix). Falls back to vim `+N` for everything else.
 
 ### LOW-8 — Many `command -v X &>/dev/null || { echo missing; return; }` patterns; consider a shared helper
 
@@ -294,9 +294,9 @@ There are 61 occurrences of `command -v X &>/dev/null`. Sharing a `_mo_require <
 
 `mo-auto-ls.plugin.zsh:2`: `_ls_after_cd() { ls; }`. No size cap. A `cd /var/log/journal` or `cd ~/.cache` and you'll wait visibly. Add a `MO_AUTO_LS_MAX_ITEMS=200` cap that falls back to a one-line "< dir > has N items" notice.
 
-### LOW-11 — `mo-color`'s `_mo_fg`/`_mo_bg` emit `\e[38;2;r;g;bm` ANSI 24-bit truecolor codes unconditionally
+### LOW-11 — `mo-color`'s `_mo_fg`/`_mo_bg` emit `\e[38;2;r;g;bm` ANSI 24-bit truecolor codes unconditionally ✓ FIXED
 
-`mo-color.plugin.zsh:73-74`. Terminals without truecolor support (older xterm, dumb terminals, some CI/log scrapers) display them garbled. Detect with `[[ "${COLORTERM:-}" == truecolor ]]` and fall back to 256-color codes.
+**Fixed**: `COLORTERM` checked once at load time into `_MO_TRUECOLOR` flag. `_mo_fg`/`_mo_bg` accept an optional 4th arg (xterm-256 index) and emit `\e[38;5;Nm` when truecolor is unavailable. Palette call sites pass the index they already have.
 
 ### LOW-12 — `serve` defaults to `127.0.0.1` (good), but `SERVE_BIND=0.0.0.0` has no auth and no TLS
 
