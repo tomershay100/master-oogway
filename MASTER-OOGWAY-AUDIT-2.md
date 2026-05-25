@@ -236,20 +236,16 @@ If a developer manually copies (rather than git-submodule-clones) gitstatus into
 }
 ```
 
-### MED-10 — Shell start performance: too many fork-heavy probes for non-essential features
+### MED-10 — Shell start performance: too many fork-heavy probes for non-essential features ✓ FIXED
 
-Per-shell-start forks (counted from my reading):
+**Fixed**: reduced per-shell-start forks across four components:
 
-- mo-lan-ssh: `ip route show default` x2, `ip -o -f inet addr` x2, `md5sum`, `cut`, `stat`, `grep` (cache_network), `sha256sum` (in some paths). Roughly 6-8 forks if cache exists and is fresh.
-- mo-projects: one glob expansion (no fork), per-project alias inline (no fork).
-- dragon notifier: `stat`, `grep` x3, `cut` x3, optionally `md5sum`. Roughly 7-10 forks, but only when state-file mtime says we need to re-hash.
-- dragon defaults init: zsh-internal, no forks.
-- mo-welcome: `uname` x2, `/proc/uptime` (read), `EPOCHSECONDS` (no fork). 2 forks.
-- mo-build: `nproc` x2 (used in a `?:` so both branches evaluate). 2 forks at load time, cached.
+- **mo-build**: replaced double `nproc` fork (ternary called it twice) with `grep -c '^processor' /proc/cpuinfo` — 1 fork instead of 2.
+- **mo-welcome**: replaced `$(uname -r)` with `$(<"/proc/sys/kernel/osrelease")` (zero forks — zsh reads /proc directly); replaced `nproc` with `grep -c` on `/proc/cpuinfo`.
+- **mo-lan-ssh + _mo_lan_discover.zsh**: replaced `head -1` with `awk NR==1` (removed 1 fork from subnet extraction); replaced `cut -d' ' -f1 | cut -c1-8` with `awk '{ print substr($1,1,8) }'` (1 fork instead of 2); replaced `grep | sed` in `_mo_lan_cache_network` with a single `awk` pass.
+- **dragon/notifier**: replaced three `grep -m1 | cut` calls (6 forks) with one `awk` pass over the state file (1 fork).
 
-Total under ~25 forks on a warm cache shell start. Measurable but not bad. Worst case: cold cache + network change + new schema hash = ~50 forks. A `typeset -F SECONDS` benchmark would be a useful addition.
-
-**Suggested improvement**: replace `md5sum | cut -d' ' -f1` with zsh's native `zsh/system` module hash or accept the perf trade-off and document it. `read -r < /proc/uptime` instead of using `head`/`awk`. Cache `network_id` for the lifetime of the shell.
+Remaining forks are structurally unavoidable (`md5sum`, `stat`, `sha256sum`, `ip`). A `MO_BENCH=1 zsh -i -c exit` pattern can benchmark total startup if needed.
 
 ### MED-11 — `_check_zshrc_drift` compares user file to template byte-for-byte
 
