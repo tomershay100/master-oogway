@@ -306,17 +306,17 @@ There are 61 occurrences of `command -v X &>/dev/null`. Sharing a `_mo_require <
 
 `mo-cli.plugin.zsh:34-43`. For users whose `diff.tool=meld` (the bundle default!), this blocks the terminal on a GUI window. Acceptable but surprising. Add `--text` flag for forced TTY diff.
 
-### LOW-14 — `mo-welcome` calls `IFS=. read -r up_secs _ < /proc/uptime` — Linux-only
+### LOW-14 — `mo-welcome` calls `IFS=. read -r up_secs _ < /proc/uptime` — Linux-only ✓ NOT APPLICABLE
 
-The repo header says "requires Linux (Ubuntu 24.04)" so this is fine, but if the plugin ever ships in a more portable bundle, `/proc/uptime` doesn't exist on macOS/BSD. Marker the platform assumption inline.
+The repo explicitly requires Linux (Ubuntu 24.04). No action needed.
 
-### LOW-15 — Trailing line numbers in CONTRIBUTING.md describe "26 plugins" but the README says "26", omz-custom/README says "20 master-oogway plugins". Counts diverge across docs.
+### LOW-15 — Plugin count diverges across docs ✓ FIXED
 
-Worth a single source of truth (e.g., `make plugin-list` that scans `omz-custom/plugins/mo-*/`).
+**Fixed**: all three docs updated to 25 plugins (6 overrides + 19 additive) — the actual count from `ls omz-custom/plugins/mo-*/`.
 
-### INFO-1 — `bash -c "</dev/tcp/host/port"` in `probe_host` is a bash-ism, not zsh
+### INFO-1 — `bash -c "</dev/tcp/host/port"` in `probe_host` is a bash-ism, not zsh ✓ ACKNOWLEDGED
 
-`_mo_lan_discover.zsh:134` — the script is `#!/usr/bin/env zsh` but uses `bash -c "..."` to get TCP. Slightly costly (extra fork), but portable. A pure-zsh alternative is `zsocket` from `zsh/net/tcp`, but that's not in the base zsh distribution everywhere. Current code is the right call.
+`_mo_lan_discover.zsh:134` — the script is `#!/usr/bin/env zsh` but uses `bash -c "..."` to get TCP. Slightly costly (extra fork), but portable. A pure-zsh alternative is `zsocket` from `zsh/net/tcp`, but that's not in the base zsh distribution everywhere. No action needed.
 
 ### INFO-2 — The discovery strategies (AXFR / nmap / arp-scan / known_hosts) try in *priority* order, first non-empty wins
 
