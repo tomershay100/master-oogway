@@ -221,7 +221,7 @@ If a developer manually copies (rather than git-submodule-clones) gitstatus into
 
 ### MED-7 — `please` reconstructs the last command via `${(z)last}` then re-quotes — strips redirections and trailing comments ✓ FIXED
 
-**Fixed**: `please` now scans the token array for shell metacharacters (`|`, `||`, `&`, `&&`, `;`, `>`, `>>`, `<`, `2>`, `2>>`, `2>&1`, `&>`, `&>>`). If any are found, falls back to `sudo zsh -c "$last"` so the syntax is evaluated by a real shell. Simple commands still use `sudo "${cmd[@]}"` directly.
+**Fixed**: `please` splits on `|` boundaries, identifies the leftmost segment whose lead token is a binary or builtin (via `whence -w`), prepends `sudo` to that segment only, and evals the reassembled pipeline in the current shell — so functions/aliases in later segments remain available. Simple commands use `sudo "${cmd[@]}"` directly. Two zsh variable bugs also fixed: `local _lw` moved out of the loop body (re-declaring a local inside a loop leaks typeset-style output to stdout), and `${${(z)s}[1]}` replaced with a proper array intermediate (the nested form returns the first *char* of a single bare word, not the first word).
 
 ### MED-8 — `psgrep` matches case-insensitively against the full command line — false positives for common substrings ✓ FIXED
 
@@ -400,7 +400,7 @@ When the bundle is installed on both sides, SendEnv/AcceptEnv pass user-edited v
 - `clip` reads all of stdin into `data`, then prints it back — fine for typical clipboard usage; same OOM caveat as `mo-color` (HIGH-6) if someone pipes a huge file.
 - `calc` validates `expression` characters with a regex before passing to `bc` — narrow but effective.
 - `'?'()` as a function named literally `?` is a delightful zsh trick (works because zsh `INTERACTIVE_COMMENTS` is on but `?` is allowed in function names).
-- `please` falls back to `sudo zsh -c` for commands with shell metacharacters (MED-7 ✓).
+- `please` splits pipelines on `|`, sudos the leftmost binary/builtin segment, and evals in the current shell so functions in later segments work (MED-7 ✓).
 
 ### mo-safety-override
 
