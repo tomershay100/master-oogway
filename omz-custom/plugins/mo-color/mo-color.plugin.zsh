@@ -340,24 +340,28 @@ EOF
         return
     fi
 
-    # Text mode: read from pipe or use "hello world"
-    local text
-    if [[ -t 0 ]]; then
-        text="hello world"
-    else
-        text="$(command cat)"
-    fi
-
     _mo_parse_color "$fg_spec" || return 1
     local fcr=$_MO_COLOR_R fcg=$_MO_COLOR_G fcb=$_MO_COLOR_B
 
     if [[ -n "$bg_spec" ]]; then
         _mo_parse_color "$bg_spec" || return 1
         local bcr=$_MO_COLOR_R bcg=$_MO_COLOR_G bcb=$_MO_COLOR_B
-        printf '%s%s%s%s\n' \
-            "$(_mo_fg $fcr $fcg $fcb)" "$(_mo_bg $bcr $bcg $bcb)" \
-            "$text" "$(_mo_reset)"
+        if [[ -t 0 ]]; then
+            printf '%s%s%s%s\n' \
+                "$(_mo_fg $fcr $fcg $fcb)" "$(_mo_bg $bcr $bcg $bcb)" \
+                "hello world" "$(_mo_reset)"
+        else
+            printf '%s' "$(_mo_fg $fcr $fcg $fcb)$(_mo_bg $bcr $bcg $bcb)"
+            command cat
+            printf '%s' "$(_mo_reset)"
+        fi
     else
-        printf '%s%s%s\n' "$(_mo_fg $fcr $fcg $fcb)" "$text" "$(_mo_reset)"
+        if [[ -t 0 ]]; then
+            printf '%s%s%s\n' "$(_mo_fg $fcr $fcg $fcb)" "hello world" "$(_mo_reset)"
+        else
+            printf '%s' "$(_mo_fg $fcr $fcg $fcb)"
+            command cat
+            printf '%s' "$(_mo_reset)"
+        fi
     fi
 }

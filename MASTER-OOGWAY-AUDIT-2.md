@@ -169,24 +169,9 @@ This is by design — the README explicitly calls LAN hosts "trusted" — but it
 
 **Fixed**: added `[[ "$_preset" =~ ^[a-zA-Z0-9_-]+$ ]]` validation before the path is constructed, matching the existing `--export` guard. Invalid names (e.g. `../../../etc/passwd`) now print a clear error and return 1 before touching the filesystem.
 
-### HIGH-6 — `mo-color` `command cat` on stdin includes binary content / huge buffers
+### HIGH-6 — `mo-color` `command cat` on stdin includes binary content / huge buffers ✓ FIXED
 
-`mo-color.plugin.zsh:153-155`:
-
-```zsh
-if [[ -t 0 ]]; then text="hello world"
-else text="$(command cat)"; fi
-```
-
-Reading all of stdin into a shell variable is fine for `echo foo | color red`, but `find / | color red` will OOM the shell. zsh strings are unbounded and there's no size cap.
-
-**Severity**: high in the sense that "a normal pipe usage pattern can hang/crash the user's shell". Common pitfall, not exploited deliberately.
-
-**Fix**: stream:
-```zsh
-{ printf '%s' "$(_mo_fg ...)"; command cat; printf '%s' "$(_mo_reset)"; }
-```
-or document the limitation in `color -h`.
+**Fixed**: piped path now streams — emits the color escape, pipes stdin through `command cat` directly, then emits reset. No shell variable buffers stdin. Interactive path (`[[ -t 0 ]]`) still uses `"hello world"` + `printf` unchanged.
 
 ### HIGH-7 — `_check_optional_deps` sources every `optional-deps.zsh` found in the plugin tree under a sub-shell
 
@@ -497,7 +482,7 @@ When the bundle is installed on both sides, SendEnv/AcceptEnv pass user-edited v
 | sshd_config validation fails after install | Marker block is auto-reverted (`install.sh:721-725`) — admirable |
 | Sudo password not entered during sshd install | `sudo -v \|\| true` keeps things flowing; subsequent sudo calls re-prompt |
 | Out-of-disk during state-file write | `mv tmp state` will fail, leaving `state` unchanged but tmp dangling (no cleanup) |
-| Out-of-memory during huge stdin to `color` / `clip` | Shell can OOM (HIGH-6) |
+| Out-of-memory during huge stdin to `color` / `clip` | `color` fixed (HIGH-6 ✓); `clip` still buffers (acceptable for clipboard) |
 
 ### 4.3 Concurrency
 
