@@ -120,24 +120,73 @@ epoch() {
 }
 
 # ${(Q)${(z)...}} splits respecting quoting; strips leading 'sudo' if already present.
-# If the command contains shell metacharacters (pipes, redirections, &), fall back to
-# sudo zsh -c so the syntax is evaluated by a real shell rather than passed as literals.
+# For pipelines, sudo is prepended to the first segment whose lead token is a real
+# binary — other segments run in the current shell so functions/aliases still work.
 please() {
     local last
     last=$(fc -ln -1 2>/dev/null)
     [[ -z "$last" ]] && { echo "please: no previous command" >&2; return 1; }
-    local -a cmd
-    cmd=( ${(Q)${(z)last}} )
-    [[ "${cmd[1]:-}" == "sudo" ]] && cmd=( "${cmd[@]:1}" )
-    [[ ${#cmd[@]} -eq 0 ]] && { echo "please: no command to run" >&2; return 1; }
+    local -a tokens
+    tokens=( ${(z)last} )
+
+    # Strip leading sudo from the raw token stream so we don't double-sudo.
+    [[ "${tokens[1]:-}" == "sudo" ]] && tokens=( "${tokens[@]:1}" )
+    [[ ${#tokens[@]} -eq 0 ]] && { echo "please: no command to run" >&2; return 1; }
+
+    # Check if any pipes are present.
+    local has_pipe=false
     local tok
-    for tok in "${cmd[@]}"; do
-        case "$tok" in
-            '|'|'||'|'&'|'&&'|';'|'>'|'>>'|'<'|'2>'|'2>>'|'2>&1'|'&>'|'&>>')
-                sudo zsh -c "$last"
-                return
-                ;;
-        esac
+    for tok in "${tokens[@]}"; do
+        [[ "$tok" == "|" ]] && { has_pipe=true; break; }
     done
-    sudo "${cmd[@]}"
+
+    if ! $has_pipe; then
+        # Simple command — strip quoting and exec directly under sudo.
+        local -a cmd=( ${(Q)tokens} )
+        sudo "${cmd[@]}"
+        return
+    fi
+
+    # Pipeline: split token stream into segments on | boundaries.
+    # Each segment is a space-joined string; we find the first whose
+    # lead word is a real binary and prepend sudo to it only.
+    local -a segments=()
+    local seg=""
+    for tok in "${tokens[@]}"; do
+        if [[ "$tok" == "|" ]]; then
+            segments+=( "$seg" )
+            seg=""
+        else
+            seg="${seg:+$seg }$tok"
+        fi
+    done
+    [[ -n "$seg" ]] && segments+=( "$seg" )
+
+    local -a out_segments=()
+    local sudoed=false
+    local s lead
+    for s in "${segments[@]}"; do
+        # First word of this segment (strip leading whitespace).
+        lead="${${(z)s}[1]}"
+        # Strip any existing sudo prefix within a segment.
+        [[ "$lead" == "sudo" ]] && { s="${s#sudo }"; lead="${${(z)s}[1]}"; }
+        if ! $sudoed && [[ -n "$lead" ]] && command -v "$lead" &>/dev/null \
+            && [[ "$(command -v "$lead")" == /* ]]; then
+            # This segment's lead is a real binary — sudo it.
+            out_segments+=( "sudo $s" )
+            sudoed=true
+        else
+            out_segments+=( "$s" )
+        fi
+    done
+
+    if ! $sudoed; then
+        echo "please: no binary found in pipeline to sudo — write the command explicitly" >&2
+        return 1
+    fi
+
+    # Reassemble and eval in the current shell so functions in other segments work.
+    local pipeline
+    pipeline="${(j: | :)out_segments}"
+    eval "$pipeline"
 }
