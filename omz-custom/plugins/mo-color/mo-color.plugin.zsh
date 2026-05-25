@@ -63,8 +63,26 @@ _mo_parse_color() {
     return 1
 }
 
-_mo_fg() { printf '\e[38;2;%d;%d;%dm' "$1" "$2" "$3"; }
-_mo_bg() { printf '\e[48;2;%d;%d;%dm' "$1" "$2" "$3"; }
+# Detect truecolor support once at load time.
+# Callers pass r g b [xterm-index]; the xterm index is used as fallback
+# when the terminal doesn't support 24-bit color.
+[[ "${COLORTERM:-}" == truecolor || "${COLORTERM:-}" == 24bit ]] \
+    && _MO_TRUECOLOR=1 || _MO_TRUECOLOR=0
+
+_mo_fg() {
+    if (( _MO_TRUECOLOR )); then
+        printf '\e[38;2;%d;%d;%dm' "$1" "$2" "$3"
+    else
+        printf '\e[38;5;%dm' "${4:-$1}"
+    fi
+}
+_mo_bg() {
+    if (( _MO_TRUECOLOR )); then
+        printf '\e[48;2;%d;%d;%dm' "$1" "$2" "$3"
+    else
+        printf '\e[48;5;%dm' "${4:-$1}"
+    fi
+}
 _mo_reset() { printf '\e[0m'; }
 
 # ── color palette ─────────────────────────────────────────────────────────────
@@ -81,8 +99,8 @@ _mo_color_palette() {
         lum=$(( r * 299 + g * 587 + b * 114 ))
         if (( lum >= 128000 )); then cfr=0; cfg=0; cfb=0; else cfr=255; cfg=255; cfb=255; fi
         printf '%s %-9s%s%s%-9s%s' \
-            "$(_mo_bg "$r" "$g" "$b")$(_mo_fg $cfr $cfg $cfb)"  "$name"  "$(_mo_reset)" \
-            "$(_mo_fg "$r" "$g" "$b")"  "$name"  "$(_mo_reset)"
+            "$(_mo_bg "$r" "$g" "$b" "$idx")$(_mo_fg $cfr $cfg $cfb 15)"  "$name"  "$(_mo_reset)" \
+            "$(_mo_fg "$r" "$g" "$b" "$idx")"  "$name"  "$(_mo_reset)"
         (( ++col % 4 == 0 )) && echo || printf '  '
     done
     (( col % 4 != 0 )) && echo
@@ -95,8 +113,8 @@ _mo_color_palette() {
         lum=$(( r * 299 + g * 587 + b * 114 ))
         if (( lum >= 128000 )); then cfr=0; cfg=0; cfb=0; else cfr=255; cfg=255; cfb=255; fi
         printf '%s %3d %s%s%3d%s' \
-            "$(_mo_bg "$r" "$g" "$b")$(_mo_fg $cfr $cfg $cfb)"  "$i"  "$(_mo_reset)" \
-            "$(_mo_fg "$r" "$g" "$b")"  "$i"  "$(_mo_reset)"
+            "$(_mo_bg "$r" "$g" "$b" "$i")$(_mo_fg $cfr $cfg $cfb 15)"  "$i"  "$(_mo_reset)" \
+            "$(_mo_fg "$r" "$g" "$b" "$i")"  "$i"  "$(_mo_reset)"
         (( (i + 1) % 8 == 0 )) && echo || printf '  '
     done
     (( 256 % 8 != 0 )) && echo
