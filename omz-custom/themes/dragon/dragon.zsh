@@ -54,10 +54,12 @@ typeset -A COLORS=(
 source "${0:a:h}/parts/helpers.zsh"          # color/style helpers, __dragon__show
 source "${0:a:h}/parts/segments_left.zsh"    # username, hostname, directory, prompt_char, ssh_prefix
 source "${0:a:h}/parts/separators.zsh"       # segment separators, multiline prompts
-source "${0:a:h}/parts/git.zsh"              # git segment + gitstatus integration
+source "${0:a:h}/parts/git.zsh"              # git segment rendering
+source "${0:a:h}/parts/gitstatus.zsh"        # gitstatus daemon lifecycle + availability guard
 source "${0:a:h}/parts/segments_right.zsh"   # date, exec_timer, ssh_conn, jobs, exit_status
 source "${0:a:h}/parts/prompt.zsh"           # __calc_prompt_length, lprompt + rprompt builders
-source "${0:a:h}/parts/transient.zsh"        # zle hooks, gitstatus glue, prompt refresh
+source "${0:a:h}/parts/lifecycle.zsh"        # __update_prompt, __refresh_prompt, dragon__update_zsh_prompt
+source "${0:a:h}/parts/transient.zsh"        # zle hooks, transient prompt collapse
 
 # ── Initial render + hook registration ────────────────────────────────────────
 
