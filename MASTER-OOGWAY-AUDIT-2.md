@@ -125,25 +125,9 @@ The check is "does the script directory contain a `.git` whose `origin` URL subs
 ```
 Or require an upstream-pinned commit/marker file inside the repo (e.g., the existence of `.master-oogway-canonical`).
 
-### HIGH-2 — `dismissed_hash` overwrites itself silently after one print
+### HIGH-2 — `dismissed_hash` overwrites itself silently after one print ✓ FIXED
 
-`notifier.zsh:41-50`:
-
-```
-print -P "%F{yellow}[dragon]%f New theme options available — run %Bdragon-configure --new-only%b"
-print -P "%F{245}  (to silence until next update: dragon-configure --dismiss)%f"
-...
-printf 'dismissed_hash=%s\nthemes_mtime=%s\n' "${current_hash}" "${current_mtime}" >> "${tmp_state}"
-command mv "${tmp_state}" "${state_file}"
-```
-
-The notifier tells the user "to silence until next update: dragon-configure --dismiss" but then it *silences itself on the same turn* by writing `dismissed_hash=current_hash`. On every subsequent shell start `current_hash == dismissed_hash` and nothing prints. The notification is effectively one-shot per release.
-
-**Impact**: user only ever sees the "new options available" message once. If they miss it (e.g., they're not at the terminal when the notification prints, or it scrolls off in tmux), they never see it again. The instructional `--dismiss` command is misleading because the dismissal already happened.
-
-**Severity**: high because the entire purpose of the notifier is to communicate to the user, and the UX flow lies about its own behavior.
-
-**Fix**: either (a) drop the auto-dismiss and only set `dismissed_hash` when the user runs `--dismiss`, or (b) keep auto-dismiss but rewrite the message: `"(seen — won't repeat. Run dragon-configure to apply.)"`.
+**Fixed**: removed the auto-dismiss write from `notifier.zsh`. The notification now repeats on every shell open until the user explicitly runs `dragon-configure --dismiss`. The hint line updated to `"(to silence this: dragon-configure --dismiss)"` — accurate because dismissal no longer happens automatically.
 
 ### HIGH-3 — race window between concurrent shells rewriting state file
 
@@ -577,7 +561,7 @@ Total ~300-500 ms cold, ~100-200 ms warm — fine for desktop use, would be slow
 
 I'd implement these in this order (rough days of work):
 
-1. **HIGH-2** — fix notifier auto-dismiss / message (30 min). Either keep behavior and change wording, or remove auto-dismiss.
+1. **HIGH-2** ✓ — fixed: removed auto-dismiss from notifier; notification repeats until user runs `--dismiss`.
 2. **HIGH-3** — use `mktemp` for state-file rewrites (1 h).
 3. **HIGH-1** — tighten clone detection in install.sh (30 min).
 4. **HIGH-5** — validate `--preset` name (5 min, mechanical).
@@ -618,7 +602,7 @@ Among the 22 plugins and 7 dragon files, the **highest-quality components** in t
 The **components I'd most want a second pair of eyes on** before a v1.0 release:
 
 - `_mo_lan_trust.zsh` — the silent key-purge policy (HIGH-4)
-- `notifier.zsh` — the auto-dismiss UX (HIGH-2)
+- `notifier.zsh` — the auto-dismiss UX (HIGH-2) ✓ fixed
 - `install.sh:_running_from_master_oogway_clone` — the trust check (HIGH-1)
 
 ---

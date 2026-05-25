@@ -39,14 +39,5 @@
     [[ "${current_hash}" != "${dismissed_hash}" ]] || return
 
     print -P "%F{yellow}[dragon]%f New theme options available — run %Bdragon-configure --new-only%b"
-    print -P "%F{245}  (to silence until next update: dragon-configure --dismiss)%f"
-
-    # Rewrite the state file atomically — update dismissed_hash and mtime in place,
-    # so dismissed_hash entries don't accumulate and mtime stays fresh.
-    local tmp_state="${state_file}.tmp"
-    grep -v -e '^dismissed_hash=' -e '^themes_mtime=' "${state_file}" 2>/dev/null \
-        > "${tmp_state}" || true
-    printf 'dismissed_hash=%s\nthemes_mtime=%s\n' "${current_hash}" "${current_mtime}" \
-        >> "${tmp_state}"
-    command mv "${tmp_state}" "${state_file}"
+    print -P "%F{245}  (to silence this: dragon-configure --dismiss)%f"
 } "${0:a:h}"
