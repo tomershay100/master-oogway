@@ -123,6 +123,11 @@ HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_FUZZY=1                 # fuzzy match, not strict substring
 HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'      # case-insensitive
 
+# mo-welcome — fields shown in the startup banner (space-separated, order preserved).
+# Available: host os sys now up ip shell load mem tmux ssh
+# Set to "" to silence the banner entirely.
+MO_WELCOME_FIELDS="host os sys now up"
+
 # ── plugins ────────────────────────────────────────────────────────────────────
 # gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info).
 if [[ -f "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh" ]]; then
@@ -186,7 +191,7 @@ plugins=(
     mo-shell-tools             # h, ?, cwhich, vwhich, clip, vizsh, soursh, calc, epoch, please, mo-where
     mo-apps                    # GUI app launchers (gnucash via flatpak)
     mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path
-    mo-welcome                 # 5-line system snapshot banner on shell open (user@host, OS, kernel, date, uptime)
+    mo-welcome                 # startup banner — fields controlled by MO_WELCOME_FIELDS above
 
     # MUST BE LAST — wraps every ZLE widget defined above. See the note at the
     # top of this array.
