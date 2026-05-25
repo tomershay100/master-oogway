@@ -120,6 +120,8 @@ epoch() {
 }
 
 # ${(Q)${(z)...}} splits respecting quoting; strips leading 'sudo' if already present.
+# If the command contains shell metacharacters (pipes, redirections, &), fall back to
+# sudo zsh -c so the syntax is evaluated by a real shell rather than passed as literals.
 please() {
     local last
     last=$(fc -ln -1 2>/dev/null)
@@ -128,5 +130,14 @@ please() {
     cmd=( ${(Q)${(z)last}} )
     [[ "${cmd[1]:-}" == "sudo" ]] && cmd=( "${cmd[@]:1}" )
     [[ ${#cmd[@]} -eq 0 ]] && { echo "please: no command to run" >&2; return 1; }
+    local tok
+    for tok in "${cmd[@]}"; do
+        case "$tok" in
+            '|'|'||'|'&'|'&&'|';'|'>'|'>>'|'<'|'2>'|'2>>'|'2>&1'|'&>'|'&>>')
+                sudo zsh -c "$last"
+                return
+                ;;
+        esac
+    done
     sudo "${cmd[@]}"
 }

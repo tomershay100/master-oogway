@@ -219,20 +219,9 @@ If a developer manually copies (rather than git-submodule-clones) gitstatus into
 
 **Fixed**: `mktemp` now uses `-p "${XDG_RUNTIME_DIR:-/tmp}"`. `XDG_RUNTIME_DIR` is a per-user tmpfs on systemd systems, cleared on logout — secrets never touch a journaled filesystem. Falls back to `/tmp` on non-systemd environments.
 
-### MED-7 — `please` reconstructs the last command via `${(z)last}` then re-quotes — strips redirections and trailing comments
+### MED-7 — `please` reconstructs the last command via `${(z)last}` then re-quotes — strips redirections and trailing comments ✓ FIXED
 
-`mo-shell-tools.plugin.zsh:113-119`:
-
-```zsh
-local -a cmd
-cmd=( ${(Q)${(z)last}} )
-[[ "${cmd[1]:-}" == "sudo" ]] && cmd=( "${cmd[@]:1}" )
-sudo "${cmd[@]}"
-```
-
-`(z)` splits respecting quoting but reuses every token — redirections (`>`, `2>&1`), pipes (`|`), backgrounding (`&`), and trailing comments come back as plain args. So `please` after `apt update | tee log.txt` re-executes `sudo apt update '|' tee log.txt` — error. Functionally surprising.
-
-**Fix**: detect any of these tokens and fall back to `sudo zsh -c "$last"` (with appropriate quoting). Or simpler: document that `please` only works for simple commands.
+**Fixed**: `please` now scans the token array for shell metacharacters (`|`, `||`, `&`, `&&`, `;`, `>`, `>>`, `<`, `2>`, `2>>`, `2>&1`, `&>`, `&>>`). If any are found, falls back to `sudo zsh -c "$last"` so the syntax is evaluated by a real shell. Simple commands still use `sudo "${cmd[@]}"` directly.
 
 ### MED-8 — `psgrep` matches case-insensitively against the full command line — false positives for common substrings
 
@@ -413,7 +402,7 @@ When the bundle is installed on both sides, SendEnv/AcceptEnv pass user-edited v
 - `clip` reads all of stdin into `data`, then prints it back — fine for typical clipboard usage; same OOM caveat as `mo-color` (HIGH-6) if someone pipes a huge file.
 - `calc` validates `expression` characters with a regex before passing to `bc` — narrow but effective.
 - `'?'()` as a function named literally `?` is a delightful zsh trick (works because zsh `INTERACTIVE_COMMENTS` is on but `?` is allowed in function names).
-- `please` has the redirection issue (MED-7).
+- `please` falls back to `sudo zsh -c` for commands with shell metacharacters (MED-7 ✓).
 
 ### mo-safety-override
 
