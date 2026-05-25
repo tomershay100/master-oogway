@@ -879,6 +879,11 @@ EOF
     # ── Preset switcher: dragon-configure --preset <name>
     if [[ "${1-}" == "--preset" ]]; then
         local _preset="${2:-}"
+        if [[ -n "$_preset" && ! "$_preset" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+            print -P "%F{red}✗%f Invalid preset name '${_preset}' — use letters, numbers, hyphens, underscores only."
+            _dragon_cleanup
+            return 1
+        fi
         local _user_preset_file="${_DRAGON_STATE_DIR}/presets/${_preset}.conf.zsh"
         local _is_builtin=false _is_user=false
         [[ -n "${_DRAGON_PRESET_DESC[$_preset]:-}" ]] && _is_builtin=true

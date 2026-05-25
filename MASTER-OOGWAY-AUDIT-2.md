@@ -165,20 +165,9 @@ This is by design — the README explicitly calls LAN hosts "trusted" — but it
 
 **Fix**: at minimum, log the old fingerprint that was purged to a file (`~/.config/master-oogway/lan-key-changes.log`) so an audit trail exists. Better: refuse to auto-purge if the laptop is on a different network than when the original key was learned (you already compute `network_id`).
 
-### HIGH-5 — `dragon-configure --preset` interpolates user-controlled preset name into a personal-preset file path
+### HIGH-5 — `dragon-configure --preset` interpolates user-controlled preset name into a personal-preset file path ✓ FIXED
 
-`configure.zsh:851-870`:
-
-```zsh
-local _preset="${2:-}"
-local _user_preset_file="${_DRAGON_STATE_DIR}/presets/${_preset}.conf.zsh"
-...
-[[ -f "$_user_preset_file" ]] && _is_user=true
-```
-
-The `--export` path validates with `[[ ! "$_export_name" =~ ^[a-zA-Z0-9_-]+$ ]]` but `--preset` does not. A name like `../../../etc/passwd` would resolve `[[ -f "$_user_preset_file" ]]` to false and report "Invalid preset", so the worst outcome here is a slightly weird path appearing in error output. Not exploitable beyond that — but the asymmetry is a smell.
-
-**Fix**: add the same `[[ "$_preset" =~ ^[a-zA-Z0-9_-]+$ ]]` validation to the `--preset` branch.
+**Fixed**: added `[[ "$_preset" =~ ^[a-zA-Z0-9_-]+$ ]]` validation before the path is constructed, matching the existing `--export` guard. Invalid names (e.g. `../../../etc/passwd`) now print a clear error and return 1 before touching the filesystem.
 
 ### HIGH-6 — `mo-color` `command cat` on stdin includes binary content / huge buffers
 
@@ -564,7 +553,7 @@ I'd implement these in this order (rough days of work):
 1. **HIGH-2** ✓ — fixed: removed auto-dismiss from notifier; notification repeats until user runs `--dismiss`.
 2. **HIGH-3** — use `mktemp` for state-file rewrites (1 h).
 3. **HIGH-1** — tighten clone detection in install.sh (30 min).
-4. **HIGH-5** — validate `--preset` name (5 min, mechanical).
+4. **HIGH-5** ✓ — validate `--preset` name: added regex guard before path construction.
 5. **MED-1** — confirm-before-rm in `_init_plugins` (30 min).
 6. **MED-2** — sanitize `default_branch` in fbranch (15 min).
 7. **MED-6** — `mo-env -E` to `$XDG_RUNTIME_DIR` (10 min).
