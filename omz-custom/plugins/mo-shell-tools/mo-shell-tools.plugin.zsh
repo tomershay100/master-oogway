@@ -164,15 +164,25 @@ please() {
 
     local -a out_segments=()
     local sudoed=false
-    local s lead
+    local s lead _lw
+    local -a _seg_words
     for s in "${segments[@]}"; do
-        # First word of this segment (strip leading whitespace).
-        lead="${${(z)s}[1]}"
+        # First word of this segment — assign through array to avoid the
+        # single-word (z) double-subscript bug where ${${(z)s}[1]} returns
+        # the first character instead of the first word.
+        _seg_words=( ${(z)s} ); lead="${_seg_words[1]}"
         # Strip any existing sudo prefix within a segment.
-        [[ "$lead" == "sudo" ]] && { s="${s#sudo }"; lead="${${(z)s}[1]}"; }
-        if ! $sudoed && [[ -n "$lead" ]] && command -v "$lead" &>/dev/null \
-            && [[ "$(command -v "$lead")" == /* ]]; then
-            # This segment's lead is a real binary — sudo it.
+        if [[ "$lead" == "sudo" ]]; then
+            s="${s#sudo }"; _seg_words=( ${(z)s} ); lead="${_seg_words[1]}"
+        fi
+        # Accept binaries and builtins; reject functions, aliases, and unknowns.
+        # whence -w returns "word: type" — function/alias are shell-only,
+        # builtin/command both work under sudo.
+        _lw=$(whence -w "$lead" 2>/dev/null)
+        if ! $sudoed && [[ -n "$lead" ]] \
+            && [[ "$_lw" != *': function' && "$_lw" != *': alias' \
+               && "$_lw" != *': none' ]]; then
+            # This segment's lead is a binary or builtin — sudo it.
             out_segments+=( "sudo $s" )
             sudoed=true
         else
