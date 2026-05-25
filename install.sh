@@ -550,9 +550,17 @@ _install_zshrc()
 _check_zshrc_drift()
 {
     local template="${INSTALL_DIR}/zshrc.master-oogway"
+    local snapshot="${ZSHRC}.upstream-snapshot"
     [[ -f "${template}" ]] || return
-    if ! diff -q "${template}" "${ZSHRC}" &>/dev/null; then
-        warn "Your ~/.zshrc differs from the current template."
+    # Compare snapshot (template at last install) against current template.
+    # If they match the template hasn't changed — no reason to nag the user
+    # regardless of what edits they've made to ~/.zshrc itself.
+    # If no snapshot exists yet, fall back to comparing against ~/.zshrc
+    # (first-run case before the snapshot is written below).
+    local ref="${ZSHRC}"
+    [[ -f "${snapshot}" ]] && ref="${snapshot}"
+    if ! diff -q "${template}" "${ref}" &>/dev/null; then
+        warn "The zshrc template has changed since your last install."
         warn "New features may have been added. Review with:"
         warn "  master-oogway diff-zshrc"
         warn "Apply any changes you want manually — your file is never auto-overwritten."
