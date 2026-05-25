@@ -36,7 +36,8 @@ Examples:
   tunnel -b 8080 to momo:3000           # background: local :8080 → momo's dev server
   tunnel root@192.168.1.2:9090 to 9090  # momo's :9090 → your local :9090 (reverse)
   tunnel 9000 to 9001                   # loopback: :9000 exits at local :9001
-  tunnel 0.0.0.0:80 to momo:8080       # bind all interfaces on :80 → momo:8080
+  tunnel 0.0.0.0:80 to momo:8080       # bind all interfaces locally on :80 → momo:8080
+  tunnel momo:80 to 0.0.0.0:8080       # expose momo:80 on all remote interfaces (requires GatewayPorts yes in sshd)
 EOF
         return
     fi
