@@ -123,10 +123,8 @@ HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=red,fg=white,bold'
 HISTORY_SUBSTRING_SEARCH_FUZZY=1                 # fuzzy match, not strict substring
 HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'      # case-insensitive
 
-# mo-welcome — fields shown in the startup banner (space-separated, order preserved).
-# Available: host os sys now up ip shell load mem tmux ssh
-# Set to "" to silence the banner entirely.
-MO_WELCOME_FIELDS="host os sys now up"
+# mo-welcome — space-separated, order preserved. "" to silence.
+MO_WELCOME_FIELDS="host os sys now up"   # also: ip shell load mem tmux ssh
 
 # ── plugins ────────────────────────────────────────────────────────────────────
 # gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info).
