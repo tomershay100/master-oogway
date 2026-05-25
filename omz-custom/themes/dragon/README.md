@@ -9,7 +9,7 @@ dragon-configure                   # full interactive wizard
 dragon-configure --new-only        # step through only newly added variables
 dragon-configure --preset <name>   # switch to a preset instantly
 dragon-configure --gallery         # print every preset stacked with a labeled banner
-dragon-configure --dismiss         # silence the new-variables notifier
+dragon-configure --dismiss         # silence the new-variables notifier (repeats every shell open until dismissed)
 dragon-configure --help            # show all options
 ```
 

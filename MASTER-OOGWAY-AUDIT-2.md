@@ -201,11 +201,9 @@ If a developer manually copies (rather than git-submodule-clones) gitstatus into
 
 **Fixed**: `default_branch` is now passed via `FZF_DEFAULT_BRANCH` env var and referenced as `"$FZF_DEFAULT_BRANCH"` inside the preview string — never textually interpolated into the shell command.
 
-### MED-3 — `frg`'s filename-safety filter is bypassable
+### MED-3 — `frg`'s filename-safety filter is bypassable ✓ NOT ACTIONABLE
 
-`mo-search.plugin.zsh:65-72`: rejects filenames matching `[$\`();|&<>"\x27\\]`. Missed metacharacters: `*`, `?`, `[`, space, newline (well, newlines aren't possible because the regex acts per-line), `~`, `!`. None of these are direct shell expansion sinks in the `bat ... {1}` preview *as long as {1} is properly word-split*, but `bat --highlight-line {2} {1}` with `{1}=foo bar.txt` would treat `foo` and `bar.txt` as two args. That's a low-impact splitting bug, not RCE.
-
-**Fix**: drop the regex filter (you can't enumerate every metacharacter) and instead make the preview shell quote-safe by reading filenames via `--read0` and passing them as positional args. Better still, use `--with-shell sh -c` and quote properly.
+**Assessment**: fzf v0.44+ single-quotes all `{1}` substitutions before passing them to `sh -c`, so the word-split concern (`foo bar.txt` → two args) does not exist in practice. The existing `[$\`();|&<>"\x27\\]` filter is retained as defense-in-depth. No code change made.
 
 ### MED-4 — fbranch / sshto / fzf-using functions do not check for `nul` filename injection
 
