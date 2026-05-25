@@ -41,7 +41,7 @@ _mo_welcome_field_load() {
     local load1 cores pct color
     read -r load1 _ < /proc/loadavg
     cores=$(nproc)
-    pct=$(( int(load1 * 100 / cores) ))
+    pct=$(( (load1 * 100) / cores ))
     if   (( pct >= 80 )); then color=red
     elif (( pct >= 50 )); then color=yellow
     else                       color=green
