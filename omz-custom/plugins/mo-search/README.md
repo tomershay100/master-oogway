@@ -8,6 +8,6 @@ Search helpers and fuzzy pickers. Also configures `FZF_DEFAULT_OPTS`, `FZF_CTRL_
 | `f <pattern>` | find files by name (shortcut for `find . \| grepi <pattern>`) |
 | `fhist` | fuzzy-select a past command and load it onto the prompt |
 | `fman` | fuzzy-select and open a man page |
-| `frg` | fuzzy ripgrep across file contents; opens result in `$EDITOR` |
+| `frg` | fuzzy ripgrep across file contents; opens result in `$EDITOR` — auto-detects VSCode (`code -g file:line`); set `EDITOR_LINENO_FMT` for other editors (e.g. `hx %f:%l` for Helix) |
 
 **Dependencies:** `fzf` for `fhist`, `fman`, `frg`, and env vars; `rg` for `frg`; `bat`/`batcat` for preview; `fd`/`fdfind` for default command — all optional, each checked at call time.

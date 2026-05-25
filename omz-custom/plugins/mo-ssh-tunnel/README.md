@@ -21,7 +21,8 @@ Each side is `[host:]port`. Host defaults to `localhost`.
 tunnel 9898 to momo:22              # local :9898 → momo:22
 tunnel momo:9000 to localhost:8080  # momo:9000 → local :8080 (reverse)
 tunnel 9000 to 9001                 # loopback: :9000 → local :9001
-tunnel 0.0.0.0:9898 to momo:8700   # bind all interfaces on :9898 → momo:8700
+tunnel 0.0.0.0:9898 to momo:8700   # bind all interfaces locally on :9898 → momo:8700
+tunnel momo:80 to 0.0.0.0:8080     # expose momo:80 on all remote interfaces (requires GatewayPorts yes in sshd)
 ```
 
 **Dependencies:** `ssh`

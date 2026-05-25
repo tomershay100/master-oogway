@@ -4,7 +4,7 @@ Process management helpers.
 
 | Command | Description |
 |---------|-------------|
-| `psgrep <name>` | list running processes matching name (case-insensitive, full command line) |
+| `psgrep <name>` | list running processes matching name (case-sensitive, full command line); `-a/--all` for case-insensitive matching |
 | `port <n>` | show which process is listening on port `n` (retries with sudo if needed) |
 | `fkill [signal]` | fuzzy-select one or more processes to kill (TAB for multi-select; default SIGTERM) |
 

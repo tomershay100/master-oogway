@@ -28,7 +28,7 @@ MO_WELCOME_FIELDS=""                        # silence the banner
 |--------|-------|-------|
 | `host` | `user @ hostname` | |
 | `os`   | distro name | from `/etc/os-release` |
-| `sys`  | kernel version | `uname -r` |
+| `sys`  | kernel version | from `/proc/sys/kernel/osrelease` |
 | `now`  | date + time | |
 | `up`   | uptime | |
 | `ip`   | local LAN IP | first non-loopback address |

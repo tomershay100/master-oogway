@@ -35,4 +35,4 @@ echo "danger" | color white red
 color 0x00ff88 0x1a1a2e
 ```
 
-**Dependencies:** a terminal with 24-bit (truecolor) support for accurate hex colors; xterm-256 named colors work in any 256-color terminal.
+**Dependencies:** 24-bit truecolor terminal for accurate hex colors (`COLORTERM=truecolor`); gracefully falls back to 256-color ANSI codes in non-truecolor terminals — named colors and the palette display still work.
