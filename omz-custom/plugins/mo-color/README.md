@@ -7,8 +7,8 @@ Terminal color preview, palette, and text colorizer.
 | `color palette` | print all 16 named colors + all 256 xterm swatches |
 | `color pick` | interactive 16×16 swatch picker; prints `idx\t#hex\tname` on Enter, exits 130 on cancel |
 | `color <c>` | print a background swatch and foreground label for color `<c>` |
-| `color <fg>` | print piped text in `<fg>` foreground |
-| `color <fg> <bg>` | print piped text with `<fg>` foreground on `<bg>` background; no pipe → prints `hello world` |
+| `color <fg>` | stream piped text in `<fg>` foreground |
+| `color <fg> <bg>` | stream piped text with `<fg>` foreground on `<bg>` background; no pipe → prints `hello world` |
 
 ### `color pick` keys
 
