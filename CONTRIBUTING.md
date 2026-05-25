@@ -32,7 +32,7 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
         prompt.zsh                __calc_prompt_length, dragon__set_lprompt/set_rprompt
         transient.zsh             zle hooks, gitstatus glue, prompt refresh
   plugins/
-    mo-*/mo-*.plugin.zsh          26 oh-my-zsh plugins (6 override + 20 additive)
+    mo-*/mo-*.plugin.zsh          25 oh-my-zsh plugins (6 override + 19 additive)
 ```
 
 ---

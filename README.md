@@ -1,6 +1,6 @@
 # master-oogway
 
-A complete zsh environment — dragon prompt theme, git aliases, fuzzy-finder functions, and 26 opt-in plugins — distributed as a standalone git repo.
+A complete zsh environment — dragon prompt theme, git aliases, fuzzy-finder functions, and 25 opt-in plugins — distributed as a standalone git repo.
 
 ## Installation
 
