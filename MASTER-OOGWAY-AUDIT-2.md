@@ -247,11 +247,9 @@ If a developer manually copies (rather than git-submodule-clones) gitstatus into
 
 Remaining forks are structurally unavoidable (`md5sum`, `stat`, `sha256sum`, `ip`). A `MO_BENCH=1 zsh -i -c exit` pattern can benchmark total startup if needed.
 
-### MED-11 — `_check_zshrc_drift` compares user file to template byte-for-byte
+### MED-11 — `_check_zshrc_drift` compares user file to template byte-for-byte ✓ FIXED
 
-`install.sh:550-560`: warns whenever user's `.zshrc` ≠ template. The marker pattern was designed precisely so users can edit freely, but the drift detector then nags on every install run for any edit. The directive "edit freely" and the warning "your file differs from current template" are in tension.
-
-**Fix**: compare against `${ZSHRC}.upstream-snapshot` (which the installer already maintains, line 576) — drift should only mean "the template changed and you may want to merge", not "you edited freely". Today's logic flags both.
+**Fixed**: `_check_zshrc_drift` now compares `${ZSHRC}.upstream-snapshot` (template captured at last install) against the current template. If they match, the template hasn't changed — the user's edits are irrelevant and no warning fires. Falls back to comparing against `~/.zshrc` on first run before the snapshot exists. Warning message updated to "The zshrc template has changed since your last install."
 
 ### LOW-1 — Duplicated COLORS / xterm conversion logic
 
@@ -294,7 +292,7 @@ There are 61 occurrences of `command -v X &>/dev/null`. Sharing a `_mo_require <
 
 ### LOW-9 — `mo-auto-ls` runs `ls` after every `cd` — on a 50k-file directory this is several hundred ms
 
-`mo-auto-ls.plugin.zsh:2`: `_ls_after_cd() { ls; }`. No size cap. A `cd /var/log/journal` or `cd ~/.cache` and you'll wait visibly. Add a `MO_AUTO_LS_MAX_ITEMS=200` cap that falls back to a one-line "<dir> has N items" notice.
+`mo-auto-ls.plugin.zsh:2`: `_ls_after_cd() { ls; }`. No size cap. A `cd /var/log/journal` or `cd ~/.cache` and you'll wait visibly. Add a `MO_AUTO_LS_MAX_ITEMS=200` cap that falls back to a one-line "< dir > has N items" notice.
 
 ### LOW-11 — `mo-color`'s `_mo_fg`/`_mo_bg` emit `\e[38;2;r;g;bm` ANSI 24-bit truecolor codes unconditionally
 
