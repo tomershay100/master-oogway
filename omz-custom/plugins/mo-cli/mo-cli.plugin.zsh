@@ -39,17 +39,17 @@ master-oogway() {
             local zshrc="${HOME}/.zshrc"
             [[ -f "$template" ]] || { echo "master-oogway: template not found at $template" >&2; return 1; }
             [[ -f "$zshrc" ]]    || { echo "master-oogway: $zshrc not found" >&2; return 1; }
-            if diff -q "$zshrc" "$template" &>/dev/null; then
+            if diff -q "$template" "$zshrc" &>/dev/null; then
                 echo "$zshrc matches the template — no diff."
                 return 0
             fi
             if [[ -n "$tool" ]]; then
                 # ${=tool} splits on whitespace so 'code --diff' works.
-                ${=tool} "$zshrc" "$template"
+                ${=tool} "$template" "$zshrc"
             elif command -v git &>/dev/null && [[ -n "$(git config --get diff.tool 2>/dev/null)" ]]; then
-                git difftool --no-index "$zshrc" "$template"
+                git difftool --no-index "$template" "$zshrc"
             else
-                diff -u "$zshrc" "$template"
+                diff -u "$template" "$zshrc"
             fi
             ;;
         help|-h|--help)
