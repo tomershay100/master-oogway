@@ -46,8 +46,8 @@ _mo_lan_network_id() {
     read -r gw iface < <(ip route show default 2>/dev/null \
         | awk '/default/ { print $3, $5; exit }')
     [[ -z "$iface" ]] && { echo "unknown"; return; }
-    subnet=$(ip -o -f inet addr show "$iface" 2>/dev/null | awk '{ print $4 }' | head -1)
-    print -- "${gw}-${subnet}" | md5sum | cut -d' ' -f1 | cut -c1-8
+    subnet=$(ip -o -f inet addr show "$iface" 2>/dev/null | awk 'NR==1 { print $4 }')
+    print -- "${gw}-${subnet}" | md5sum | awk '{ print substr($1,1,8) }'
 }
 
 _mo_lan_cache_age() {
@@ -58,8 +58,8 @@ _mo_lan_cache_age() {
 
 _mo_lan_cache_network() {
     [[ -f "$_MO_LAN_SSH_CACHE" ]] || return 1
-    grep -m1 '^# Refreshed:' "$_MO_LAN_SSH_CACHE" 2>/dev/null \
-        | sed -n 's/.*network=\([a-f0-9]*\).*/\1/p'
+    awk '/^# Refreshed:/ { match($0, /network=([a-f0-9]+)/, m); if (m[1]) { print m[1]; exit } }' \
+        "$_MO_LAN_SSH_CACHE" 2>/dev/null
 }
 
 # Run discovery in background. flock prevents concurrent shells from trampling.

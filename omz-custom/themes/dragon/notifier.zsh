@@ -18,9 +18,17 @@
     [[ -f "${state_file}" ]] || return
 
     local stored_hash dismissed_hash stored_mtime current_mtime current_hash
-    stored_hash=$(grep -m1 '^vars_hash='     "${state_file}" 2>/dev/null | cut -d= -f2)
-    dismissed_hash=$(grep -m1 '^dismissed_hash=' "${state_file}" 2>/dev/null | cut -d= -f2)
-    stored_mtime=$(grep -m1 '^themes_mtime=' "${state_file}" 2>/dev/null | cut -d= -f2)
+    # Single awk pass over the state file instead of three grep|cut forks.
+    local _state_vals
+    _state_vals=$(awk -F= '
+        /^vars_hash=/     { vh=$2 }
+        /^dismissed_hash=/ { dh=$2 }
+        /^themes_mtime=/  { tm=$2 }
+        END { print vh "\n" dh "\n" tm }
+    ' "${state_file}" 2>/dev/null)
+    stored_hash="${_state_vals%%$'\n'*}"
+    dismissed_hash="${${_state_vals#*$'\n'}%%$'\n'*}"
+    stored_mtime="${_state_vals##*$'\n'}"
     # schema.zsh is the sentinel: it's the only file that changes when a new DRAGON__ variable
     # is added. One stat call instead of a find|sort|tail pipeline on every shell open.
     current_mtime=$(stat -c '%Y' "${themes_dir}/schema.zsh" 2>/dev/null)

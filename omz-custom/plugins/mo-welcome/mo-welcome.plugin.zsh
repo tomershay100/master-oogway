@@ -3,14 +3,18 @@ _mo_welcome_field_host() {
 }
 
 _mo_welcome_field_os() {
-    local NAME= PRETTY_NAME= os_name=
-    [[ -r /etc/os-release ]] && . /etc/os-release 2>/dev/null
-    os_name="${PRETTY_NAME:-${NAME:-$(uname -s)}}"
+    local os_name
+    if [[ -r /etc/os-release ]]; then
+        os_name=$(awk -F= '$1=="PRETTY_NAME"{gsub(/"/,"",$2); print $2; exit}' /etc/os-release)
+    fi
+    os_name="${os_name:-$(uname -s)}"
     print -P "  %F{245}os  %f   %F{magenta}${os_name}%f"
 }
 
 _mo_welcome_field_sys() {
-    print -P "  %F{245}sys %f   %F{blue}$(uname -r)%f"
+    local kver
+    kver=$(<"/proc/sys/kernel/osrelease")
+    print -P "  %F{245}sys %f   %F{blue}${kver}%f"
 }
 
 _mo_welcome_field_now() {
@@ -40,7 +44,8 @@ _mo_welcome_field_shell() {
 _mo_welcome_field_load() {
     local load1 cores pct color
     read -r load1 _ < /proc/loadavg
-    cores=$(nproc)
+    cores=$(grep -c '^processor' /proc/cpuinfo 2>/dev/null)
+    (( cores > 0 )) || cores=1
     printf -v pct "%.0f" "$(( load1 * 100 / cores ))"
     if   (( pct >= 80 )); then color=red
     elif (( pct >= 50 )); then color=yellow

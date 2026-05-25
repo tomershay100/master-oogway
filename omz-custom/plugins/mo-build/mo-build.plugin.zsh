@@ -1,7 +1,8 @@
 
 source "${0:h}/requirements.zsh" || return
 
-_mo_build_jobs=$(( $(nproc 2>/dev/null || echo 1) > 0 ? $(nproc 2>/dev/null || echo 1) : 1 ))
+_mo_build_jobs=$(grep -c '^processor' /proc/cpuinfo 2>/dev/null)
+(( _mo_build_jobs > 0 )) || _mo_build_jobs=1
 _mo_build_has_colormake=false; command -v colormake &>/dev/null && _mo_build_has_colormake=true
 _mo_build_has_banner=false;    command -v banner    &>/dev/null && _mo_build_has_banner=true
 
