@@ -197,13 +197,9 @@ If a developer manually copies (rather than git-submodule-clones) gitstatus into
 
 **Fix**: only `rm -rf` if the directory looks like a stale submodule shell (e.g., contains no untracked files, or contains a `.gitmodules`-derived marker file). Simpler: ask before deleting.
 
-### MED-2 — `fbranch`'s `default_branch` is interpolated into the fzf preview shell unsanitized
+### MED-2 — `fbranch`'s `default_branch` is interpolated into the fzf preview shell unsanitized ✓ FIXED
 
-`mo-git.plugin.zsh:100-130`. Branch *names* are validated against `unsafe_chars=$'$`();|&<>"\'\\'`, but `default_branch` (read from `git symbolic-ref refs/remotes/origin/HEAD`) is not. Git's `check-ref-format` allows `;`, `|`, `&`, etc. in refs in many configurations, so a remote that names its default branch `main; rm -rf ~` would, when the user runs `fbranch` in that clone, inject into the preview shell.
-
-Likelihood is negligible (no real remote does this) but the asymmetric defense is the kind of thing future-you forgets and undoes.
-
-**Fix**: apply the same `unsafe_chars` filter to `default_branch`, or pass it via env: `default_branch="$default_branch" fzf ...` and reference `$default_branch` inside the preview shell.
+**Fixed**: `default_branch` is now passed via `FZF_DEFAULT_BRANCH` env var and referenced as `"$FZF_DEFAULT_BRANCH"` inside the preview string — never textually interpolated into the shell command.
 
 ### MED-3 — `frg`'s filename-safety filter is bypassable
 
@@ -450,7 +446,7 @@ When the bundle is installed on both sides, SendEnv/AcceptEnv pass user-edited v
 
 | Area | Posture |
 |------|---------|
-| Shell injection via user input | Mostly defended (fbranch filter, frg filter, hostname filter, manual-add validation, port validation). One asymmetry (MED-2). |
+| Shell injection via user input | Fully defended (fbranch filter + env-var default_branch, frg filter, hostname filter, manual-add validation, port validation). MED-2 ✓. |
 | Path traversal | Defended (zip pre-scan, hostname charset, preset name in `--export`, missing in `--preset`). |
 | Privilege escalation | None introduced. `sudo` calls are explicit, scoped, surfaced to user. |
 | Secrets on disk | Two minor cases: `mo-env -E` (MED-6), `fenv` editor flow. |
@@ -530,7 +526,7 @@ I'd implement these in this order (rough days of work):
 3. **HIGH-1** — tighten clone detection in install.sh (30 min).
 4. **HIGH-5** ✓ — validate `--preset` name: added regex guard before path construction.
 5. **MED-1** — confirm-before-rm in `_init_plugins` (30 min).
-6. **MED-2** — sanitize `default_branch` in fbranch (15 min).
+6. **MED-2** ✓ — pass `default_branch` via env var in fbranch preview.
 7. **MED-6** — `mo-env -E` to `$XDG_RUNTIME_DIR` (10 min).
 8. **MED-11** — fix `_check_zshrc_drift` to compare against `${ZSHRC}.upstream-snapshot` (15 min).
 9. **HIGH-4** — log purged keys to a file before `ssh-keygen -R` (30 min). Optionally gate on network-id stability (1 h).

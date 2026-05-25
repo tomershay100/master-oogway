@@ -116,16 +116,17 @@ fbranch() {
 
     local branch
     branch=$(printf '%s\n' "${safe_branches[@]}" \
-        | fzf --height=60% --reverse \
+        | FZF_DEFAULT_BRANCH="$default_branch" \
+          fzf --height=60% --reverse \
               --preview-window=right:60%:wrap \
               --preview "
-                  commits=\$(git log --oneline --color=always ${default_branch}..{} 2>/dev/null | head -15)
-                  stat=\$(git diff --stat --color=always ${default_branch}...{} 2>/dev/null)
+                  commits=\$(git log --oneline --color=always \"\$FZF_DEFAULT_BRANCH\"..'{}' 2>/dev/null | head -15)
+                  stat=\$(git diff --stat --color=always \"\$FZF_DEFAULT_BRANCH\"...'{}' 2>/dev/null)
                   if [[ -n \"\$commits\" ]]; then
                       printf '%s\n' \"\$commits\"
                       [[ -n \"\$stat\" ]] && printf '\n─────────────────────────\n%s\n' \"\$stat\"
                   else
-                      git log --oneline --color=always {} 2>/dev/null | head -20
+                      git log --oneline --color=always '{}' 2>/dev/null | head -20
                   fi
               ")
     [[ -z "$branch" ]] && return   # user hit Ctrl+C in fzf
