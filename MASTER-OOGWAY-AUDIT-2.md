@@ -83,7 +83,7 @@ The order is intentional and documented in zshrc.master-oogway:135-194 — parti
 
 Coupling is mostly **acceptable and intentional**:
 
-- **dragon theme ↔ gitstatus**: hard coupling. `__update_gitstatusd` calls `gitstatus_start` / `gitstatus_query` directly. If gitstatus submodule is missing, zshrc:128-132 prints a yellow notice but doesn't disable the theme — meaning the prompt renders with empty git segments. Acceptable degradation.
+- **dragon theme ↔ gitstatus**: previously hard coupling. Fixed: `transient.zsh` now checks `(( $+functions[gitstatus_query] ))` at source time and sets `_DRAGON_GITSTATUS_AVAILABLE`; `__update_gitstatusd` returns early when false, so the git segment is silently omitted and all other segments render normally. zshrc:128-132 still prints the yellow notice on the missing-submodule path.
 - **mo-cli ↔ install.sh**: hard coupling (`master-oogway update` shells out to `$_MO_INSTALL_DIR/install.sh`).
 - **mo-lan-ssh ↔ ssh()**: mo-lan-ssh installs a `ssh()` function. If a user later defines their own `ssh()` after sourcing, mo-lan-ssh detects this via `declare -f ssh` and refuses to overwrite (`mo-lan-ssh.plugin.zsh:225-227`). Good defensive design.
 - **mo-trash ↔ all other rm callers**: `alias rm=trash-put` is the single most invasive change in the bundle. The README does not warn that this changes default `rm` semantics globally (covered later).

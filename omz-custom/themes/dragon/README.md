@@ -67,6 +67,10 @@ Host *
 AcceptEnv DRAGON__*
 ```
 
+## Dependencies
+
+Dragon requires the [gitstatus](../../plugins/gitstatus/) submodule for git segment display. If the submodule is missing (e.g. before running `install.sh`), the git segment is silently omitted and all other prompt segments render normally.
+
 ## All variables
 
 The full list of `DRAGON__*` variables with defaults, types, and descriptions lives in [`schema.zsh`](schema.zsh). Every variable is also visible (with live preview) in `dragon-configure`.
