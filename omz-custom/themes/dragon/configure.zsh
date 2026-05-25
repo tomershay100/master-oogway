@@ -326,7 +326,7 @@ _dragon_edit_var() {
                     break  # keep current
                 elif [[ "$val" =~ '^[0-9]+$' && 10#$val -le 255 ]]; then
                     _DRAGON_CURRENT[$var]="$val"; break
-                elif [[ -n "${COLORS[${(L)val}]:-}" ]]; then
+                elif [[ -n "${_MO_COLORS[${(L)val}]:-}" ]]; then
                     _DRAGON_CURRENT[$var]="${(L)val}"; break
                 else
                     print -P "  %F{red}Invalid color '%F{white}${val}%F{red}' — enter a name or 0-255.%f"

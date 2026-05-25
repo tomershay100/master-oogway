@@ -40,12 +40,7 @@ for _dragon_k _dragon_v in "${(@kv)_DRAGON_DEFAULTS}"; do
 done
 unset _dragon_k _dragon_v
 
-typeset -A COLORS=(
-	[black]=000 [red]=001 [green]=002 [yellow]=003
-	[blue]=004 [magenta]=005 [cyan]=006 [white]=007
-	[gray]=008 [grey]=008 [maroon]=009 [lime]=010 [olive]=011
-	[navy]=012 [fuchsia]=013 [aqua]=014 [silver]=015
-)
+source "${0:a:h}/../../lib/colors.zsh"
 
 # ── Source prompt parts ───────────────────────────────────────────────────────
 # Order matters where one part calls helpers from another. The bottom of this
