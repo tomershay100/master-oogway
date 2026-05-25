@@ -763,6 +763,7 @@ Options:
   --preset <name>     Instantly switch to a preset (built-in or personal)
   --export <name>     Save current config as a personal preset
   --gallery           Print every preset stacked, with a labeled banner
+  --diff <preset>     Show what would change if you switched to <preset>
   --dismiss           Silence the "new variables" notifier until next update
   --version, -v       Print the installed dragon version
   --help, -h          Show this help
@@ -872,6 +873,75 @@ EOF
 		_dragon_render_gallery
 		print ""
 		print -P "  %F{245}Apply one with: %Bdragon-configure --preset <name>%b%f"
+		_dragon_cleanup
+		return 0
+	fi
+
+	# ── Diff against a preset: dragon-configure --diff <name>
+	if [[ "${1-}" == "--diff" ]]; then
+		local _diff_preset="${2:-}"
+		if [[ -z "$_diff_preset" ]]; then
+			print -P "%F{red}✗%f Usage: dragon-configure --diff <preset>"
+			_dragon_cleanup
+			return 1
+		fi
+		if [[ ! "$_diff_preset" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+			print -P "%F{red}✗%f Invalid preset name '${_diff_preset}' — use letters, numbers, hyphens, underscores only."
+			_dragon_cleanup
+			return 1
+		fi
+		local _diff_user_file="${_DRAGON_STATE_DIR}/presets/${_diff_preset}.conf.zsh"
+		local _diff_is_builtin=false _diff_is_user=false
+		[[ -n "${_DRAGON_PRESET_DESC[$_diff_preset]:-}" ]] && _diff_is_builtin=true
+		[[ -f "$_diff_user_file" ]]                        && _diff_is_user=true
+		if ! ( $_diff_is_builtin || $_diff_is_user ); then
+			print -P "%F{red}✗%f Unknown preset '${_diff_preset}'"
+			print -P "  Built-in presets: %B${(j:%b  %B:)_DRAGON_PRESET_NAMES[@]}%b"
+			local _user_presets=( "${_DRAGON_STATE_DIR}"/presets/*.conf.zsh(N) )
+			if (( ${#_user_presets} > 0 )); then
+				local _unames=( "${_user_presets[@]##*/}" )
+				_unames=( "${_unames[@]%.conf.zsh}" )
+				print -P "  Personal presets: %B${(j:%b  %B:)_unames[@]}%b"
+			fi
+			_dragon_cleanup
+			return 1
+		fi
+
+		# Snapshot the current conf before we clobber _DRAGON_CURRENT.
+		local -A _diff_current=( "${(@kv)_DRAGON_CURRENT}" )
+
+		# Load preset into _DRAGON_CURRENT.
+		if $_diff_is_builtin; then
+			_dragon_apply_preset "$_diff_preset"
+		else
+			local var
+			for var in "${(@k)_DRAGON_DEFAULTS}"; do
+				_DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
+			done
+			_dragon_load_current_conf_from "$_diff_user_file"
+		fi
+
+		print -P "%B%F{cyan}── dragon: diff current → ${_diff_preset} ─────────────────────────────%f%b"
+		print ""
+
+		local _changed=0
+		for var in "${(@ko)_DRAGON_DEFAULTS}"; do
+			local cur="${_diff_current[$var]:-}"
+			local preset_val="${_DRAGON_CURRENT[$var]:-}"
+			[[ "$cur" == "$preset_val" ]] && continue
+			(( _changed++ ))
+			print -P "  %B${var}%b"
+			print -P "    %F{red}− ${cur:-(empty)}%f"
+			print -P "    %F{green}+ ${preset_val:-(empty)}%f"
+		done
+
+		if (( _changed == 0 )); then
+			print -P "  %F{green}✓ Your config already matches the '${_diff_preset}' preset — no differences.%f"
+		else
+			print ""
+			print -P "  %F{245}${_changed} variable(s) differ. Apply with: %Bdragon-configure --preset ${_diff_preset}%b%f"
+		fi
+		print ""
 		_dragon_cleanup
 		return 0
 	fi
