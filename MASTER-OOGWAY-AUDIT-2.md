@@ -215,21 +215,9 @@ If a developer manually copies (rather than git-submodule-clones) gitstatus into
 
 **Fix**: pass values through env (`HOME_FAKE="$HOME" zsh -c '... HOME=$HOME_FAKE ...'`) or read them inside the inner shell directly (`HOME` is already exported).
 
-### MED-6 — `mo-env`'s "edit value in $EDITOR" writes secrets to /tmp
+### MED-6 — `mo-env`'s "edit value in $EDITOR" writes secrets to /tmp ✓ FIXED
 
-`mo-env.plugin.zsh:30-36`:
-
-```zsh
-tmpfile=$(mktemp)
-echo "$var_value" > "$tmpfile"
-${EDITOR:-vim} "$tmpfile"
-new_value=$(command cat "$tmpfile")
-rm -f "$tmpfile"
-```
-
-`mktemp` defaults to `/tmp/` with mode 0600 on Linux, so other users can't read it. Still, if the user runs `fenv -E` on `GH_TOKEN` or `AWS_SECRET_ACCESS_KEY`, the secret hits the filesystem briefly. On filesystems with journaling, traces may persist after `rm`.
-
-**Fix**: `mktemp -p "$XDG_RUNTIME_DIR"` (tmpfs, cleared on logout) or `mktemp` with `O_TMPFILE` semantics (not portable to shell). At minimum, `chmod 600` defensively even though mktemp already does it, and add a one-line warning in `fenv -h`.
+**Fixed**: `mktemp` now uses `-p "${XDG_RUNTIME_DIR:-/tmp}"`. `XDG_RUNTIME_DIR` is a per-user tmpfs on systemd systems, cleared on logout — secrets never touch a journaled filesystem. Falls back to `/tmp` on non-systemd environments.
 
 ### MED-7 — `please` reconstructs the last command via `${(z)last}` then re-quotes — strips redirections and trailing comments
 
@@ -447,7 +435,7 @@ When the bundle is installed on both sides, SendEnv/AcceptEnv pass user-edited v
 | Shell injection via user input | Fully defended (fbranch filter + env-var default_branch, frg filter, hostname filter, manual-add validation, port validation). MED-2 ✓. |
 | Path traversal | Defended (zip pre-scan, hostname charset, preset name in `--export`, missing in `--preset`). |
 | Privilege escalation | None introduced. `sudo` calls are explicit, scoped, surfaced to user. |
-| Secrets on disk | Two minor cases: `mo-env -E` (MED-6), `fenv` editor flow. |
+| Secrets on disk | `mo-env -E` now uses `$XDG_RUNTIME_DIR` tmpfs (MED-6 ✓). |
 | MITM resistance | SSH wrapper trades resistance for convenience (HIGH-4). Documented choice. |
 | Supply chain | Four upstream submodules; `optional-deps.zsh` scanning now restricted to `mo-*` plugins (HIGH-7 ✓). |
 | curl-pipe-bash bootstrap | Standard practice, no integrity check (no SHA256 / no signed tag verification). Not worse than the OMZ install line it mirrors. |
@@ -525,7 +513,7 @@ I'd implement these in this order (rough days of work):
 4. **HIGH-5** ✓ — validate `--preset` name: added regex guard before path construction.
 5. **MED-1** — confirm-before-rm in `_init_plugins` (30 min).
 6. **MED-2** ✓ — pass `default_branch` via env var in fbranch preview.
-7. **MED-6** — `mo-env -E` to `$XDG_RUNTIME_DIR` (10 min).
+7. **MED-6** ✓ — `mo-env -E` tmpfile uses `$XDG_RUNTIME_DIR` (tmpfs, cleared on logout).
 8. **MED-11** — fix `_check_zshrc_drift` to compare against `${ZSHRC}.upstream-snapshot` (15 min).
 9. **HIGH-4** — log purged keys to a file before `ssh-keygen -R` (30 min). Optionally gate on network-id stability (1 h).
 10. **HIGH-7** ✓ — restrict `optional-deps.zsh` scanning to `mo-*` glob.

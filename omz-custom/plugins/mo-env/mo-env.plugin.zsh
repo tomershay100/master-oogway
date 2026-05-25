@@ -27,8 +27,11 @@ fenv() {
         echo -n "New value: "
         read -r new_value
     elif [[ "$mode" == "editor" ]]; then
-        local tmpfile
-        tmpfile=$(mktemp)
+        local tmpfile tmpdir
+        # XDG_RUNTIME_DIR is a per-user tmpfs cleared on logout — safer than /tmp
+        # for secrets. Fall back to /tmp if unset (non-systemd environments).
+        tmpdir="${XDG_RUNTIME_DIR:-/tmp}"
+        tmpfile=$(mktemp -p "$tmpdir")
         echo "$var_value" > "$tmpfile"
         ${EDITOR:-vim} "$tmpfile"
         new_value=$(command cat "$tmpfile")
