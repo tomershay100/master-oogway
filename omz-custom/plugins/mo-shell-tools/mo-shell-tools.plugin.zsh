@@ -61,7 +61,7 @@ mo-where() {
             printf "%s:%s\n" "$plugin" "$match"
             found=1
         done < <(grep -nE \
-            "^alias ['\"]?${name}['\"]?=|^function ${name}([^a-zA-Z0-9_]|$)|^${name}[[:space:]]*\(\)" \
+            "^alias ['\"]?${name}['\"]?=|^function ${name}([^a-zA-Z0-9_]|\{|$)|^${name}[[:space:]]*\(\)" \
             "$f" 2>/dev/null)
     done
     (( found == 0 )) && { echo "mo-where: '${name}' not found in any mo-* plugin" >&2; return 1; }
@@ -91,19 +91,31 @@ calc() {
 }
 
 epoch() {
+    local utc=false
+    if [[ "${1:-}" == "--utc" || "${1:-}" == "-u" ]]; then
+        utc=true
+        shift
+    fi
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-        echo "Usage: epoch [timestamp | date-string]"
-        echo "  (no args)         — print current unix timestamp"
-        echo "  epoch 1700000000  — convert unix timestamp to human-readable date"
-        echo "  epoch 'yesterday' — convert date string to unix timestamp"
+        echo "Usage: epoch [--utc] [timestamp | date-string]"
+        echo "  (no args)                    — print current unix timestamp"
+        echo "  epoch 1700000000             — unix timestamp → local date"
+        echo "  epoch --utc 1700000000       — unix timestamp → UTC date"
+        echo "  epoch 'yesterday'            — date string → unix timestamp"
+        echo "  epoch 'last friday 18:00'    — natural language → unix timestamp"
+        echo "  epoch '2025-01-15 09:30:00'  — ISO datetime → unix timestamp"
+        echo "  epoch 'next monday'          — relative date → unix timestamp"
+        echo "  --utc / -u  show result in UTC instead of local timezone"
         return
     fi
+    local date_flags=()
+    $utc && date_flags=(-u)
     if [[ $# -eq 0 ]]; then
-        date +%s
+        date "${date_flags[@]}" +%s
     elif [[ "$1" =~ '^[0-9]+$' ]]; then
-        date -d "@$1"
+        date "${date_flags[@]}" -d "@$1"
     else
-        date -d "$*" +%s
+        date "${date_flags[@]}" -d "$*" +%s
     fi
 }
 
