@@ -3,7 +3,7 @@
 # dragon-configure's _dragon_cleanup unsets _DRAGON_DEFAULTS at the end of every
 # wizard run, so an `rezsh` later in the same shell would iterate an empty array.
 # Re-populate from the schema first; the source + init are both idempotent.
-typeset -g _DRAGON_THEME_DIR="${0:a:h}"
+typeset -gr _DRAGON_THEME_DIR="${0:a:h}"
 
 reset_theme_variables() {
     source "${_DRAGON_THEME_DIR}/schema.zsh"
