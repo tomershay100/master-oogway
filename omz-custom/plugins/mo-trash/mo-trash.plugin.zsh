@@ -23,14 +23,14 @@ trash-restore() {
         echo "trash-restore: fzf not installed (try: sudo apt install fzf)" >&2
         return 1
     fi
-    local selection
-    selection=$(command trash-list 2>/dev/null | fzf --prompt="Restore> " --height=40%) || return 0
-    # trash-restore is interactive: it lists files and asks for a number.
-    # We extract the line number from trash-list output and feed it.
-    local lineno
-    lineno=$(command trash-list 2>/dev/null | grep -nF "$selection" | cut -d: -f1 | head -1)
+    # Run trash-list once and number every line; fzf shows the numbered list
+    # and we extract the line number from the selected entry — no second call.
+    local numbered selection lineno
+    numbered=$(command trash-list 2>/dev/null | nl -b a -w 4 -s '  ')
+    selection=$(printf '%s\n' "$numbered" | fzf --prompt="Restore> " --height=40%) || return 0
+    lineno=$(printf '%s\n' "$selection" | awk '{print $1}')
     [[ -z "$lineno" ]] && { echo "trash-restore: could not locate selection" >&2; return 1; }
-    # trash-restore prompts "Restore <N>?" — answer with the index then confirm.
+    # trash-restore prompts with a numbered list — feed it our index.
     echo "$lineno" | command trash-restore
 }
 
