@@ -892,17 +892,6 @@ X)` improves comprehension for power users.
 
 ## 7. Low priority improvements
 
-### LOW-2 — `mo-search`'s `grep()` function shadows the system `grep` globally
-**File:** `omz-custom/plugins/mo-search/mo-search.plugin.zsh:24-26`.
-
-`unalias grep 2>/dev/null` followed by a function definition. Wrapping
-`grep` to add `--color=auto` is fine for interactive use; the function is
-careful (`command grep ...`) so it doesn't recurse. Power users wiring scripts
-that source `~/.zshrc` may be surprised.
-
-**Fix:** Restrict to an alias rather than a function:
-`alias grep="command grep --color=auto --exclude-dir={.bzr,...} --exclude={...}"`.
-
 ### LOW-3 — Plugin README table in main README is hand-maintained, drift-prone
 **File:** `README.md:33-62`.
 
