@@ -60,7 +60,7 @@ Commands:
   update               Pull latest master-oogway and re-run install.sh
   uninstall            Run install.sh --uninstall (interactive)
   version              Print the installed dragon version (date + commit)
-  configure [args]     Open dragon-configure (forwards args, e.g. --preset short)
+  configure [args]     Open dragon-configure (forwards args, e.g. --pick, --preset short)
   edit                 Open ~/.zshrc in \$EDITOR
   diff-zshrc [tool]    Show diff between your ~/.zshrc and the current template.
                        [tool] overrides; otherwise uses git's diff.tool if set,
