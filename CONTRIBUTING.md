@@ -84,6 +84,18 @@ Different files have different latency depending on how they reach disk:
 
 ---
 
+## Code style
+
+All `.sh` and `.zsh` files use **tabs** for indentation (`tab_width = 4`).
+This is enforced by `editorconfig.master-oogway` and matches the repo's
+bash scripting conventions in `docs/bash_scripting_conventions.md`.
+
+Markdown files deliberately disable `trim_trailing_whitespace` — a
+double-space at the end of a Markdown line is a hard line-break. Removing
+those spaces would silently break rendered output.
+
+---
+
 ## Validation
 
 Always run these checks before committing — every change should pass all of them:

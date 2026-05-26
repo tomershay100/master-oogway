@@ -8,12 +8,15 @@ trim_trailing_whitespace = true
 
 [*.sh]
 indent_style = tab
+tab_width = 4
 
 [*.zsh]
 indent_style = tab
+tab_width = 4
 
 [Makefile]
 indent_style = tab
 
 [*.md]
 trim_trailing_whitespace = false
+# Markdown uses trailing spaces for line breaks — do not enable trim here.
