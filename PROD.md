@@ -892,13 +892,6 @@ X)` improves comprehension for power users.
 
 ## 7. Low priority improvements
 
-### LOW-3 — Plugin README table in main README is hand-maintained, drift-prone
-**File:** `README.md:33-62`.
-
-25 rows, each a markdown link to a plugin README, alphabetised by hand. Drift
-risk: a new plugin can be added to `zshrc.master-oogway` without a row here.
-With manifest (HIGH-3) in place, generate the table.
-
 ### LOW-4 — `LICENSE` content is not in scope of this audit but should be MIT
 **File:** `LICENSE` (1.1k bytes — content not read).
 
