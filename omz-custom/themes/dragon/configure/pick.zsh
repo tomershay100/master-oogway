@@ -59,6 +59,16 @@ _dragon_pick_preset() {
 	local n=${#_DRAGON_PRESET_NAMES}
 	(( n == 0 )) && { print -P "%F{red}✗%f No presets found."; return 1; }
 
+	# Require a minimum terminal size: 72 cols for the list layout,
+	# 16 rows for header (3) + list (≥3) + preview (≥5) + footer (1).
+	local _pick_cols _pick_rows
+	_pick_cols=$(tput cols  2>/dev/null) || _pick_cols=80
+	_pick_rows=$(tput lines 2>/dev/null) || _pick_rows=24
+	if (( _pick_cols < 72 || _pick_rows < 16 )); then
+		print -P "%F{red}✗%f dragon-configure --pick: terminal too small (need 72×16, got ${_pick_cols}×${_pick_rows})" >&2
+		return 1
+	fi
+
 	# Determine starting selection: match current preset from state, else 1.
 	local sel=1
 	_dragon_read_state
