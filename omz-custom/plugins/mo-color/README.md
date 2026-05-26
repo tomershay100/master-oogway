@@ -15,6 +15,10 @@ Terminal color preview, palette, and text colorizer.
 `←→↑↓` move by 1 · `PgUp/PgDn` ±16 (whole row) · `Home/g` jump to 0 · `End/G` jump to 255 ·
 digits then `Enter` jump to that index (e.g. `200⏎`) · `Enter` confirm · `q` / `Esc` cancel.
 
+`color pick` requires a terminal at least **70 columns × 23 rows**. If the
+terminal is smaller it prints an error and exits. Resize the window or zoom
+out the font before running it.
+
 Output is tab-separated so you can pipe it:
 
 ```zsh

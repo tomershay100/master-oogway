@@ -905,12 +905,6 @@ Three-tier fallback (`tool` arg → git config → `diff -u`). Adding `delta`
 or `diff-so-fancy` as a detected tier when the user has them installed would
 be a small UX improvement.
 
-### LOW-8 — `mo-color pick` requires 70×23 terminal, prints an error otherwise
-**File:** `omz-custom/plugins/mo-color/mo-color.plugin.zsh:234-237`.
-
-Document this in `mo-color/README.md` (currently it surfaces only as a
-runtime error).
-
 ### LOW-9 — `_mo_lan_extract_target` parses only single-letter ssh flags
 **File:** `omz-custom/plugins/mo-lan-ssh/_mo_lan_trust.zsh:23-25`.
 
