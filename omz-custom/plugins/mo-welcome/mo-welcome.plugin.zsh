@@ -33,7 +33,14 @@ _mo_welcome_field_up() {
 
 _mo_welcome_field_ip() {
     local ip
+    # `ip route get 1.1.1.1` asks the kernel which source IP it would use to
+    # reach an external address — no packets are sent, works fully offline.
+    # It reliably returns the primary outbound interface IP even without internet.
+    # Falls back to the first non-loopback address if no default route exists.
     ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '/src/{for(i=1;i<=NF;i++) if($i=="src") {print $(i+1); exit}}')
+    if [[ -z "$ip" ]]; then
+        ip=$(ip -4 addr show 2>/dev/null | awk '/inet /{gsub(/\/.*/, "", $2); if ($2 != "127.0.0.1") {print $2; exit}}')
+    fi
     [[ -n "$ip" ]] && print -P "  %F{245}ip  %f   %F{cyan}${ip}%f"
 }
 

@@ -905,14 +905,6 @@ Three-tier fallback (`tool` arg → git config → `diff -u`). Adding `delta`
 or `diff-so-fancy` as a detected tier when the user has them installed would
 be a small UX improvement.
 
-### LOW-7 — `mo-welcome` `_mo_welcome_field_ip` always probes `1.1.1.1`
-**File:** `omz-custom/plugins/mo-welcome/mo-welcome.plugin.zsh:34-38`.
-
-`ip route get 1.1.1.1` is fine even on disconnected machines (it computes
-the route without sending packets) but visually mentions a Cloudflare IP
-in the source. A comment explaining why is worth adding; some users
-auditing the code will pause on it.
-
 ### LOW-8 — `mo-color pick` requires 70×23 terminal, prints an error otherwise
 **File:** `omz-custom/plugins/mo-color/mo-color.plugin.zsh:234-237`.
 
