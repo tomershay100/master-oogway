@@ -913,11 +913,6 @@ argument's semantics are tool-specific. Document the dependency on
 `trash-cli` version (works on 0.22.x; older versions parse arguments
 differently).
 
-### LOW-12 — `mo-files`'s `extract` refuses to merge into existing dir
-**File:** `omz-custom/plugins/mo-files/mo-files.plugin.zsh:42-44`.
-
-Safe default. Some users will want a `--force-merge` flag; deferrable.
-
 ### LOW-13 — `mo-network` `sshto` recursively follows Include directives but with no depth cap
 **File:** `omz-custom/plugins/mo-network/mo-network.plugin.zsh:36-50`.
 

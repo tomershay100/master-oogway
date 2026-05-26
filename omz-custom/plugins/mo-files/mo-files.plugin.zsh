@@ -26,10 +26,10 @@ _mo_extract_check() {
 #      (starts with /) or contains '..' as a path component.
 #   2. Extract into a named subdir derived from the archive name to contain
 #      damage and avoid clobbering files already present in CWD.
-#   3. Refuse if the destination subdir already exists, so re-running extract
-#      on the same archive doesn't silently merge into an existing tree.
+#   3. Refuse if the destination subdir already exists, unless --force-merge
+#      is passed — then extract on top of the existing directory.
 _mo_extract_zip() {
-    local f="$1"
+    local f="$1" force_merge="${2:-false}"
     local entries
     entries=$(unzip -Z1 "$f" 2>/dev/null) \
         || { echo "extract: cannot list entries in '$f'" >&2; return 1; }
@@ -39,8 +39,8 @@ _mo_extract_zip() {
         return 1
     fi
     local outdir="${f:t:r}"
-    if [[ -e "$outdir" ]]; then
-        echo "extract: refusing — '$outdir' already exists; remove it first or extract manually" >&2
+    if [[ -e "$outdir" ]] && ! $force_merge; then
+        echo "extract: refusing — '$outdir' already exists; remove it first, extract manually, or use --force-merge" >&2
         return 1
     fi
     unzip -K -d "$outdir" "$f"
@@ -48,16 +48,21 @@ _mo_extract_zip() {
 
 extract() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-        echo "Usage: extract <file> [file2 ...]"
+        echo "Usage: extract [--force-merge] <file> [file2 ...]"
         echo "  Extracts archives of any format:"
         echo "  .tar.gz  .tar.bz2  .tar.xz  .tar.zst  .tar"
         echo "  .gz  .bz2  .xz  .zst  .zip  .7z  .rar"
+        echo ""
+        echo "  --force-merge  for .zip: extract into an existing destination dir"
+        echo "                 instead of refusing. Other formats always overwrite."
         return
     fi
     if [[ $# -eq 0 ]]; then
-        echo "Usage: extract <file> [file2 ...]  (use -h for details)" >&2
+        echo "Usage: extract [--force-merge] <file> [file2 ...]  (use -h for details)" >&2
         return 1
     fi
+    local force_merge=false
+    [[ "${1:-}" == "--force-merge" ]] && { force_merge=true; shift; }
     local failed=0
     for file in "$@"; do
         if [[ ! -f "$file" ]]; then
@@ -87,7 +92,7 @@ extract() {
             *.tar)      _mo_extract_check tar     && tar xf  "$file"        ${=_tar_flags} || failed=1 ;;
             *.bz2)      _mo_extract_check bunzip2 && bunzip2 "$file"        || failed=1 ;;
             *.gz)       _mo_extract_check gunzip  && gunzip  "$file"        || failed=1 ;;
-            *.zip)      _mo_extract_check unzip   && _mo_extract_zip "$file"    || failed=1 ;;
+            *.zip)      _mo_extract_check unzip   && _mo_extract_zip "$file" "$force_merge" || failed=1 ;;
             *.7z)       _mo_extract_check 7z      && 7z x    "$file"        || failed=1 ;;
             *.rar)      _mo_extract_check unrar   && unrar x "$file"        || failed=1 ;;
             *.xz)       _mo_extract_check xz      && xz -d   "$file"        || failed=1 ;;
