@@ -18,4 +18,4 @@ To bypass `rm`: use `\rm` (backslash-quoting skips aliases in any shell).
 |----------|---------|-------------|
 | `MO_TRASH_DIR` | `$XDG_DATA_HOME/Trash` (or `~/.local/share/Trash`) | Path to the FreeDesktop trash directory. |
 
-**Dependencies:** `trash-cli` (`sudo apt install trash-cli`), `fzf` for `trash-restore`.
+**Dependencies:** `trash-cli` ≥ 0.22.x (`sudo apt install trash-cli`) — `trash-prune` uses `trash-empty --trash-dir=<dir> <days>`, which requires 0.22.x or later (older versions do not support `--trash-dir`); `fzf` for `trash-restore`.

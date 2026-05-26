@@ -892,26 +892,12 @@ X)` improves comprehension for power users.
 
 ## 7. Low priority improvements
 
-### LOW-4 — `LICENSE` content is not in scope of this audit but should be MIT
-**File:** `LICENSE` (1.1k bytes — content not read).
-
-Verify it's MIT (or whatever the README implies) and that the year is
-current.
-
 ### LOW-6 — `mo-cli`'s `diff-zshrc` doesn't auto-detect `delta`/`diff-so-fancy`
 **File:** `omz-custom/plugins/mo-cli/mo-cli.plugin.zsh:46-53`.
 
 Three-tier fallback (`tool` arg → git config → `diff -u`). Adding `delta`
 or `diff-so-fancy` as a detected tier when the user has them installed would
 be a small UX improvement.
-
-### LOW-11 — `mo-trash` uses `command trash-empty` for prune (with --trash-dir)
-**File:** `omz-custom/plugins/mo-trash/mo-trash.plugin.zsh:64`.
-
-`trash-empty --trash-dir=$MO_TRASH_DIR $days` — the positional `$days`
-argument's semantics are tool-specific. Document the dependency on
-`trash-cli` version (works on 0.22.x; older versions parse arguments
-differently).
 
 ### LOW-14 — Long files would benefit from splitting
 **Files:** `configure.zsh` (1097 LOC), `mo-color.plugin.zsh` (379 LOC),
