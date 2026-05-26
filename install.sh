@@ -369,22 +369,15 @@ _zcompile_plugins()
     for f in "${omz}/lib"/*.zsh; do _zc "$f"; done
 
     # dragon theme — all top-level files, all configure/ parts, all parts/
-    # Presets (*.conf.zsh) are intentionally skipped.
+    # Presets (*.conf.zsh) are intentionally skipped — parsed as plain text.
+    # mo-* plugins are intentionally excluded: zsh bakes alias lookups into
+    # bytecode at compile time, so compiled plugin functions would call the
+    # system ls/cat/vim instead of the eza/bat/nvim aliases defined by earlier
+    # override plugins. Keeping plugins as source preserves load-order semantics.
     for f in "${omz}/themes/dragon"/*.zsh \
               "${omz}/themes/dragon/configure"/*.zsh \
               "${omz}/themes/dragon/parts"/*.zsh; do
         _zc "$f"
-    done
-
-    # mo-* first-party plugins — plugin entry points, private helpers, requirements
-    # Skip optional-deps.zsh (bash-only) and _mo_lan_discover.zsh (subprocess).
-    local plugin_dir
-    for plugin_dir in "${omz}/plugins"/mo-*/; do
-        for f in "${plugin_dir}"*.zsh "${plugin_dir}"_mo_*.zsh; do
-            [[ "${f##*/}" == "optional-deps.zsh"    ]] && continue
-            [[ "${f##*/}" == "_mo_lan_discover.zsh" ]] && continue
-            _zc "$f"
-        done
     done
 
     success "zcompile: compiled ${compiled} file(s), ${skipped} already up-to-date"
