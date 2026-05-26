@@ -10,11 +10,14 @@ dragon__set_date_time()
 }
 
 _DRAGON_CMD_RAN=false
+_DRAGON_TIMER_ACTIVE=false
 timer=-1
 
 __set_timer()
 {
 	timer=$SECONDS
+	_DRAGON_TIMER_ACTIVE=true
+	FINAL_DRAGON__EXEC_TIMER_CONTENT=""
 }
 
 __mark_cmd_ran()
@@ -40,12 +43,17 @@ __get_readable_time()
 
 dragon__set_execution_time()
 {
-	FINAL_DRAGON__EXEC_TIMER_CONTENT=""
-	! $DRAGON__ENABLE_EXEC_TIMER && return
+	! $DRAGON__ENABLE_EXEC_TIMER && { FINAL_DRAGON__EXEC_TIMER_CONTENT=""; return; }
 
 	if [[ -n "${DRAGON__PREVIEW_FAKE_EXEC_TIME:-}" ]]; then
 		REAL_DRAGON__EXEC_TIMER_CONTENT="${DRAGON__PREVIEW_FAKE_EXEC_TIME}"
+	elif ! $_DRAGON_TIMER_ACTIVE; then
+		# No command ran (bare Enter) or already consumed — preserve the last
+		# rendered value so the async gitstatus repaint doesn't blank it out.
+		return
 	elif ((timer == -1 || SECONDS - timer < $DRAGON__EXEC_TIMER_THRESHOLD)); then
+		FINAL_DRAGON__EXEC_TIMER_CONTENT=""
+		_DRAGON_TIMER_ACTIVE=false
 		return
 	else
 		# Call without $() to avoid a subshell — result written to _DRAGON_READABLE_TIME
@@ -56,6 +64,10 @@ dragon__set_execution_time()
 
 	__dragon_copy_defaults EXEC_TIMER
 	__dragon_finalize EXEC_TIMER
+	# Mark consumed after a successful render. The async gitstatus repaint
+	# fires in the same precmd cycle and will hit the early return above,
+	# preserving FINAL_DRAGON__EXEC_TIMER_CONTENT from this render.
+	_DRAGON_TIMER_ACTIVE=false
 }
 
 # When there's exactly one job, swap "jobs" → "job" in prefix/suffix.
@@ -128,6 +140,9 @@ __save_exit_code()
 		_DRAGON_EXIT_CODE="$last_exit"
 	else
 		_DRAGON_EXIT_CODE=0
+		# No command ran (bare Enter) — clear the exec timer so it doesn't
+		# persist from the previous command across blank prompts.
+		FINAL_DRAGON__EXEC_TIMER_CONTENT=""
 	fi
 	_DRAGON_CMD_RAN=false
 }
