@@ -136,16 +136,19 @@ _mo_pick_read_key() {
     local key c2 c3 stty_save
     stty_save=$(stty -g 2>/dev/null)
     {
-        stty -echo -icanon min 1 time 0 2>/dev/null
+        # -isig: Ctrl+C becomes literal \x03 instead of SIGINT, so we handle
+        # it explicitly below — the interactive shell never intercepts it.
+        stty -echo -icanon -isig min 1 time 0 2>/dev/null
         read -k1 key
         if [[ "$key" == $'\e' ]]; then
+            stty min 0 time 1 2>/dev/null
             c2=''
-            read -k1 -t 0.05 c2 2>/dev/null
+            read -k1 c2 2>/dev/null || c2=''
             if [[ -z "$c2" ]]; then
                 REPLY=esc
             elif [[ "$c2" == '[' || "$c2" == 'O' ]]; then
                 c3=''
-                read -k1 -t 0.05 c3 2>/dev/null
+                read -k1 c3 2>/dev/null || c3=''
                 case "$c3" in
                     A) REPLY=up ;;
                     B) REPLY=down ;;
@@ -153,8 +156,8 @@ _mo_pick_read_key() {
                     D) REPLY=left ;;
                     H) REPLY=home ;;
                     F) REPLY=end ;;
-                    5) read -k1 -t 0.05 _ 2>/dev/null; REPLY=pgup ;;
-                    6) read -k1 -t 0.05 _ 2>/dev/null; REPLY=pgdn ;;
+                    5) read -k1 _ 2>/dev/null; REPLY=pgup ;;
+                    6) read -k1 _ 2>/dev/null; REPLY=pgdn ;;
                     *) REPLY=unknown ;;
                 esac
             else
@@ -162,6 +165,7 @@ _mo_pick_read_key() {
             fi
         else
             case "$key" in
+                $'\x03')           REPLY=q ;;       # Ctrl+C → treat as cancel
                 $'\n'|$'\r')       REPLY=enter ;;
                 $'\x7f'|$'\b')     REPLY=backspace ;;
                 q|Q)               REPLY=q ;;
@@ -239,7 +243,7 @@ _mo_color_pick() {
     local idx=0 buffer='' grid_top=5 cancelled=1 prev
     {
         tput smcup; tput civis
-        trap 'tput cnorm; tput rmcup' EXIT INT TERM HUP
+        trap 'tput cnorm; tput rmcup' EXIT TERM HUP
 
         _mo_pick_draw_static "$grid_top"
         _mo_pick_draw_header "$idx" ""
