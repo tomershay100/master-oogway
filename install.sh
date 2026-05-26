@@ -583,6 +583,19 @@ apt_install zsh  || die "Cannot proceed without zsh"
 apt_install git  || die "Cannot proceed without git"
 apt_install curl || die "Cannot proceed without curl (needed by the oh-my-zsh installer)"
 
+# en_US.UTF-8 locale — required for correct terminal rendering and zshrc's
+# locale block. Not auto-fixed: update-locale writes /etc/default/locale and
+# takes effect only in a new login shell, so the user must run it themselves.
+if ! locale -a 2>/dev/null | grep -qi 'en_US.utf8\|en_US.UTF-8'; then
+    warn "en_US.UTF-8 locale is not generated on this system."
+    todo_item "Set up locale (run these commands, then open a new terminal):
+      sudo apt install -y locales
+      sudo locale-gen en_US.UTF-8
+      sudo update-locale LANG=en_US.UTF-8 LC_ALL= LC_TIME= LC_MONETARY= LC_ADDRESS= LC_TELEPHONE= LC_NAME= LC_MEASUREMENT= LC_IDENTIFICATION= LC_NUMERIC= LC_PAPER="
+else
+    success "en_US.UTF-8 locale already generated"
+fi
+
 # oh-my-zsh — required, but not an apt package. Print the official one-liner
 # and exit rather than running it ourselves (its installer is interactive and
 # replaces the user's shell — better the user sees the source before running).
