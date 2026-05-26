@@ -7,8 +7,11 @@ _GITSTATUS_NAME="MY_GIT"
 __start_gitstatus_once()
 {
 	$_IS_GITSTATUS_RUNNING && return
-	gitstatus_start -s -1 -u -1 -c -1 -d -1 "$_GITSTATUS_NAME"
-	_IS_GITSTATUS_RUNNING=true
+	# Only mark running on success — a failed start (missing binary, cgroup
+	# error) must not suppress all future retries by setting the flag early.
+	if gitstatus_start -s -1 -u -1 -c -1 -d -1 "$_GITSTATUS_NAME" 2>/dev/null; then
+		_IS_GITSTATUS_RUNNING=true
+	fi
 }
 
 __update_gitstatusd()
