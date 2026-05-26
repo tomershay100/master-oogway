@@ -143,6 +143,10 @@ please() {
     if ! $has_pipe; then
         # Simple command — strip quoting and exec directly under sudo.
         local -a cmd=( ${(Q)tokens} )
+        print -P "  %F{yellow}sudo ${(j: :)cmd}%f"
+        printf "  Run as root? [Y/n] "
+        local _ans; read -r _ans
+        [[ "$_ans" == n* || "$_ans" == N* ]] && return 0
         sudo "${cmd[@]}"
         return
     fi
@@ -198,5 +202,9 @@ please() {
     # Reassemble and eval in the current shell so functions in other segments work.
     local pipeline
     pipeline="${(j: | :)out_segments}"
+    print -P "  %F{yellow}${pipeline}%f"
+    printf "  Run as root? [Y/n] "
+    local _ans; read -r _ans
+    [[ "$_ans" == n* || "$_ans" == N* ]] && return 0
     eval "$pipeline"
 }

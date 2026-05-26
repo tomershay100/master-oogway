@@ -905,9 +905,6 @@ Three-tier fallback (`tool` arg → git config → `diff -u`). Adding `delta`
 or `diff-so-fancy` as a detected tier when the user has them installed would
 be a small UX improvement.
 
-### LOW-10 — `mo-shell-tools` `please` shows no preview before sudo
-**See HIGH-6.**
-
 ### LOW-11 — `mo-trash` uses `command trash-empty` for prune (with --trash-dir)
 **File:** `omz-custom/plugins/mo-trash/mo-trash.plugin.zsh:64`.
 
