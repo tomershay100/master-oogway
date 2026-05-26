@@ -2,6 +2,10 @@
 
 _dragon_write_conf() {
 	local tmp_file="${_DRAGON_CONF_FILE}.wizard.tmp"
+	# Guarantee cleanup of the tmp file on any exit path — including a failed
+	# mv (read-only filesystem, ENOSPC, etc.). Cleared to `trap - EXIT` on
+	# success so it doesn't fire after the mv completes.
+	trap 'rm -f "${tmp_file}"' EXIT
 
 	{
 		cat <<'HEADER'
@@ -79,9 +83,9 @@ HEADER
 
 	if ! zsh -n "$tmp_file" 2>/dev/null; then
 		print -P "%F{red}[dragon]%f Internal error: generated conf.zsh failed syntax check — not saved." >&2
-		rm -f "$tmp_file"
 		return 1
 	fi
 
 	command mv "$tmp_file" "${_DRAGON_CONF_FILE}"
+	trap - EXIT
 }
