@@ -20,7 +20,13 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
     dragon/                       all dragon theme code lives here
       dragon.zsh                  theme entry point — defaults loop, hook registration
       schema.zsh                  single source of truth for all DRAGON__* vars (defaults, types, hints, groups)
-      configure.zsh               interactive wizard (~750 lines)
+      configure.zsh               thin orchestrator — sources configure/ parts
+      configure/                  wizard split into focused files
+        state.zsh                 state I/O, conf loading, preset apply
+        preview.zsh               key reader, prompt preview, gallery renderer
+        pick.zsh                  TUI preset browser (--pick)
+        wizard.zsh                interactive steps, menus, variable editor
+        writer.zsh                conf file generator
       aliases.zsh                 rezsh, reset_theme_variables
       notifier.zsh                shell-start notifier — fires when new theme vars exist
       parts/
@@ -125,7 +131,7 @@ grep -c 'mo-' omz-custom/plugins/mo-*/mo-*.plugin.zsh | wc -l
 ls -d omz-custom/plugins/mo-*/ | wc -l
 ```
 
-> **Note:** The wizard already validates its own output — `dragon-configure` runs `zsh -n` on the generated `conf.zsh` before writing it, so any wizard-produced config that fails syntax is rejected automatically (see `configure.zsh:653`). You only need to run the checks above on source files.
+> **Note:** The wizard already validates its own output — `dragon-configure` runs `zsh -n` on the generated `conf.zsh` before writing it, so any wizard-produced config that fails syntax is rejected automatically (see `configure/writer.zsh`). You only need to run the checks above on source files.
 
 ---
 

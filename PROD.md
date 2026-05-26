@@ -899,15 +899,6 @@ Three-tier fallback (`tool` arg → git config → `diff -u`). Adding `delta`
 or `diff-so-fancy` as a detected tier when the user has them installed would
 be a small UX improvement.
 
-### LOW-14 — Long files would benefit from splitting
-**Files:** `configure.zsh` (1097 LOC), `mo-color.plugin.zsh` (379 LOC),
-`mo-lan-ssh.plugin.zsh` (577 LOC).
-
-Not bad code — but past 500 LOC a single file in a shell framework starts
-to deter contributors. `configure.zsh` could split into
-`configure.{state,preset,wizard,writer,export,gallery,diff}.zsh`. Same for
-the others (`mo-lan-ssh.{loader,cli,validators}.zsh`).
-
 ### LOW-15 — `set -Eeuo pipefail` is in `install.sh` but not in all `.zsh` plugins
 **Files:** every plugin.
 
