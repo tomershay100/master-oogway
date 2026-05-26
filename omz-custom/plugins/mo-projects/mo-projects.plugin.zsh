@@ -47,14 +47,16 @@ p() {
         return 1
     fi
     # {} is unquoted so fzf substitutes the bare name; sh assembles the path.
-    # proj_dir is baked in at call time with quotes around it.
+    # proj_dir and ls_cmd are baked in at call time with quotes around them.
+    local ls_cmd="ls"
+    (( $+_MO_OPT_BIN[eza] )) && ls_cmd="eza -F"
     local preview_cmd="MO_PDIR=\"$proj_dir\"; item={}; dir=\"\$MO_PDIR/\$item\"
 if git -C \"\$dir\" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     branch=\$(git -C \"\$dir\" symbolic-ref --short HEAD 2>/dev/null || git -C \"\$dir\" rev-parse --short HEAD 2>/dev/null)
     printf 'branch: %s\n---\n' \"\$branch\"
     git -C \"\$dir\" status --short 2>/dev/null
 else
-    ls \"\$dir\"
+    $ls_cmd \"\$dir\"
 fi"
 
     local names=()
