@@ -905,16 +905,6 @@ Three-tier fallback (`tool` arg → git config → `diff -u`). Adding `delta`
 or `diff-so-fancy` as a detected tier when the user has them installed would
 be a small UX improvement.
 
-### LOW-9 — `_mo_lan_extract_target` parses only single-letter ssh flags
-**File:** `omz-custom/plugins/mo-lan-ssh/_mo_lan_trust.zsh:23-25`.
-
-The `-[BbcDEeFIiJLlmOoPpRSWwQ]` regex handles the standard set. Multi-arg
-ssh options like `-o ConnectTimeout=30` work because `-o` is treated as
-value-taking. But `--`, `-4`, `-6`, `-A`, `-a` etc. aren't matched (most
-are flags without values, so falling through to `-*) ;;` is correct). The
-implementation is essentially OK but deserves a comment explaining the
-matrix.
-
 ### LOW-10 — `mo-shell-tools` `please` shows no preview before sudo
 **See HIGH-6.**
 

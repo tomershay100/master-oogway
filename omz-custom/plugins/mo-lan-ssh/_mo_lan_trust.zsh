@@ -13,6 +13,17 @@
 
 # Parse ssh argv to find the destination (first non-flag arg, skipping
 # values of option-taking flags). Returns empty string if no target found.
+#
+# Flag handling matrix (from ssh(1)):
+#   -[BbcDEeFIiJLlmOoPpRSWwQ]  — option-taking flags: next token is a value,
+#                                  not the destination; skip both.
+#   -4, -6, -A, -a, -C, -f, -G, -g, -K, -k, -M, -N, -n, -q, -s, -T, -t,
+#   -V, -v, -X, -x, -Y, -y     — boolean flags with no value; fall through to
+#                                  -* which skips them safely.
+#   --                          — end of flags; also falls through to -* (skipped),
+#                                  but the next arg would be the destination.
+# Multi-word options like `-o ConnectTimeout=30` are covered because -o is in
+# the option-taking set and its value token is skipped.
 _mo_lan_extract_target() {
     local arg next_is_value=false
     for arg in "$@"; do
