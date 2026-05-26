@@ -332,6 +332,60 @@ _init_plugins()
     fi
 }
 
+# ── zcompile first-party zsh files ────────────────────────────────────────────
+# Produces .zwc bytecode alongside each source file. zsh loads bytecode when it
+# exists AND is newer than the source — older .zwc is silently ignored, so stale
+# bytecode is never a correctness risk. Re-running install.sh after editing
+# source files brings bytecode back up-to-date.
+#
+# Excluded on purpose:
+#   presets/*.conf.zsh    — parsed as plain text by _dragon_load_current_conf_from
+#   optional-deps.zsh     — read only by bash install.sh, not sourced at startup
+#   _mo_lan_discover.zsh  — run as a standalone subprocess, not sourced
+#   third-party submodule dirs (gitstatus, zsh-autosuggestions, etc.)
+
+_zcompile_plugins()
+{
+    local omz="${INSTALL_DIR}/omz-custom"
+    local compiled=0 skipped=0
+    local f
+
+    # Helper: compile $f if its .zwc is absent or older than the source.
+    _zc() {
+        local f="$1"
+        [[ -f "$f" ]] || return
+        if [[ -f "${f}.zwc" && "${f}.zwc" -nt "$f" ]]; then
+            skipped=$(( skipped + 1 ))
+            return
+        fi
+        zsh -c "zcompile '$f'" 2>/dev/null && compiled=$(( compiled + 1 ))
+    }
+
+    # lib/
+    for f in "${omz}/lib"/*.zsh; do _zc "$f"; done
+
+    # dragon theme — all top-level files, all configure/ parts, all parts/
+    # Presets (*.conf.zsh) are intentionally skipped.
+    for f in "${omz}/themes/dragon"/*.zsh \
+              "${omz}/themes/dragon/configure"/*.zsh \
+              "${omz}/themes/dragon/parts"/*.zsh; do
+        _zc "$f"
+    done
+
+    # mo-* first-party plugins — plugin entry points, private helpers, requirements
+    # Skip optional-deps.zsh (bash-only) and _mo_lan_discover.zsh (subprocess).
+    local plugin_dir
+    for plugin_dir in "${omz}/plugins"/mo-*/; do
+        for f in "${plugin_dir}"*.zsh "${plugin_dir}"_mo_*.zsh; do
+            [[ "${f##*/}" == "optional-deps.zsh"    ]] && continue
+            [[ "${f##*/}" == "_mo_lan_discover.zsh" ]] && continue
+            _zc "$f"
+        done
+    done
+
+    success "zcompile: compiled ${compiled} file(s), ${skipped} already up-to-date"
+}
+
 # ── Mode: update (running from ~/.master-oogway/install.sh) ──────────────────
 
 if _running_from_install_dir; then
@@ -773,6 +827,7 @@ _check_theme_vars()
 }
 
 _check_theme_vars
+_zcompile_plugins
 
 # ── User extension directories ─────────────────────────────────────────────────
 

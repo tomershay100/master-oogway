@@ -90,10 +90,10 @@ missing:
   work today only because there are 25 of them and one maintainer. They will
   not scale to outside contributions or third-party plugin authors.
 - **No startup performance budget.** Several plugins fork subprocesses at load
-  time (`grep -c '^processor' /proc/cpuinfo` in `mo-build` and `mo-welcome`,
-  `command -v` checks for the same tool repeated across 5 plugins, full
-  directory globs in `mo-projects`/`mo-lan-ssh` even when caches haven't
-  changed). No `zcompile`/`.zwc` step. `compinit` is not gated by a cache check.
+  time (`mo-welcome` forks for its info fields, full directory globs in
+  `mo-projects`/`mo-lan-ssh` even when caches haven't changed).
+  `compinit` is not gated by a cache check. (`nproc` and `command -v` forks
+  have been eliminated; `zcompile`/`.zwc` step added in install.sh.)
 - **No release engineering.** Version is just `git log -1 --format=%cd-%h`. No
   tags. No CHANGELOG. No semver. No Homebrew/Nix/AUR packaging. No release
   signing.
@@ -121,7 +121,7 @@ the next 6 months of work is **ecosystem and tooling**, not core shell code.
 | `requirements.zsh` manifests | 8 / 25 (32%) |
 | Lines of CI configuration | 0 |
 | Automated tests | 0 |
-| `zcompile`d files | 0 |
+| `zcompile`d files | all first-party (install.sh `_zcompile_plugins`) |
 | Public release tags | 0 |
 
 ---
@@ -486,14 +486,10 @@ Specific regressors:
    keyed by `stat -c %Y` on `$projects_dir`; skip re-globbing if mtime hasn't
    changed.
 
-4. **No `zcompile`.** `dragon-configure` is 1097 lines of zsh; `mo-color` is
-   379 lines. Both are sourced at shell start. `zcompile`d `.zwc` files
-   parse 30-50% faster.
-
-   **Fix:** Add a `zcompile-all` step to `install.sh` that walks
-   `omz-custom/{themes/dragon/**/*.zsh,plugins/mo-*/*.plugin.zsh,lib/*.zsh}`
-   and emits `.zwc` siblings. OMZ already prefers `.zwc` over `.zsh`. Make
-   it incremental (skip if `.zwc` is newer than source).
+4. ~~**No `zcompile`.**~~ ✅ **Fixed (Patch 3).** `install.sh` now calls
+   `_zcompile_plugins`, which compiles all first-party files
+   (`lib/`, `themes/dragon/**`, `plugins/mo-*`). Incremental — skips
+   files whose `.zwc` is already newer than the source. `*.zwc` gitignored.
 
 5. **`compinit` is called by OMZ without an explicit cache check.** A
    `compinit -C` (with daily reset) saves 50-100ms on every cold shell start.
@@ -1095,25 +1091,13 @@ Then plugins use `(( $_MO_OPT_BIN[bat] ))` instead of
 `command -v bat &>/dev/null`. Saves an exec per check — across 25 plugins
 this is plausibly 50-100ms cold start.
 
-**Patch 3 — `zcompile` step at install time.**
+**Patch 3 — `zcompile` step at install time. ✅ Implemented.**
 
-```bash
-# install.sh — after _init_plugins
-_zcompile_all() {
-    local f
-    for f in "${INSTALL_DIR}"/omz-custom/themes/dragon/*.zsh \
-             "${INSTALL_DIR}"/omz-custom/themes/dragon/parts/*.zsh \
-             "${INSTALL_DIR}"/omz-custom/lib/*.zsh \
-             "${INSTALL_DIR}"/omz-custom/plugins/mo-*/*.plugin.zsh; do
-        [[ -f "$f" ]] || continue
-        [[ -f "$f.zwc" && "$f.zwc" -nt "$f" ]] && continue
-        zsh -c "zcompile '$f'" 2>/dev/null
-    done
-}
-```
-
-OMZ automatically prefers `.zwc` over `.zsh`. Incremental — re-runs of
-`install.sh` skip already-compiled files.
+`install.sh` now calls `_zcompile_plugins` after `_init_plugins`. It compiles
+all first-party files in `omz-custom/{lib,themes/dragon/**,plugins/mo-*}`,
+skipping presets (parsed as text), `optional-deps.zsh` (bash-only),
+`_mo_lan_discover.zsh` (subprocess), and third-party submodules.
+`*.zwc` added to `.gitignore`.
 
 **Patch 4 — Memoize static prompt segments.**
 
@@ -2288,7 +2272,7 @@ Time-bucketed, with explicit dependencies.
 - MED-2: Async-segment generalisation.
 - MED-3: Eliminate process substitution in mo-color.
 - MED-4: Preset inheritance.
-- §9.3 patches: `zcompile`, optdeps caching.
+- §9.3 patches: ~~`zcompile`~~ ✅, ~~optdeps caching~~ ✅ (both implemented).
 - §16: Completions for all first-party commands.
 - §18: Snapshot tests for prompt rendering. Visual gallery diff CI.
 
@@ -2321,10 +2305,10 @@ Time-bucketed, with explicit dependencies.
 | QW-2 | Add `.github/workflows/ci.yml` (lint only) | 30 min | catches `zsh -n` failures pre-merge |
 | QW-3 | Add `Makefile` with `lint`/`test`/`perf` targets | 15 min | discoverable contributor entrypoint |
 | QW-4 | Add `_dragon-configure` and `_master-oogway` completions | 45 min | top-typed commands; high ROI |
-| QW-5 | Add `omz-custom/lib/optdeps.zsh` with cached `_MO_OPT_BIN` map | 30 min | saves 10+ `command -v` per shell |
+| ~~QW-5~~ | ~~Add `omz-custom/lib/optdeps.zsh` with cached `_MO_OPT_BIN` map~~ | ✅ done | saves 10+ `command -v` per shell |
 | QW-6 | Add `master-oogway doctor` (MED-8) | 45 min | replaces 4 separate diagnostic checks |
 | QW-7 | Add `master-oogway benchmark` (MED-9) | 30 min | empowers user to self-diagnose perf |
-| QW-8 | Add `zcompile` step to `install.sh` (Patch 3) | 30 min | 30-50% parse speedup |
+| ~~QW-8~~ | ~~Add `zcompile` step to `install.sh` (Patch 3)~~ | ✅ done | 30-50% parse speedup |
 | QW-9 | Add `.github/ISSUE_TEMPLATE/` + `PULL_REQUEST_TEMPLATE.md` | 20 min | signal/noise improvement |
 | QW-10 | Pin install URL to `v1.0.0` once tag exists | 5 min | CRIT-1 partial |
 | QW-11 | Remove the legacy double-quoted reader from `_dragon_load_current_conf` (MED-14) after migration | 15 min | smaller attack surface |
