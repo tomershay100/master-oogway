@@ -1073,25 +1073,6 @@ both vendored — not the master-oogway code.
 
 ### 9.3 Concrete optimization patches
 
-**Patch 1 — Eliminate `grep -c '^processor' /proc/cpuinfo`.**
-
-```zsh
-# mo-build/mo-build.plugin.zsh:4 — before
-_mo_build_jobs=$(grep -c '^processor' /proc/cpuinfo 2>/dev/null)
-
-# after — zero forks
-_mo_build_jobs=${$(< /proc/cpuinfo):#processor*}  # nope — wrong direction
-# correct:
-() {
-    local -a cpus=( ${(@f)"$(< /proc/cpuinfo)"}:#processor*)
-    _mo_build_jobs=${#cpus}
-}
-# even simpler:
-_mo_build_jobs=$(nproc 2>/dev/null) || _mo_build_jobs=1
-```
-
-`nproc` is in coreutils; binary fork but no grep.
-
 **Patch 2 — Cache `command -v` results at framework load.**
 
 ```zsh
@@ -1160,11 +1141,6 @@ __dragon_track_chpwd() {
 }
 ```
 
-**Patch 5 — Skip `_check_zshrc_drift` when nothing changed.**
-
-`install.sh:550-568` runs `diff -q template snapshot` every install. Cheap
-but unnecessary when the user hasn't installed since the last `git pull`.
-Stash a `template_sha` in the state file; skip the diff when it matches.
 
 ### 9.4 Profiling story for users
 
@@ -1824,26 +1800,6 @@ Missing:
 
 ### 15.1 Failure modes seen in code
 
-#### REL-1 — gitstatus daemon fails to start
-**Files:** `omz-custom/themes/dragon/parts/gitstatus.zsh:8-12`.
-
-`gitstatus_start -s -1 -u -1 -c -1 -d -1 ...` is called with `-1` (unlimited)
-on every limit. If gitstatusd is missing or the binary cgroup fails, the
-function silently returns; `__update_gitstatusd` then no-ops on subsequent
-calls because `_IS_GITSTATUS_RUNNING=true` was set before the start could
-fail.
-
-**Fix:** Set `_IS_GITSTATUS_RUNNING=true` only on success:
-
-```zsh
-__start_gitstatus_once() {
-    $_IS_GITSTATUS_RUNNING && return
-    if gitstatus_start -s -1 -u -1 -c -1 -d -1 "$_GITSTATUS_NAME" 2>/dev/null; then
-        _IS_GITSTATUS_RUNNING=true
-    fi
-}
-```
-
 #### REL-2 — Stale gitstatus daemon after suspend/resume
 On laptop suspend the daemon socket can be invalidated. Subsequent
 `gitstatus_query` either hangs or returns stale data. No detection in code.
@@ -1872,31 +1828,6 @@ indication of *why* it's old.
 **Fix:** Log to `~/.config/master-oogway/lan-hosts.log` (truncate to last
 20 lines on each write). Surface in `mo-lan-ssh status` and `master-oogway
 doctor`.
-
-#### REL-4 — `_dragon_write_conf`'s validation can leave a stale `.wizard.tmp`
-**File:** `omz-custom/themes/dragon/configure.zsh:632-638`.
-
-```zsh
-if ! zsh -n "$tmp_file" 2>/dev/null; then
-    rm -f "$tmp_file"
-    return 1
-fi
-command mv "$tmp_file" "${_DRAGON_CONF_FILE}"
-```
-
-If `mv` fails (e.g. read-only filesystem), `$tmp_file` is left in place. Add
-a `trap` to cleanup tmp on error:
-
-```zsh
-local tmp_file=...
-trap 'rm -f "$tmp_file"' EXIT
-{
-    ...
-} > "$tmp_file"
-zsh -n "$tmp_file" || return 1
-command mv "$tmp_file" "${_DRAGON_CONF_FILE}"
-trap - EXIT
-```
 
 #### REL-5 — `_check_theme_vars` runs `zsh -c` at install time
 **File:** `install.sh:744-753`.
@@ -1954,7 +1885,7 @@ Defence in depth: store the result of the alias creation and validate.
   state.
 
 - **Never silently swallow non-trivial errors.** `2>/dev/null` is overused
-  in places (REL-1, REL-4). A `[[ -z "$result" ]] && log_to_state` pattern
+  in places. A `[[ -z "$result" ]] && log_to_state` pattern
   is preferable.
 
 ---
@@ -2357,7 +2288,7 @@ Time-bucketed, with explicit dependencies.
 - MED-2: Async-segment generalisation.
 - MED-3: Eliminate process substitution in mo-color.
 - MED-4: Preset inheritance.
-- §9.3 patches: `zcompile`, optdeps caching, nproc replacement.
+- §9.3 patches: `zcompile`, optdeps caching.
 - §16: Completions for all first-party commands.
 - §18: Snapshot tests for prompt rendering. Visual gallery diff CI.
 
@@ -2387,7 +2318,6 @@ Time-bucketed, with explicit dependencies.
 
 | ID | Item | Effort | Impact |
 |---|---|---|---|
-| QW-1 | Replace `grep -c '^processor' /proc/cpuinfo` with `nproc` in `mo-build` and `mo-welcome` | 5 min | saves 2 forks/shell |
 | QW-2 | Add `.github/workflows/ci.yml` (lint only) | 30 min | catches `zsh -n` failures pre-merge |
 | QW-3 | Add `Makefile` with `lint`/`test`/`perf` targets | 15 min | discoverable contributor entrypoint |
 | QW-4 | Add `_dragon-configure` and `_master-oogway` completions | 45 min | top-typed commands; high ROI |
