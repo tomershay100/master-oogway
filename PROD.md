@@ -913,12 +913,6 @@ argument's semantics are tool-specific. Document the dependency on
 `trash-cli` version (works on 0.22.x; older versions parse arguments
 differently).
 
-### LOW-13 — `mo-network` `sshto` recursively follows Include directives but with no depth cap
-**File:** `omz-custom/plugins/mo-network/mo-network.plugin.zsh:36-50`.
-
-`_seen` prevents loops, so depth is bounded by config-file count. Fine in
-practice; a hard depth cap of 16 would prevent pathological misuse.
-
 ### LOW-14 — Long files would benefit from splitting
 **Files:** `configure.zsh` (1097 LOC), `mo-color.plugin.zsh` (379 LOC),
 `mo-lan-ssh.plugin.zsh` (577 LOC).
