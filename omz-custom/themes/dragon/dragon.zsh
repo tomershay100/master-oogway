@@ -69,7 +69,10 @@ add-zsh-hook precmd  __save_exit_code
 # after a directory change. A chpwd-triggered __update_prompt would just be
 # overwritten by the precmd one moments later (and double the gitstatus work).
 add-zsh-hook precmd  __update_prompt
-add-zsh-hook precmd  __reset_timer
+# __reset_timer is intentionally NOT registered here. timer is reset by
+# __set_timer in preexec (timer=$SECONDS overwrites it). Keeping timer set
+# through precmd + async gitstatus callback means __refresh_prompt sees the
+# correct exec time and doesn't blank it out after gitstatus returns.
 add-zsh-hook chpwd   __dragon_track_chpwd
 
 zle -N zle-line-finish __dragon_zle_line_finish

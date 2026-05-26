@@ -22,11 +22,6 @@ __mark_cmd_ran()
 	_DRAGON_CMD_RAN=true
 }
 
-__reset_timer()
-{
-	timer=-1
-}
-
 __get_readable_time()
 {
 	local total=$1
