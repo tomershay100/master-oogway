@@ -552,11 +552,18 @@ _check_zshrc_drift()
     local template="${INSTALL_DIR}/zshrc.master-oogway"
     local snapshot="${ZSHRC}.upstream-snapshot"
     [[ -f "${template}" ]] || return
-    # Compare snapshot (template at last install) against current template.
-    # If they match the template hasn't changed — no reason to nag the user
-    # regardless of what edits they've made to ~/.zshrc itself.
-    # If no snapshot exists yet, fall back to comparing against ~/.zshrc
-    # (first-run case before the snapshot is written below).
+    # Fast path: if the snapshot exists and its SHA matches the template, the
+    # template hasn't changed since the last install — skip the diff entirely.
+    # This is the common case after a re-run with no upstream changes.
+    if [[ -f "${snapshot}" ]]; then
+        local template_sha snapshot_sha
+        template_sha=$(sha256sum "${template}" | cut -d' ' -f1)
+        snapshot_sha=$(sha256sum "${snapshot}" | cut -d' ' -f1)
+        [[ "${template_sha}" == "${snapshot_sha}" ]] && return
+    fi
+    # No snapshot yet (first run) or template changed — compare to fall back.
+    # First-run case: compare template against ~/.zshrc itself so new users
+    # who already have a zshrc get a drift warning if it diverges.
     local ref="${ZSHRC}"
     [[ -f "${snapshot}" ]] && ref="${snapshot}"
     if ! diff -q "${template}" "${ref}" &>/dev/null; then
