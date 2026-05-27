@@ -142,12 +142,8 @@ fi
 
 plugins=(
     # ── oh-my-zsh plugins ──────────────────────────────────────────────────────
-    # NOTE: zsh-syntax-highlighting is intentionally placed at the END of this
-    # array (after all master-oogway plugins). Per upstream's README, it must
-    # be sourced LAST so it can wrap every ZLE widget defined by earlier
-    # plugins. Widgets defined after it (e.g. by sudo, fzf, history-substring-
-    # search) would not get re-highlighted on each keystroke. The only
-    # ordering constraint between the two highlighters is that
+    # zsh-syntax-highlighting MUST be last — it wraps every ZLE widget defined
+    # by earlier plugins; widgets defined after it won't get re-highlighted.
     # zsh-autosuggestions must come BEFORE zsh-syntax-highlighting.
     zsh-autosuggestions       # suggests commands as you type based on history (→ to accept)
     sudo                      # press Esc twice to prepend sudo to the current command
@@ -159,12 +155,10 @@ plugins=(
     history-substring-search  # Up/Down arrows search history by the prefix you've already typed
 
     # ── master-oogway plugins ──────────────────────────────────────────────────
-    # NOTE: order matters — override plugins must come before additive ones so
-    # that additive plugins (and your shell) inherit the overridden commands.
-    # Within each group, order has no effect.
+    # Override plugins must come before additive ones so additive plugins
+    # inherit the overridden commands. Comment out any line to disable it.
 
-    # Override plugins replace system commands with enhanced alternatives.
-    # Comment out any line to restore the original system command behavior.
+    # Override plugins (replace system commands).
     mo-eza-override            # ls/ll/l/la/tree  → eza
     mo-bat-override            # cat/less          → bat (syntax-highlighted viewer)
     mo-nvim-override           # vim               → nvim
@@ -172,10 +166,8 @@ plugins=(
     mo-colorize-override       # ip/diff           → colorized output
     mo-trash                   # rm                → trash-put (restorable); \rm bypasses
 
-    # Additive plugins add new commands and never change existing behavior.
-    # Safe to comment out any you don't use.
-    # NOTE: mo-projects is first so its directory aliases lose gracefully to
-    # any plugin listed below it that defines the same name.
+    # Additive plugins (safe to disable individually).
+    # mo-projects is first so its aliases lose gracefully to conflicting names below.
     mo-projects                # <project-name> aliases + p (fzf picker) for every dir in ~/projects
     mo-auto-ls                 # run ls automatically after every cd
     mo-git                     # git aliases (ga, gs, gp, ...) + gsum, fbranch, flog
@@ -196,8 +188,7 @@ plugins=(
     mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path
     mo-welcome                 # startup banner — fields controlled by MO_WELCOME_FIELDS above
 
-    # MUST BE LAST — wraps every ZLE widget defined above. See the note at the
-    # top of this array.
+    # MUST BE LAST — new plugins go above this line.
     zsh-syntax-highlighting   # colors valid commands green and invalid ones red while typing
 )
 
