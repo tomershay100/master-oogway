@@ -67,7 +67,7 @@ dragon__set_directory()
 __set_prompt_char_content()
 {
 	REAL_DRAGON__PROMPT_CHAR_CONTENT="$DRAGON__PROMPT_CHAR"
-	if [[ $VCS_STATUS_RESULT == "ok-sync" ]]; then
+	if [[ $VCS_STATUS_RESULT == "ok-sync" || $VCS_STATUS_RESULT == "ok-async" ]]; then
 		[[ -z $DRAGON__GIT_PROMPT_CHAR ]] && return
 		REAL_DRAGON__PROMPT_CHAR_CONTENT="$DRAGON__GIT_PROMPT_CHAR"
 	fi
