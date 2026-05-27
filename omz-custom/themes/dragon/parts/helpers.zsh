@@ -99,10 +99,8 @@ __dragon_copy_defaults()
 	done
 }
 
-# __dragon_finalize <NAME> [final_var_name]
-#   Call __dragon__show "$NAME" then store SHOW_RESULT into the FINAL_ var.
-#   Default target is FINAL_DRAGON__${NAME}_CONTENT; pass an explicit name
-#   for the legacy case (prompt_char writes FINAL_PROMPT_CHAR_CONTENT).
+# __dragon_finalize <NAME> [final_var]: __dragon__show then store SHOW_RESULT.
+# Pass final_var for the legacy prompt_char case (FINAL_PROMPT_CHAR_CONTENT).
 __dragon_finalize()
 {
 	local name="$1"
