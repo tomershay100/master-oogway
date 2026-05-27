@@ -13,7 +13,9 @@ Shell inspection and utility helpers.
 | `soursh` | reload `~/.zshrc` |
 | `calc <expr>` | evaluate a math expression via `bc -l` (supports `sqrt`, `s`, `c`, `l`, `e`) |
 | `epoch [ts]` | convert unix timestamp ↔ human date; no arg = current timestamp |
-| `please` | re-run the previous command with sudo; for pipelines, sudos the first binary segment and evaluates the rest in the current shell so functions/aliases in later segments still work |
+| `please` | re-run the last command with sudo (pipeline-aware) |
 | `mo-where <name>` | show which mo-* plugin defines `<name>` as an alias or function |
+
+For pipelines, `please` runs `sudo` only on the first segment with a real binary; later segments run in the current shell so functions and aliases keep working.
 
 **Dependencies:** `wl-clipboard` or `xclip` for `clip`; `bc` for `calc`; `bat`/`batcat` for `cwhich` syntax highlighting — all optional.
