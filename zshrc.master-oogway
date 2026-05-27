@@ -170,7 +170,7 @@ plugins=(
     mo-nvim-override           # vim               → nvim
     mo-safety-override         # cp/mv/mkdir/reboot with confirmation prompts
     mo-colorize-override       # ip/diff           → colorized output
-    mo-trash                   # rm                → trash-put (restorable); rrm bypasses
+    mo-trash                   # rm                → trash-put (restorable); \rm bypasses
 
     # Additive plugins add new commands and never change existing behavior.
     # Safe to comment out any you don't use.
