@@ -489,6 +489,6 @@ _dragon_init_presets() {
 			  ╰─ ❯'
 		[sakura]='user · myhost · ~/projects
 			   main ✔
-			  ❯'
+			  ⟶'
 	)
 }
