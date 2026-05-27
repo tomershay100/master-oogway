@@ -124,15 +124,6 @@ shellcheck install.sh
 
 If any of these fail, fix the underlying issue — never commit a file that fails parsing.
 
-When adding or removing a plugin, also verify:
-
-```bash
-# Plugin count in README.md, CONTRIBUTING.md, and zshrc.master-oogway comment must match.
-grep -c 'mo-' omz-custom/plugins/mo-*/mo-*.plugin.zsh | wc -l
-# README.md plugin table row count must equal the number of mo-* plugin dirs.
-ls -d omz-custom/plugins/mo-*/ | wc -l
-```
-
 > **Note:** The wizard already validates its own output — `dragon-configure` runs `zsh -n` on the generated `conf.zsh` before writing it, so any wizard-produced config that fails syntax is rejected automatically (see `configure/writer.zsh`). You only need to run the checks above on source files.
 
 ---
