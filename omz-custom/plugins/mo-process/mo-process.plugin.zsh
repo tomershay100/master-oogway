@@ -2,9 +2,9 @@
 psgrep() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
         echo "Usage: psgrep [-a] <name>"
-        echo "  Show running processes matching <name> against the command name."
-        echo "  -a / --all  — match case-insensitively against the full command line"
-        echo "                (may produce false positives for common substrings)"
+        echo "  Show running processes whose full command line contains <name>."
+        echo "  Case-sensitive by default; -a / --all flips to case-insensitive."
+        echo "  (Full-line matching may produce false positives for common substrings.)"
         return
     fi
     command -v pgrep &>/dev/null || { echo "psgrep: pgrep not installed (try: sudo apt install procps)" >&2; return 1; }
