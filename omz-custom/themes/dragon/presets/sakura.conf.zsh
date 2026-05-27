@@ -1,6 +1,5 @@
 # dragon preset: sakura
 # Pastel-light palette. Soft sky/peach/honey identity, mint/yellow git, lemon/lavender rprompt pills.
-export DRAGON__LEFT_SEGMENT_SEPARATOR=''
 export DRAGON__USERNAME_FOREGROUND_COLOR='117'        # pastel sky blue
 export DRAGON__ENABLE_USERNAME_COLORING_VIA_SSH='true'
 export DRAGON__USERNAME_VIA_SSH_FOREGROUND_COLOR='211' # pastel pink
