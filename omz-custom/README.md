@@ -12,9 +12,10 @@ themes/
   dragon/                all dragon theme code
     dragon.zsh             theme entry — defaults loop, hook registration
     schema.zsh             _DRAGON_DEFAULTS — single source of truth for vars
-    configure.zsh          interactive wizard (`dragon-configure`)
+    configure.zsh          entry point for `dragon-configure`
+    configure/             interactive wizard implementation
     aliases.zsh            rezsh, reset_theme_variables
-    parts/                 segment renderers, prompt assembly, gitstatus glue
+    parts/                 segment renderers, prompt assembly
 plugins/
   mo-*/                  25 master-oogway plugins (6 overrides + 19 additive)
   gitstatus/             vendored: gitstatus (submodule)
