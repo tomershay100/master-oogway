@@ -73,20 +73,8 @@ __dragon__show()
 	SHOW_RESULT="$RESET_FORMAT$STYLE_FORMAT$curr_prefix$curr_content$curr_suffix$RESET_FORMAT"
 }
 
-# Boilerplate consolidation for the segment functions in segments_left.zsh
-# and segments_right.zsh — see those files for context.
-#
-# Every segment used to repeat:
-#   REAL_DRAGON__X_PREFIX="$DRAGON__X_PREFIX"
-#   REAL_DRAGON__X_SUFFIX="$DRAGON__X_SUFFIX"
-#   REAL_DRAGON__X_FOREGROUND_COLOR="$DRAGON__X_FOREGROUND_COLOR"
-#   REAL_DRAGON__X_BACKGROUND_COLOR="$DRAGON__X_BACKGROUND_COLOR"
-#   REAL_DRAGON__X_BOLD="$DRAGON__X_BOLD"
-#   REAL_DRAGON__X_UNDERLINE="$DRAGON__X_UNDERLINE"
-#   __dragon__show "X"
-#   FINAL_DRAGON__X_CONTENT="$SHOW_RESULT"
-# That's 8 lines × 10 segments = ~80 lines of pure boilerplate.
-# Now collapsed to `__dragon_copy_defaults X` + `__dragon_finalize X`.
+# Two helpers used by every segment in segments_left.zsh / segments_right.zsh
+# to copy DRAGON__X_* → REAL_DRAGON__X_* and finalize via __dragon__show.
 
 # __dragon_copy_defaults <NAME> [field ...]
 #   Copy DRAGON__${NAME}_${field} → REAL_DRAGON__${NAME}_${field} for each
