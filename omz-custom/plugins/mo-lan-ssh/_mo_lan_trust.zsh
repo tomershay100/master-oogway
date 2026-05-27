@@ -45,6 +45,17 @@ _mo_lan_extract_target() {
     done
 }
 
+# Extract the -p / -o Port= value from ssh argv. Returns empty if default (22).
+_mo_lan_extract_port() {
+    local arg prev=""
+    for arg in "$@"; do
+        [[ "$prev" == "-p" ]] && { print -- "$arg"; return; }
+        [[ "$arg" == -p* && ${#arg} -gt 2 ]] && { print -- "${arg#-p}"; return; }
+        [[ "$arg" == -oPort=* ]] && { print -- "${arg#-oPort=}"; return; }
+        prev="$arg"
+    done
+}
+
 _mo_lan_ssh_wrapper() {
     # Non-interactive stdin (pipe/script) → exec replaces the wrapper with the
     # real ssh binary directly (no shell waiting for a child).
@@ -52,9 +63,11 @@ _mo_lan_ssh_wrapper() {
 
     [[ "${MO_LAN_AUTO_TRUST:-true}" == "false" ]] && { command ssh "$@"; return; }
 
-    local target target_host
+    local target target_host port port_args=()
     target=$(_mo_lan_extract_target "$@")
     target_host="${target##*@}"
+    port=$(_mo_lan_extract_port "$@")
+    [[ -n "$port" ]] && port_args=(-p "$port")
 
     # Not a LAN host → pass through with zero ceremony
     if [[ -z "$target_host" || -z "${_MO_LAN_HOSTSET[$target_host]:-}" ]]; then
@@ -66,7 +79,7 @@ _mo_lan_ssh_wrapper() {
     probe_err=$(command ssh -o BatchMode=yes \
                             -o ConnectTimeout="$MO_LAN_PROBE_TIMEOUT" \
                             -o StrictHostKeyChecking=accept-new \
-                            "$target" true 2>&1)
+                            "${port_args[@]}" "$target" true 2>&1)
     probe_rc=$?
 
     if (( probe_rc == 0 )); then
@@ -82,7 +95,7 @@ _mo_lan_ssh_wrapper() {
         probe_err=$(command ssh -o BatchMode=yes \
                                 -o ConnectTimeout="$MO_LAN_PROBE_TIMEOUT" \
                                 -o StrictHostKeyChecking=accept-new \
-                                "$target" true 2>&1)
+                                "${port_args[@]}" "$target" true 2>&1)
         probe_rc=$?
         if (( probe_rc == 0 )); then
             command ssh "$@"
@@ -94,7 +107,7 @@ _mo_lan_ssh_wrapper() {
     if [[ "$probe_err" == *"Permission denied"* \
        && ( "$probe_err" == *"password"* || "$probe_err" == *"keyboard-interactive"* ) ]]; then
         print -P "%F{cyan}[mo-lan-ssh]%f No working key for $target_host — running ssh-copy-id"
-        if command ssh-copy-id "$target" </dev/tty; then
+        if command ssh-copy-id "${port_args[@]}" "$target" </dev/tty; then
             print -P "%F{green}[mo-lan-ssh]%f Key installed; reconnecting…"
         else
             print -P "%F{yellow}[mo-lan-ssh]%f ssh-copy-id failed — falling through to interactive ssh"
@@ -103,7 +116,7 @@ _mo_lan_ssh_wrapper() {
         # Pubkey-only server and our keys aren't authorized — ssh-copy-id can't
         # bootstrap without password auth. Tell the user the manual path.
         print -P "%F{yellow}[mo-lan-ssh]%f $target_host accepts only pubkey auth; bootstrap manually:" >&2
-        print -P "%F{245}  ssh-copy-id -f -i ~/.ssh/<your-key.pub> $target%f" >&2
+        print -P "%F{245}  ssh-copy-id -f -i ~/.ssh/<your-key.pub> ${port_args[@]} $target%f" >&2
     fi
     # Network errors / protocol mismatch / etc. — say nothing, let real ssh
     # emit the actual error.

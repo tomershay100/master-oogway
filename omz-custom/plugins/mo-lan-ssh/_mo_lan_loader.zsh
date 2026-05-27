@@ -192,13 +192,20 @@ _mo_lan_apply() {
     #    to s-<host> when the bare name conflicts with an existing command,
     #    alias, function, builtin, or reserved word — so e.g. a LAN host named
     #    `make` becomes `s-make`.
+    local p ssh_cmd
     for h in "${(@kon)_MO_LAN_HOSTS}"; do
         if _mo_lan_name_conflicts "$h"; then
             alias_name="s-${h}"
         else
             alias_name="$h"
         fi
-        alias -- "${alias_name}=ssh ${h}"
+        p="${_MO_LAN_PORTS[$h]:-22}"
+        if (( p != 22 )); then
+            ssh_cmd="ssh -p ${p} ${h}"
+        else
+            ssh_cmd="ssh ${h}"
+        fi
+        alias -- "${alias_name}=${ssh_cmd}"
         _MO_LAN_ALIAS_NAMES[$h]="$alias_name"
     done
 
