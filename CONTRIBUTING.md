@@ -220,12 +220,9 @@ cmd foo bar   # shows the non-obvious case
 
 ### Rules
 
-- **One-line intro** — describes what the plugin does, not how. For override plugins, always mention the fallback behaviour when the dependency is absent.
-- **Command table** — every alias, function, and subcommand the plugin exposes. Include argument placeholders (`<file>`, `[n]`). For override plugins, list both the replaced command and any additive commands (like `pcat`/`pless` in `mo-bat-override`).
+The template above shows the structure; these are the rules it doesn't.
+
 - **Bypass line** — override plugins only. Use the `\cmd` backslash form. Never document `r<name>` aliases that don't exist in the code.
-- **Configuration section** — only when the plugin reads env vars or has user-settable state. Don't add a section just to say there's nothing to configure.
-- **Examples section** — only when the command syntax is non-obvious from the table. Don't duplicate simple cases that the table already makes clear.
-- **Dependencies line** — always last. List each tool, which commands need it, and whether it's required or optional. Use the form: `` `tool` for `cmd` — checked at call time `` for optional deps, `` `tool` (required) `` for hard deps.
 - **No prose restating the table** — if the table already says it, don't say it again in a paragraph.
 - **Plugins with no user-facing commands** (like `mo-auto-ls`, `mo-welcome`, `mo-colorize-override`) — two-sentence README maximum: what it does, and how to disable or bypass it.
 
