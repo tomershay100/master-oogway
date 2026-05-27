@@ -1,4 +1,3 @@
-#!/usr/bin/env zsh
 # dragon preset: specter
 # Void-black bg. Deep violet → electric blue → icy cyan. Ghost-fire flames.
 
