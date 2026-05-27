@@ -1,7 +1,7 @@
 # dragon preset: aurora
 # Deep teal bg. Teal → violet → rose aurora gradient. Thin pill outlines, multiline.
-export DRAGON__LEFT_SEGMENT_SEPARATOR=$'\356\202\265'
-export DRAGON__RIGHT_SEGMENT_SEPARATOR=$'\356\202\267'
+export DRAGON__LEFT_SEGMENT_SEPARATOR=$'\uE0B5'
+export DRAGON__RIGHT_SEGMENT_SEPARATOR=$'\uE0B7'
 export DRAGON__USERNAME_FOREGROUND_COLOR='43'         # teal
 export DRAGON__HOSTNAME_FOREGROUND_COLOR='99'         # violet
 export DRAGON__DIRECTORY_FOREGROUND_COLOR='211'       # rose
