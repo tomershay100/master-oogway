@@ -401,6 +401,7 @@ _dragon_init_presets() {
 		cyberpunk retro-terminal pastel high-contrast zen focus
 		catppuccin-mocha catppuccin-latte solarized-dark synthwave matrix
 		paper prod-server portrait rainbow kanagawa ascii multiplexer everforest sakura
+		blade prism inferno specter aurora
 	)
 	typeset -gA _DRAGON_PRESET_DESC=(
 		[short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
@@ -430,6 +431,11 @@ _dragon_init_presets() {
 		[multiplexer]='Built for tmux. Tiny lprompt, rich rprompt, transient off for scrollback.'
 		[everforest]='Sauce Code Pro–era greens. Calm but readable, soft and natural.'
 		[sakura]='Pastel-light. Sky/peach/honey identity, mint/yellow git pills, lemon/lavender rprompt.'
+		[blade]='Pitch-black bg, ice-blue + electric-violet, sharp \ diagonal cuts'
+		[prism]='Dark forest bg, emerald + chartreuse + seafoam, forward / diagonal slants'
+		[inferno]='Volcanic dark bg, red → orange → gold flame palette'
+		[specter]='Void-black bg, deep violet → electric blue → icy cyan ghost-fire'
+		[aurora]='Deep teal bg, teal → violet → rose aurora gradient, multiline'
 	)
 	typeset -gA _DRAGON_PRESET_EXAMPLE=(
 		[short]='hostname:~/projects ❯'
@@ -490,5 +496,20 @@ _dragon_init_presets() {
 		[sakura]='user · myhost · ~/projects
 			   main ✔
 			  ⟶'
+		[blade]=' user  myhost  ~/projects
+			   main ✔
+			  ›'
+		[prism]=' user  myhost  ~/projects
+			   main ✔
+			  ›'
+		[inferno]=' user  myhost  ~/projects
+			    main ✔
+			   ›'
+		[specter]=' user  myhost  ~/projects
+			    main ✔
+			   ›'
+		[aurora]='╭─ user · myhost · ~/projects
+			   on ❀ main ✓
+			  ╰─ ›'
 	)
 }
