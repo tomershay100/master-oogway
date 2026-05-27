@@ -20,8 +20,8 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
     dragon/                       all dragon theme code lives here
       dragon.zsh                  theme entry point — defaults loop, hook registration
       schema.zsh                  single source of truth for all DRAGON__* vars (defaults, types, hints, groups)
-      configure.zsh               thin orchestrator — sources configure/ parts
-      configure/                  wizard split into focused files
+      configure.zsh               entry point for `dragon-configure` — sources configure/*.zsh
+      configure/                  wizard implementation
         state.zsh                 state I/O, conf loading, preset apply
         preview.zsh               key reader, prompt preview, gallery renderer
         pick.zsh                  TUI preset browser (--pick)
@@ -40,7 +40,7 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
         lifecycle.zsh             __update_prompt, __refresh_prompt, dragon__update_zsh_prompt
         transient.zsh             zle hooks, transient prompt collapse
   plugins/
-    mo-*/mo-*.plugin.zsh          25 oh-my-zsh plugins (6 override + 19 additive)
+    mo-*/mo-*.plugin.zsh          25 master-oogway plugins (6 override + 19 additive)
 ```
 
 ---
@@ -360,7 +360,7 @@ If the new variable is user-facing, also update the [README.md](README.md)
 1. Sources `schema.zsh` and calls `_dragon_init_defaults` (populates `_DRAGON_DEFAULTS`)
 2. Runs the defaults loop: for each key in `_DRAGON_DEFAULTS`, calls `set_if_unset`
    so user-set `DRAGON__*` vars are never overwritten
-3. Sources all 7 `parts/*.zsh` files
+3. Sources all 9 `parts/*.zsh` files
 4. Registers zle hooks (via `transient.zsh`) and the gitstatus callback
 
 **Prompt render path** (per keypress):
