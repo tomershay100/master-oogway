@@ -12,8 +12,15 @@ Terminal color preview, palette, and text colorizer.
 
 ### `color pick` keys
 
-`←→↑↓` move by 1 · `PgUp/PgDn` ±16 (whole row) · `Home/g` jump to 0 · `End/G` jump to 255 ·
-digits then `Enter` jump to that index (e.g. `200⏎`) · `Enter` confirm · `q` / `Esc` cancel.
+| Key | Action |
+|-----|--------|
+| `←` `→` `↑` `↓` | move by 1 |
+| `PgUp` / `PgDn` | ±16 (whole row) |
+| `Home` / `g` | jump to 0 |
+| `End` / `G` | jump to 255 |
+| digits + `Enter` | jump to that index (e.g. `200⏎`) |
+| `Enter` | confirm |
+| `q` / `Esc` | cancel |
 
 `color pick` requires a terminal at least **70 columns × 23 rows**. If the
 terminal is smaller it prints an error and exits. Resize the window or zoom
