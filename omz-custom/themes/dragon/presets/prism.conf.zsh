@@ -1,9 +1,9 @@
 # dragon preset: prism
-# Dark forest bg. Emerald + chartreuse + seafoam. Forward / diagonal slants.
-export DRAGON__LEFT_SEGMENT_SEPARATOR=$'\uE0BA'
-export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0BB'
-export DRAGON__RIGHT_SEGMENT_SEPARATOR=$'\uE0BC'
-export DRAGON__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0BD'
+# Dark forest bg. Emerald + chartreuse + seafoam. Backslash \ diagonal slants.
+export DRAGON__LEFT_SEGMENT_SEPARATOR=$'\uE0B8'
+export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B9'
+export DRAGON__RIGHT_SEGMENT_SEPARATOR=$'\uE0BE'
+export DRAGON__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0BF'
 export DRAGON__USERNAME_FOREGROUND_COLOR='82'         # bright green / chartreuse
 export DRAGON__USERNAME_BACKGROUND_COLOR='22'         # dark forest green
 export DRAGON__USERNAME_BOLD='true'

@@ -432,7 +432,7 @@ _dragon_init_presets() {
 		[everforest]='Sauce Code Pro–era greens. Calm but readable, soft and natural.'
 		[sakura]='Pastel-light. Sky/peach/honey identity, mint/yellow git pills, lemon/lavender rprompt.'
 		[blade]='Pitch-black bg, ice-blue + electric-violet, sharp \ diagonal cuts'
-		[prism]='Dark forest bg, emerald + chartreuse + seafoam, forward / diagonal slants'
+		[prism]='Dark forest bg, emerald + chartreuse + seafoam, backslash \\ diagonal slants'
 		[inferno]='Volcanic dark bg, red → orange → gold flame palette'
 		[specter]='Void-black bg, deep violet → electric blue → icy cyan ghost-fire'
 		[aurora]='Deep teal bg, teal → violet → rose aurora gradient, multiline'
