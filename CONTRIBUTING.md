@@ -263,6 +263,50 @@ If a plugin requires a tool that may not be installed:
 
 ---
 
+## Adding a preset
+
+A built-in preset is three things in sync: a `.conf.zsh` file, a name in the
+registry array, and a description + example string. All three must be added together.
+
+**1. Create `omz-custom/themes/dragon/presets/<name>.conf.zsh`**
+
+Export only values that differ from the schema defaults. Check the default for
+any variable you want to set by looking it up in `_DRAGON_DEFAULTS` inside
+`schema.zsh`. If your value matches the default, omit it.
+
+```zsh
+# dragon preset: <name>
+# One-line description of the look/feel.
+export DRAGON__SOME_VAR='value'   # short comment if the choice isn't obvious
+```
+
+**2. Register the preset in `schema.zsh` — `_dragon_init_presets()`**
+
+Three places inside that function:
+
+```zsh
+# (a) append to the names array
+typeset -ga _DRAGON_PRESET_NAMES=(
+    ... existing names ... <name>
+)
+
+# (b) add a description (one sentence, ≤ 80 chars, no trailing period)
+[<name>]='Short description of palette and layout style.'
+
+# (c) add an ASCII example showing what the prompt looks like
+[<name>]='user · myhost · ~/projects
+          ❯'
+```
+
+The example is shown in `--pick` and `--gallery`. Keep it to 1–3 lines; use
+real prompt chars and branch symbols so it looks like an actual prompt.
+
+**3. Update the preset count in `omz-custom/themes/dragon/README.md`**
+
+Search for the line like `26 presets ship in` and increment the number.
+
+---
+
 ## Adding a theme configuration variable
 
 `schema.zsh` is the **single source of truth** for every `DRAGON__*` variable.

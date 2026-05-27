@@ -400,7 +400,7 @@ _dragon_init_presets() {
 		short default verbose tokyonight dracula minimal corporate
 		cyberpunk retro-terminal pastel high-contrast zen focus
 		catppuccin-mocha catppuccin-latte solarized-dark synthwave matrix
-		paper prod-server portrait rainbow kanagawa ascii multiplexer everforest
+		paper prod-server portrait rainbow kanagawa ascii multiplexer everforest sakura
 	)
 	typeset -gA _DRAGON_PRESET_DESC=(
 		[short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
@@ -429,6 +429,7 @@ _dragon_init_presets() {
 		[ascii]='Zero glyphs, zero colors, zero non-ASCII. Maximum portability — works in tty1.'
 		[multiplexer]='Built for tmux. Tiny lprompt, rich rprompt, transient off for scrollback.'
 		[everforest]='Sauce Code Pro–era greens. Calm but readable, soft and natural.'
+		[sakura]='Pastel-light. Sky/peach/honey identity, mint/yellow git pills, lemon/lavender rprompt.'
 	)
 	typeset -gA _DRAGON_PRESET_EXAMPLE=(
 		[short]='hostname:~/projects ❯'
@@ -486,5 +487,8 @@ _dragon_init_presets() {
 		[everforest]='╭─ user on myhost in ~/projects
 			  │ on  main
 			  ╰─ ❯'
+		[sakura]='user · myhost · ~/projects
+			   main ✔
+			  ❯'
 	)
 }
