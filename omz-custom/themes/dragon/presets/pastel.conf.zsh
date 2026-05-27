@@ -1,8 +1,8 @@
 # dragon preset: pastel
 # Soft warm palette, rounded multiline borders, gentle separators.
 export DRAGON__USE_NERD_FONT='true'
-export DRAGON__LEFT_SEGMENT_SEPARATOR=$''
-export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$''
+export DRAGON__LEFT_SEGMENT_SEPARATOR=$''
+export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$''
 export DRAGON__ENABLE_USERNAME='true'
 export DRAGON__USERNAME_FOREGROUND_COLOR='217'        # peach
 export DRAGON__USERNAME_BOLD='false'
