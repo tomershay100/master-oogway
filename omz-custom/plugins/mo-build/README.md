@@ -4,7 +4,7 @@ Parallel make wrapper. Accepts all standard make arguments (`m -C dir`, `m all`,
 
 | Command | Description |
 |---------|-------------|
-| `m [args]` | build using all CPU cores; colored output if `colormake` installed; PASSED/FAILED banner if `banner` installed |
+| `m [args]` | build using all CPU cores; colored output if `colormake` installed; prints colored `PASSED ✓` / `FAILED ✗` summary |
 | `mc` | `make clean` |
 
-**Dependencies:** `make` (required). `colormake` and `banner` are optional and independent — each used when available.
+**Dependencies:** `make` (required). `colormake` optional — used for colored compiler output when present.
