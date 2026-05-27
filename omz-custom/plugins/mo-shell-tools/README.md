@@ -12,7 +12,7 @@ Shell inspection and utility helpers.
 | `vizsh` | open `~/.zshrc` in `$EDITOR` |
 | `soursh` | reload `~/.zshrc` |
 | `calc <expr>` | evaluate a math expression via `bc -l` (supports `sqrt`, `s`, `c`, `l`, `e`) |
-| `epoch [ts]` | convert unix timestamp ↔ human date; no arg = current timestamp |
+| `epoch [--utc] [ts]` | unix timestamp ↔ human date; no arg = current timestamp; `--utc` for UTC |
 | `please` | re-run the last command with sudo (pipeline-aware) |
 | `mo-where <name>` | show which mo-* plugin defines `<name>` as an alias or function |
 
