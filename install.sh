@@ -293,7 +293,7 @@ _git_out=""
 if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_oogway_clone; }; then
     _running_via_pipe || info "Script is not running from a master-oogway clone — bootstrapping..."
     apt_install git || die "Cannot proceed without git"
-    if [[ -d "${INSTALL_DIR}/.git" ]]; then
+    if git -C "${INSTALL_DIR}" rev-parse --git-dir &>/dev/null 2>&1; then
         info "Updating ${INSTALL_DIR}..."
         _git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
         _git_out=$(git -C "${INSTALL_DIR}" submodule update --init --recursive 2>&1) \
