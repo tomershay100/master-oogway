@@ -43,10 +43,18 @@ _dragon_load_current_conf_from() {
 	local line varname raw q=\'
 	while IFS= read -r line; do
 		[[ "$line" == '#'* || "$line" =~ ^[[:space:]]*$ ]] && continue
+		# Plain single-quoted: export DRAGON__VAR='value'
 		if [[ "$line" =~ "^[[:space:]]*export DRAGON__([A-Z_]+)='(.*)'[[:space:]]*(#.*)?$" ]]; then
 			varname="${match[1]}"
 			raw="${match[2]}"
 			raw="${raw//$q\\$q$q/$q}"
+			_DRAGON_CURRENT[$varname]="$raw"
+		# Dollar-quote form: export DRAGON__VAR=$'...' — used in preset files for
+		# Nerd Font PUA glyphs. eval the assignment in a subshell, then capture via
+		# printf so no arbitrary code can escape into the current shell.
+		elif [[ "$line" =~ "^[[:space:]]*export DRAGON__([A-Z_]+)=(\\\$'[^']*')[[:space:]]*(#.*)?$" ]]; then
+			varname="${match[1]}"
+			raw="$(eval "printf '%s' ${match[2]}")"
 			_DRAGON_CURRENT[$varname]="$raw"
 		fi
 	done < "$src"

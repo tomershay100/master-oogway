@@ -41,28 +41,27 @@ export DRAGON__FORWARDED=1
 HEADER
 
 		# Write each group
+		local group title pad_len dashes vars var val default hint vtype q=\' safe_val
 		for group in "${_DRAGON_GROUPS[@]}"; do
-			local title="${_DRAGON_GROUP_TITLE[$group]}"
-			local pad_len=$(( 76 - 4 - ${#title} - 1 ))
+			title="${_DRAGON_GROUP_TITLE[$group]}"
+			pad_len=$(( 76 - 4 - ${#title} - 1 ))
 			(( pad_len < 2 )) && pad_len=2
-			local dashes="${(r:$pad_len::─:):-}"
+			dashes="${(r:$pad_len::─:):-}"
 			printf '# ── %s %s\n' "$title" "$dashes"
 			printf '# %s\n' "${_DRAGON_GROUP_DESC[$group]}"
 
-			local vars
 			vars=( ${(z)_DRAGON_GROUP_VARS[$group]} )
 			for var in "${vars[@]}"; do
-				local val="${_DRAGON_CURRENT[$var]}"
-				local default="${_DRAGON_DEFAULTS[$var]:-}"
-				local hint="${_DRAGON_HINT[$var]:-}"
-				local vtype="${_DRAGON_TYPE[$var]:-string}"
+				val="${_DRAGON_CURRENT[$var]}"
+				default="${_DRAGON_DEFAULTS[$var]:-}"
+				hint="${_DRAGON_HINT[$var]:-}"
+				vtype="${_DRAGON_TYPE[$var]:-string}"
 				# Single-quoted output: immune to shell expansion of $, `, and \.
 				# The only char needing escape inside '...' is ' itself, via the
 				# standard '\'' idiom (close-quote, escaped-quote, reopen-quote).
-				# Use a $q variable because in double-quoted strings `\'` is 2
-				# chars (\, '), not 1 — building '\\\'' inline would be wrong.
-				local q=\'
-				local safe_val="${val//$q/$q\\$q$q}"
+				# q/safe_val declared above the loops to avoid zsh local-in-loop
+				# re-declaration bug that leaks array values to the redirect fd.
+				safe_val="${val//$q/$q\\$q$q}"
 
 				# Emit type hint for special vars
 				if [[ -n "$hint" ]]; then
