@@ -34,9 +34,11 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
         segments_left.zsh         username, hostname, directory, prompt_char, ssh_prefix
         segments_right.zsh        date_time, exec_timer, ssh_conn_count, jobs, exit_status
         separators.zsh            segment separators, multiline prompt lines
-        git.zsh                   gitstatus integration, git segment
+        git.zsh                   git segment rendering
+        gitstatus.zsh             gitstatus daemon lifecycle + availability guard
         prompt.zsh                __calc_prompt_length, dragon__set_lprompt/set_rprompt
-        transient.zsh             zle hooks, gitstatus glue, prompt refresh
+        lifecycle.zsh             __update_prompt, __refresh_prompt, dragon__update_zsh_prompt
+        transient.zsh             zle hooks, transient prompt collapse
   plugins/
     mo-*/mo-*.plugin.zsh          25 oh-my-zsh plugins (6 override + 19 additive)
 ```
