@@ -3,7 +3,7 @@ __get_xterm_color_by_name()
 	XTERM_COLOR=""
 	local color_name="$1"
 
-	if [[ $color_name =~ ^[0-9]+$ && 10#$color_name -le 255 ]]; then # check for 256-colors
+	if [[ $color_name =~ ^[0-9]+$ && 10#$color_name -le 255 ]]; then
 		XTERM_COLOR="$color_name"
 		return
 	fi
