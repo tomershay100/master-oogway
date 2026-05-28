@@ -9,6 +9,7 @@ _dragon_init_defaults() {
 		[LEFT_SEGMENT_SEPARATOR_SAME_COLOR]=$'\uE0B1'
 		[RIGHT_SEGMENT_SEPARATOR]=$'\uE0B2'
 		[RIGHT_SEGMENT_SEPARATOR_SAME_COLOR]=$'\uE0B3'
+		[RIGHT_SEGMENT_SEPARATOR_SWAP_COLORS]="false"
 		[USE_NERD_FONT]="true"
 		# username
 		[ENABLE_USERNAME]="true"
@@ -306,6 +307,7 @@ _dragon_init_hints() {
 		[EXEC_TIMER_THRESHOLD]="Integer seconds. Timer only shown when command took longer than this."
 		[USE_NERD_FONT]="When false, powerline segment separators are hidden (works on any font)"
 		[LEFT_SEGMENT_SEPARATOR]="Powerline glyph between background-colored segments (Nerd Font required)"
+		[RIGHT_SEGMENT_SEPARATOR_SWAP_COLORS]="Set true for glyph families (e.g. flame E0C0/E0C2) whose fill is inverted relative to chevrons — swaps fg/bg on rprompt separators"
 		[GIT_CLEAN_BACKGROUND_COLOR]="Set to '' (empty) for no background color on clean git status"
 		[GIT_DIRTY_BACKGROUND_COLOR]="Set to '' (empty) for no background color on dirty git status"
 	)
@@ -367,7 +369,7 @@ _dragon_init_groups() {
 	)
 
 	typeset -gA _DRAGON_GROUP_VARS=(
-		[nerd_font]="USE_NERD_FONT LEFT_SEGMENT_SEPARATOR LEFT_SEGMENT_SEPARATOR_SAME_COLOR RIGHT_SEGMENT_SEPARATOR RIGHT_SEGMENT_SEPARATOR_SAME_COLOR"
+		[nerd_font]="USE_NERD_FONT LEFT_SEGMENT_SEPARATOR LEFT_SEGMENT_SEPARATOR_SAME_COLOR RIGHT_SEGMENT_SEPARATOR RIGHT_SEGMENT_SEPARATOR_SAME_COLOR RIGHT_SEGMENT_SEPARATOR_SWAP_COLORS"
 		[username]="ENABLE_USERNAME USERNAME_FOREGROUND_COLOR USERNAME_BACKGROUND_COLOR USERNAME_BOLD USERNAME_UNDERLINE USERNAME_PREFIX USERNAME_SUFFIX"
 		[username_ssh]="ENABLE_USERNAME_COLORING_VIA_SSH USERNAME_VIA_SSH_FOREGROUND_COLOR USERNAME_VIA_SSH_BACKGROUND_COLOR USERNAME_VIA_SSH_BOLD USERNAME_VIA_SSH_UNDERLINE"
 		[hostname]="ENABLE_HOSTNAME HOSTNAME_FOREGROUND_COLOR HOSTNAME_BACKGROUND_COLOR HOSTNAME_BOLD HOSTNAME_UNDERLINE HOSTNAME_PREFIX HOSTNAME_SUFFIX"
