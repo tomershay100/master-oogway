@@ -30,12 +30,12 @@ Recommended starting points:
 dragon-configure --preset default
 ```
 
-32 presets ship in [`presets/`](presets/), grouped into four flavours:
+36 presets ship in [`presets/`](presets/), grouped into four flavours:
 
 - **Layouts.** `short` `default` `verbose` `minimal` `portrait` `multiplexer`
 - **Themed palettes.** `tokyonight` `dracula` `catppuccin-mocha` `catppuccin-latte`
   `solarized-dark` `kanagawa` `everforest` `paper` `sakura` `blade` `prism` `inferno`
-  `specter` `aurora`
+  `specter` `aurora` `nova` `razor` `cosmic` `ember`
 - **Moods.** `cyberpunk` `retro-terminal` `pastel` `zen` `focus`
   `synthwave` `matrix` `rainbow`
 - **Special-purpose.** `high-contrast` (WCAG) `ascii` (no glyphs)

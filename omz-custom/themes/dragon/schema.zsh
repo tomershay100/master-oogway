@@ -401,6 +401,7 @@ _dragon_init_presets() {
 		catppuccin-mocha catppuccin-latte solarized-dark synthwave matrix
 		paper prod-server portrait rainbow kanagawa ascii multiplexer everforest sakura
 		blade prism inferno specter aurora
+		nova razor cosmic ember
 	)
 	typeset -gA _DRAGON_PRESET_DESC=(
 		[short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
@@ -435,6 +436,10 @@ _dragon_init_presets() {
 		[inferno]='Volcanic dark bg, red → orange → gold flame palette'
 		[specter]='Void-black bg, deep violet → electric blue → icy cyan ghost-fire'
 		[aurora]='Deep teal bg, teal → violet → rose aurora gradient, multiline'
+		[nova]='Deep magenta → rose → wine. Filled rounded-pill segments (E0B4–E0B7), single line.'
+		[razor]='Dark navy → slate-blue. Reverse-chevron (E0BC) separators, single line.'
+		[cosmic]='FG-only. Warm dusty-rose/peach/gold. Multiline ┌─/│/└─ connectors.'
+		[ember]='FG-only. Cool slate/steel/seafoam. Single line, ⟩ text separators, λ prompt.'
 	)
 	typeset -gA _DRAGON_PRESET_EXAMPLE=(
 		[short]='hostname:~/projects ❯'
@@ -450,7 +455,7 @@ _dragon_init_presets() {
 		[minimal]='user@myhost:~/projects [main]
 			  $'
 		[corporate]='user@myhost ~/projects (main)
-			  >'
+			  ›'
 		[cyberpunk]=' user  myhost  ~/projects  main ✗  »'
 		[retro-terminal]='user@myhost:/home/user/projects [main]
 			  $'
@@ -459,7 +464,7 @@ _dragon_init_presets() {
 			  ╰─ ✿'
 		[high-contrast]=' user @ myhost : ~/projects
 			  [git: CLEAN]
-			  >'
+			  ›'
 		[zen]='myhost ~/projects  main ∙'
 		[focus]=' myhost ~/projects on  main
 			  λ'
@@ -510,5 +515,16 @@ _dragon_init_presets() {
 		[aurora]='╭─ user · myhost · ~/projects
 			   on ❀ main ✓
 			  ╰─ ›'
+		[nova]=$'  tomer  oogway  ~/projects
+			   main ✓
+			  ✦'
+		[razor]=$'  tomer  oogway  ~/projects
+			   main ✓
+			  ›'
+		[cosmic]='┌─  tomer · oogway · ~/projects
+			  │   ❀ main ✓
+			  └─ ›'
+		[ember]=' λ tomer ⟩ oogway ⟩ ~/projects ⟩ ⎇ main ✓
+			  λ'
 	)
 }
