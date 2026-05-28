@@ -73,11 +73,7 @@ __add_separator_between_right_segments()
 		__get_xterm_style_format "$TERMINAL_BACKGROUND_COLOR" "$right_segment_left_bg_color" "false" "false"
 		right_prompt+="$STYLE_FORMAT$DRAGON__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR"
 	else
-		if [[ "${DRAGON__RIGHT_SEGMENT_SEPARATOR_SWAP_COLORS:-false}" == "true" ]]; then
-			__get_xterm_style_format "$right_segment_left_bg_color" "$right_segment_right_bg_color" "false" "false"
-		else
-			__get_xterm_style_format "$right_segment_right_bg_color" "$right_segment_left_bg_color" "false" "false"
-		fi
+		__get_xterm_style_format "$right_segment_right_bg_color" "$right_segment_left_bg_color" "false" "false"
 		right_prompt+="$STYLE_FORMAT$DRAGON__RIGHT_SEGMENT_SEPARATOR"
 		right_segment_left_bg_color="$right_segment_right_bg_color"
 	fi
