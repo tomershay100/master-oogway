@@ -52,7 +52,22 @@ dns_zone() {
     awk '/^search/ { print $2; exit }' /etc/resolv.conf 2>/dev/null
 }
 
-# ── Stage 1: enumerate candidate hostnames (4-strategy fallback) ──────────────
+# ── Stage 1: enumerate candidate hostnames (5-strategy fallback) ──────────────
+
+strat_avahi() {
+	command -v avahi-browse &>/dev/null || return 1
+	local out
+	out=$(timeout 1 avahi-browse -rt _ssh._tcp 2>/dev/null) || return 1
+	[[ -z "$out" ]] && return 1
+	# avahi-browse -r emits "hostname = [foo.local]" lines in the resolved section
+	echo "$out" | awk '/hostname =/ {
+		match($0, /\[([^]]+)\]/, m)
+		n = m[1]
+		sub(/\.local$/, "", n)
+		sub(/\.$/, "", n)
+		if (n != "") print n
+	}' | sort -u
+}
 
 strat_axfr() {
     local srv zone
@@ -160,11 +175,13 @@ probe_all() {
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 main() {
-    if ! command -v dig &>/dev/null && ! command -v nmap &>/dev/null; then
-        echo "mo-lan-ssh: no dig or nmap — active discovery unavailable (install: sudo apt install nmap)" >&2
+    if ! command -v avahi-browse &>/dev/null \
+    && ! command -v dig &>/dev/null \
+    && ! command -v nmap &>/dev/null; then
+        echo "mo-lan-ssh: no avahi-browse, dig, or nmap — active discovery unavailable (install: sudo apt install avahi-utils nmap)" >&2
     fi
     local raw_names="" strategy="" strat
-    for strat in strat_axfr strat_nmap strat_arp_scan strat_known_hosts; do
+    for strat in strat_avahi strat_axfr strat_nmap strat_arp_scan strat_known_hosts; do
         raw_names=$("$strat" 2>/dev/null) || true
         if [[ -n "$raw_names" ]]; then
             strategy="${strat#strat_}"
