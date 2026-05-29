@@ -93,6 +93,7 @@ _mo_lan_add() {
 _mo_lan_remove() {
     local h="$1"
     [[ -z "$h" ]] && { echo "Usage: mo-lan-ssh remove <host>" >&2; return 1; }
+    _mo_lan_valid_host "$h" || { echo "mo-lan-ssh: invalid hostname '$h'" >&2; return 1; }
     [[ -f "$_MO_LAN_SSH_MANUAL" ]] || { echo "mo-lan-ssh: no manual overlay (nothing to remove)" >&2; return; }
 
     if ! grep -qE "^${h}(:.*)?$" "$_MO_LAN_SSH_MANUAL" 2>/dev/null; then
@@ -134,6 +135,7 @@ _mo_lan_trust() {
 _mo_lan_forget() {
     local h="$1"
     [[ -z "$h" ]] && { echo "Usage: mo-lan-ssh forget <host>" >&2; return 1; }
+    _mo_lan_valid_host "$h" || { echo "mo-lan-ssh: invalid hostname '$h'" >&2; return 1; }
     local -a removed=()
     local tmp
 
