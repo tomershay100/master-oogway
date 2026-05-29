@@ -75,11 +75,14 @@ _mo_lan_ssh_wrapper() {
     fi
 
     local probe_err probe_rc
+    # Prepend our options — ssh uses first-match for single-valued keys, so
+    # these win over any conflicting -o in "$@". Full "$@" is forwarded so
+    # -i/-l/-J/-F/-o from the user's argv reach the probe connection.
     probe_err=$(command ssh -o BatchMode=yes \
                             -o ConnectTimeout="$MO_LAN_PROBE_TIMEOUT" \
                             -o StrictHostKeyChecking=accept-new \
                             -o UpdateHostKeys=yes \
-                            "${port_args[@]}" "$target" true 2>&1)
+                            "$@" true 2>&1)
     probe_rc=$?
 
     if (( probe_rc == 0 )); then
