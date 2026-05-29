@@ -55,18 +55,18 @@ dns_zone() {
 # ── Stage 1: enumerate candidate hostnames (5-strategy fallback) ──────────────
 
 strat_avahi() {
-	command -v avahi-browse &>/dev/null || return 1
-	local out
-	out=$(timeout 1 avahi-browse -rt _ssh._tcp 2>/dev/null) || return 1
-	[[ -z "$out" ]] && return 1
-	# avahi-browse -r emits "hostname = [foo.local]" lines in the resolved section
-	echo "$out" | awk '/hostname =/ {
-		match($0, /\[([^]]+)\]/, m)
-		n = m[1]
-		sub(/\.local$/, "", n)
-		sub(/\.$/, "", n)
-		if (n != "") print n
-	}' | sort -u
+    command -v avahi-browse &>/dev/null || return 1
+    local out
+    out=$(timeout 1 avahi-browse -rt _ssh._tcp 2>/dev/null)
+    [[ -z "$out" ]] && return 1
+    # avahi-browse -r emits "hostname = [foo.local]" lines in the resolved section
+    echo "$out" | awk '/hostname =/ {
+        match($0, /\[([^]]+)\]/, m)
+        n = m[1]
+        sub(/\.$/, "", n)
+        sub(/\.local$/, "", n)
+        if (n != "") print n
+    }' | sort -u
 }
 
 strat_axfr() {
