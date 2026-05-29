@@ -73,13 +73,13 @@ _mo_lan_ssh_hint() {
 	   || ( [[ -z "${_MO_LAN_HOSTSET[$target]:-}" ]] \
 	        && ! _mo_lan_in_gadget_subnet "$target" ); then
 		command ssh "$@"
-		return $?
+		return
 	fi
 
 	# Step 3: not regular interactive → no probe, no hint
 	if ! _mo_lan_is_regular_interactive "$@"; then
 		command ssh "$@"
-		return $?
+		return
 	fi
 
 	# Step 4: BatchMode probe
