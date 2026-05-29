@@ -186,6 +186,13 @@ _mo_lan_apply() {
     _mo_lan_load_caches
     (( ${#_MO_LAN_HOSTS[@]} == 0 )) && return
 
+    # Tear down aliases from the previous apply before re-detecting conflicts,
+    # otherwise _mo_lan_name_conflicts sees our own stale aliases as collisions
+    # and flips bare names to s-<host> on every re-call.
+    local prev_alias
+    for prev_alias in "${(@v)_MO_LAN_ALIAS_NAMES}"; do
+        unalias -- "$prev_alias" 2>/dev/null
+    done
     typeset -gA _MO_LAN_ALIAS_NAMES=()   # hostname → actual alias name in this shell
     local h alias_name
     # 1. Aliases. Prefer the bare hostname for "just type momo" UX. Fall back
