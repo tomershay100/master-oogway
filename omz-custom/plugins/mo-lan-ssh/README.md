@@ -1,52 +1,89 @@
 # mo-lan-ssh
 
-Auto-discovers every SSH host on your LAN, creates a short alias per host, and adds them to tab-completion. Re-scans when the cache is stale (default 24h) or you change networks.
+LAN SSH host auto-discovery, aliases, and tab-completion for oh-my-zsh.
+Two host classes: **LAN PCs** (discovered automatically) and **USB gadgets** (declared via subnet).
+
+## What it does
+
+- Discovers SSH hosts on the LAN using a cascade of strategies (mDNS → AXFR → nmap → arp-scan → known_hosts).
+- Generates `~/.ssh/config.d/lan-hosts` — PC and gadget wildcard blocks with keepalive directives.
+- Defines bare-name shell aliases for PCs (`nas`, `web`, `s-make` when a name conflicts).
+- Feeds tab-completion for `ssh`/`scp`/`sftp`/`rsync` with all known PC names.
+- Optionally hints (yellow) when a key probe fails for a known PC or gadget IP — never auto-runs `ssh-copy-id`.
+
+## Quick start
+
+```zsh
+mo-lan-ssh setup     # bootstrap: Include line, optional avahi, first discovery
+```
+
+Open a new terminal to load the aliases.
+
+## USB gadgets
+
+Gadgets are **not scanned** — declare their subnet in `~/.zshrc`:
+
+```zsh
+MO_LAN_GADGET_SUBNETS=(192.168.7.0/24)
+MO_LAN_GADGET_PORT=2222   # default
+```
+
+The plugin writes a wildcard `Host 192.168.7.*` block with `User root`, `UserKnownHostsFile /dev/null`,
+`LogLevel ERROR`, and keepalive directives. Reach a gadget by IP: `ssh 192.168.7.42`.
+
+After flashing: `ssh-copy-id 192.168.7.42` (the hint wrapper will remind you).
+
+## Manual overlay
+
+For hosts not found by auto-discovery (e.g. behind WireGuard, non-standard port):
+
+```zsh
+mo-lan-ssh add vpn-server:22000
+mo-lan-ssh remove vpn-server
+```
+
+## Commands
 
 | Command | Description |
-|---------|-------------|
-| `<host>` | shorthand for `ssh <host>` — one alias per discovered host |
-| `s-<host>` | fallback alias when the bare hostname conflicts with an existing command |
-| `mo-lan-ssh setup` | one-time setup: add `Include config.d/*` to `~/.ssh/config` and run first scan |
-| `mo-lan-ssh list` | print all known hosts (auto-discovered + manual) |
-| `mo-lan-ssh refresh [--background]` | re-scan the LAN now |
-| `mo-lan-ssh status` | show cache age, current network, and host counts |
-| `mo-lan-ssh add <host>[:<port>]` | add a host to the manual overlay |
-| `mo-lan-ssh remove <host>` | remove a host from the manual overlay |
-| `mo-lan-ssh trust <host>` | run `ssh-copy-id` for a host |
-| `mo-lan-ssh forget <host>` | remove from cache, manual overlay, `known_hosts`, and ssh-config |
-| `mo-lan-ssh help` | show all subcommands and env-var options |
+|---|---|
+| `mo-lan-ssh list` | All known hosts + gadget subnets |
+| `mo-lan-ssh refresh` | Re-run discovery now (foreground) |
+| `mo-lan-ssh refresh --background` | Background refresh |
+| `mo-lan-ssh status` | Cache age, network, settings, dep state |
+| `mo-lan-ssh setup` | One-time bootstrap |
+| `mo-lan-ssh add <host>[:<port>]` | Add to manual overlay |
+| `mo-lan-ssh remove <host>` | Remove from manual overlay |
+| `mo-lan-ssh purge <host>` | Remove from all sources + known_hosts |
 
-## How it works
-
-**Discovery strategy** (tried in order; first to return ≥1 host wins):
-1. DNS zone-transfer (AXFR)
-2. `nmap` ping-sweep + reverse DNS
-3. `arp-scan` (requires passwordless sudo)
-4. `~/.ssh/known_hosts` parsing
-
-Each candidate is then port-probed to confirm an SSH listener.
-
-**SSH wrapper:** on first connect to any LAN host, automatically runs `ssh-copy-id` if no key is installed yet. Host-key rotation is handled by `UpdateHostKeys yes` (server advertises new keys over an authenticated channel). If a host key changes unexpectedly, ssh's warning is shown as normal — use `mo-lan-ssh forget <host>` to reset. Set `MO_LAN_AUTO_TRUST=false` to disable. The wrapper only activates for LAN hosts — all other SSH connections pass through untouched.
-
-**First run:** aliases appear on the second shell open (first scan runs in the background).
-
-**`~/.ssh/config` Include placement:** `mo-lan-ssh setup` appends `Include config.d/*` at the bottom of `~/.ssh/config`. Per `ssh_config(5)`'s "first match wins" rule, any `Host <name>` block you define above that line takes precedence over the auto-generated entries.
-
-## Configuration
-
-Set in `~/.zshrc` or `~/.config/master-oogway/custom-pre-zsh/` before the plugin loads:
+## Key configuration
 
 | Variable | Default | Description |
-|----------|---------|-------------|
-| `MO_LAN_TTL` | `86400` | cache TTL in seconds |
-| `MO_LAN_SSH_PORTS` | `22` | comma-separated ports to probe |
-| `MO_LAN_PROBE_TIMEOUT` | `2` | per-host SSH probe timeout (seconds) |
-| `MO_LAN_PROBE_PARALLEL` | `20` | parallel probe connections |
-| `MO_LAN_EXCLUDE` | — | comma-separated hosts/IPs to skip |
-| `MO_LAN_SUBNET` | auto | CIDR subnet to scan |
-| `MO_LAN_DNS_SERVER` | auto | DNS server for AXFR |
-| `MO_LAN_DNS_ZONE` | auto | DNS zone for AXFR |
-| `MO_LAN_AUTO_TRUST` | `true` | auto ssh-copy-id + key rotation on LAN hosts |
-| `MO_LAN_VERBOSE` | `false` | print discovery progress |
+|---|---|---|
+| `MO_LAN_GADGET_SUBNETS` | — | zsh array of CIDR subnets for gadget config |
+| `MO_LAN_GADGET_PORT` | `2222` | Gadget SSH port |
+| `MO_LAN_AUTO_SCAN` | `on` | `off` = refresh manually only |
+| `MO_LAN_TTL` | `86400` | Cache freshness in seconds |
+| `MO_LAN_TRUST_HINTS` | `true` | `false` disables ssh hint wrapper |
+| `MO_LAN_CONNECT_TIMEOUT` | `5` | ConnectTimeout for both PC and gadget |
+| `MO_LAN_SERVER_ALIVE_INTERVAL` | `10` | ServerAliveInterval (seconds) |
+| `MO_LAN_SERVER_ALIVE_COUNT_MAX` | `2` | ServerAliveCountMax (~20s drop) |
+| `MO_LAN_IDENTITY` | — | IdentityFile for both PC and gadget blocks |
+| `MO_LAN_SSH_PORTS` | `22` | PC ports to probe (comma list) |
+| `MO_LAN_EXCLUDE` | — | Comma-list of hostnames to skip |
 
-**Dependencies:** `dig` for AXFR; at least one of `nmap`, `arp-scan`, or `~/.ssh/known_hosts` for host discovery.
+## Dependencies
+
+**Hard:** `openssh-client` (`ssh`).
+
+**Soft** (install for best discovery): `avahi-utils` (mDNS), `dnsutils` (AXFR), `nmap`, `arp-scan`.
+
+Run `mo-lan-ssh status` to see which are present.
+
+## Upgrade from previous version
+
+```bash
+rm -f ~/.config/master-oogway/lan-hosts*
+rm -f ~/.ssh/config.d/lan-hosts
+```
+
+In `~/.zshrc`: remove `MO_LAN_AUTO_TRUST=…` (new var is `MO_LAN_TRUST_HINTS`). Then open a new shell.
