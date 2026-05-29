@@ -10,6 +10,7 @@ typeset -g _MO_LAN_SSH_DISCOVER="${_MO_LAN_SSH_DIR}/_mo_lan_discover.zsh"
 typeset -g _MO_LAN_SSH_CACHE="${HOME}/.config/master-oogway/lan-hosts"
 typeset -g _MO_LAN_SSH_LOCK="${HOME}/.config/master-oogway/lan-hosts.lock"
 typeset -g _MO_LAN_SSH_SHA="${HOME}/.config/master-oogway/lan-hosts.sshconf.sha"
+typeset -g _MO_LAN_SSH_NETID="${HOME}/.config/master-oogway/lan-hosts.netid"
 typeset -g _MO_LAN_SSH_MANUAL="${HOME}/.config/master-oogway/lan-hosts.manual"
 typeset -g _MO_LAN_SSH_OUTPUT="${HOME}/.ssh/config.d/lan-hosts"
 typeset -g _MO_LAN_SSH_USER_CONFIG="${HOME}/.ssh/config"
@@ -71,10 +72,16 @@ _mo_lan_check_ttl_async() {
 }
 
 _mo_lan_check_network_async() {
+    # /proc/net/route updates when the routing table changes — use its mtime as
+    # a cheap proxy. Only recompute the network id when the route table is newer
+    # than our cached netid, avoiding ip/awk/md5sum forks on every shell start.
+    [[ -f "$_MO_LAN_SSH_NETID" && ! /proc/net/route -nt "$_MO_LAN_SSH_NETID" ]] && return
     local cur stored
     cur=$(_mo_lan_network_id)
+    [[ -z "$cur" || "$cur" == "unknown" ]] && return
     stored=$(_mo_lan_cache_network)
-    if [[ -n "$cur" && -n "$stored" && "$cur" != "$stored" ]]; then
+    print -- "$cur" >| "$_MO_LAN_SSH_NETID"
+    if [[ -n "$stored" && "$cur" != "$stored" ]]; then
         _mo_lan_log "Network changed (${stored} → ${cur}) — refreshing in background"
         _mo_lan_refresh_async
     fi
@@ -117,12 +124,20 @@ _mo_lan_load_caches() {
     done
 }
 
-# Re-render ~/.ssh/config.d/lan-hosts. Skip if combined (auto+manual) cache
-# content hasn't changed since last render. Uses the merged _MO_LAN_PORTS
-# map populated by _mo_lan_load_caches.
+# Re-render ~/.ssh/config.d/lan-hosts. Skip if neither input file is newer
+# than the last-render SHA stamp — zero forks in the steady-state path.
+# Falls back to a full content-SHA check when mtimes say something changed,
+# so spurious touches (same content, new mtime) don't trigger needless writes.
 _mo_lan_maybe_write_sshconf() {
     (( ${#_MO_LAN_HOSTS[@]} == 0 )) && return
-    # Combined sha covers both files so manual-only edits still trigger a rewrite.
+    # Fast mtime gate — if both inputs are older than the SHA stamp, nothing changed.
+    if [[ -f "$_MO_LAN_SSH_SHA" ]] \
+       && [[ ! "$_MO_LAN_SSH_CACHE"  -nt "$_MO_LAN_SSH_SHA" ]] \
+       && [[ ! "$_MO_LAN_SSH_MANUAL" -nt "$_MO_LAN_SSH_SHA" ]]; then
+        return
+    fi
+    # Mtime says something may have changed — verify with content SHA to avoid
+    # rewriting when content is identical (e.g. file touched but not modified).
     local combined_sha last_sha=""
     combined_sha=$( {
         [[ -f "$_MO_LAN_SSH_CACHE" ]] && cat "$_MO_LAN_SSH_CACHE"
