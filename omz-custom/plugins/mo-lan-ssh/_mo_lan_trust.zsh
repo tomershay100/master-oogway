@@ -57,9 +57,8 @@ _mo_lan_extract_port() {
 }
 
 _mo_lan_ssh_wrapper() {
-    # Non-interactive stdin (pipe/script) → exec replaces the wrapper with the
-    # real ssh binary directly (no shell waiting for a child).
-    [[ -t 0 ]] || exec command ssh "$@"
+    # Non-interactive stdin (pipe/redirect): skip wrapper logic, run real ssh.
+    [[ -t 0 ]] || { command ssh "$@"; return $?; }
 
     [[ "${MO_LAN_AUTO_TRUST:-true}" == "false" ]] && { command ssh "$@"; return; }
 
