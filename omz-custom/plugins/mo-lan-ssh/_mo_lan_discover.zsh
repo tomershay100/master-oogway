@@ -131,7 +131,7 @@ filter_names() {
 probe_host() {
     local host="$1" p
     for p in ${(s:,:)PORTS}; do
-        if timeout "$PROBE_TIMEOUT" bash -c "</dev/tcp/$host/$p" 2>/dev/null; then
+        if timeout "$PROBE_TIMEOUT" bash -c '</dev/tcp/$0/$1' "$host" "$p" 2>/dev/null; then
             (( p == 22 )) && echo "$host" || echo "$host:$p"
             return
         fi
