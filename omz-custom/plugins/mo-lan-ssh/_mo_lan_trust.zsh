@@ -6,7 +6,7 @@
 # What it does for LAN targets (and only for them):
 #   1. Probe with BatchMode=yes — does pubkey auth work within probe_timeout?
 #      - Yes  → just ssh.
-#      - Host key changed → ssh-keygen -R then re-probe. If OK → just ssh.
+#      - Host key changed → show ssh's warning; use `mo-lan-ssh forget` to reset.
 #      - Permission denied (password offered) → ssh-copy-id then ssh.
 #
 # Disable entirely with MO_LAN_AUTO_TRUST=false.
@@ -78,28 +78,13 @@ _mo_lan_ssh_wrapper() {
     probe_err=$(command ssh -o BatchMode=yes \
                             -o ConnectTimeout="$MO_LAN_PROBE_TIMEOUT" \
                             -o StrictHostKeyChecking=accept-new \
+                            -o UpdateHostKeys=yes \
                             "${port_args[@]}" "$target" true 2>&1)
     probe_rc=$?
 
     if (( probe_rc == 0 )); then
         command ssh "$@"
         return
-    fi
-
-    # Key mismatch → trust the LAN, purge, re-probe.
-    if [[ "$probe_err" == *"REMOTE HOST IDENTIFICATION HAS CHANGED"* \
-       || "$probe_err" == *"Host key verification failed"* ]]; then
-        print -P "%F{yellow}[mo-lan-ssh]%f Host key changed for $target_host — purging old key (LAN host: trusted)"
-        ssh-keygen -R "$target_host" >/dev/null 2>&1
-        probe_err=$(command ssh -o BatchMode=yes \
-                                -o ConnectTimeout="$MO_LAN_PROBE_TIMEOUT" \
-                                -o StrictHostKeyChecking=accept-new \
-                                "${port_args[@]}" "$target" true 2>&1)
-        probe_rc=$?
-        if (( probe_rc == 0 )); then
-            command ssh "$@"
-            return
-        fi
     fi
 
     # No working key and password auth offered → run ssh-copy-id to bootstrap.

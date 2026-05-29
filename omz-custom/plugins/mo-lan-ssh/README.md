@@ -26,7 +26,7 @@ Auto-discovers every SSH host on your LAN, creates a short alias per host, and a
 
 Each candidate is then port-probed to confirm an SSH listener.
 
-**SSH wrapper:** on first connect to any LAN host, automatically runs `ssh-copy-id` if no key is installed yet. If a host key changes (reinstalled machine), the old key is purged and the new one accepted. Set `MO_LAN_AUTO_TRUST=false` to disable. The wrapper only activates for LAN hosts — all other SSH connections pass through untouched.
+**SSH wrapper:** on first connect to any LAN host, automatically runs `ssh-copy-id` if no key is installed yet. Host-key rotation is handled by `UpdateHostKeys yes` (server advertises new keys over an authenticated channel). If a host key changes unexpectedly, ssh's warning is shown as normal — use `mo-lan-ssh forget <host>` to reset. Set `MO_LAN_AUTO_TRUST=false` to disable. The wrapper only activates for LAN hosts — all other SSH connections pass through untouched.
 
 **First run:** aliases appear on the second shell open (first scan runs in the background).
 
