@@ -341,9 +341,14 @@ typeset -gA _DRAGON_TYPE=(
 Types:
 
 - `bool` — wizard shows a yes/no toggle
-- `color` — wizard shows a color picker
+- `color` — wizard shows a color picker; empty string `""` means no background color applied
+- `integer` — wizard shows a numeric-only prompt; non-integers are rejected before saving
 - `string` — wizard shows a free-text prompt
 - `enum:a|b|c` — wizard shows a selection menu
+
+> **`*_BACKGROUND_COLOR` convention:** every background-color variable defaults to `""` (empty string),
+> meaning "use the terminal's default background". Only set hints for vars where the semantics deviate
+> from this rule (e.g. `GIT_CLEAN_BACKGROUND_COLOR` has a non-empty default and a hint explaining it).
 
 ### 3. `_DRAGON_GROUP_VARS` — assign the key to a wizard group
 

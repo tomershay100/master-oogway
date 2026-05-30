@@ -81,6 +81,23 @@ _dragon_edit_var() {
 				fi
 			done
 			;;
+		integer)
+			print -P "  %F{245}Enter a whole number. [Enter] keeps current. [d] resets to default.%f"
+			local val
+			while true; do
+				printf "  New value (Enter = keep '%s'): " "${current:-(empty)}"
+				IFS= read -r val
+				if [[ -z "$val" ]]; then
+					break  # keep current
+				elif [[ "$val" == d || "$val" == D ]]; then
+					_DRAGON_CURRENT[$var]="$default"; break
+				elif [[ "$val" =~ '^[0-9]+$' ]]; then
+					_DRAGON_CURRENT[$var]="$val"; break
+				else
+					print -P "  %F{red}Invalid value '%F{white}${val}%F{red}' — enter a non-negative integer.%f"
+				fi
+			done
+			;;
 		string)
 			if [[ -n "$current" ]]; then
 				print -P "  %F{245}[e] erase → empty   [Enter] keep current   or type new value%f"

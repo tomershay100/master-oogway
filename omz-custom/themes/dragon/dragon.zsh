@@ -13,11 +13,7 @@ set_if_unset()
 	fi
 }
 
-__is_via_ssh()
-{
-	[[ -n "$SSH_CLIENT" || -n "$SSH_CONNECTION" || -n "$SSH_TTY" ]] || return 1
-	return 0
-}
+__is_via_ssh() { [[ -n "$SSH_CLIENT" || -n "$SSH_CONNECTION" || -n "$SSH_TTY" ]]; }
 
 TERMINAL_BACKGROUND_COLOR="black"
 RESET_FORMAT="%f%k%b%u"
@@ -28,6 +24,8 @@ typeset -g _DRAGON_EXIT_CODE=0   # set by __save_exit_code; zero-initialized to 
 # USE_NERD_FONT is handled separately: its default depends on SSH context.
 source "${0:a:h}/schema.zsh"
 _dragon_init_defaults
+# Default USE_NERD_FONT to false over SSH: the remote may not have a Nerd Font
+# installed in its terminal, even if the local one does.
 if __is_via_ssh; then
 	set_if_unset DRAGON__USE_NERD_FONT false
 else
