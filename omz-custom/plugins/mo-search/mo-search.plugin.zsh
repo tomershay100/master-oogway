@@ -50,19 +50,22 @@ fman() {
 
 frg() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-        echo "Usage: frg"
+        echo "Usage: frg [DIR]"
         echo "  Fuzzy search file contents with ripgrep and open result in \$EDITOR."
+        echo "  DIR defaults to the current directory."
         return
     fi
     command -v fzf &>/dev/null || { echo "frg: fzf not installed" >&2; return 1; }
     command -v rg  &>/dev/null || { echo "frg: rg not installed (try: sudo apt install ripgrep)" >&2; return 1; }
+    local dir="${1:-.}"
+    [[ -d "$dir" ]] || { echo "frg: not a directory: $dir" >&2; return 1; }
     local result
     # rg --null separates filename from "lineno:content" with a NUL byte,
     # so filenames containing ':' are never misparsed. awk (FS="\0") splits
     # on that NUL, strips ANSI from the filename for the security check, then
     # emits TAB-separated "file TAB lineno TAB content" — fzf field {1} is
     # always the bare filename, {2} is always the line number.
-    result=$(rg --color=always --line-number --null "" 2>/dev/null \
+    result=$(rg --color=always --line-number --null "" "$dir" 2>/dev/null \
         | awk 'BEGIN { FS="\0" }
                NF == 2 {
                    f = $1; rest = $2
