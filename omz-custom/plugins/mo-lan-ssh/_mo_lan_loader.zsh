@@ -266,7 +266,7 @@ _mo_lan_apply() {
 
 	# 2. Tab completion
 	(( ${#_MO_LAN_HOSTS[@]} > 0 )) \
-		&& zstyle ':completion:*:(ssh|scp|sftp|rsync|ssh-copy-id):*' hosts "${(@k)_MO_LAN_HOSTS}"
+		&& zstyle ':completion:*:(ssh|scp|sftp|rsync|ssh-copy-id|ssh-keyscan):*' hosts "${(@k)_MO_LAN_HOSTS}"
 
 	# 3. Hint wrapper
 	if [[ "${MO_LAN_TRUST_HINTS:-true}" != "false" ]]; then
