@@ -17,6 +17,18 @@ tab_width = 4
 [Makefile]
 indent_style = tab
 
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.{yaml,yml}]
+indent_style = space
+indent_size = 2
+
+[*.json]
+indent_style = space
+indent_size = 2
+
 [*.md]
 trim_trailing_whitespace = false
 # Markdown uses trailing spaces for line breaks — do not enable trim here.

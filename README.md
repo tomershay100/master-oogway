@@ -22,7 +22,7 @@ The installer sets up `~/.zshrc`, `~/.gitconfig`, `~/.editorconfig`, `~/.zshenv`
 
 - `~/.zshrc` — created once, never overwritten again; edit freely
 - `~/.config/master-oogway/conf.zsh` — theme settings; edit via `dragon-configure`
-- `~/.gitconfig` — gets an `[include]` pointing to the curated git defaults; your `[user]` section is untouched
+- `~/.gitconfig` — gets an `[include]` pointing to the curated git defaults; your `[user]` section is untouched. Notable opinion: `pull.rebase = true` (linear history). Override in your `~/.gitconfig` if you prefer merge commits.
 
 ## Plugins
 
@@ -60,6 +60,10 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-color](omz-custom/plugins/mo-color/README.md) | terminal color preview, palette, and text colorizer |
 | [mo-ssh-tunnel](omz-custom/plugins/mo-ssh-tunnel/README.md) | `tunnel` — SSH port-forward helper |
 | [mo-man](omz-custom/plugins/mo-man/README.md) | `mo-man` — view any mo-* plugin README in the terminal |
+
+## Shell behaviour differences from stock zsh
+
+- `WORDCHARS` is set to `*?[]~&;!#$%^(){}<>` — `/`, `.`, `_`, and `-` are removed from the default. This means `Ctrl+W` and word-motion commands stop at every path component and word boundary. Restore the originals by setting `WORDCHARS` in your `~/.zshrc` after the master-oogway block.
 
 ## User extensions
 

@@ -4,6 +4,8 @@
 [core]
 	autocrlf = input                    # normalise CRLF→LF on commit; check out as-is (Linux-friendly)
 
+# meld is not installed by default — install with: sudo apt install meld
+# To use vimdiff instead, override in ~/.gitconfig: diff.tool = vimdiff
 [diff]
 	tool = meld                         # `git difftool` opens meld (GUI 3-pane diff)
 
@@ -36,3 +38,13 @@
 
 [log]
 	date = iso                          # `git log` prints dates as 2026-05-10 17:53:00 +0000
+
+[help]
+	autocorrect = prompt                # suggest the closest command and ask before running it
+
+[transfer]
+	fsckObjects = true                  # verify object integrity on push/fetch (catches corruption early)
+
+[rebase]
+	autosquash = true                   # `fixup!`/`squash!` commits auto-sorted in interactive rebase
+	autostash = true                    # stash dirty working tree before rebase, pop after

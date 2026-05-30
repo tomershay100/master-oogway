@@ -15,7 +15,7 @@ typeset -gA _MO_OPT_BIN=()
 # Tools with a single canonical name — present = "1", absent = key not set.
 for _mo_tool in fzf rg eza colormake wl-copy xclip nvim \
                 trash-put pandoc xelatex lsof pgrep arp-scan nmap \
-                dig 7z unrar zstd bc curl python3; do
+                dig 7z unrar zstd bc curl; do
     (( $+commands[$_mo_tool] )) && _MO_OPT_BIN[$_mo_tool]=1
 done
 unset _mo_tool
