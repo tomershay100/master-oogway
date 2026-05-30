@@ -503,31 +503,36 @@ if [[ "${1:-}" == "--uninstall" ]]; then
         success "SendEnv DRAGON__* not in ~/.ssh/config — nothing to remove"
     fi
 
-    # /etc/ssh/sshd_config — remove AcceptEnv DRAGON__* (marker or legacy bare line)
+    # /etc/ssh/sshd_config.d/99-master-oogway-acceptenv.conf — remove drop-in
+    _uninstall_dropin="/etc/ssh/sshd_config.d/99-master-oogway-acceptenv.conf"
     _uninstall_sshd_config="/etc/ssh/sshd_config"
-    _sshd_remove_cmd=""
-    if grep -qF '# BEGIN master-oogway:acceptenv' "$_uninstall_sshd_config" 2>/dev/null; then
-        _sshd_remove_cmd='/# BEGIN master-oogway:acceptenv/,/# END master-oogway:acceptenv/d'
-    elif grep -qF 'AcceptEnv DRAGON__*' "$_uninstall_sshd_config" 2>/dev/null; then
-        _sshd_remove_cmd='/AcceptEnv DRAGON__\*/d'
-    fi
-    if [[ -n "$_sshd_remove_cmd" ]]; then
-        if confirm "Remove AcceptEnv DRAGON__* from /etc/ssh/sshd_config and reload sshd? (sudo required)"; then
-            # Prime sudo so sed/sshd-t/systemctl share one auth (see
-            # _install_sshd_acceptenv for the same idiom).
+    _sshd_needs_reload=false
+    if [[ -f "$_uninstall_dropin" ]]; then
+        if confirm "Remove ${_uninstall_dropin} and reload sshd? (sudo required)"; then
             sudo -v || true
-            sudo sed -i "$_sshd_remove_cmd" "$_uninstall_sshd_config"
-            if sudo sshd -t 2>/dev/null; then
-                sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
-                success "Removed AcceptEnv DRAGON__* and reloaded sshd"
-            else
-                warn "sshd config validation failed after removal — sshd NOT reloaded; check /etc/ssh/sshd_config manually"
-            fi
+            sudo rm -f "$_uninstall_dropin"
+            _sshd_needs_reload=true
+            success "Removed ${_uninstall_dropin}"
         else
-            warn "Skipped — remove manually: sudo sed -i '/AcceptEnv DRAGON__\\\*/d' /etc/ssh/sshd_config"
+            warn "Skipped — remove manually: sudo rm ${_uninstall_dropin}"
+        fi
+    fi
+    # Also clean up any legacy marker-wrapped block left in the main config.
+    if grep -qF '# BEGIN master-oogway:acceptenv' "$_uninstall_sshd_config" 2>/dev/null; then
+        sudo -v || true
+        sudo sed -i '/# BEGIN master-oogway:acceptenv/,/# END master-oogway:acceptenv/d' "$_uninstall_sshd_config"
+        _sshd_needs_reload=true
+        info "Removed legacy AcceptEnv stanza from /etc/ssh/sshd_config"
+    fi
+    if [[ "$_sshd_needs_reload" == true ]]; then
+        if sudo sshd -t 2>/dev/null; then
+            sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
+            success "Reloaded sshd"
+        else
+            warn "sshd config validation failed after removal — sshd NOT reloaded; check manually"
         fi
     else
-        success "AcceptEnv DRAGON__* not in /etc/ssh/sshd_config — nothing to remove"
+        success "AcceptEnv DRAGON__* not configured — nothing to remove"
     fi
 
     # ~/.config/master-oogway — user conf dir (contains conf.zsh, state, drop-ins)
@@ -752,6 +757,8 @@ _install_ssh_sendenv
 _install_sshd_acceptenv()
 {
     local sshd_config="/etc/ssh/sshd_config"
+    local dropin_dir="/etc/ssh/sshd_config.d"
+    local dropin="${dropin_dir}/99-master-oogway-acceptenv.conf"
     local marker_begin="# BEGIN master-oogway:acceptenv"
     local marker_end="# END master-oogway:acceptenv"
 
@@ -760,41 +767,47 @@ _install_sshd_acceptenv()
         return
     fi
 
-    # Already present (marker-based) — nothing to do.
-    if grep -qF "$marker_begin" "$sshd_config" 2>/dev/null; then
-        success "AcceptEnv DRAGON__* already in /etc/ssh/sshd_config"
+    # Already present as a drop-in — nothing to do.
+    if [[ -f "$dropin" ]]; then
+        success "AcceptEnv DRAGON__* already in ${dropin}"
         return
     fi
 
-    info "SSH theme forwarding requires adding AcceptEnv DRAGON__* to /etc/ssh/sshd_config."
-    if ! confirm "Modify /etc/ssh/sshd_config and reload sshd? (sudo required)"; then
+    info "SSH theme forwarding requires adding AcceptEnv DRAGON__* to sshd."
+    if ! confirm "Add ${dropin} and reload sshd? (sudo required)"; then
         info "Skipped — run install.sh again to configure later, or add manually."
         return
     fi
 
-    # Prime sudo so the chain of sudo calls below (sed migration, tee,
-    # sshd -t, sed revert, systemctl reload) share one auth — single
-    # prompt instead of up to five when the grace window is closed.
-    # `|| true` keeps the script flowing if the user cancels: subsequent
-    # sudo calls reprompt as before; no degradation versus the old code.
+    # Prime sudo so the chain below shares one auth prompt.
     sudo -v || true
 
-    # Old install (no marker) — strip bare line before re-adding with markers.
-    # Mirrors the client-side migration in _install_ssh_sendenv.
+    # Migrate: remove old marker-wrapped block from main sshd_config if present.
+    if grep -qF "$marker_begin" "$sshd_config" 2>/dev/null; then
+        sudo sed -i "/${marker_begin}/,/${marker_end}/d" "$sshd_config"
+        info "Removed old marker-wrapped stanza from /etc/ssh/sshd_config"
+    fi
+    # Also remove any legacy bare line left by even older installs.
     if grep -qF 'AcceptEnv DRAGON__*' "$sshd_config" 2>/dev/null; then
         sudo sed -i '/AcceptEnv DRAGON__\*/d' "$sshd_config"
-        info "Migrated existing AcceptEnv DRAGON__* to marker-wrapped stanza"
+        info "Removed legacy bare AcceptEnv line from /etc/ssh/sshd_config"
     fi
 
-    printf '\n%s\nAcceptEnv DRAGON__*\n%s\n' "$marker_begin" "$marker_end" \
-        | sudo tee -a "$sshd_config" >/dev/null
+    # Write to a temp file, validate, then move atomically into the drop-in dir.
+    local tmp
+    tmp=$(mktemp)
+    printf '# master-oogway: allow dragon theme vars to be forwarded over SSH\nAcceptEnv DRAGON__*\n' > "$tmp"
+    sudo mkdir -p "$dropin_dir"
+    sudo cp "$tmp" "${dropin}.tmp"
+    rm -f "$tmp"
     if ! sudo sshd -t 2>/dev/null; then
-        warn "sshd config validation failed — reverting change to avoid lockout"
-        sudo sed -i "/${marker_begin}/,/${marker_end}/d" "$sshd_config"
+        warn "sshd config validation failed — drop-in not installed"
+        sudo rm -f "${dropin}.tmp"
         return 1
     fi
+    sudo mv "${dropin}.tmp" "$dropin"
     sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
-    success "Added AcceptEnv DRAGON__* and reloaded sshd"
+    success "Added ${dropin} and reloaded sshd"
 }
 
 _install_sshd_acceptenv
