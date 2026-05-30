@@ -241,6 +241,7 @@ export LESS='-FRX'   # -F exit if fits screen, -R pass color, -X don't clear on 
 bindkey "${terminfo[kcuu1]}" history-substring-search-up
 bindkey "${terminfo[kcud1]}" history-substring-search-down
 
-# Ctrl+→ / Ctrl+← jump by word — sequences sent by most modern terminals.
+# Ctrl+→ / Ctrl+← jump by word. terminfo has no entry for Ctrl+Arrow combos,
+# so raw VT sequences are the only option here (xterm-compatible terminals).
 bindkey '^[[1;5C' forward-word
 bindkey '^[[1;5D' backward-word
