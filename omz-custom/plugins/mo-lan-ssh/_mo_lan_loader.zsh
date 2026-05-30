@@ -142,9 +142,15 @@ _mo_lan_load_caches() {
 }
 
 # Convert a CIDR like 192.168.7.0/24 to an ssh Host glob 192.168.7.*
+# Only /24 is supported; warns and returns 1 for any other prefix length.
 _mo_lan_cidr_to_glob() {
-	local net="${1%%/*}"   # strip /prefix
-	echo "${net%.*}.*"    # replace last octet with *
+	local prefix="${1##*/}"
+	[[ "$prefix" == "24" ]] || {
+		print -P "%F{yellow}[mo-lan-ssh]%f MO_LAN_GADGET_SUBNETS: ${1} — only /24 subnets supported; skipping" >&2
+		return 1
+	}
+	local net="${1%%/*}"
+	echo "${net%.*}.*"
 }
 
 # Write ~/.ssh/config.d/lan-hosts from current host maps + gadget config.
@@ -207,7 +213,8 @@ _mo_lan_maybe_write_sshconf() {
 			local cidr
 			for cidr in "${MO_LAN_GADGET_SUBNETS[@]}"; do
 				[[ "$cidr" =~ ^[0-9./]+$ ]] || continue
-				globs+=("$(_mo_lan_cidr_to_glob "$cidr")")
+				local g
+			g=$(_mo_lan_cidr_to_glob "$cidr") && globs+=("$g")
 			done
 			if (( ${#globs[@]} > 0 )); then
 				echo "Host ${globs[*]}"
@@ -270,7 +277,8 @@ _mo_lan_apply() {
 		local cidr
 		for cidr in "${MO_LAN_GADGET_SUBNETS[@]}"; do
 			[[ "$cidr" =~ ^[0-9./]+$ ]] || continue
-			_MO_LAN_GADGET_GLOBS+=("$(_mo_lan_cidr_to_glob "$cidr")")
+			local g
+			g=$(_mo_lan_cidr_to_glob "$cidr") && _MO_LAN_GADGET_GLOBS+=("$g")
 		done
 		if ! (( $+functions[ssh] )) \
 		   || [[ "$(declare -f ssh 2>/dev/null)" == *"_mo_lan_ssh_hint"* ]]; then

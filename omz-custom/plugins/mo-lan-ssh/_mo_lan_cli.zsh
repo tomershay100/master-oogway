@@ -221,8 +221,7 @@ _mo_lan_setup() {
 
 	echo "Running discovery (foreground)..."
 	if _mo_lan_refresh_foreground; then
-		_mo_lan_load_caches
-		_mo_lan_maybe_write_sshconf
+		_mo_lan_apply
 		local count=0
 		[[ -f "$_MO_LAN_SSH_CACHE" ]] && count=$(grep -cvE '^(#|$)' "$_MO_LAN_SSH_CACHE")
 		echo "Setup complete: ${count} hosts discovered. Open a new terminal for the aliases to load."
@@ -279,11 +278,10 @@ mo-lan-ssh() {
 				return
 			fi
 			if _mo_lan_refresh_foreground; then
-				_mo_lan_load_caches
-				_mo_lan_maybe_write_sshconf
+				_mo_lan_apply
 				local count=0
 				[[ -f "$_MO_LAN_SSH_CACHE" ]] && count=$(grep -cvE '^(#|$)' "$_MO_LAN_SSH_CACHE")
-				echo "Refresh complete: ${count} hosts. Open a new terminal for updated aliases."
+				echo "Refresh complete: ${count} hosts. Aliases updated in this shell."
 			else
 				return $?
 			fi

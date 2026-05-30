@@ -64,9 +64,20 @@ _mo_lan_in_gadget_subnet() {
 }
 
 _mo_lan_ssh_hint() {
-	# Step 1: extract target (user@ already stripped by _mo_lan_extract_target)
-	local target
-	target=$(_mo_lan_extract_target "$@")
+	# Step 1: extract target; preserve display_target with user@ for hint message
+	local target display_target arg next_is_value=false
+	for arg in "$@"; do
+		if $next_is_value; then next_is_value=false; continue; fi
+		case "$arg" in
+			-[BbcDEeFIiJLlmOoPpRSWwQ]) next_is_value=true ;;
+			-*) ;;
+			*)
+				display_target="$arg"
+				target="${arg##*@}"
+				break
+				;;
+		esac
+	done
 
 	# Step 2: out of scope → fast path (one hash lookup + a few glob tests)
 	if [[ -z "$target" ]] \
@@ -92,7 +103,7 @@ _mo_lan_ssh_hint() {
 
 	# Steps 5-6: silent on success; yellow hint on failure, then real ssh
 	if (( probe_rc != 0 )); then
-		print -P "%F{yellow}[mo-lan-ssh]%f ${target} has no working key. Run: ssh-copy-id ${target}" >&2
+		print -P "%F{yellow}[mo-lan-ssh]%f ${target} has no working key. Run: ssh-copy-id ${display_target}" >&2
 		print -P "%F{245}  (silence: export MO_LAN_TRUST_HINTS=false in your zshrc)%f" >&2
 	fi
 	command ssh "$@"
