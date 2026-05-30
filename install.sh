@@ -201,7 +201,9 @@ _check_optional_deps()
         local missing_for_plugin=""
         while IFS=$'\t' read -r cmd _; do
             [[ -n "$cmd" ]] || continue
-            command -v "$cmd" &>/dev/null && continue
+            # command -v is PATH-only; daemons/tools in /usr/sbin are invisible to non-root on Debian
+            { command -v "$cmd" &>/dev/null || [[ -x "/usr/sbin/$cmd" ]] || [[ -x "/sbin/$cmd" ]]; } \
+                && continue
             case "$cmd" in
                 fd)  command -v fdfind &>/dev/null && continue ;;
                 bat) command -v batcat &>/dev/null && continue ;;
