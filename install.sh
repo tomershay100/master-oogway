@@ -469,8 +469,10 @@ if [[ "${1:-}" == "--uninstall" ]]; then
         rm -f "$_uninstall_zshrc_backup"
         success "Restored ${ZSHRC} from ${_uninstall_zshrc_backup} (backup removed)"
     elif grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
+        local _zshrc_uninstall_backup="${ZSHRC}.pre-uninstall.$(date +%Y%m%d_%H%M%S)"
+        cp "${ZSHRC}" "${_zshrc_uninstall_backup}"
         rm -f "${ZSHRC}"
-        warn "Removed managed ${ZSHRC} — no backup found. Recreate it manually."
+        warn "Removed managed ${ZSHRC} — saved your copy to ${_zshrc_uninstall_backup}"
     else
         success "${ZSHRC} not managed by master-oogway — left untouched"
     fi
