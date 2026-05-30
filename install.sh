@@ -485,8 +485,7 @@ if [[ "${1:-}" == "--uninstall" ]]; then
         rm -f "$_uninstall_gitconfig_backup"
         success "Restored ~/.gitconfig from ${_uninstall_gitconfig_backup} (backup removed)"
     elif [[ -f "${HOME}/.gitconfig" ]]; then
-        sed -i '/gitconfig\.master-oogway/d' "${HOME}/.gitconfig"
-        sed -i '/^\[include\]$/{N;/^\[include\]\n[[:space:]]*$/d}' "${HOME}/.gitconfig"
+        git config --file "${HOME}/.gitconfig" --unset-all include.path '~/.gitconfig.master-oogway' 2>/dev/null || true
         success "Removed bundle [include] from ~/.gitconfig"
     fi
     rm -f "${HOME}/.gitconfig.master-oogway"
