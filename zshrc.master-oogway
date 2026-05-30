@@ -82,7 +82,11 @@ zstyle ':completion:*' group-name ''                               # group items
 # Detects optional tools once via zsh's $commands hash (no forks) and caches
 # the results in _MO_OPT_BIN[]. Plugins read from this map instead of calling
 # `command -v` at source time. Must run before any plugin is loaded.
-source "$HOME/.master-oogway/omz-custom/lib/optdeps.zsh"
+if [[ -f "$HOME/.master-oogway/omz-custom/lib/optdeps.zsh" ]]; then
+    source "$HOME/.master-oogway/omz-custom/lib/optdeps.zsh"
+else
+    print -P "%F{yellow}[master-oogway]%f optdeps.zsh missing — run %B~/.master-oogway/install.sh%b to restore"
+fi
 
 # ── dragon theme config ────────────────────────────────────────────────────────
 # Sourced before oh-my-zsh so your overrides win over theme defaults.
@@ -122,7 +126,7 @@ ZSH_HIGHLIGHT_PATTERNS+=(
     'git reset --hard' 'fg=white,bg=yellow,bold'
 )
 typeset -A ZSH_HIGHLIGHT_STYLES
-ZSH_HIGHLIGHT_STYLES[comment]='fg=244'  # default fg=black,bold is invisible on dark backgrounds
+ZSH_HIGHLIGHT_STYLES[comment]='fg=8'    # default fg=black,bold is invisible on dark backgrounds; 8=bright-black (grey), works on 16-colour terms
 
 # you-should-use — nags you when you type a command that has an alias defined.
 YSU_MESSAGE_POSITION="after"      # show hint AFTER the command output (less interruptive)
