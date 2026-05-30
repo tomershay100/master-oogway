@@ -1,7 +1,7 @@
 
 source "${0:h}/requirements.zsh" || return
 
-# ── tunnel — SSH port-forward with a readable syntax ──────────────────────────
+# -- tunnel — SSH port-forward with a readable syntax --------------------------
 #
 # Syntax:  tunnel <left> to <right>
 #

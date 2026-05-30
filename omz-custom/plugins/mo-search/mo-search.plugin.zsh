@@ -1,7 +1,7 @@
 
 source "${0:h}/requirements.zsh" || return
 
-# ── fzf environment ────────────────────────────────────────────────────────────
+# -- fzf environment ------------------------------------------------------------
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 
 if [[ -n "${_MO_OPT_BIN[bat]:-}" ]]; then

@@ -4,14 +4,14 @@
 # this file from being replaced. If it is missing, the next install/update run
 # will overwrite this file with the default template and your edits will be lost.
 
-# ── PATH additions ─────────────────────────────────────────────────────────────
+# -- PATH additions -------------------------------------------------------------
 typeset -U path   # deduplicate $path; prevents growth on re-source
 # Non-login zsh shells (e.g. terminal emulators on Raspberry Pi OS) skip /etc/profile,
 # so /usr/sbin and /sbin are absent. Add them explicitly — they hold system tools like
 # avahi-daemon, arp-scan, ip, etc.
 path=(/usr/local/sbin /usr/sbin /sbin $path)
 
-# ── Locale ─────────────────────────────────────────────────────────────────────
+# -- Locale ---------------------------------------------------------------------
 # Prefer en_US.UTF-8; fall back to C.UTF-8 on minimal installs/containers.
 if [[ "$(LC_ALL=en_US.UTF-8 locale charmap 2>/dev/null)" == "UTF-8" ]]; then
     export LANG=en_US.UTF-8
@@ -21,7 +21,7 @@ else
     export LC_ALL=C.UTF-8
 fi
 
-# ── History ────────────────────────────────────────────────────────────────────
+# -- History --------------------------------------------------------------------
 HISTSIZE=100000               # commands kept in memory during the session
 SAVEHIST=100000               # commands written to the history file on exit
 HIST_STAMPS="yyyy-mm-dd"      # prefix each history entry with a date
@@ -35,7 +35,7 @@ setopt   HIST_REDUCE_BLANKS   # strip extra whitespace from each command before 
 setopt   EXTENDED_HISTORY     # record timestamps in $HISTFILE
 setopt   AUTO_CD              # type a directory name alone to cd into it (no need for 'cd')
 
-# ── Shell behavior ─────────────────────────────────────────────────────────────
+# -- Shell behavior -------------------------------------------------------------
 setopt NO_BEEP               # silence the terminal bell
 setopt CORRECT               # prompt to correct typo'd commands
 setopt EXTENDED_GLOB         # ^pattern, ~pattern, **/file — quote ^ and ~ if you want them literal
@@ -53,7 +53,7 @@ setopt PUSHD_SILENT          # don't print the stack after every cd
 
 WORDCHARS='*?[]~&;!#$%^(){}<>'   # Ctrl+W stops at every path component (drops /._- from defaults)
 
-# ── oh-my-zsh setup ────────────────────────────────────────────────────────────
+# -- oh-my-zsh setup ------------------------------------------------------------
 export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="dragon"   # the theme installed by master-oogway; change to any oh-my-zsh theme name
@@ -66,7 +66,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"  # don't mark prompt dirty for untracked fi
 CASE_SENSITIVE="false"                # tab-completion ignores case (read → README.md)
 DISABLE_AUTO_UPDATE="true"            # never auto-check for OMZ updates — quieter shell start
 
-# ── Completion (zsh native + zstyle tweaks) ────────────────────────────────────
+# -- Completion (zsh native + zstyle tweaks) ------------------------------------
 setopt COMPLETE_IN_WORD  # tab completes from the middle of a word
 setopt ALWAYS_TO_END     # after completing, jump cursor to end of word
 # MENU_COMPLETE is set after oh-my-zsh loads — omz/lib/completion.zsh explicitly unsets it
@@ -78,7 +78,7 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"            # colorize me
 zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'  # yellow header per group
 zstyle ':completion:*' group-name ''                               # group items under their header
 
-# ── optional dependency map ────────────────────────────────────────────────────
+# -- optional dependency map ----------------------------------------------------
 # Detects optional tools once via zsh's $commands hash (no forks) and caches
 # the results in _MO_OPT_BIN[]. Plugins read from this map instead of calling
 # `command -v` at source time. Must run before any plugin is loaded.
@@ -88,14 +88,14 @@ else
     print -P "%F{yellow}[master-oogway]%f optdeps.zsh missing — run %B~/.master-oogway/install.sh%b to restore"
 fi
 
-# ── dragon theme config ────────────────────────────────────────────────────────
+# -- dragon theme config --------------------------------------------------------
 # Sourced before oh-my-zsh so your overrides win over theme defaults.
 # Edit with: dragon-configure
 [[ -f "$MO_CONFIG_DIR/conf.zsh" ]] \
     && { source "$MO_CONFIG_DIR/conf.zsh" \
         || print -P "%F{yellow}[dragon]%f conf.zsh has a syntax error — run dragon-configure to fix it"; }
 
-# ── user pre-plugin extensions ─────────────────────────────────────────────────
+# -- user pre-plugin extensions -------------------------------------------------
 # Drop *.zsh files in $MO_CONFIG_DIR/custom-pre-zsh/ to source them here,
 # before plugins and oh-my-zsh (good for PATH changes, env vars, early overrides).
 for __mo_file in "$MO_CONFIG_DIR/custom-pre-zsh/"*.zsh(N); do
@@ -103,7 +103,7 @@ for __mo_file in "$MO_CONFIG_DIR/custom-pre-zsh/"*.zsh(N); do
 done
 unset __mo_file
 
-# ── plugin tuning (must be set BEFORE plugins load below) ─────────────────────
+# -- plugin tuning (must be set BEFORE plugins load below) ---------------------
 
 # zsh-autosuggestions — grey ghost text suggesting the rest of your line.
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8"                                                    # ghost-text color (8=grey, 240=darker)
@@ -151,7 +151,7 @@ MO_WELCOME_FIELDS="host os sys now up"   # also: ip shell load mem tmux ssh
 # MO_LAN_IDENTITY=~/.ssh/id_ed25519        # IdentityFile written into both PC and gadget config blocks
 # MO_LAN_TTL=86400                         # cache freshness in seconds (default 24 h)
 
-# ── plugins ────────────────────────────────────────────────────────────────────
+# -- plugins --------------------------------------------------------------------
 # gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info).
 if [[ -f "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh" ]]; then
     source "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh"
@@ -213,7 +213,7 @@ source "$ZSH/oh-my-zsh.sh"
 
 setopt MENU_COMPLETE  # first Tab inserts the first match (must follow omz — it unsets this)
 
-# ── user plugins ───────────────────────────────────────────────────────────────
+# -- user plugins ---------------------------------------------------------------
 # Drop a folder my-thing/my-thing.plugin.zsh into
 # $MO_CONFIG_DIR/custom-plugins/ to load it as a plugin — sourced
 # here, after oh-my-zsh and all built-in plugins.
@@ -224,7 +224,7 @@ for __mo_plugin in "$MO_CONFIG_DIR/custom-plugins"/*(N/); do
 done
 unset __mo_plugin __mo_name
 
-# ── user post-plugin extensions ────────────────────────────────────────────────
+# -- user post-plugin extensions ------------------------------------------------
 # Drop *.zsh files in $MO_CONFIG_DIR/custom-zsh/ to source them here,
 # after plugins and oh-my-zsh (good for aliases, functions, prompt tweaks).
 for __mo_file in "$MO_CONFIG_DIR/custom-zsh/"*.zsh(N); do
@@ -232,10 +232,10 @@ for __mo_file in "$MO_CONFIG_DIR/custom-zsh/"*.zsh(N); do
 done
 unset __mo_file
 
-# ── pager + viewer environment ─────────────────────────────────────────────────
+# -- pager + viewer environment -------------------------------------------------
 export LESS='-FRX'   # -F exit if fits screen, -R pass color, -X don't clear on exit
 
-# ── key bindings ───────────────────────────────────────────────────────────────
+# -- key bindings ---------------------------------------------------------------
 # history-substring-search: Up/Down arrows search by the prefix already typed.
 # terminfo values map to the correct escape sequences for your terminal.
 bindkey "${terminfo[kcuu1]}" history-substring-search-up

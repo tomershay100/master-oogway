@@ -93,6 +93,18 @@ copy_file()
 # (so a re-install doesn't clobber an existing one). Older installs left a
 # single .pre-master-oogway file with no timestamp. Restoring needs to find
 # either — newest timestamped wins; legacy bare name is the fallback.
+# Back up $1 to $1.pre-master-oogway.<timestamp> if it exists.
+# Echoes the backup path, or nothing if the source didn't exist.
+_mo_backup()
+{
+    local src="$1"
+    [[ -f "$src" ]] || return 0
+    local backup="${src}.pre-master-oogway.$(date +%Y%m%d_%H%M%S)"
+    cp "$src" "$backup"
+    info "Backed up ${src} → ${backup}"
+    echo "$backup"
+}
+
 _find_backup() {
     local base="$1"
     # nullglob makes a no-match expand to an empty array instead of the
@@ -610,12 +622,7 @@ fi
 
 _install_zshrc()
 {
-    if [[ -f "${ZSHRC}" ]]; then
-        local backup
-        backup="${ZSHRC}.pre-master-oogway.$(date +%Y%m%d_%H%M%S)"
-        cp "${ZSHRC}" "${backup}"
-        info "Backed up ${ZSHRC} → ${backup}"
-    fi
+    _mo_backup "${ZSHRC}"
     copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}"
 }
 

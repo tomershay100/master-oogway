@@ -42,7 +42,7 @@ unset _dragon_k _dragon_v
 
 source "${0:a:h}/../../lib/colors.zsh"
 
-# ── Source prompt parts ───────────────────────────────────────────────────────
+# -- Source prompt parts -------------------------------------------------------
 # Order matters where one part calls helpers from another. The bottom of this
 # file calls __update_prompt at load time, so all parts must be sourced first.
 
@@ -56,7 +56,7 @@ source "${0:a:h}/parts/prompt.zsh"           # __calc_prompt_length, lprompt + r
 source "${0:a:h}/parts/lifecycle.zsh"        # __update_prompt, __refresh_prompt, dragon__update_zsh_prompt
 source "${0:a:h}/parts/transient.zsh"        # zle hooks, transient prompt collapse
 
-# ── Initial render + hook registration ────────────────────────────────────────
+# -- Initial render + hook registration ----------------------------------------
 
 __update_prompt
 

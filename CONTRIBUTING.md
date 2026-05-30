@@ -316,6 +316,7 @@ for each entry, so the live variable name is always `DRAGON__` + the schema key
 
 You must touch **all five** of the following — missing any one means the variable
 either has no default, is invisible to `dragon-configure`, or renders nothing.
+(This rule is also summarised in `CLAUDE.md` under "Adding a `DRAGON__*` variable".)
 
 ### 1. `_DRAGON_DEFAULTS` — declare the key and its default value
 

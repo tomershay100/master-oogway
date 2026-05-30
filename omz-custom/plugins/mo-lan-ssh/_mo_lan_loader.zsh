@@ -2,7 +2,7 @@
 
 zmodload -F zsh/datetime p:EPOCHSECONDS 2>/dev/null
 
-# ── Paths ─────────────────────────────────────────────────────────────────────
+# -- Paths ---------------------------------------------------------------------
 
 typeset -g _MO_LAN_SSH_DIR="${0:a:h}"
 typeset -g _MO_LAN_SSH_DISCOVER="${_MO_LAN_SSH_DIR}/_mo_lan_discover.zsh"
@@ -15,7 +15,7 @@ typeset -g _MO_LAN_SSH_OUTPUT="${HOME}/.ssh/config.d/lan-hosts"
 typeset -g _MO_LAN_SSH_USER_CONFIG="${HOME}/.ssh/config"
 typeset -g _MO_LAN_SSH_USER_CONFIG_DIR="${HOME}/.ssh/config.d"
 
-# ── Defaults ──────────────────────────────────────────────────────────────────
+# -- Defaults ------------------------------------------------------------------
 
 : ${MO_LAN_TTL:=86400}
 : ${MO_LAN_AUTO_SCAN:=on}
@@ -34,7 +34,7 @@ typeset -g _MO_LAN_SSH_USER_CONFIG_DIR="${HOME}/.ssh/config.d"
 # proper array even if unset; user sets it in ~/.zshrc before the plugin loads.
 typeset -ga MO_LAN_GADGET_SUBNETS
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 _mo_lan_log() {
 	[[ "$MO_LAN_VERBOSE" == "true" ]] || return 0
@@ -292,11 +292,11 @@ _mo_lan_apply() {
 	_mo_lan_maybe_write_sshconf
 }
 
-# ── Hint wrapper source ───────────────────────────────────────────────────────
+# -- Hint wrapper source -------------------------------------------------------
 
 source "${_MO_LAN_SSH_DIR}/_mo_lan_hint.zsh"
 
-# ── Loader (runs once at shell startup) ───────────────────────────────────────
+# -- Loader (runs once at shell startup) ---------------------------------------
 
 () {
 	if [[ ! -f "$_MO_LAN_SSH_CACHE" && ! -f "$_MO_LAN_SSH_MANUAL" ]]; then

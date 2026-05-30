@@ -2,7 +2,7 @@
 
 source "${0:a:h}/../../lib/colors.zsh"
 
-# ── 256-color xterm palette — index → R G B ───────────────────────────────────
+# -- 256-color xterm palette — index → R G B -----------------------------------
 # Used to convert xterm-256 indices to 24-bit RGB for terminal output.
 _mo_xterm_to_rgb() {
     local idx="$1"
@@ -26,7 +26,7 @@ _mo_xterm_to_rgb() {
     printf '%d %d %d' "$r" "$g" "$b"
 }
 
-# ── Parse a color spec → R G B ────────────────────────────────────────────────
+# -- Parse a color spec → R G B ------------------------------------------------
 # Accepts: 0xRRGGBB / 0XRRGGBB  |  #RRGGBB  |  0-255 (xterm index)  |  named
 # Sets _MO_COLOR_R, _MO_COLOR_G, _MO_COLOR_B; returns 1 on parse failure.
 _mo_parse_color() {
@@ -86,7 +86,7 @@ _mo_bg() {
 }
 _mo_reset() { printf '\e[0m'; }
 
-# ── color palette ─────────────────────────────────────────────────────────────
+# -- color palette -------------------------------------------------------------
 _mo_color_palette() {
     local -a names=(
         black red green yellow blue magenta cyan white
@@ -121,7 +121,7 @@ _mo_color_palette() {
     (( 256 % 8 != 0 )) && echo
 }
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# -- Main ----------------------------------------------------------------------
 color() {
     if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
         cat <<'EOF'

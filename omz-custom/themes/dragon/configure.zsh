@@ -1,21 +1,21 @@
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 # configure.zsh
 # Provides `dragon-configure [--new-only]` — interactive theme wizard.
 # Sourced by dragon.zsh (not OMZ directly); no side effects at top level.
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 
-# ── File-level constants ──────────────────────────────────────────────────────
+# -- File-level constants ------------------------------------------------------
 
 typeset -g _DRAGON_CONF_FILE="${HOME}/.config/master-oogway/conf.zsh"
 typeset -g _DRAGON_THEMES_DIR="${0:a:h}"   # .../dragon/ — derived from script location
 typeset -g _DRAGON_STATE_DIR="${HOME}/.config/master-oogway"
 typeset -g _DRAGON_STATE_FILE="${_DRAGON_STATE_DIR}/state"
 
-# ── Schema (defaults, types, hints, groups) ──────────────────────────────────
+# -- Schema (defaults, types, hints, groups) ----------------------------------
 
 source "${0:a:h}/schema.zsh"
 
-# ── Parts (split from this file for maintainability) ─────────────────────────
+# -- Parts (split from this file for maintainability) -------------------------
 
 source "${0:a:h}/configure/state.zsh"
 source "${0:a:h}/configure/preview.zsh"
@@ -23,9 +23,9 @@ source "${0:a:h}/configure/pick.zsh"
 source "${0:a:h}/configure/wizard.zsh"
 source "${0:a:h}/configure/writer.zsh"
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 # Main entry point
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 
 dragon-configure() {
 	if [[ "${1-}" == "--help" || "${1-}" == "-h" ]]; then

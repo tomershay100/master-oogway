@@ -21,7 +21,7 @@ TTL="${MO_LAN_TTL:-86400}"
 
 command mkdir -p "${CACHE:h}"
 
-# ── Network fingerprint (used to detect "laptop moved between LANs") ──────────
+# -- Network fingerprint (used to detect "laptop moved between LANs") ----------
 
 network_id() {
     local gw iface subnet
@@ -52,7 +52,7 @@ dns_zone() {
     awk '/^search/ { print $2; exit }' /etc/resolv.conf 2>/dev/null
 }
 
-# ── Stage 1: enumerate candidate hostnames (5-strategy fallback) ──────────────
+# -- Stage 1: enumerate candidate hostnames (5-strategy fallback) --------------
 
 strat_avahi() {
     command -v avahi-browse &>/dev/null || return 1
@@ -120,7 +120,7 @@ strat_known_hosts() {
         | awk -F. 'NF { print $1 }' | sort -u
 }
 
-# ── Filter — drop unsafe names, the local host, and user-excluded names ───────
+# -- Filter — drop unsafe names, the local host, and user-excluded names -------
 
 filter_names() {
     local me
@@ -141,7 +141,7 @@ filter_names() {
     done
 }
 
-# ── Stage 2: confirm each candidate has an SSH listener on one of the ports ──
+# -- Stage 2: confirm each candidate has an SSH listener on one of the ports --
 
 probe_host() {
     local host="$1" p
@@ -172,7 +172,7 @@ probe_all() {
     wait
 }
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# -- Main ----------------------------------------------------------------------
 
 main() {
     if ! command -v avahi-browse &>/dev/null \
