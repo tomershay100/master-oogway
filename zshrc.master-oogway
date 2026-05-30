@@ -65,7 +65,7 @@ DISABLE_AUTO_UPDATE="true"            # never auto-check for OMZ updates — qui
 # ── Completion (zsh native + zstyle tweaks) ────────────────────────────────────
 setopt COMPLETE_IN_WORD  # tab completes from the middle of a word
 setopt ALWAYS_TO_END     # after completing, jump cursor to end of word
-setopt MENU_COMPLETE     # first Tab inserts the first match
+# MENU_COMPLETE is set after oh-my-zsh loads — omz/lib/completion.zsh explicitly unsets it
 
 # zstyle configures the completion system — see `man zshcompsys`.
 zstyle ':completion:*' menu select                                 # arrow-key navigable menu
@@ -202,6 +202,8 @@ plugins=(
 )
 
 source "$ZSH/oh-my-zsh.sh"
+
+setopt MENU_COMPLETE  # first Tab inserts the first match (must follow omz — it unsets this)
 
 # ── user plugins ───────────────────────────────────────────────────────────────
 # Drop a folder my-thing/my-thing.plugin.zsh into
