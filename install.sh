@@ -706,24 +706,9 @@ _install_gitconfig()
     if grep -qF 'gitconfig.master-oogway' "${GITCONFIG}" 2>/dev/null; then
         success "${GITCONFIG} already includes gitconfig.master-oogway — not overwritten"
     else
-        # Migrate: back up existing file, write a fresh minimal one.
-        if [[ -f "${GITCONFIG}" ]]; then
-            local backup="${GITCONFIG}.pre-master-oogway"
-            cp "${GITCONFIG}" "${backup}"
-            info "Backed up ${GITCONFIG} → ${backup}"
-            info "Review ${backup} and move any personal settings to ${GITCONFIG}"
-        fi
-        cat > "${GITCONFIG}" <<'EOF'
-# Bundle defaults — your settings below override these.
-[include]
-	path = ~/.gitconfig.master-oogway
-
-# Your identity and personal overrides go here (or below the include above).
-EOF
-        git config --file "${GITCONFIG}" user.name  "$git_name"
-        git config --file "${GITCONFIG}" user.email "$git_email"
-        success "Created ${GITCONFIG} with identity and bundle include"
-        return
+        # Append the include directive; never replace the file.
+        git config --file "${GITCONFIG}" include.path '~/.gitconfig.master-oogway'
+        success "Added bundle include to ${GITCONFIG}"
     fi
 
     git config --file "${GITCONFIG}" user.name  "$git_name"
