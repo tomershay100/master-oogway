@@ -117,6 +117,8 @@ ZSH_HIGHLIGHT_PATTERNS+=(
     'git push --force' 'fg=white,bg=yellow,bold'
     'git reset --hard' 'fg=white,bg=yellow,bold'
 )
+typeset -A ZSH_HIGHLIGHT_STYLES
+ZSH_HIGHLIGHT_STYLES[comment]='fg=244'  # default fg=black,bold is invisible on dark backgrounds
 
 # you-should-use — nags you when you type a command that has an alias defined.
 YSU_MESSAGE_POSITION="after"      # show hint AFTER the command output (less interruptive)
