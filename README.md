@@ -48,7 +48,7 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-process](omz-custom/plugins/mo-process/README.md) | `psgrep`, `port`, `fkill` |
 | [mo-docs](omz-custom/plugins/mo-docs/README.md) | `md2pdf` — Markdown to PDF |
 | [mo-network](omz-custom/plugins/mo-network/README.md) | `natip`, `serve`, `sshto` |
-| [mo-lan-ssh](omz-custom/plugins/mo-lan-ssh/README.md) | bare-`<host>` aliases for every SSH host on your LAN |
+| [mo-lan-ssh](omz-custom/plugins/mo-lan-ssh/README.md) | LAN PC aliases + USB gadget ssh-config + SSH hint wrapper |
 | [mo-projects](omz-custom/plugins/mo-projects/README.md) | `<project-name>` aliases + `p` (fzf picker) for every dir in `~/projects` |
 | [mo-mkscript](omz-custom/plugins/mo-mkscript/README.md) | `mkscript` — scaffold a new shell script from template |
 | [mo-shell-tools](omz-custom/plugins/mo-shell-tools/README.md) | `h`, `?`, `cwhich`, `vwhich`, `clip`, `vizsh`, `soursh`, `calc`, `epoch`, `please`, `mo-where` |
