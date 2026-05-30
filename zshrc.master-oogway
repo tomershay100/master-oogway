@@ -54,6 +54,7 @@ export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="dragon"   # the theme installed by master-oogway; change to any oh-my-zsh theme name
 ZSH_CUSTOM="$HOME/.master-oogway/omz-custom"  # where master-oogway stores its plugins and theme files
+MO_CONFIG_DIR="$HOME/.config/master-oogway"  # user config: conf.zsh, custom-{pre,post}-zsh/, custom-plugins/
 
 HYPHEN_INSENSITIVE="true"             # treat - and _ as identical in tab-completion (e.g. my-cmd = my_cmd)
 COMPLETION_WAITING_DOTS="true"        # show ... while tab-completion is computing
@@ -82,14 +83,14 @@ source "$HOME/.master-oogway/omz-custom/lib/optdeps.zsh"
 # ── dragon theme config ────────────────────────────────────────────────────────
 # Sourced before oh-my-zsh so your overrides win over theme defaults.
 # Edit with: dragon-configure
-[[ -f "$HOME/.config/master-oogway/conf.zsh" ]] \
-    && { source "$HOME/.config/master-oogway/conf.zsh" \
+[[ -f "$MO_CONFIG_DIR/conf.zsh" ]] \
+    && { source "$MO_CONFIG_DIR/conf.zsh" \
         || print -P "%F{yellow}[dragon]%f conf.zsh has a syntax error — run dragon-configure to fix it"; }
 
 # ── user pre-plugin extensions ─────────────────────────────────────────────────
-# Drop *.zsh files in ~/.config/master-oogway/custom-pre-zsh/ to source them here,
+# Drop *.zsh files in $MO_CONFIG_DIR/custom-pre-zsh/ to source them here,
 # before plugins and oh-my-zsh (good for PATH changes, env vars, early overrides).
-for __mo_file in "$HOME/.config/master-oogway/custom-pre-zsh/"*.zsh(N); do
+for __mo_file in "$MO_CONFIG_DIR/custom-pre-zsh/"*.zsh(N); do
     source "$__mo_file"
 done
 unset __mo_file
@@ -202,9 +203,9 @@ source "$ZSH/oh-my-zsh.sh"
 
 # ── user plugins ───────────────────────────────────────────────────────────────
 # Drop a folder my-thing/my-thing.plugin.zsh into
-# ~/.config/master-oogway/custom-plugins/ to load it as a plugin — sourced
+# $MO_CONFIG_DIR/custom-plugins/ to load it as a plugin — sourced
 # here, after oh-my-zsh and all built-in plugins.
-for __mo_plugin in "$HOME/.config/master-oogway/custom-plugins"/*(N/); do
+for __mo_plugin in "$MO_CONFIG_DIR/custom-plugins"/*(N/); do
     __mo_name="${${__mo_plugin%/}:t}"
     [[ -f "${__mo_plugin}${__mo_name}.plugin.zsh" ]] \
         && source "${__mo_plugin}${__mo_name}.plugin.zsh"
@@ -212,9 +213,9 @@ done
 unset __mo_plugin __mo_name
 
 # ── user post-plugin extensions ────────────────────────────────────────────────
-# Drop *.zsh files in ~/.config/master-oogway/custom-zsh/ to source them here,
+# Drop *.zsh files in $MO_CONFIG_DIR/custom-zsh/ to source them here,
 # after plugins and oh-my-zsh (good for aliases, functions, prompt tweaks).
-for __mo_file in "$HOME/.config/master-oogway/custom-zsh/"*.zsh(N); do
+for __mo_file in "$MO_CONFIG_DIR/custom-zsh/"*.zsh(N); do
     source "$__mo_file"
 done
 unset __mo_file
