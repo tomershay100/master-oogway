@@ -1,16 +1,7 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
 # install.sh - dragon zsh environment installer (bundle: master-oogway)
-#
-# Three modes (auto-detected):
-#   curl pipe   curl -fsSL <url>/install.sh | bash
-#               Clones the repo to ~/.master-oogway/, then re-execs from there.
-#
-#   update      ~/.master-oogway/install.sh
-#               git pull + submodule update, then re-applies dotfiles.
-#
-#   dev         shared/master-oogway/install.sh  (inside the dotfiles repo)
-#               Symlinks shared/master-oogway/ → ~/.master-oogway/, then applies dotfiles.
+# Run with --help for usage.
 # ------------------------------------------------------------------------------
 set -Eeuo pipefail
 
@@ -20,11 +11,11 @@ readonly CONF_DIR="${HOME}/.config/master-oogway"
 readonly STATE_FILE="${CONF_DIR}/state"
 readonly ZSHRC="${HOME}/.zshrc"
 
-# ── Colors & logging ───────────────────────────────────────────────────────────
+# -- Colors & logging -----------------------------------------------------------
 
-if [[ -t 1 ]] && [[ "${NO_COLOR:-}" == "" ]] && [[ "${TERM:-}" != "dumb" ]]; then
-    readonly COLOR_RESET='\033[0m'
-    readonly COLOR_GREEN='\033[0;32m' COLOR_YELLOW='\033[1;33m' COLOR_RED='\033[0;31m' COLOR_CYAN='\033[0;36m' COLOR_MAGENTA='\033[0;35m'
+if [[ -t 1 ]] && [[ "${NO_COLOR:-}" == "" ]] && [[ "${TERM:-}" != "dumb" ]] && command -v tput &>/dev/null; then
+    readonly COLOR_RESET="$(tput sgr0)"
+    readonly COLOR_GREEN="$(tput setaf 2)" COLOR_YELLOW="$(tput bold)$(tput setaf 3)" COLOR_RED="$(tput setaf 1)" COLOR_CYAN="$(tput setaf 6)" COLOR_MAGENTA="$(tput setaf 5)"
 else
     readonly COLOR_RESET='' COLOR_GREEN='' COLOR_YELLOW='' COLOR_RED='' COLOR_CYAN='' COLOR_MAGENTA=''
 fi
@@ -35,7 +26,7 @@ warn()    { echo -e "${COLOR_YELLOW}[WRN]${COLOR_RESET} $*" >&2; }
 die()     { echo -e "${COLOR_RED}[ERR]${COLOR_RESET} $*" >&2; exit 1; }
 _ask()    { echo -en "${COLOR_MAGENTA}[ASK]${COLOR_RESET} $*" > /dev/tty; }
 
-# ── Error handling ─────────────────────────────────────────────────────────────
+# -- Error handling -------------------------------------------------------------
 
 _on_error()
 {
@@ -48,7 +39,7 @@ _on_error()
 trap '_on_error $LINENO' ERR
 
 
-# ── Helpers ────────────────────────────────────────────────────────────────────
+# -- Helpers --------------------------------------------------------------------
 
 require_cmd()
 {
@@ -157,7 +148,7 @@ print_todos()
     echo ""
 }
 
-# ── Optional dependency report ─────────────────────────────────────────────────
+# -- Optional dependency report -------------------------------------------------
 # Reads optional-deps.zsh from every plugin, checks which commands are missing,
 # and prints a grouped table + one-liner install command.
 
@@ -252,7 +243,7 @@ _check_optional_deps()
     echo ""
 }
 
-# ── Mode detection ─────────────────────────────────────────────────────────────
+# -- Mode detection -------------------------------------------------------------
 
 _SCRIPT_SOURCE="${BASH_SOURCE[0]:-}"
 
@@ -287,7 +278,7 @@ _running_from_master_oogway_clone()
     [[ "$remote" == *"master-oogway"* ]]
 }
 
-# ── Mode: curl pipe / bootstrap ────────────────────────────────────────────────
+# -- Mode: curl pipe / bootstrap ------------------------------------------------
 # Triggered when piped through bash, OR when the script is run from a directory
 # that is not a master-oogway clone (e.g. a copied script, /tmp, a random path).
 # Clones (or pulls) the repo, then re-execs the real install.sh from INSTALL_DIR.
@@ -311,7 +302,7 @@ if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_
     exec bash "${INSTALL_DIR}/install.sh" "$@"
 fi
 
-# ── Plugin submodule self-healing ──────────────────────────────────────────────
+# -- Plugin submodule self-healing ----------------------------------------------
 # git submodule update --init --recursive skips dirs that already exist on disk,
 # even if their .git was deleted. This function pre-scans for that corruption and
 # wipes broken dirs so git can re-clone them cleanly.
@@ -320,7 +311,13 @@ _init_plugins()
 {
     local plugins_dir="${INSTALL_DIR}/omz-custom/plugins"
     local -a missing=()
-    for plugin in gitstatus you-should-use zsh-autosuggestions zsh-syntax-highlighting; do
+    # Derive plugin names from .gitmodules so adding a submodule needs no edit here.
+    local -a submodules=()
+    while IFS= read -r line; do
+        [[ "$line" =~ path[[:space:]]*=[[:space:]]*omz-custom/plugins/([^[:space:]]+) ]] \
+            && submodules+=("${BASH_REMATCH[1]}")
+    done < "${INSTALL_DIR}/.gitmodules"
+    for plugin in "${submodules[@]}"; do
         local plugin_dir="${plugins_dir}/${plugin}"
         if [[ ! -e "${plugin_dir}/.git" ]]; then
             [[ -d "${plugin_dir}" ]] && rm -rf "${plugin_dir}"
@@ -336,7 +333,7 @@ _init_plugins()
     fi
 }
 
-# ── zcompile first-party zsh files ────────────────────────────────────────────
+# -- zcompile first-party zsh files --------------------------------------------
 # Produces .zwc bytecode alongside each source file. zsh loads bytecode when it
 # exists AND is newer than the source — older .zwc is silently ignored, so stale
 # bytecode is never a correctness risk. Re-running install.sh after editing
@@ -387,7 +384,7 @@ _zcompile_plugins()
     success "zcompile: compiled ${compiled} file(s), ${skipped} already up-to-date"
 }
 
-# ── Mode: update (running from ~/.master-oogway/install.sh) ──────────────────
+# -- Mode: update (running from ~/.master-oogway/install.sh) ------------------
 
 if _running_from_install_dir; then
     info "Updating ${INSTALL_DIR}..."
@@ -396,7 +393,7 @@ if _running_from_install_dir; then
     success "Repository up-to-date"
 fi
 
-# ── Mode: dev (running from a master-oogway clone, not ~/.master-oogway) ───────
+# -- Mode: dev (running from a master-oogway clone, not ~/.master-oogway) -------
 # Symlinks the local clone → ~/.master-oogway/ so edits are live immediately.
 
 if _running_from_master_oogway_clone && ! _running_from_install_dir; then
@@ -420,7 +417,7 @@ if _running_from_master_oogway_clone && ! _running_from_install_dir; then
     _init_plugins
 fi
 
-# ── Version ────────────────────────────────────────────────────────────────────
+# -- Version --------------------------------------------------------------------
 
 _print_version()
 {
@@ -457,7 +454,7 @@ if [[ "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
     exit 0
 fi
 
-# ── Uninstall ──────────────────────────────────────────────────────────────────
+# -- Uninstall ------------------------------------------------------------------
 
 if [[ "${1:-}" == "--uninstall" ]]; then
     info "Uninstalling dragon (master-oogway)..."
@@ -575,7 +572,7 @@ if [[ "${1:-}" == "--uninstall" ]]; then
     exit 0
 fi
 
-# ── Pre-flight ─────────────────────────────────────────────────────────────────
+# -- Pre-flight -----------------------------------------------------------------
 
 [[ "$(uname)" == "Linux" ]] || die "dragon requires Linux (Ubuntu 24.04). macOS/BSD are not supported."
 
@@ -609,7 +606,7 @@ if [[ ! -f "${HOME}/.oh-my-zsh/oh-my-zsh.sh" ]]; then
   sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
 fi
 
-# ── .zshrc: first install replaces; subsequent runs leave it alone ─────────────
+# -- .zshrc: first install replaces; subsequent runs leave it alone -------------
 
 _install_zshrc()
 {
@@ -630,7 +627,7 @@ _check_zshrc_drift()
     # Fast path: if the snapshot exists and its SHA matches the template, the
     # template hasn't changed since the last install — skip the diff entirely.
     # This is the common case after a re-run with no upstream changes.
-    if [[ -f "${snapshot}" ]]; then
+    if [[ -f "${snapshot}" ]] && command -v sha256sum &>/dev/null; then
         local template_sha snapshot_sha
         template_sha=$(sha256sum "${template}" | cut -d' ' -f1)
         snapshot_sha=$(sha256sum "${snapshot}" | cut -d' ' -f1)
@@ -665,17 +662,17 @@ fi
 # and future drift detection can compare against what shipped.
 copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}.upstream-snapshot"
 
-# ── .zshenv ────────────────────────────────────────────────────────────────────
+# -- .zshenv --------------------------------------------------------------------
 
 copy_file "${INSTALL_DIR}/zshenv.master-oogway" "${HOME}/.zshenv"
 
-# ── .editorconfig ──────────────────────────────────────────────────────────────
+# -- .editorconfig --------------------------------------------------------------
 # Installed at ~/.editorconfig so the conventions apply globally — EditorConfig
 # walks up from the file being edited and picks up the first match.
 
 copy_file "${INSTALL_DIR}/editorconfig.master-oogway" "${HOME}/.editorconfig"
 
-# ── .gitconfig ─────────────────────────────────────────────────────────────────
+# -- .gitconfig -----------------------------------------------------------------
 # ~/.gitconfig.master-oogway  — bundle-managed settings (always updated)
 # ~/.gitconfig                — user-owned; created once, never overwritten
 #                               contains [user] + [include] pointing to both files
@@ -722,7 +719,7 @@ _install_gitconfig()
 
 _install_gitconfig
 
-# ── ~/.ssh/config — SendEnv for dragon theme forwarding ───────────────────────
+# -- ~/.ssh/config — SendEnv for dragon theme forwarding -----------------------
 
 _install_ssh_sendenv()
 {
@@ -752,7 +749,7 @@ _install_ssh_sendenv()
 
 _install_ssh_sendenv
 
-# ── /etc/ssh/sshd_config — AcceptEnv for dragon theme forwarding ──────────────
+# -- /etc/ssh/sshd_config — AcceptEnv for dragon theme forwarding --------------
 
 _install_sshd_acceptenv()
 {
@@ -812,7 +809,7 @@ _install_sshd_acceptenv()
 
 _install_sshd_acceptenv
 
-# ── dragon theme: check for new variables ───────────────────────────────────
+# -- dragon theme: check for new variables -----------------------------------
 
 _check_theme_vars()
 {
@@ -843,7 +840,7 @@ _check_theme_vars()
 _check_theme_vars
 _zcompile_plugins
 
-# ── User extension directories ─────────────────────────────────────────────────
+# -- User extension directories -------------------------------------------------
 
 _install_user_ext_dirs()
 {
@@ -861,7 +858,7 @@ _install_user_ext_dirs()
 
 _install_user_ext_dirs
 
-# ── Backup-tip ─────────────────────────────────────────────────────────────────
+# -- Backup-tip -----------------------------------------------------------------
 # Suggest version-controlling the customisation dir. Skipped once the user has
 # already initialised a git repo there (or hasn't installed anything customisable
 # there yet — fresh installs land here before conf.zsh exists).
@@ -899,7 +896,7 @@ GITIGN
 EOF
 }
 
-# ── Done ───────────────────────────────────────────────────────────────────────
+# -- Done -----------------------------------------------------------------------
 
 _check_optional_deps
 print_todos
