@@ -1,8 +1,8 @@
 # dragon preset: catppuccin-latte
 # Catppuccin Latte palette — light mode. Same layout as mocha, inverted weights.
 export DRAGON__USE_NERD_FONT='true'
-export DRAGON__LEFT_SEGMENT_SEPARATOR=$''
-export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$''
+export DRAGON__LEFT_SEGMENT_SEPARATOR=$'\uE0B0'
+export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B1'
 export DRAGON__ENABLE_USERNAME='true'
 export DRAGON__USERNAME_FOREGROUND_COLOR='91'         # mauve
 export DRAGON__ENABLE_HOSTNAME='true'

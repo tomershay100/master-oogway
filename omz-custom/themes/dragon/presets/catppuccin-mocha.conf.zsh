@@ -1,8 +1,8 @@
 # dragon preset: catppuccin-mocha
 # Catppuccin Mocha palette. Multiline w/ git on its own line.
 export DRAGON__USE_NERD_FONT='true'
-export DRAGON__LEFT_SEGMENT_SEPARATOR=$''
-export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$''
+export DRAGON__LEFT_SEGMENT_SEPARATOR=$'\uE0B0'
+export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B1'
 export DRAGON__ENABLE_USERNAME='true'
 export DRAGON__USERNAME_FOREGROUND_COLOR='176'        # mauve
 export DRAGON__ENABLE_USERNAME_COLORING_VIA_SSH='true'

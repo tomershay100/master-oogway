@@ -1,10 +1,10 @@
 # dragon preset: cyberpunk
 # Neon BG segments, bold everywhere, powerline glyphs. Decker-night console.
 export DRAGON__USE_NERD_FONT='true'
-export DRAGON__LEFT_SEGMENT_SEPARATOR=$''
-export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$''
-export DRAGON__RIGHT_SEGMENT_SEPARATOR=$''
-export DRAGON__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR=$''
+export DRAGON__LEFT_SEGMENT_SEPARATOR=$'\uE0B0'
+export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B1'
+export DRAGON__RIGHT_SEGMENT_SEPARATOR=$'\uE0B2'
+export DRAGON__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B3'
 export DRAGON__ENABLE_USERNAME='true'
 export DRAGON__USERNAME_FOREGROUND_COLOR='15'        # white
 export DRAGON__USERNAME_BACKGROUND_COLOR='201'       # neon magenta

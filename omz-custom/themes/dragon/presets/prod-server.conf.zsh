@@ -1,8 +1,8 @@
 # dragon preset: prod-server
 # When LOCAL: small, plain. When SSH'd in: hostname turns into a red alert banner.
 export DRAGON__USE_NERD_FONT='true'
-export DRAGON__LEFT_SEGMENT_SEPARATOR=$''
-export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$''
+export DRAGON__LEFT_SEGMENT_SEPARATOR=$'\uE0B0'
+export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B1'
 export DRAGON__USERNAME_FOREGROUND_COLOR='244'
 export DRAGON__ENABLE_USERNAME_COLORING_VIA_SSH='true'
 export DRAGON__USERNAME_VIA_SSH_FOREGROUND_COLOR='15'

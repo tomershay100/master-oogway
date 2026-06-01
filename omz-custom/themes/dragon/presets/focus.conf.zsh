@@ -1,8 +1,8 @@
 # dragon preset: focus
 # Developer-tuned: full git state always visible, exec timer always on, no clock.
 export DRAGON__USE_NERD_FONT='true'
-export DRAGON__LEFT_SEGMENT_SEPARATOR=$''
-export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$''
+export DRAGON__LEFT_SEGMENT_SEPARATOR=$'\uE0B0'
+export DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B1'
 export DRAGON__ENABLE_USERNAME='false'
 export DRAGON__ENABLE_HOSTNAME='true'
 export DRAGON__HOSTNAME_FOREGROUND_COLOR='244'
