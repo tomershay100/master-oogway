@@ -2,7 +2,8 @@
 
 source "${0:h}/requirements.zsh" || return
 
-export BAT_THEME='Coldark-Dark'  # `bat --list-themes` to see options
+: "${BAT_THEME:=Coldark-Dark}"  # `bat --list-themes` to see options; set BAT_THEME before loading to override
+export BAT_THEME
 
 # _MO_OPT_BIN[bat] holds the real command name (bat or batcat), set by optdeps.zsh.
 if [[ -n "${_MO_OPT_BIN[bat]:-}" ]]; then
