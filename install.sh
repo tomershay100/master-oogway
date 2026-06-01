@@ -478,7 +478,7 @@ if [[ "${1:-}" == "--uninstall" ]]; then
         rm -f "$_uninstall_zshrc_backup"
         success "Restored ${ZSHRC} from ${_uninstall_zshrc_backup} (backup removed)"
     elif grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
-        local _zshrc_uninstall_backup="${ZSHRC}.pre-uninstall.$(date +%Y%m%d_%H%M%S)"
+        _zshrc_uninstall_backup="${ZSHRC}.pre-uninstall.$(date +%Y%m%d_%H%M%S)"
         cp "${ZSHRC}" "${_zshrc_uninstall_backup}"
         rm -f "${ZSHRC}"
         warn "Removed managed ${ZSHRC} — saved your copy to ${_zshrc_uninstall_backup}"
@@ -714,8 +714,11 @@ _install_gitconfig()
     if grep -qF 'gitconfig.master-oogway' "${GITCONFIG}" 2>/dev/null; then
         success "${GITCONFIG} already includes gitconfig.master-oogway — not overwritten"
     else
-        # Append the include directive; never replace the file.
-        git config --file "${GITCONFIG}" include.path '~/.gitconfig.master-oogway'
+        # Append the include directive; never replace the file. --add is
+        # critical: plain `git config` would overwrite any existing single
+        # include.path (e.g. ~/.gitconfig.work) or fail outright when
+        # multiple include.path entries are present.
+        git config --file "${GITCONFIG}" --add include.path '~/.gitconfig.master-oogway'
         success "Added bundle include to ${GITCONFIG}"
     fi
 
