@@ -8,7 +8,7 @@ __calc_prompt_length()
 
 dragon__set_lprompt()
 {
-	typeset -g left_segment_right_bg_color="$TERMINAL_BACKGROUND_COLOR" # static variable that 'remembers' the previous color
+	_dragon_left_prev_bg="$TERMINAL_BACKGROUND_COLOR"
 	GIT_SHOULD_BE_ON_NEW_LINE=false
 	left_prompt=""
 	local curr_content
@@ -102,7 +102,7 @@ $left_prompt$curr_content"
 
 dragon__set_rprompt()
 {
-	typeset -g right_segment_left_bg_color="$TERMINAL_BACKGROUND_COLOR" # static variable that 'remembers' the previous color
+	_dragon_right_prev_bg="$TERMINAL_BACKGROUND_COLOR"
 	right_prompt=""
 
 	dragon__set_exit_status
