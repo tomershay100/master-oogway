@@ -402,6 +402,7 @@ _dragon_init_presets() {
 		paper prod-server portrait rainbow kanagawa ascii multiplexer everforest sakura
 		blade prism inferno specter aurora
 		nova razor cosmic ember
+		nord gruvbox onedark monokai light-paper-tty mini-ssh presentation
 	)
 	typeset -gA _DRAGON_PRESET_DESC=(
 		[short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
@@ -440,6 +441,13 @@ _dragon_init_presets() {
 		[razor]='Dark navy → slate-blue. Reverse-chevron (E0BC) separators, single line.'
 		[cosmic]='FG-only. Warm dusty-rose/peach/gold. Multiline ┌─/│/└─ connectors.'
 		[ember]='FG-only. Cool slate/steel/seafoam. Single line, ⟩ text separators, λ prompt.'
+		[nord]='Arctic blue/grey palette. Powerline segments, frost accents, aurora git colors.'
+		[gruvbox]='Warm retro. Ochre/orange/green on dark bg. Powerline segments.'
+		[onedark]='Atom One Dark. Muted blue/green/yellow. FG-only, multiline border.'
+		[monokai]='Sublime Text classic. Pink/green/yellow on dark. Powerline segments.'
+		[light-paper-tty]='8-color light theme. Works in tty1 and serial consoles — zero 256-color.'
+		[mini-ssh]='Compact local; red SSH banner makes remote sessions visually unmistakable.'
+		[presentation]='Screencast/projector mode. Bold, high-contrast, no glyphs, minimal noise.'
 	)
 	typeset -gA _DRAGON_PRESET_EXAMPLE=(
 		[short]='hostname:~/projects ❯'
@@ -526,5 +534,19 @@ _dragon_init_presets() {
 			  └─ ›'
 		[ember]=' λ tomer ⟩ oogway ⟩ ~/projects ⟩ ⎇ main ✓
 			  λ'
+		[nord]=' tomer  oogway  ~/projects  main ✔
+			  ❯'
+		[gruvbox]=' tomer  oogway  ~/projects  main ✔
+			  ❯'
+		[onedark]='╭ tomer at oogway in ~/projects
+			  │ on main ✔
+			  ╰╴❯'
+		[monokai]=' tomer  oogway  ~/projects  main ✔
+			  ❯'
+		[light-paper-tty]='tomer@oogway:~/projects [main]
+			  $'
+		[mini-ssh]='oogway projects  main ❯'
+		[presentation]='oogway projects (main)
+			  $'
 	)
 }

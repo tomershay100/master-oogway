@@ -30,7 +30,7 @@ Recommended starting points:
 dragon-configure --preset default
 ```
 
-36 presets ship in [`presets/`](presets/), grouped into four flavours:
+43 presets ship in [`presets/`](presets/), grouped into four flavours:
 
 - **Layouts.** `short` `default` `verbose` `minimal` `portrait` `multiplexer`
 - **Themed palettes.** `tokyonight` `dracula` `catppuccin-mocha` `catppuccin-latte`
