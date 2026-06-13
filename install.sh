@@ -364,7 +364,8 @@ _zcompile_plugins()
     local f
 
     # Helper: compile $f if its .zwc is absent or older than the source.
-    # Always returns 0 — compile failures are non-fatal (zsh falls back to source).
+    # Always returns 0 — compile failures are non-fatal (zsh falls back to source),
+    # but errors are reported so broken files surface immediately.
     _zc() {
         local f="$1"
         [[ -f "$f" ]] || return 0
@@ -372,8 +373,10 @@ _zcompile_plugins()
             skipped=$(( skipped + 1 ))
             return 0
         fi
-        if zsh -c "zcompile '$f'" 2>/dev/null; then
+        if zsh -fc 'zcompile -- "$1"' zsh "$f"; then
             compiled=$(( compiled + 1 ))
+        else
+            warn "zcompile failed for $f"
         fi
         return 0
     }
