@@ -3,6 +3,6 @@ local _missing=()
 command -v ssh &>/dev/null || _missing+=(openssh-client)
 
 if (( ${#_missing} )); then
-    print -P "%F{yellow}[mo-ssh-tunnel]%f missing: ${_missing[*]} (try: sudo apt install openssh-client) — plugin not loaded"
-    return 1
+	print -P "%F{yellow}[mo-ssh-tunnel]%f missing: ${_missing[*]} (try: sudo apt install openssh-client) — plugin not loaded"
+	return 1
 fi

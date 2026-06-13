@@ -82,7 +82,7 @@ _mo_lan_ssh_hint() {
 	# Step 2: out of scope → fast path (one hash lookup + a few glob tests)
 	if [[ -z "$target" ]] \
 	   || ( [[ -z "${_MO_LAN_HOSTSET[$target]:-}" ]] \
-	        && ! _mo_lan_in_gadget_subnet "$target" ); then
+			&& ! _mo_lan_in_gadget_subnet "$target" ); then
 		command ssh "$@"
 		return
 	fi
@@ -96,9 +96,9 @@ _mo_lan_ssh_hint() {
 	# Step 4: BatchMode probe
 	local probe_rc
 	command ssh -o BatchMode=yes \
-	            -o ConnectTimeout="${MO_LAN_PROBE_TIMEOUT:-2}" \
-	            -o LogLevel=ERROR \
-	            "$@" true &>/dev/null
+				-o ConnectTimeout="${MO_LAN_PROBE_TIMEOUT:-2}" \
+				-o LogLevel=ERROR \
+				"$@" true &>/dev/null
 	probe_rc=$?
 
 	# Steps 5-6: silent on success; yellow hint on failure, then real ssh

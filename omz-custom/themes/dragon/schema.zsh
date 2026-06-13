@@ -515,10 +515,10 @@ _dragon_init_presets() {
 			   main ✔
 			  ›'
 		[inferno]=' user  myhost  ~/projects
-			    main ✔
+				main ✔
 			   ›'
 		[specter]=' user  myhost  ~/projects
-			    main ✔
+				main ✔
 			   ›'
 		[aurora]='╭─ user · myhost · ~/projects
 			   on ❀ main ✓

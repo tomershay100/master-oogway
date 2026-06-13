@@ -10,12 +10,12 @@ command -v bat    &>/dev/null && _bat_cmd="bat"
 command -v batcat &>/dev/null && _bat_cmd="${_bat_cmd:-batcat}"
 
 if [[ -n "$_bat_cmd" ]]; then
-    export MANPAGER="sh -c \"col -bx | ${_bat_cmd} -l man -p\""
+	export MANPAGER="sh -c \"col -bx | ${_bat_cmd} -l man -p\""
 
-    alias cat="${_bat_cmd} --paging never --style=plain"
-    alias pcat="cat --style=full"                             # pretty: headers, line numbers, git markers
+	alias cat="${_bat_cmd} --paging never --style=plain"
+	alias pcat="cat --style=full"                             # pretty: headers, line numbers, git markers
 
-    alias less="${_bat_cmd} --paging always --style=plain"
-    alias pless="less --style=full"                           # pretty paged: headers, line numbers, grid, git markers
+	alias less="${_bat_cmd} --paging always --style=plain"
+	alias pless="less --style=full"                           # pretty paged: headers, line numbers, grid, git markers
 fi
 unset _bat_cmd
