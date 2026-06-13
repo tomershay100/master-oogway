@@ -149,13 +149,5 @@ flog() {
 			  --preview-window=right:60% \
 		| awk '{print $1}')
 	[[ -z "$hash" ]] && return
-	if command -v wl-copy &>/dev/null; then
-		echo -n "$hash" | wl-copy
-		echo "Copied: $hash"
-	elif command -v xclip &>/dev/null; then
-		echo -n "$hash" | xclip -selection clipboard
-		echo "Copied: $hash"
-	else
-		echo "$hash"
-	fi
+	_mo_clip "$hash" && echo "Copied: $hash" || echo "$hash"
 }

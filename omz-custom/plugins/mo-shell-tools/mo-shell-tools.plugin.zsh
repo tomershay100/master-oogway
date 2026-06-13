@@ -29,15 +29,7 @@ clip() {
 	fi
 	local data
 	data=$(command cat)
-	if command -v wl-copy &>/dev/null; then
-		printf '%s' "$data" | wl-copy
-	elif command -v xclip &>/dev/null; then
-		printf '%s' "$data" | xclip -selection clipboard
-	else
-		echo "clip: no clipboard tool found (try: sudo apt install wl-clipboard)" >&2
-		printf '%s\n' "$data"
-		return 1
-	fi
+	_mo_clip "$data" || { printf '%s\n' "$data"; return 1; }
 	local bytes=${#data}
 	local unit; (( bytes == 1 )) && unit="byte" || unit="bytes"
 	echo "Copied ${bytes} ${unit} to clipboard." >&2

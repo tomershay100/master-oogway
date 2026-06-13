@@ -156,15 +156,7 @@ fp() {
 		| fzf --read0 --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
 	|| return
 	local fullpath="${file:a}"
-	if command -v wl-copy &>/dev/null; then
-		echo -n "$fullpath" | wl-copy
-		echo "Copied: $fullpath"
-	elif command -v xclip &>/dev/null; then
-		echo -n "$fullpath" | xclip -selection clipboard
-		echo "Copied: $fullpath"
-	else
-		echo "$fullpath"
-	fi
+	_mo_clip "$fullpath" && echo "Copied: $fullpath" || echo "$fullpath"
 }
 
 _mo_compress_check() {
