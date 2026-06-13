@@ -766,17 +766,17 @@ _install_gitconfig()
     # If ~/.gitconfig already includes the bundle, leave it alone.
     if grep -qF 'gitconfig.master-oogway' "${GITCONFIG}" 2>/dev/null; then
         success "${GITCONFIG} already includes gitconfig.master-oogway — not overwritten"
-    else
-        # Include is missing. Add it only if file doesn't exist yet (first install)
-        # or if --force was passed. Otherwise warn and skip.
-        if [[ ! -f "${GITCONFIG}" ]] || [[ "${MO_FORCE}" == true ]]; then
-            git config --file "${GITCONFIG}" --add include.path '~/.gitconfig.master-oogway'
-            success "Added bundle include to ${GITCONFIG}"
-        else
-            warn "~/.gitconfig is not including ~/.gitconfig.master-oogway — git aliases and delta pager won't be active."
-            warn "Re-add with: git config --file ~/.gitconfig --add include.path '~/.gitconfig.master-oogway'"
-        fi
-    fi
+	else
+		# Include is missing. Add it only if file doesn't exist yet (first install)
+		# or if --force was passed. Otherwise warn and skip.
+		if [[ ! -f "${GITCONFIG}" ]] || [[ "${MO_FORCE}" == true ]]; then
+			git config --file "${GITCONFIG}" --add include.path '~/.gitconfig.master-oogway'
+			success "Added bundle include to ${GITCONFIG}"
+		else
+			warn "~/.gitconfig is not including ~/.gitconfig.master-oogway — git aliases and delta pager won't be active."
+			warn "Re-add with: git config --file ~/.gitconfig --add include.path '~/.gitconfig.master-oogway'"
+		fi
+	fi
 
     git config --file "${GITCONFIG}" user.name  "$git_name"
     git config --file "${GITCONFIG}" user.email "$git_email"
