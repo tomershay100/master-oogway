@@ -720,7 +720,7 @@ _install_editorconfig()
 	local template="${INSTALL_DIR}/editorconfig.master-oogway"
 	local editorconfig="${HOME}/.editorconfig"
 
-	if [[ ! -f "$editorconfig" ]] || [[ "$MO_FORCE" == "true" ]]; then
+	if [[ ! -f "$editorconfig" ]] || [[ "${MO_FORCE}" == true ]]; then
 		copy_file "$template" "$editorconfig"
 	elif cmp -s "$template" "$editorconfig"; then
 		success "already up-to-date: ${editorconfig}"
