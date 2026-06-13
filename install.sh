@@ -681,7 +681,22 @@ copy_file "${INSTALL_DIR}/zshenv.master-oogway" "${HOME}/.zshenv"
 # Installed at ~/.editorconfig so the conventions apply globally — EditorConfig
 # walks up from the file being edited and picks up the first match.
 
-copy_file "${INSTALL_DIR}/editorconfig.master-oogway" "${HOME}/.editorconfig"
+_install_editorconfig()
+{
+	local template="${INSTALL_DIR}/editorconfig.master-oogway"
+	local editorconfig="${HOME}/.editorconfig"
+
+	if [[ ! -f "$editorconfig" ]] || [[ "$MO_FORCE" == "true" ]]; then
+		copy_file "$template" "$editorconfig"
+	elif cmp -s "$template" "$editorconfig"; then
+		success "already up-to-date: ${editorconfig}"
+	else
+		warn "~/.editorconfig has drifted from the master-oogway template."
+		warn "Review with: diff ~/.editorconfig ~/.master-oogway/editorconfig.master-oogway"
+	fi
+}
+
+_install_editorconfig
 
 # -- .gitconfig -----------------------------------------------------------------
 # ~/.gitconfig.master-oogway  — bundle-managed settings (always updated)
