@@ -1,28 +1,21 @@
-typeset -gA _DRAGON_COLOR_CACHE=()
-
 __get_xterm_color_by_name()
 {
 	XTERM_COLOR=""
 	local color_name="$1"
-	[[ -z "$color_name" ]] && return
-
-	if (( ${+_DRAGON_COLOR_CACHE[$color_name]} )); then
-		XTERM_COLOR="${_DRAGON_COLOR_CACHE[$color_name]}"
-		return
-	fi
 
 	if [[ $color_name =~ ^[0-9]+$ && 10#$color_name -le 255 ]]; then
 		XTERM_COLOR="$color_name"
-	else
-		local fg_code="${_MO_COLORS[${(L)color_name}]}"
-		if [[ -n "$fg_code" ]]; then
-			XTERM_COLOR="$fg_code"
-		else
-			print -P "%F{red}[dragon] unknown color: '${color_name}' — check ~/.config/master-oogway/conf.zsh%f" >&2
-		fi
+		return
 	fi
 
-	_DRAGON_COLOR_CACHE[$color_name]="$XTERM_COLOR"
+	[[ -z "$color_name" ]] && return
+
+	local fg_code="${_MO_COLORS[${(L)color_name}]}"
+	if [[ -n "$fg_code" ]]; then
+		XTERM_COLOR="$fg_code"
+	else
+		print -P "%F{red}[dragon] unknown color: '${color_name}' — check ~/.config/master-oogway/conf.zsh%f" >&2
+	fi
 }
 
 __get_xterm_style_format()

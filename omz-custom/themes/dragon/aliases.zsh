@@ -16,7 +16,6 @@ reset_theme_variables() {
     # forwarded vars on remote machines — safe to unset here because we're
     # deliberately resetting local state.
     unset DRAGON__FORWARDED
-    _DRAGON_COLOR_CACHE=()
 }
 
 alias rezsh="reset_theme_variables && soursh"
