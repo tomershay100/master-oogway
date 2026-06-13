@@ -259,7 +259,7 @@ This audit complements the existing per-commit history (37 post-AUDIT commits al
 
 #### mo-shell-tools (210 lines)
 
-- **HIGH (deps)** — no `requirements.zsh` or `optional-deps.zsh` despite calling `bat`, `wl-copy`, `xclip`, `bc`. `calc()` forks `command -v bc` per call (line 84). Add an `optional-deps.zsh` so installer surfaces missing tools.
+- ~~**HIGH (deps)** — no `requirements.zsh` or `optional-deps.zsh` despite calling `bat`, `wl-copy`, `xclip`, `bc`. `calc()` forks `command -v bc` per call (line 84). Add an `optional-deps.zsh` so installer surfaces missing tools.~~
 - **MED `mo-shell-tools.plugin.zsh:32–38`** — clipboard helper duplicates `mo-files`/`mo-git`. Dedup.
 - **LOW** — `please()` (line 125) is a `sudo $(fc -ln -1)` redo. Charming but a footgun if the last line was destructive. Worth a confirmation prompt.
 
@@ -293,7 +293,7 @@ This audit complements the existing per-commit history (37 post-AUDIT commits al
 
 #### Smaller plugins
 
-- **mo-network**: missing `optional-deps.zsh` despite using `curl`/`python3`/`fzf`. Add.
+- ~~**mo-network**: missing `optional-deps.zsh` despite using `curl`/`python3`/`fzf`. Add.~~
 - **mo-process**: per-function checks for `pgrep`, `lsof`, `fzf` — convert to `_MO_OPT_BIN`.
 - **mo-docs**: per-function checks for `pandoc`/`xelatex` — same.
 - **mo-projects, mo-dirs, mo-env, mo-trash**: each fork `command -v fzf`. Same.
@@ -355,10 +355,10 @@ Ordered by `value ÷ effort`:
 
 1. Add `install.sh` validation: fail when a plugin uses `command -v` outside `requirements.zsh` and outside `mo-lan-ssh`. Forces the 22 violators to migrate (or add a per-plugin opt-out comment).
 2. Extract `lib/clip.zsh` (`_mo_clip` / `_mo_paste`). Migrate `mo-files`, `mo-git`, `mo-shell-tools`.
-3. Fix the exec_timer bare-Enter bug (clear `_DRAGON_TIMER_ACTIVE` in `__save_exit_code`).
+~~3. Fix the exec_timer bare-Enter bug (clear `_DRAGON_TIMER_ACTIVE` in `__save_exit_code`) — already fixed in current code.~~
 ~~4. Fix `_zc` swallowing zcompile errors.~~
 5. Add the preset/desc/example parity assertion to `_dragon_init_presets`.
-6. Add missing `optional-deps.zsh` to `mo-shell-tools` and `mo-network`.
+~~6. Add missing `optional-deps.zsh` to `mo-shell-tools` and `mo-network`.~~
 ~~7. Fix the `_find_backup` glob to require timestamp suffix.~~
 
 ### Medium wins (a day each)
