@@ -52,7 +52,7 @@ _dragon_pick_preset() {
 		_dragon_init_types
 		_dragon_init_hints
 		_dragon_init_groups
-		_dragon_init_presets
+		_dragon_init_presets || return 1
 		_dragon_load_current_conf
 	}
 

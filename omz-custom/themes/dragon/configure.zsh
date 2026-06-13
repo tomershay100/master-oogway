@@ -82,7 +82,7 @@ EOF
 		_dragon_init_types
 		_dragon_init_hints
 		_dragon_init_groups
-		_dragon_init_presets
+		_dragon_init_presets || return 1
 		typeset -g _DRAGON_CHOSEN_PRESET="default"
 		typeset -gA _DRAGON_STATE=()
 		_dragon_load_current_conf
@@ -103,7 +103,7 @@ EOF
 	_dragon_init_types
 	_dragon_init_hints
 	_dragon_init_groups
-	_dragon_init_presets
+	_dragon_init_presets || return 1
 	typeset -g _DRAGON_CHOSEN_PRESET="default"
 	typeset -gA _DRAGON_STATE=()
 

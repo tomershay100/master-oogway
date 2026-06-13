@@ -26,6 +26,7 @@ typeset -g _dragon_right_prev_bg="" # reset to TERMINAL_BACKGROUND_COLOR at the 
 # USE_NERD_FONT is handled separately: its default depends on SSH context.
 source "${0:a:h}/schema.zsh"
 _dragon_init_defaults
+_dragon_init_presets || true
 # Default USE_NERD_FONT to false over SSH: the remote may not have a Nerd Font
 # installed in its terminal, even if the local one does.
 if __is_via_ssh; then
