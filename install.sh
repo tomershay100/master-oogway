@@ -578,11 +578,21 @@ if [[ "${1:-}" == "--uninstall" ]]; then
         success "${INSTALL_DIR} not found — nothing to remove"
     fi
 
-    # .zshenv / .editorconfig — not removed; may predate dragon or have been
-    # edited by the user. Left in place with clear guidance for each.
-    warn "${HOME}/.zshenv was NOT removed."
-    warn "  master-oogway wrote EDITOR/VISUAL exports there. If you no longer need them,"
-    warn "  remove or edit: ${HOME}/.zshenv"
+    # .zshenv
+    rm -f "${HOME}/.zshenv.master-oogway"
+    success "Removed ~/.zshenv.master-oogway"
+    if [[ -f "${HOME}/.zshenv" ]]; then
+        sed -i '/zshenv\.master-oogway/d' "${HOME}/.zshenv"
+        if [[ -z "$(tr -d '[:space:]' < "${HOME}/.zshenv")" ]]; then
+            rm -f "${HOME}/.zshenv"
+            success "Removed empty ~/.zshenv"
+        else
+            success "Removed source line from ~/.zshenv"
+        fi
+    fi
+
+    # .editorconfig — not removed; may predate dragon or have been
+    # edited by the user. Left in place with clear guidance.
     warn "${HOME}/.editorconfig was NOT removed."
     warn "  master-oogway wrote tab-indent / LF-ending conventions there."
     warn "  remove or edit: ${HOME}/.editorconfig"
@@ -676,7 +686,30 @@ copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}.upstream-snapshot"
 
 # -- .zshenv --------------------------------------------------------------------
 
-copy_file "${INSTALL_DIR}/zshenv.master-oogway" "${HOME}/.zshenv"
+_install_zshenv()
+{
+	local template="${INSTALL_DIR}/zshenv.master-oogway"
+	local managed="${HOME}/.zshenv.master-oogway"
+	local zshenv="${HOME}/.zshenv"
+	local source_line="source ~/.zshenv.master-oogway"
+
+	copy_file "$template" "$managed"
+
+	if [[ ! -f "$zshenv" ]]; then
+		printf '%s\n' "$source_line" > "$zshenv"
+		success "Created ${zshenv} sourcing ${managed}"
+	elif grep -qF 'zshenv.master-oogway' "$zshenv"; then
+		success "already up-to-date: ${zshenv}"
+	elif [[ "${MO_FORCE}" == true ]]; then
+		printf '\n%s\n' "$source_line" >> "$zshenv"
+		success "Added source line to ${zshenv}"
+	else
+		warn "~/.zshenv is not sourcing ~/.zshenv.master-oogway — EDITOR/VISUAL won't be auto-set."
+		warn "Re-add with: echo 'source ~/.zshenv.master-oogway' >> ~/.zshenv"
+	fi
+}
+
+_install_zshenv
 
 # -- .editorconfig --------------------------------------------------------------
 # Installed at ~/.editorconfig so the conventions apply globally — EditorConfig
@@ -769,6 +802,13 @@ _install_ssh_sendenv()
         return
     fi
 
+    # Existing config but no marker and no --force — warn only.
+    if [[ -f "$ssh_config" ]] && [[ "${MO_FORCE}" != true ]]; then
+        warn "Dragon theme SSH forwarding is not configured."
+        warn "Run 'master-oogway ssh-forwarding setup' to enable it."
+        return
+    fi
+
     # Old install (no marker) — remove bare line before re-adding with markers.
     if grep -qF "SendEnv DRAGON__*" "$ssh_config" 2>/dev/null; then
         sed -i '/SendEnv DRAGON__\*/d' "$ssh_config"
@@ -800,6 +840,13 @@ _install_sshd_acceptenv()
     # Already present as a drop-in — nothing to do.
     if [[ -f "$dropin" ]]; then
         success "AcceptEnv DRAGON__* already in ${dropin}"
+        return
+    fi
+
+    # Config exists but no drop-in and no --force — warn only.
+    if [[ "${MO_FORCE}" != true ]]; then
+        warn "Dragon theme SSH AcceptEnv is not configured on this server."
+        warn "Run install.sh --force to configure it, or add ${dropin} manually."
         return
     fi
 
