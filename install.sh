@@ -441,7 +441,7 @@ _print_version()
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
     cat <<'EOF'
-Usage: install.sh [--help | --version | --uninstall]
+Usage: install.sh [--help | --version | --uninstall | --force]
 
 Modes (auto-detected from where you run the script):
   curl pipe   bash -c "$(curl -fsSL <url>/install.sh)"
@@ -457,6 +457,7 @@ Options:
   --help       Show this message and exit
   --version    Print the installed version (date + git hash) and exit
   --uninstall  Remove all master-oogway files, config, and dotfile changes
+  --force, -f  Overwrite ~/.zshrc even if it already exists
 EOF
     exit 0
 fi
@@ -464,6 +465,12 @@ fi
 if [[ "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
     _print_version
     exit 0
+fi
+
+MO_FORCE=false
+if [[ "${1:-}" == "--force" || "${1:-}" == "-f" ]]; then
+    MO_FORCE=true
+    shift
 fi
 
 # -- Uninstall ------------------------------------------------------------------
@@ -618,7 +625,7 @@ if [[ ! -f "${HOME}/.oh-my-zsh/oh-my-zsh.sh" ]]; then
   sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
 fi
 
-# -- .zshrc: first install replaces; subsequent runs leave it alone -------------
+# -- .zshrc: installed once; never overwritten unless --force -------------------
 
 _install_zshrc()
 {
@@ -657,16 +664,10 @@ _check_zshrc_drift()
     fi
 }
 
-if [[ ! -f "${ZSHRC}" ]]; then
+if [[ ! -f "${ZSHRC}" ]] || [[ "${MO_FORCE}" == true ]]; then
     _install_zshrc
-elif grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
-    success "${ZSHRC} already managed by master-oogway — not overwritten"
-    _check_zshrc_drift
-elif grep -q '\.master-oogway' "${ZSHRC}" 2>/dev/null; then
-    success "${ZSHRC} already configured for dragon — not overwritten"
-    _check_zshrc_drift
 else
-    _install_zshrc
+    _check_zshrc_drift
 fi
 
 # Snapshot the template alongside ~/.zshrc so `master-oogway diff-zshrc`
