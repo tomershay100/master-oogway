@@ -124,7 +124,7 @@ This audit complements the existing per-commit history (37 post-AUDIT commits al
 
 ### Gaps
 
-- **LOW** — no `[*.zsh-theme]` block. Dragon's entry shim is `dragon.zsh-theme`; without an explicit block it falls through to `[*]` defaults (no tab rule). Add a block mirroring `[*.zsh]`.
+~~- **LOW** — no `[*.zsh-theme]` block. Dragon's entry shim is `dragon.zsh-theme`; without an explicit block it falls through to `[*]` defaults (no tab rule). Add a block mirroring `[*.zsh]`.~~
 - **LOW** — no entries for Dockerfile, `*.toml`, `*.go`, `*.rs`. The file claims `root = true` at `$HOME` so it touches every project — either expand or note that per-project `.editorconfig` overrides.
 
 ### Improvements
