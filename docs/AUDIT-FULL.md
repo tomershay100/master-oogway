@@ -37,7 +37,7 @@ This audit complements the existing per-commit history (37 post-AUDIT commits al
 ~~| MED | `install.sh:482, 498` | `_find_backup` glob `~/.zshrc.pre-master-oogway.*` matches editor files like `.swp`. Restrict to timestamp pattern: `"${base}".[0-9]*`. |~~
 | MED | `install.sh:539` | Legacy-marker cleanup runs `sudo sed -i /etc/ssh/sshd_config` after `sudo -v || true`. If `sudo -v` fails on a kiosk box, the next `sudo sed` either prompts unexpectedly or fails. Probe `sudo -n true` once and skip the whole path when there is no sudo. |
 ~~| MED | `install.sh:618` | `locale -a \| grep -qi 'en_US.utf8\|en_US.UTF-8'` — `.` is a regex metachar. Use `-F` or anchor with `-E '^en_US\.(utf-?8)$'`. |~~
-| LOW | `install.sh:702–708` | MO_FORCE branch may append `source ~/.zshenv.master-oogway` twice if the grep test misses (e.g. trailing whitespace). Use `grep -qFx "$source_line"` or compare via `awk`. |
+~~| LOW | `install.sh:702–708` | MO_FORCE branch may append `source ~/.zshenv.master-oogway` twice if the grep test misses (e.g. trailing whitespace). Use `grep -qFx "$source_line"` or compare via `awk`. |~~
 ~~| LOW | `install.sh:740–741` | `readonly GITCONFIG/GITCONFIG_BUNDLE` declared mid-script; a second invocation (sourced for tests) aborts on the readonly redeclaration. Lift them to the top constants block. |~~
 | LOW | `install.sh:413` | `readlink "${INSTALL_DIR}"` (not `-f`). If `~/.master-oogway` is a chain of symlinks, the dev-mode equality check breaks. Use `realpath` for both sides. |
 | LOW | mixed | Indent style drift: `_install_zshenv`, `_install_editorconfig`, parts of `_install_gitconfig` use tabs; the rest uses 4-space. CLAUDE.md mandates tabs — run `unexpand` once. |

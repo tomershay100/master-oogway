@@ -704,7 +704,7 @@ _install_zshenv()
 	if [[ ! -f "$zshenv" ]]; then
 		printf '%s\n' "$source_line" > "$zshenv"
 		success "Created ${zshenv} sourcing ${managed}"
-	elif grep -qF 'zshenv.master-oogway' "$zshenv"; then
+	elif grep -qFx "$source_line" "$zshenv"; then
 		success "already up-to-date: ${zshenv}"
 	elif [[ "${MO_FORCE}" == true ]]; then
 		printf '\n%s\n' "$source_line" >> "$zshenv"
