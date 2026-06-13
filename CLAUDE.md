@@ -94,11 +94,10 @@ Separator glyphs in preset files use `$'\uXXXX'` Unicode-escape form (the state-
 
 ## Shared libs
 
-`omz-custom/lib/` holds two files sourced automatically by oh-my-zsh before any plugin or theme:
+`omz-custom/lib/` holds one file sourced automatically by oh-my-zsh before any plugin or theme:
 
 | File | Global | Purpose |
 |------|--------|---------|
-| `lib/optdeps.zsh` | *(none)* | Placeholder — `_MO_OPT_BIN` was removed; file kept for history. |
 | `lib/colors.zsh` | `_MO_COLORS[name]` | Named xterm-256 color table — shared by dragon theme and mo-color plugin. Edit here; do not duplicate in either consumer. |
 
 Plugin usage: `command -v <tool> &>/dev/null` per-function — lazy check, only pays cost on invocation. For tools with package aliases (bat/batcat, fd/fdfind) check both: `command -v bat &>/dev/null || command -v batcat &>/dev/null`.
