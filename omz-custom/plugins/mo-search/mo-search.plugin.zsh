@@ -4,18 +4,28 @@ source "${0:h}/requirements.zsh" || return
 # -- fzf environment ------------------------------------------------------------
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 
-if [[ -n "${_MO_OPT_BIN[bat]:-}" ]]; then
-    export FZF_CTRL_T_OPTS="--preview '${_MO_OPT_BIN[bat]} --color=always --style=plain {} 2>/dev/null || cat {}' --preview-window=right:60%:wrap"
+_mo_search_bat=""
+command -v bat    &>/dev/null && _mo_search_bat="bat"
+command -v batcat &>/dev/null && _mo_search_bat="${_mo_search_bat:-batcat}"
+
+if [[ -n "$_mo_search_bat" ]]; then
+    export FZF_CTRL_T_OPTS="--preview '${_mo_search_bat} --color=always --style=plain {} 2>/dev/null || cat {}' --preview-window=right:60%:wrap"
 else
     export FZF_CTRL_T_OPTS="--preview 'cat {}' --preview-window=right:60%:wrap"
 fi
+unset _mo_search_bat
 
 export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --level=2 {} 2>/dev/null || ls -la {}' --preview-window=right:50%:wrap"
 
 # Default command: fd respects .gitignore and is faster than find.
-if [[ -n "${_MO_OPT_BIN[fd]:-}" ]]; then
-    export FZF_DEFAULT_COMMAND="${_MO_OPT_BIN[fd]} --type f --hidden --strip-cwd-prefix --exclude .git"
+_mo_search_fd=""
+command -v fd     &>/dev/null && _mo_search_fd="fd"
+command -v fdfind &>/dev/null && _mo_search_fd="${_mo_search_fd:-fdfind}"
+
+if [[ -n "$_mo_search_fd" ]]; then
+    export FZF_DEFAULT_COMMAND="${_mo_search_fd} --type f --hidden --strip-cwd-prefix --exclude .git"
 fi
+unset _mo_search_fd
 
 alias grep='noglob command grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} --exclude={*.so,*.apd,*.pd}'
 alias grepi='grep -i'

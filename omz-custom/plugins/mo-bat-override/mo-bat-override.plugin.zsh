@@ -5,9 +5,11 @@ source "${0:h}/requirements.zsh" || return
 : "${BAT_THEME:=Coldark-Dark}"  # `bat --list-themes` to see options; set BAT_THEME before loading to override
 export BAT_THEME
 
-# _MO_OPT_BIN[bat] holds the real command name (bat or batcat), set by optdeps.zsh.
-if [[ -n "${_MO_OPT_BIN[bat]:-}" ]]; then
-    _bat_cmd="${_MO_OPT_BIN[bat]}"
+_bat_cmd=""
+command -v bat    &>/dev/null && _bat_cmd="bat"
+command -v batcat &>/dev/null && _bat_cmd="${_bat_cmd:-batcat}"
+
+if [[ -n "$_bat_cmd" ]]; then
     export MANPAGER="sh -c \"col -bx | ${_bat_cmd} -l man -p\""
 
     alias cat="${_bat_cmd} --paging never --style=plain"

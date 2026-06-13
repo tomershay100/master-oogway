@@ -242,7 +242,7 @@ Override plugins go in the "Override plugins" table at the top of the README's
 
 If a plugin requires a tool that may not be installed:
 
-- **Hard dep** (plugin is useless without it): use `requirements.zsh` + `source "${0:h}/requirements.zsh" || return`. The plugin prints a yellow warning and does not load. Hard-dep checks must use `_MO_OPT_BIN` (not `command -v`) to handle package-name aliases like bat/batcat and fd/fdfind: `(( $+_MO_OPT_BIN[bat] )) || { echo "mo-foo: bat not installed" >&2; return 1; }`. See `mo-bat-override` for the canonical pattern.
+- **Hard dep** (plugin is useless without it): use `requirements.zsh` + `source "${0:h}/requirements.zsh" || return`. The plugin prints a yellow warning and does not load. For tools with package-name aliases (bat/batcat, fd/fdfind), check both names: `command -v bat &>/dev/null || command -v batcat &>/dev/null || { echo "mo-foo: bat not installed" >&2; return 1; }`.
 - **Soft dep** (plugin loads and degrades gracefully, but a feature is silently missing): guard usage inline with `command -v <tool> &>/dev/null`, and declare the dep in `optional-deps.zsh` so `install.sh` can report it. See `mo-search` for the canonical pattern.
 - **Per-function dep** (only one function needs a tool, and it already errors clearly when missing): guard inline with `command -v <tool> &>/dev/null || { echo "cmd: tool not installed" >&2; return 1; }` inside the function itself. No `requirements.zsh` or `optional-deps.zsh` needed — the function is self-documenting. See `mo-network` (`natip`, `serve`, `sshto`) for the canonical pattern.
 

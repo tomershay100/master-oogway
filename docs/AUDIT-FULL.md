@@ -244,10 +244,10 @@ This audit complements the existing per-commit history (37 post-AUDIT commits al
 
 ### CRITICAL cross-plugin finding
 
-**HIGH (convention violation, repo-wide).** CLAUDE.md says plugins should query `_MO_OPT_BIN[tool]` instead of forking `command -v`. Only **3 of 25** plugins do this (`mo-search`, `mo-build`, `mo-bat-override`). The other 22 fork `command -v` — typically inside per-function dep checks. Net effect: every fp/fzf/calc/etc. invocation forks a subshell where a hash-table lookup would suffice.
+~~**HIGH (convention violation, repo-wide).** CLAUDE.md says plugins should query `_MO_OPT_BIN[tool]` instead of forking `command -v`. Only **3 of 25** plugins do this (`mo-search`, `mo-build`, `mo-bat-override`). The other 22 fork `command -v` — typically inside per-function dep checks. Net effect: every fp/fzf/calc/etc. invocation forks a subshell where a hash-table lookup would suffice.~~
 
-- **Fix:** machine-rewrite all 22 plugins to query `_MO_OPT_BIN`. Then add an `install.sh` validation step: `grep -rn 'command -v' omz-custom/plugins/ \| grep -v requirements.zsh \| grep -v _mo_lan` should be empty.
-- **Caveats:** per-function fallback chains like `bat → batcat → cat` still need the inline logic — but they can resolve via `${_MO_OPT_BIN[bat]:-cat}`. Worth designing a shared helper `_mo_choose <name1> <name2> ...` in `lib/optdeps.zsh`.
+~~- **Fix:** machine-rewrite all 22 plugins to query `_MO_OPT_BIN`. Then add an `install.sh` validation step: `grep -rn 'command -v' omz-custom/plugins/ \| grep -v requirements.zsh \| grep -v _mo_lan` should be empty.~~
+~~- **Caveats:** per-function fallback chains like `bat → batcat → cat` still need the inline logic — but they can resolve via `${_MO_OPT_BIN[bat]:-cat}`. Worth designing a shared helper `_mo_choose <name1> <name2> ...` in `lib/optdeps.zsh`.~~
 
 ### Per-plugin findings (deeper for the larger plugins)
 
@@ -353,7 +353,7 @@ Ordered by `value ÷ effort`:
 
 ### Quick wins (1–3 hours each)
 
-1. Add `install.sh` validation: fail when a plugin uses `command -v` outside `requirements.zsh` and outside `mo-lan-ssh`. Forces the 22 violators to migrate (or add a per-plugin opt-out comment).
+~~1. Add `install.sh` validation: fail when a plugin uses `command -v` outside `requirements.zsh` and outside `mo-lan-ssh`. Forces the 22 violators to migrate (or add a per-plugin opt-out comment).~~
 2. Extract `lib/clip.zsh` (`_mo_clip` / `_mo_paste`). Migrate `mo-files`, `mo-git`, `mo-shell-tools`.
 ~~3. Fix the exec_timer bare-Enter bug (clear `_DRAGON_TIMER_ACTIVE` in `__save_exit_code`) — already fixed in current code.~~
 ~~4. Fix `_zc` swallowing zcompile errors.~~

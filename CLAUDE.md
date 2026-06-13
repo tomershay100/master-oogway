@@ -98,10 +98,10 @@ Separator glyphs in preset files use `$'\uXXXX'` Unicode-escape form (the state-
 
 | File | Global | Purpose |
 |------|--------|---------|
-| `lib/optdeps.zsh` | `_MO_OPT_BIN[tool]` | Optional-dep detection — populated once at framework load; plugins query this instead of forking `command -v`. For tools with package aliases (bat/batcat, fd/fdfind) the map stores the actual available binary name. |
+| `lib/optdeps.zsh` | *(none)* | Placeholder — `_MO_OPT_BIN` was removed; file kept for history. |
 | `lib/colors.zsh` | `_MO_COLORS[name]` | Named xterm-256 color table — shared by dragon theme and mo-color plugin. Edit here; do not duplicate in either consumer. |
 
-Plugin usage: `(( $+_MO_OPT_BIN[fzf] ))` (boolean) or `cmd=$_MO_OPT_BIN[bat]` (actual binary name).
+Plugin usage: `command -v <tool> &>/dev/null` per-function — lazy check, only pays cost on invocation. For tools with package aliases (bat/batcat, fd/fdfind) check both: `command -v bat &>/dev/null || command -v batcat &>/dev/null`.
 
 ## Plugin system
 
