@@ -160,7 +160,7 @@ This audit complements the existing per-commit history (37 post-AUDIT commits al
 ### Improvements
 
 - **Schema consolidation.** `_DRAGON_DEFAULTS`, `_DRAGON_TYPE`, `_DRAGON_HINT`, `_DRAGON_GROUP_VARS` are four parallel arrays that must be kept in sync. Collapse them into one source-of-truth table: `_DRAGON_SCHEMA[KEY]="type|group|default|hint"`. Derive the four arrays at init. Cuts the per-var update sites from 5 → 1; eliminates the entire class of "added the default, forgot the group" drift bugs. **Biggest leverage refactor in this audit.**
-- **Add a parity assertion in `_dragon_init_presets`.** Today `_DRAGON_PRESET_NAMES` / `_DRAGON_PRESET_DESC` / `_DRAGON_PRESET_EXAMPLE` are three associative arrays with no enforcement. A missing desc renders an unlabeled entry in `--pick`. Add: `[[ ${#_DRAGON_PRESET_NAMES} == ${#_DRAGON_PRESET_DESC} && ${#_DRAGON_PRESET_DESC} == ${#_DRAGON_PRESET_EXAMPLE} ]] || die`.
+- ~~**Add a parity assertion in `_dragon_init_presets`.** Today `_DRAGON_PRESET_NAMES` / `_DRAGON_PRESET_DESC` / `_DRAGON_PRESET_EXAMPLE` are three associative arrays with no enforcement. A missing desc renders an unlabeled entry in `--pick`. Add: `[[ ${#_DRAGON_PRESET_NAMES} == ${#_DRAGON_PRESET_DESC} && ${#_DRAGON_PRESET_DESC} == ${#_DRAGON_PRESET_EXAMPLE} ]] || die`.~~
 - **Cache color lookups.** `__dragon__show` runs 4 × `${(P)var}` indirections + 2 × `__get_xterm_color_by_name` per segment per keystroke. With ~10 segments that's ~60 lookups every precmd. `typeset -gA _DRAGON_COLOR_CACHE; (( ${+_DRAGON_COLOR_CACHE[$color_name]} )) || _DRAGON_COLOR_CACHE[$color_name]=$(...)`. Invalidate on `rezsh`. Easy 30–50 % trim.
 - **Dedup left/right separator builders.** `__add_separator_between_left_segments` and `__add_separator_between_right_segments` are 90 % identical; extract a single function taking side + separator-var pair. Same for the two multiline blocks in `prompt.zsh:51–91`.
 - **`dragon.zsh` `__is_via_ssh`** — defined in dragon.zsh but called by segments. Move to `parts/helpers.zsh` so the dependency direction is tidy.
@@ -357,7 +357,7 @@ Ordered by `value ÷ effort`:
 2. Extract `lib/clip.zsh` (`_mo_clip` / `_mo_paste`). Migrate `mo-files`, `mo-git`, `mo-shell-tools`.
 ~~3. Fix the exec_timer bare-Enter bug (clear `_DRAGON_TIMER_ACTIVE` in `__save_exit_code`) — already fixed in current code.~~
 ~~4. Fix `_zc` swallowing zcompile errors.~~
-5. Add the preset/desc/example parity assertion to `_dragon_init_presets`.
+~~5. Add the preset/desc/example parity assertion to `_dragon_init_presets`.~~
 ~~6. Add missing `optional-deps.zsh` to `mo-shell-tools` and `mo-network`.~~
 ~~7. Fix the `_find_backup` glob to require timestamp suffix.~~
 

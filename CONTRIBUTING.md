@@ -301,6 +301,10 @@ typeset -ga _DRAGON_PRESET_NAMES=(
 The example is shown in `--pick` and `--gallery`. Keep it to 1–3 lines; use
 real prompt chars and branch symbols so it looks like an actual prompt.
 
+A parity assertion runs at theme load — if any of the three arrays are out of
+sync, dragon prints an error naming the exact counts and exits. You'll see it
+immediately on the next `soursh`.
+
 **3. Update the preset count in `omz-custom/themes/dragon/README.md`**
 
 Search for the line like `26 presets ship in` and increment the number.

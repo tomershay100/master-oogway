@@ -549,4 +549,13 @@ _dragon_init_presets() {
 		[presentation]='oogway projects (main)
 			  $'
 	)
+
+	# All three preset registries must stay in sync — missing desc or example
+	# causes --pick to render unlabeled/empty entries.
+	local _pn=${#_DRAGON_PRESET_NAMES} _pd=${#_DRAGON_PRESET_DESC} _pe=${#_DRAGON_PRESET_EXAMPLE}
+	if (( _pn != _pd || _pn != _pe )); then
+		print -u2 "dragon: preset registry mismatch — NAMES:${_pn} DESC:${_pd} EXAMPLE:${_pe}"
+		print -u2 "dragon: every preset needs an entry in all three arrays (see CONTRIBUTING.md)"
+		return 1
+	fi
 }
