@@ -622,7 +622,11 @@ fi
 
 _install_zshrc()
 {
-    _mo_backup "${ZSHRC}"
+    local backup_path
+    backup_path=$(_mo_backup "${ZSHRC}")
+    if [[ -n "$backup_path" ]]; then
+        info "Your previous ~/.zshrc was saved to ${backup_path}"
+    fi
     copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}"
 }
 
