@@ -113,7 +113,7 @@ _find_backup() {
     local _had_nullglob
     shopt -q nullglob && _had_nullglob=true || _had_nullglob=false
     shopt -s nullglob
-    local -a backups=( "${base}".* )
+    local -a backups=( "${base}".[0-9]* )
     $_had_nullglob || shopt -u nullglob
 
     local newest="" candidate
