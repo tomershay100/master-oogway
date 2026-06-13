@@ -17,5 +17,5 @@ if [[ -n "$_bat_cmd" ]]; then
 
     alias less="${_bat_cmd} --paging always --style=plain"
     alias pless="less --style=full"                           # pretty paged: headers, line numbers, grid, git markers
-    unset _bat_cmd
 fi
+unset _bat_cmd
