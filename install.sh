@@ -226,7 +226,7 @@ _check_optional_deps()
     echo -e "${COLOR_YELLOW}└─────────────────────────────────────────────────────┘${COLOR_RESET}"
 
     local all_missing_pkgs=()
-    local plugin first
+    local plugin first; local -a cmds_for_plugin
     for plugin in "${!missing_cmds[@]}"; do
         first=true
         read -ra cmds_for_plugin <<< "${missing_cmds[$plugin]}"
