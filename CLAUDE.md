@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This directory is a **standalone, separately-published git repo** (`github.com/tomershay100/master-oogway`) that is also vendored inside the parent `custum-linux-configs/` dotfiles repo. It has its own `.git/`, its own remote, and its own submodules. Treat it as the project root — git commands here operate on master-oogway, not the parent. The parent's `CLAUDE.md` covers umbrella dotfile conventions; this file covers master-oogway specifics.
 
-The repo ships a complete zsh environment: the **dragon** prompt theme (~130 tunable vars, interactive wizard, 36 presets, SSH-forwarded settings) plus 25 `mo-*` plugins (6 override + 19 additive) on top of oh-my-zsh.
+The repo ships a complete zsh environment: the **dragon** prompt theme (~130 tunable vars, interactive wizard, 43 presets, SSH-forwarded settings) plus 25 `mo-*` plugins (6 override + 19 additive) on top of oh-my-zsh.
 
 End-user docs live in `README.md`. Contributor mechanics (adding plugins/presets/variables, plugin README structure) live in `CONTRIBUTING.md` — read it before substantive theme or plugin work; this file does not duplicate it.
 
@@ -61,7 +61,7 @@ configure/           wizard implementation
   wizard.zsh           interactive steps, menus, variable editor
   writer.zsh           generates conf.zsh (and validates it with `zsh -n` before writing)
 parts/                 segment + prompt assembly (9 files)
-presets/               36 *.conf.zsh presets — only override values that differ from defaults
+presets/               43 *.conf.zsh presets — only override values that differ from defaults
 aliases.zsh            rezsh, reset_theme_variables
 notifier.zsh           shell-start notification when new DRAGON__ vars are detected
 ```
@@ -91,6 +91,17 @@ Separator glyphs in preset files use `$'\uXXXX'` Unicode-escape form (the state-
 ### SSH forwarding re-entry guard
 
 `~/.config/master-oogway/conf.zsh` (wizard-generated) both **exports** `DRAGON__FORWARDED=1` *after* the early-return guard, and **checks** `[[ "${DRAGON__FORWARDED:-}" == "1" ]] && return` *on entry*. On the sender the export makes SSH `SendEnv DRAGON__*` carry the values; on the receiver the guard short-circuits so forwarded values aren't overwritten by local defaults. Preserve both halves when editing the writer.
+
+## Shared libs
+
+`omz-custom/lib/` holds two files sourced automatically by oh-my-zsh before any plugin or theme:
+
+| File | Global | Purpose |
+|------|--------|---------|
+| `lib/optdeps.zsh` | `_MO_OPT_BIN[tool]` | Optional-dep detection — populated once at framework load; plugins query this instead of forking `command -v`. For tools with package aliases (bat/batcat, fd/fdfind) the map stores the actual available binary name. |
+| `lib/colors.zsh` | `_MO_COLORS[name]` | Named xterm-256 color table — shared by dragon theme and mo-color plugin. Edit here; do not duplicate in either consumer. |
+
+Plugin usage: `(( $+_MO_OPT_BIN[fzf] ))` (boolean) or `cmd=$_MO_OPT_BIN[bat]` (actual binary name).
 
 ## Plugin system
 
