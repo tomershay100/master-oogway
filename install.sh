@@ -229,7 +229,8 @@ _check_optional_deps()
     local plugin first
     for plugin in "${!missing_cmds[@]}"; do
         first=true
-        for cmd in ${missing_cmds[$plugin]}; do
+        read -ra cmds_for_plugin <<< "${missing_cmds[$plugin]}"
+        for cmd in "${cmds_for_plugin[@]}"; do
             desc="${descriptions[$cmd]:-$cmd}"
             pkg="${apt_pkgs[$cmd]:-$cmd}"
             if $first; then
