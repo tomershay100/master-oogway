@@ -23,7 +23,7 @@ master-oogway() {
 			_mo_version
 			;;
 		configure)
-			command -v dragon-configure &>/dev/null \
+			(( $+functions[dragon-configure] )) \
 				|| { echo "master-oogway: dragon-configure not found — is the dragon theme loaded?" >&2; return 1; }
 			dragon-configure "${@:2}"
 			;;
