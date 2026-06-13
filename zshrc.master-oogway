@@ -74,13 +74,6 @@ zstyle ':completion:*' group-name ''                               # group items
 
 # -- optional dependency map ----------------------------------------------------
 # Detects optional tools once via zsh's $commands hash (no forks) and caches
-# the results in _MO_OPT_BIN[]. Plugins read from this map instead of calling
-# `command -v` at source time. Must run before any plugin is loaded.
-if [[ -f "$HOME/.master-oogway/omz-custom/lib/optdeps.zsh" ]]; then
-    source "$HOME/.master-oogway/omz-custom/lib/optdeps.zsh"
-else
-    print -P "%F{yellow}[master-oogway]%f optdeps.zsh missing — run %B~/.master-oogway/install.sh%b to restore"
-fi
 
 # -- dragon theme config --------------------------------------------------------
 # Sourced before oh-my-zsh so your overrides win over theme defaults.
