@@ -734,12 +734,15 @@ _install_gitconfig()
     if grep -qF 'gitconfig.master-oogway' "${GITCONFIG}" 2>/dev/null; then
         success "${GITCONFIG} already includes gitconfig.master-oogway — not overwritten"
     else
-        # Append the include directive; never replace the file. --add is
-        # critical: plain `git config` would overwrite any existing single
-        # include.path (e.g. ~/.gitconfig.work) or fail outright when
-        # multiple include.path entries are present.
-        git config --file "${GITCONFIG}" --add include.path '~/.gitconfig.master-oogway'
-        success "Added bundle include to ${GITCONFIG}"
+        # Include is missing. Add it only if file doesn't exist yet (first install)
+        # or if --force was passed. Otherwise warn and skip.
+        if [[ ! -f "${GITCONFIG}" ]] || [[ "${MO_FORCE}" == true ]]; then
+            git config --file "${GITCONFIG}" --add include.path '~/.gitconfig.master-oogway'
+            success "Added bundle include to ${GITCONFIG}"
+        else
+            warn "~/.gitconfig is not including ~/.gitconfig.master-oogway — git aliases and delta pager won't be active."
+            warn "Re-add with: git config --file ~/.gitconfig --add include.path '~/.gitconfig.master-oogway'"
+        fi
     fi
 
     git config --file "${GITCONFIG}" user.name  "$git_name"
