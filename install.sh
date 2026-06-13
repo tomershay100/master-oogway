@@ -10,6 +10,8 @@ readonly INSTALL_DIR="${HOME}/.master-oogway"
 readonly CONF_DIR="${HOME}/.config/master-oogway"
 readonly STATE_FILE="${CONF_DIR}/state"
 readonly ZSHRC="${HOME}/.zshrc"
+readonly GITCONFIG="${HOME}/.gitconfig"
+readonly GITCONFIG_BUNDLE="${HOME}/.gitconfig.master-oogway"
 
 # -- Colors & logging -----------------------------------------------------------
 
@@ -740,9 +742,6 @@ _install_editorconfig
 # ~/.gitconfig.master-oogway  — bundle-managed settings (always updated)
 # ~/.gitconfig                — user-owned; created once, never overwritten
 #                               contains [user] + [include] pointing to both files
-
-readonly GITCONFIG="${HOME}/.gitconfig"
-readonly GITCONFIG_BUNDLE="${HOME}/.gitconfig.master-oogway"
 
 _install_gitconfig()
 {
