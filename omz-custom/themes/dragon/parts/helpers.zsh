@@ -1,11 +1,10 @@
 __get_xterm_color_by_name()
 {
-	typeset -n _dragon_color_out=$1
-	local color_name="$2"
+	XTERM_COLOR=""
+	local color_name="$1"
 
-	_dragon_color_out=""
 	if [[ $color_name =~ ^[0-9]+$ && 10#$color_name -le 255 ]]; then
-		_dragon_color_out="$color_name"
+		XTERM_COLOR="$color_name"
 		return
 	fi
 
@@ -13,7 +12,7 @@ __get_xterm_color_by_name()
 
 	local fg_code="${_MO_COLORS[${(L)color_name}]}"
 	if [[ -n "$fg_code" ]]; then
-		_dragon_color_out="$fg_code"
+		XTERM_COLOR="$fg_code"
 	else
 		print -P "%F{red}[dragon] unknown color: '${color_name}' — check ~/.config/master-oogway/conf.zsh%f" >&2
 	fi
@@ -30,15 +29,16 @@ __get_xterm_style_format()
 	[[ "$is_bold" == "true" ]] && STYLE_FORMAT+="%B" || STYLE_FORMAT+="%b"
 	[[ "$is_underline" == "true" ]] && STYLE_FORMAT+="%U" || STYLE_FORMAT+="%u"
 
-	local fg_code bg_code
-	__get_xterm_color_by_name fg_code "$fg_color"
+	__get_xterm_color_by_name "$fg_color"
+	local fg_code="$XTERM_COLOR"
 	if [[ -n "$fg_code" ]]; then
 		STYLE_FORMAT+="%F{$fg_code}"
 	else
 		STYLE_FORMAT+="%f"
 	fi
 
-	__get_xterm_color_by_name bg_code "$bg_color"
+	__get_xterm_color_by_name "$bg_color"
+	local bg_code="$XTERM_COLOR"
 	if [[ -n "$bg_code" ]]; then
 		STYLE_FORMAT+="%K{$bg_code}"
 	else
