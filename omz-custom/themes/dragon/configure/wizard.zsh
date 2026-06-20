@@ -57,7 +57,7 @@ _dragon_edit_var() {
 			print -P "  %F{245}             grey maroon lime olive navy fuchsia aqua silver%f"
 			print -P "  %F{245}Or 0–255 for extended 256 colors. Leave empty for no color.%f"
 			print -P "  %F{245}To browse all 256 colors, run:%f"
-			print "  for i in {0..255}; do print -Pn \"%K{\$i}  %k%F{\$i}\${(l:3::0:)i}%f \" \${(M)\$((i%6)):#3}:+\$'\\n'}; done"
+			print "  for i in {0..255}; do print -Pn \"%K{\$i}  %k%F{\$i}\${(l:3::0:)i}%f \" \${\${(M)\$((i%6)):#3}:+\$'\\n'}; done"
 			print ""
 			if [[ -n "$current" ]]; then
 				print -P "  %F{245}[e] erase → empty   [Enter] keep current   or type new value%f"
