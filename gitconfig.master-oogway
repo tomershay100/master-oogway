@@ -75,7 +75,7 @@
 	date = iso                          # `git log` prints dates as 2026-05-10 17:53:00 +0000
 
 [help]
-	autocorrect = prompt                # on a typo, show the closest command and ask before running it
+	autocorrect = prompt                # on a typo, show the closest command and ask before running it (requires git ≥ 2.30)
 
 [transfer]
 	fsckObjects = true                  # verify object integrity on push/fetch — catches repo corruption early
