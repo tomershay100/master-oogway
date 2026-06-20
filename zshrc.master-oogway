@@ -86,7 +86,7 @@ zstyle ':completion:*' group-name ''                               # group items
 # Drop *.zsh files in $MO_CONFIG_DIR/custom-pre-zsh/ to source them here,
 # before plugins and oh-my-zsh (good for PATH changes, env vars, early overrides).
 for __mo_file in "$MO_CONFIG_DIR/custom-pre-zsh/"*.zsh(N); do
-    source "$__mo_file"
+    source "$__mo_file" || print -P "%F{yellow}[master-oogway]%f warn: failed to source $__mo_file" >&2
 done
 unset __mo_file
 
@@ -207,7 +207,7 @@ setopt MENU_COMPLETE  # first Tab inserts the first match (must follow omz — i
 for __mo_plugin in "$MO_CONFIG_DIR/custom-plugins"/*(N/); do
     __mo_name="${${__mo_plugin%/}:t}"
     [[ -f "${__mo_plugin}${__mo_name}.plugin.zsh" ]] \
-        && source "${__mo_plugin}${__mo_name}.plugin.zsh"
+        && { source "${__mo_plugin}${__mo_name}.plugin.zsh" || print -P "%F{yellow}[master-oogway]%f warn: failed to source ${__mo_name}" >&2; }
 done
 unset __mo_plugin __mo_name
 
@@ -215,7 +215,7 @@ unset __mo_plugin __mo_name
 # Drop *.zsh files in $MO_CONFIG_DIR/custom-zsh/ to source them here,
 # after plugins and oh-my-zsh (good for aliases, functions, prompt tweaks).
 for __mo_file in "$MO_CONFIG_DIR/custom-zsh/"*.zsh(N); do
-    source "$__mo_file"
+    source "$__mo_file" || print -P "%F{yellow}[master-oogway]%f warn: failed to source $__mo_file" >&2
 done
 unset __mo_file
 
