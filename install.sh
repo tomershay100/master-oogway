@@ -456,7 +456,7 @@ fi
 
 if _running_from_master_oogway_clone && ! _running_from_install_dir; then
 	_MO_DEV_DIR="$(_script_dir)"
-	if [[ -L "${INSTALL_DIR}" && "$(readlink "${INSTALL_DIR}")" == "${_MO_DEV_DIR}" ]]; then
+	if [[ -L "${INSTALL_DIR}" && "$(realpath "${INSTALL_DIR}" 2>/dev/null)" == "$(realpath "${_MO_DEV_DIR}" 2>/dev/null)" ]]; then
 		success "${INSTALL_DIR} already linked to this repo"
 	elif [[ -L "${INSTALL_DIR}" ]]; then
 		warn "${INSTALL_DIR} points elsewhere: $(readlink "${INSTALL_DIR}")"
