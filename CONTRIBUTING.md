@@ -39,6 +39,9 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
         prompt.zsh                __calc_prompt_length, dragon__set_lprompt/set_rprompt
         lifecycle.zsh             __update_prompt, __refresh_prompt, dragon__update_zsh_prompt
         transient.zsh             zle hooks, transient prompt collapse
+  lib/
+    colors.zsh                    named xterm-256 color table — shared by dragon theme and mo-color plugin
+    clip.zsh                      clipboard helper (copy/paste wrappers)
   plugins/
     mo-*/mo-*.plugin.zsh          25 master-oogway plugins (6 override + 19 additive)
 ```
@@ -85,7 +88,7 @@ Different files have different latency depending on how they reach disk:
 |---|---|
 | Any `omz-custom/` file (plugins, theme parts, configure, notifier) | `soursh` — live via symlink |
 | `zshenv.master-oogway` | re-run `./install.sh`, then `soursh` |
-| `gitconfig.master-oogway` | re-run `./install.sh` |
+| `gitconfig.master-oogway` | re-run `./install.sh` — copies to `~/.gitconfig.master-oogway`; `~/.gitconfig` is NOT replaced, only an `[include]` pointing to it is added once |
 | `editorconfig.master-oogway` | re-run `./install.sh` |
 | `zshrc.master-oogway` | `rm ~/.zshrc && ./install.sh` |
 | `install.sh` itself | just run `./install.sh` — idempotent |

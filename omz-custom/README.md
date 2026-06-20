@@ -16,6 +16,9 @@ themes/
     configure/             interactive wizard implementation
     aliases.zsh            rezsh, reset_theme_variables
     parts/                 segment renderers, prompt assembly
+lib/
+  colors.zsh             named xterm-256 color table (shared by dragon theme and mo-color plugin)
+  clip.zsh               clipboard helper (copy/paste wrappers)
 plugins/
   mo-*/                  25 master-oogway plugins (6 overrides + 19 additive)
   gitstatus/             vendored: gitstatus (submodule)
