@@ -49,27 +49,35 @@ require_cmd()
 	command -v "$cmd" &>/dev/null || die "'${cmd}' not found. Install: sudo apt install ${pkg}"
 }
 
-# Try to install a package via apt-get if it's missing. Returns 0 if the command
-# is now on PATH (either was already, or installed successfully), 1 otherwise.
-# Caller decides whether to die() or continue.
-apt_install()
+# -- Required package check -----------------------------------------------------
+# Checks zsh, git, curl are present. If any are missing, prints one message
+# listing all of them together and exits. No sudo, no auto-install.
+
+_check_required_packages()
 {
-	local cmd="$1" pkg="${2:-$1}"
-	command -v "$cmd" &>/dev/null && return 0
-	if ! command -v apt-get &>/dev/null; then
-		warn "'${cmd}' not installed and apt-get is unavailable — install '${pkg}' manually"
-		return 1
-	fi
-	info "'${cmd}' not installed — running: sudo apt-get install -y ${pkg}"
-	local _apt_err
-	_apt_err=$(sudo apt-get install -y "$pkg" 2>&1 >/dev/null)
-	if command -v "$cmd" &>/dev/null; then
-		success "Installed ${pkg}"
-		return 0
-	fi
-	warn "Failed to install '${pkg}' — try manually: sudo apt install ${pkg}"
-	[[ -n "$_apt_err" ]] && echo "$_apt_err" >&2
-	return 1
+	local -a missing=()
+	command -v zsh  &>/dev/null || missing+=(zsh)
+	command -v git  &>/dev/null || missing+=(git)
+	command -v curl &>/dev/null || missing+=(curl)
+
+	[[ ${#missing[@]} -eq 0 ]] && return 0
+
+	echo "" >&2
+	echo -e "${COLOR_RED}┌─────────────────────────────────────────────────────┐${COLOR_RESET}" >&2
+	echo -e "${COLOR_RED}│  Required packages missing                          │${COLOR_RESET}" >&2
+	echo -e "${COLOR_RED}└─────────────────────────────────────────────────────┘${COLOR_RESET}" >&2
+	echo "" >&2
+	echo -e "  The following packages are required by master-oogway:" >&2
+	echo "" >&2
+	for pkg in "${missing[@]}"; do
+		echo -e "    ${COLOR_RED}•${COLOR_RESET} ${pkg}" >&2
+	done
+	echo "" >&2
+	echo -e "  Install them first, then re-run the installer:" >&2
+	echo "" >&2
+	echo -e "    ${COLOR_CYAN}sudo apt install ${missing[*]}${COLOR_RESET}" >&2
+	echo "" >&2
+	exit 1
 }
 
 copy_file()
@@ -163,15 +171,16 @@ print_todos()
 }
 
 # -- Optional dependency report -------------------------------------------------
-# Reads optional-deps.zsh from every plugin, checks which commands are missing,
-# and prints a grouped table + one-liner install command.
+# _collect_missing_optionals: reads optional-deps.zsh from every plugin and
+# populates three associative arrays (by nameref) in the caller's scope:
+#   _mo_missing_cmds[plugin]  = "cmd1 cmd2 ..."
+#   _mo_descriptions[cmd]     = human-readable description
+#   _mo_apt_pkgs[cmd]         = apt package name
+# Returns 1 (no output) when nothing is missing.
 
-_check_optional_deps()
+_collect_missing_optionals()
 {
 	local plugins_dir="${INSTALL_DIR}/omz-custom/plugins"
-	declare -A missing_cmds=()
-	declare -A descriptions=()
-	declare -A apt_pkgs=()
 
 	local plugin_dir dep_file plugin_name raw_deps raw_apt cmd desc pkg
 	for dep_file in "${plugins_dir}"/mo-*/optional-deps.zsh; do
@@ -195,12 +204,12 @@ _check_optional_deps()
 
 		while IFS=$'\t' read -r cmd desc; do
 			[[ -n "$cmd" ]] || continue
-			descriptions["$cmd"]="$desc"
+			_mo_descriptions["$cmd"]="$desc"
 		done <<< "$raw_deps"
 
 		while IFS=$'\t' read -r cmd pkg; do
 			[[ -n "$cmd" ]] || continue
-			apt_pkgs["$cmd"]="$pkg"
+			_mo_apt_pkgs["$cmd"]="$pkg"
 		done <<< "$raw_apt"
 
 		local missing_for_plugin=""
@@ -217,24 +226,34 @@ _check_optional_deps()
 		done <<< "$raw_deps"
 
 		missing_for_plugin="${missing_for_plugin# }"
-		[[ -n "$missing_for_plugin" ]] && missing_cmds["$plugin_name"]="$missing_for_plugin"
+		[[ -n "$missing_for_plugin" ]] && _mo_missing_cmds["$plugin_name"]="$missing_for_plugin"
 	done
 
-	[[ ${#missing_cmds[@]} -eq 0 ]] && return 0
+	[[ ${#_mo_missing_cmds[@]} -gt 0 ]]
+}
+
+# _report_optional_deps: prints the optional-package table and install hint.
+# Call after _collect_missing_optionals has populated the three arrays.
+# $1 = "block" → hard-exit after printing (fresh install without --no-recommended-packages)
+#    = "warn"  → print only, no exit (update mode)
+
+_report_optional_deps()
+{
+	local mode="${1:-warn}"
 
 	echo ""
 	echo -e "${COLOR_YELLOW}┌─────────────────────────────────────────────────────┐${COLOR_RESET}"
-	echo -e "${COLOR_YELLOW}│  Optional packages not installed                    │${COLOR_RESET}"
+	echo -e "${COLOR_YELLOW}│  Recommended packages not installed                 │${COLOR_RESET}"
 	echo -e "${COLOR_YELLOW}└─────────────────────────────────────────────────────┘${COLOR_RESET}"
 
 	local all_missing_pkgs=()
-	local plugin first; local -a cmds_for_plugin
-	for plugin in "${!missing_cmds[@]}"; do
+	local plugin first cmd desc pkg; local -a cmds_for_plugin
+	for plugin in "${!_mo_missing_cmds[@]}"; do
 		first=true
-		read -ra cmds_for_plugin <<< "${missing_cmds[$plugin]}"
+		read -ra cmds_for_plugin <<< "${_mo_missing_cmds[$plugin]}"
 		for cmd in "${cmds_for_plugin[@]}"; do
-			desc="${descriptions[$cmd]:-$cmd}"
-			pkg="${apt_pkgs[$cmd]:-$cmd}"
+			desc="${_mo_descriptions[$cmd]:-$cmd}"
+			pkg="${_mo_apt_pkgs[$cmd]:-$cmd}"
 			if $first; then
 				printf "  ${COLOR_YELLOW}%-20s${COLOR_RESET}  %-12s  %s\n" "$plugin" "$cmd" "$desc"
 				first=false
@@ -246,16 +265,31 @@ _check_optional_deps()
 	done
 
 	local unique_pkgs=()
-	declare -A seen_pkg=()
+	declare -A _seen_pkg=()
 	for p in "${all_missing_pkgs[@]}"; do
-		[[ -z "${seen_pkg[$p]+set}" ]] || continue
-		seen_pkg["$p"]=1
+		[[ -z "${_seen_pkg[$p]+set}" ]] || continue
+		_seen_pkg["$p"]=1
 		unique_pkgs+=("$p")
 	done
 
 	echo ""
-	echo -e "  To install all:  ${COLOR_CYAN}sudo apt install ${unique_pkgs[*]}${COLOR_RESET}"
-	echo ""
+	if [[ "$mode" == "block" ]]; then
+		echo -e "  These packages are optional but recommended for the best experience."
+		echo -e "  Install them alongside master-oogway:"
+		echo ""
+		echo -e "    ${COLOR_CYAN}sudo apt install ${unique_pkgs[*]}${COLOR_RESET}"
+		echo ""
+		echo -e "  Or skip them and install anyway:"
+		echo ""
+		echo -e "    ${COLOR_CYAN}./install.sh --no-recommended-packages${COLOR_RESET}"
+		echo ""
+		exit 1
+	else
+		echo -e "  Install recommended packages for the best experience:"
+		echo ""
+		echo -e "    ${COLOR_CYAN}sudo apt install ${unique_pkgs[*]}${COLOR_RESET}"
+		echo ""
+	fi
 }
 
 # -- Mode detection -------------------------------------------------------------
@@ -302,7 +336,7 @@ _git_out=""
 
 if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_oogway_clone; }; then
 	_running_via_pipe || info "Script is not running from a master-oogway clone — bootstrapping..."
-	apt_install git || die "Cannot proceed without git"
+	command -v git &>/dev/null || die "git is required to install master-oogway. Install it first: sudo apt install git"
 	if git -C "${INSTALL_DIR}" rev-parse --git-dir &>/dev/null 2>&1; then
 		info "Updating ${INSTALL_DIR}..."
 		_git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
@@ -404,7 +438,9 @@ _zcompile_plugins()
 
 # -- Mode: update (running from ~/.master-oogway/install.sh) ------------------
 
+_MO_UPDATE_MODE=false
 if _running_from_install_dir; then
+	_MO_UPDATE_MODE=true
 	info "Updating ${INSTALL_DIR}..."
 	_git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
 	_init_plugins
@@ -445,43 +481,50 @@ _print_version()
 	echo "master-oogway ${version}"
 }
 
-if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-	cat <<'EOF'
-Usage: install.sh [--help | --version | --uninstall | --force]
+MO_FORCE=false
+MO_UNINSTALL=false
+MO_NO_RECOMMENDED=false
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--help|-h)
+			cat <<'EOF'
+Usage: install.sh [--help | --version | --uninstall | --force | --no-recommended-packages]
 
 Modes (auto-detected from where you run the script):
   curl pipe   bash -c "$(curl -fsSL <url>/install.sh)"
-			  Clones the repo to ~/.master-oogway/ then re-execs from there.
+              Clones the repo to ~/.master-oogway/ then re-execs from there.
 
   update      ~/.master-oogway/install.sh
-			  Runs git pull + submodule update, then re-applies dotfiles.
+              Runs git pull + submodule update, then re-applies dotfiles.
 
   dev         /path/to/local/clone/install.sh
-			  Symlinks ~/.master-oogway → local clone for live development.
+              Symlinks ~/.master-oogway → local clone for live development.
 
 Options:
-  --help       Show this message and exit
-  --version    Print the installed version (date + git hash) and exit
-  --uninstall  Remove all master-oogway files, config, and dotfile changes
-  --force, -f  Overwrite ~/.zshrc even if it already exists
+  --help                      Show this message and exit
+  --version                   Print the installed version (date + git hash) and exit
+  --uninstall                 Remove all master-oogway files, config, and dotfile changes
+  --force, -f                 Overwrite ~/.zshrc even if it already exists
+  --no-recommended-packages   Skip the recommended-packages check and install anyway
 EOF
-	exit 0
-fi
-
-if [[ "${1:-}" == "--version" || "${1:-}" == "-v" ]]; then
-	_print_version
-	exit 0
-fi
-
-MO_FORCE=false
-if [[ "${1:-}" == "--force" || "${1:-}" == "-f" ]]; then
-	MO_FORCE=true
+			exit 0
+			;;
+		--version|-v)
+			_print_version
+			exit 0
+			;;
+		--uninstall) MO_UNINSTALL=true ;;
+		--force|-f)  MO_FORCE=true ;;
+		--no-recommended-packages) MO_NO_RECOMMENDED=true ;;
+		*) die "Unknown option: $1 (run with --help for usage)" ;;
+	esac
 	shift
-fi
+done
 
 # -- Uninstall ------------------------------------------------------------------
 
-if [[ "${1:-}" == "--uninstall" ]]; then
+if [[ "$MO_UNINSTALL" == true ]]; then
 	info "Uninstalling dragon (master-oogway)..."
 
 	# .zshrc
@@ -611,12 +654,7 @@ fi
 
 [[ "$(uname)" == "Linux" ]] || die "dragon requires Linux (Ubuntu 24.04). macOS/BSD are not supported."
 
-# Must-have packages — auto-installed via apt-get when missing. dragon cannot
-# function without these.
-apt_install bash || die "Cannot proceed without bash"
-apt_install zsh  || die "Cannot proceed without zsh"
-apt_install git  || die "Cannot proceed without git"
-apt_install curl || die "Cannot proceed without curl (needed by the oh-my-zsh installer)"
+_check_required_packages
 
 # en_US.UTF-8 locale — required for correct terminal rendering and zshrc's
 # locale block. Not auto-fixed: update-locale writes /etc/default/locale and
@@ -981,7 +1019,22 @@ EOF
 
 # -- Done -----------------------------------------------------------------------
 
-_check_optional_deps
-print_todos
+declare -A _mo_missing_cmds=() _mo_descriptions=() _mo_apt_pkgs=()
+if _collect_missing_optionals; then
+	if [[ "$_MO_UPDATE_MODE" == true ]]; then
+		# update: never block, report at end so the user is informed
+		print_todos
+		_report_optional_deps "warn"
+	elif [[ "$MO_NO_RECOMMENDED" == true ]]; then
+		# fresh install with --no-recommended-packages: report but don't block
+		print_todos
+		_report_optional_deps "warn"
+	else
+		# fresh install: block and show install instructions
+		_report_optional_deps "block"
+	fi
+else
+	print_todos
+fi
 _print_backup_tip
 success "dragon installation complete. Open a new terminal to apply changes."
