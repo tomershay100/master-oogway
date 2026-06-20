@@ -97,6 +97,17 @@ _dragon_load_current_conf() {
 			_DRAGON_CURRENT[$varname]="$raw"
 		fi
 	done < "${_DRAGON_CONF_FILE}"
+
+	# Validate integer-typed vars; reset to default + warn on bad value.
+	local val
+	for varname in "${(@k)_DRAGON_TYPE}"; do
+		[[ "${_DRAGON_TYPE[$varname]}" == "integer" ]] || continue
+		val="${_DRAGON_CURRENT[$varname]}"
+		if [[ -n "$val" && ! "$val" =~ ^[0-9]+$ ]]; then
+			print -P "%F{yellow}[dragon]%f conf.zsh: DRAGON__${varname}='${val}' is not a valid integer — using default (${_DRAGON_DEFAULTS[$varname]})" >&2
+			_DRAGON_CURRENT[$varname]="${_DRAGON_DEFAULTS[$varname]}"
+		fi
+	done
 }
 
 # Reset _DRAGON_CURRENT to defaults, then load overrides from the preset file.

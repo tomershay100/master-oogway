@@ -41,6 +41,19 @@ for _dragon_k _dragon_v in "${(@kv)_DRAGON_DEFAULTS}"; do
 done
 unset _dragon_k _dragon_v
 
+# Validate integer-typed vars set by conf.zsh; reset to default + warn on bad value.
+_dragon_init_types
+typeset _dragon_varname
+for _dragon_k in "${(@k)_DRAGON_TYPE}"; do
+	[[ "${_DRAGON_TYPE[$_dragon_k]}" == "integer" ]] || continue
+	_dragon_varname="DRAGON__${_dragon_k}"
+	if [[ ! "${(P)_dragon_varname}" =~ ^[0-9]+$ ]]; then
+		print -P "%F{yellow}[dragon]%f conf.zsh: ${_dragon_varname}='${(P)_dragon_varname}' is not a valid integer — using default (${_DRAGON_DEFAULTS[$_dragon_k]})" >&2
+		export "${_dragon_varname}=${_DRAGON_DEFAULTS[$_dragon_k]}"
+	fi
+done
+unset _dragon_k _dragon_varname
+
 source "${0:a:h}/../../lib/colors.zsh"
 
 # -- Source prompt parts -------------------------------------------------------
