@@ -33,6 +33,18 @@ indent_size = 2
 indent_style = space
 indent_size = 2
 
+[*.{toml,ini,cfg}]
+indent_style = space
+indent_size = 4
+
+[*.{go,rs}]
+indent_style = tab
+tab_width = 4
+
+[Dockerfile]
+indent_style = space
+indent_size = 4
+
 [*.md]
 trim_trailing_whitespace = false
 # Markdown uses trailing spaces for line breaks — do not enable trim here.
