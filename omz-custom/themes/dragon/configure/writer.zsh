@@ -50,7 +50,7 @@ HEADER
 			printf '# ── %s %s\n' "$title" "$dashes"
 			printf '# %s\n' "${_DRAGON_GROUP_DESC[$group]}"
 
-			vars=( ${(z)_DRAGON_GROUP_VARS[$group]} )
+			vars=( ${(s: :)_DRAGON_GROUP_VARS[$group]} )
 			for var in "${vars[@]}"; do
 				val="${_DRAGON_CURRENT[$var]}"
 				default="${_DRAGON_DEFAULTS[$var]:-}"

@@ -122,7 +122,7 @@ _dragon_run_step() {
 	local step_num="$2"
 	local total="$3"
 	local vars
-	vars=( ${(z)_DRAGON_GROUP_VARS[$group]} )
+	vars=( ${(s: :)_DRAGON_GROUP_VARS[$group]} )
 
 	local title pad_len dashes var val default val_trimmed val_display marker type_hint vtype i key idx key2 _stty2
 
@@ -306,7 +306,7 @@ _dragon_filter_changed_groups() {
 	local -a changed=()
 	local group var
 	for group in "${_DRAGON_GROUPS[@]}"; do
-		local vars=( ${(z)_DRAGON_GROUP_VARS[$group]} )
+		local vars=( ${(s: :)_DRAGON_GROUP_VARS[$group]} )
 		for var in "${vars[@]}"; do
 			if [[ "${_DRAGON_CURRENT[$var]}" != "${_DRAGON_DEFAULTS[$var]:-}" ]]; then
 				changed+=("$group")
