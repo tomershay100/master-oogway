@@ -36,6 +36,6 @@ MO_WELCOME_FIELDS=""                        # silence the banner
 | `load` | `0.91 load · 4 cores · 23% busy` | green/yellow/red by % |
 | `mem`  | `8.3 / 15.4 GB (54%)` | from `/proc/meminfo` |
 | `tmux` | tmux session name | hidden when not in tmux |
-| `ssh`  | remote user@host label | hidden when not in an SSH session |
+| `ssh`  | remote user@host plus source IP you connected from | hidden when not in an SSH session |
 
 Order is preserved — fields print top-to-bottom as listed. Context-aware fields (`tmux`, `ssh`) emit nothing when their condition isn't met, so they can be listed unconditionally.

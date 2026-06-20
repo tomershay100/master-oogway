@@ -83,7 +83,9 @@ _mo_welcome_field_tmux() {
 
 _mo_welcome_field_ssh() {
 	[[ -n "${SSH_CONNECTION:-}" ]] || return 0
-	print -P "  %F{245}ssh %f   %F{yellow}${USER}@${HOST%%.*} (remote)%f"
+	# SSH_CONNECTION = "<client-ip> <client-port> <server-ip> <server-port>"
+	local from="${SSH_CONNECTION%% *}"
+	print -P "  %F{245}ssh %f   %F{yellow}${USER}@${HOST%%.*} ← ${from}%f"
 }
 
 () {
