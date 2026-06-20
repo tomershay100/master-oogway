@@ -6,7 +6,6 @@
 set -Eeuo pipefail
 
 readonly REPO_URL="https://github.com/tomershay100/master-oogway.git"
-readonly INSTALL_URL="https://raw.githubusercontent.com/tomershay100/master-oogway/main/install.sh"
 readonly INSTALL_DIR="${HOME}/.master-oogway"
 readonly CONF_DIR="${HOME}/.config/master-oogway"
 readonly STATE_FILE="${CONF_DIR}/state"
@@ -283,7 +282,7 @@ _report_optional_deps()
 		echo -e "  Or skip them and install without the recommended packages:"
 		echo ""
 		if _running_via_pipe; then
-			echo -e "    ${COLOR_CYAN}bash -c \"\$(curl -fsSL ${INSTALL_URL})\" -- --no-recommended-packages${COLOR_RESET}"
+			echo -e "    ${COLOR_CYAN}~/.master-oogway/install.sh --no-recommended-packages${COLOR_RESET}"
 		else
 			echo -e "    ${COLOR_CYAN}./install.sh --no-recommended-packages${COLOR_RESET}"
 		fi
