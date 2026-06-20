@@ -16,9 +16,15 @@ __start_gitstatus_once()
 
 __update_gitstatusd()
 {
-	# Skip silently when the gitstatus plugin was not sourced (submodule missing).
-	# VCS_STATUS_RESULT is left unset so dragon__set_git_prompt renders nothing.
-	$_DRAGON_GITSTATUS_AVAILABLE || return 0
+	# Skip when the gitstatus plugin was not sourced (submodule missing).
+	# Unset stale VCS_STATUS_* so dragon__set_git_prompt renders nothing.
+	if ! $_DRAGON_GITSTATUS_AVAILABLE; then
+		unset VCS_STATUS_RESULT VCS_STATUS_WORKDIR VCS_STATUS_LOCAL_BRANCH \
+		      VCS_STATUS_REMOTE_NAME VCS_STATUS_COMMIT VCS_STATUS_COMMITS_AHEAD \
+		      VCS_STATUS_COMMITS_BEHIND VCS_STATUS_HAS_STAGED VCS_STATUS_HAS_UNSTAGED \
+		      VCS_STATUS_STASHES
+		return 0
+	fi
 	__start_gitstatus_once
 	gitstatus_query -d "$PWD" -c __refresh_prompt -t 0 "$_GITSTATUS_NAME"
 }
