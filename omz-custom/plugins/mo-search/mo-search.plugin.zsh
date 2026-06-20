@@ -37,7 +37,8 @@ if [[ -o extendedhistory ]]; then
 		selected=$(fc -rflD 1 \
 			| awk 'BEGIN{FS="  "} {
 				num=$1; gsub(/ /,"",num)
-				print num "\t" $2 " " $3 "\t" $4
+				cmd=$4; for(i=5;i<=NF;i++) cmd=cmd"  "$i
+				print num "\t" $2 " " $3 "\t" cmd
 			}' \
 			| FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} ${FZF_DEFAULT_OPTS-} \
 				--scheme=history --bind=ctrl-r:toggle-sort,ctrl-z:ignore \
@@ -72,7 +73,7 @@ fhist() {
 		# fc -fDln format: "date  elapsed  cmd" (double-space separated).
 		# awk emits "date elapsed\tcmd" so fzf displays the prefix and searches only cmd.
 		selected=$(fc -fDln 1 \
-			| awk 'BEGIN{FS="  "} { print $1 " " $2 "\t" $3 }' \
+			| awk 'BEGIN{FS="  "} { cmd=$3; for(i=4;i<=NF;i++) cmd=cmd"  "$i; print $1 " " $2 "\t" cmd }' \
 			| fzf --tac --height=40% --reverse --no-sort \
 				--delimiter $'\t' --nth='2..' --with-nth='1,2..' --prompt='hist> ')
 		cmd="${selected#*$'\t'}"  # everything after the tab is the command
