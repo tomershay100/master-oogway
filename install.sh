@@ -578,7 +578,6 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 	_sshd_needs_reload=false
 	if [[ -f "$_uninstall_dropin" ]]; then
 		if confirm "Remove ${_uninstall_dropin} and reload sshd? (sudo required)"; then
-			sudo -v || true
 			sudo rm -f "$_uninstall_dropin"
 			_sshd_needs_reload=true
 			success "Removed ${_uninstall_dropin}"
@@ -588,10 +587,13 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 	fi
 	# Also clean up any legacy marker-wrapped block left in the main config.
 	if grep -qF '# BEGIN master-oogway:acceptenv' "$_uninstall_sshd_config" 2>/dev/null; then
-		sudo -v || true
-		sudo sed -i '/# BEGIN master-oogway:acceptenv/,/# END master-oogway:acceptenv/d' "$_uninstall_sshd_config"
-		_sshd_needs_reload=true
-		info "Removed legacy AcceptEnv stanza from /etc/ssh/sshd_config"
+		if confirm "Remove legacy AcceptEnv block from ${_uninstall_sshd_config} and reload sshd? (sudo required)"; then
+			sudo sed -i '/# BEGIN master-oogway:acceptenv/,/# END master-oogway:acceptenv/d' "$_uninstall_sshd_config"
+			_sshd_needs_reload=true
+			info "Removed legacy AcceptEnv stanza from /etc/ssh/sshd_config"
+		else
+			warn "Skipped — remove manually: sudo sed -i '/# BEGIN master-oogway:acceptenv/,/# END master-oogway:acceptenv/d' ${_uninstall_sshd_config}"
+		fi
 	fi
 	if [[ "$_sshd_needs_reload" == true ]]; then
 		if sudo sshd -t 2>/dev/null; then
