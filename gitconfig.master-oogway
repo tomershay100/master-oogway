@@ -77,6 +77,13 @@
 [help]
 	autocorrect = prompt                # on a typo, show the closest command and ask before running it (requires git ≥ 2.30)
 
+[alias]
+	co     = checkout
+	sw     = switch
+	lg     = log --oneline --graph --decorate
+	last   = log -1 HEAD --stat
+	unstage = reset HEAD --
+
 [transfer]
 	fsckObjects = true                  # verify object integrity on push/fetch — catches repo corruption early
 
