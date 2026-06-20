@@ -27,6 +27,33 @@ if [[ -n "$_mo_search_fd" ]]; then
 fi
 unset _mo_search_fd
 
+# -- CTRL-R override: add date+elapsed when EXTENDED_HISTORY is set ------------
+if [[ -o extendedhistory ]]; then
+	fzf-history-widget() {
+		local selected num
+		setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2>/dev/null
+		# fc -rflD format: " num  date  elapsed  cmd" (double-space separated).
+		# awk emits "num\tdate elapsed\tcmd" so fzf can search only the cmd (--nth=2..).
+		selected=$(fc -rflD 1 \
+			| awk 'BEGIN{FS="  "} {
+				num=$1; gsub(/ /,"",num)
+				print num "\t" $2 " " $3 "\t" $4
+			}' \
+			| FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} ${FZF_DEFAULT_OPTS-} \
+				--scheme=history --bind=ctrl-r:toggle-sort,ctrl-z:ignore \
+				${FZF_CTRL_R_OPTS-} --query=${(qqq)LBUFFER} +m" \
+				fzf --delimiter $'\t' --nth='3..' --with-nth='2,3..')
+		local ret=$?
+		if [[ -n "$selected" ]]; then
+			num="${selected%%$'\t'*}"
+			zle vi-fetch-history -n "$num"
+		fi
+		zle reset-prompt
+		return $ret
+	}
+	zle -N fzf-history-widget
+fi
+
 alias grep='noglob command grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} --exclude={*.so,*.apd,*.pd}'
 alias grepi='grep -i'
 alias f="find . | grepi"
@@ -42,18 +69,18 @@ fhist() {
 	command -v fzf &>/dev/null || { echo "fhist: fzf not installed" >&2; return 1; }
 	local selected cmd
 	if [[ -o extendedhistory ]]; then
-		# fc -fDln: "date  elapsed  cmd" — replace first double-space with tab so
-		# commands containing double-spaces are never truncated on extraction.
-		selected=$(fc -fDln 1 | sed 's/  /\t/' \
+		# fc -fDln format: "date  elapsed  cmd" (double-space separated).
+		# awk emits "date elapsed\tcmd" so fzf displays the prefix and searches only cmd.
+		selected=$(fc -fDln 1 \
+			| awk 'BEGIN{FS="  "} { print $1 " " $2 "\t" $3 }' \
 			| fzf --tac --height=40% --reverse --no-sort \
-				--delimiter $'\t' --nth='2..' --prompt='hist> ')
-		cmd="${selected#*$'\t'}"  # strip date+elapsed prefix up to first tab
+				--delimiter $'\t' --nth='2..' --with-nth='1,2..' --prompt='hist> ')
+		cmd="${selected#*$'\t'}"  # everything after the tab is the command
 	else
 		selected=$(fc -ln 1 | fzf --tac --height=40% --reverse --no-sort \
 			--prompt='hist> ')
 		cmd="$selected"
 	fi
-	cmd="${cmd# }"; cmd="${cmd# }"  # strip up to two leading spaces (elapsed alignment)
 	[[ -n "$cmd" ]] && print -z -- "$cmd"
 }
 
