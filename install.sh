@@ -6,6 +6,7 @@
 set -Eeuo pipefail
 
 readonly REPO_URL="https://github.com/tomershay100/master-oogway.git"
+readonly INSTALL_URL="https://raw.githubusercontent.com/tomershay100/master-oogway/main/install.sh"
 readonly INSTALL_DIR="${HOME}/.master-oogway"
 readonly CONF_DIR="${HOME}/.config/master-oogway"
 readonly STATE_FILE="${CONF_DIR}/state"
@@ -279,9 +280,13 @@ _report_optional_deps()
 		echo ""
 		echo -e "    ${COLOR_CYAN}sudo apt install ${unique_pkgs[*]}${COLOR_RESET}"
 		echo ""
-		echo -e "  Or skip them and install anyway:"
+		echo -e "  Or skip them and install without the recommended packages:"
 		echo ""
-		echo -e "    ${COLOR_CYAN}./install.sh --no-recommended-packages${COLOR_RESET}"
+		if _running_via_pipe; then
+			echo -e "    ${COLOR_CYAN}bash -c \"\$(curl -fsSL ${INSTALL_URL})\" -- --no-recommended-packages${COLOR_RESET}"
+		else
+			echo -e "    ${COLOR_CYAN}./install.sh --no-recommended-packages${COLOR_RESET}"
+		fi
 		echo ""
 		exit 1
 	else
@@ -336,7 +341,7 @@ _git_out=""
 
 if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_oogway_clone; }; then
 	_running_via_pipe || info "Script is not running from a master-oogway clone — bootstrapping..."
-	command -v git &>/dev/null || die "git is required to install master-oogway. Install it first: sudo apt install git"
+	_check_required_packages
 	if git -C "${INSTALL_DIR}" rev-parse --git-dir &>/dev/null 2>&1; then
 		info "Updating ${INSTALL_DIR}..."
 		_git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
