@@ -35,13 +35,26 @@ fhist() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 		echo "Usage: fhist"
 		echo "  Fuzzy-select a past command and put it in the readline buffer."
+		echo "  Shows date and elapsed time when EXTENDED_HISTORY is set."
 		echo "  Tip: CTRL+R (fzf plugin) does the same from any prompt."
 		return
 	fi
 	command -v fzf &>/dev/null || { echo "fhist: fzf not installed" >&2; return 1; }
-	local cmd
-	cmd=$(fc -ln 1 | fzf --tac --height=40% --reverse --no-sort)
-	[[ -n "$cmd" ]] && print -z "$cmd"
+	local selected cmd
+	if [[ -o extendedhistory ]]; then
+		# fc -fDln: "date  elapsed  cmd" — replace first double-space with tab so
+		# commands containing double-spaces are never truncated on extraction.
+		selected=$(fc -fDln 1 | sed 's/  /\t/' \
+			| fzf --tac --height=40% --reverse --no-sort \
+				--delimiter $'\t' --nth='2..' --prompt='hist> ')
+		cmd="${selected#*$'\t'}"  # strip date+elapsed prefix up to first tab
+	else
+		selected=$(fc -ln 1 | fzf --tac --height=40% --reverse --no-sort \
+			--prompt='hist> ')
+		cmd="$selected"
+	fi
+	cmd="${cmd# }"; cmd="${cmd# }"  # strip up to two leading spaces (elapsed alignment)
+	[[ -n "$cmd" ]] && print -z -- "$cmd"
 }
 
 fman() {
