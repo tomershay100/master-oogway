@@ -95,7 +95,7 @@ unset __mo_file
 # zsh-autosuggestions — grey ghost text suggesting the rest of your line.
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8"                                                    # ghost-text color (8=grey, 240=darker)
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)                                             # history first, then completion engine
-ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20                                                        # skip suggestions on long lines (perf)
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=50                                                        # skip suggestions on long lines (perf)
 ZSH_AUTOSUGGEST_USE_ASYNC=1                                                               # render suggestions async — snappier prompt
 ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(forward-word emacs-forward-word vi-forward-word)  # Ctrl+→ accepts one word of a suggestion
 
