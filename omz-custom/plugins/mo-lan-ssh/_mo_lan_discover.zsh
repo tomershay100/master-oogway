@@ -29,7 +29,7 @@ network_id() {
 		| awk '/default/ { print $3, $5; exit }')
 	[[ -z "$iface" ]] && { echo "unknown"; return; }
 	subnet=$(ip -o -f inet addr show "$iface" 2>/dev/null | awk 'NR==1 { print $4 }')
-	print -- "${gw}-${subnet}" | md5sum | awk '{ print substr($1,1,8) }'
+	local _h; _h=$(print -- "${gw}-${subnet}" | md5sum); print ${_h[1,8]}
 }
 
 local_hostname() { hostname -s 2>/dev/null || hostname; }
