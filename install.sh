@@ -204,7 +204,8 @@ _collect_missing_optionals()
 
 		while IFS=$'\t' read -r cmd desc; do
 			[[ -n "$cmd" ]] || continue
-			_mo_descriptions["$cmd"]="$desc"
+			# key by plugin+cmd: the same command has a different description per plugin
+			_mo_descriptions["${plugin_name}"$'\t'"${cmd}"]="$desc"
 		done <<< "$raw_deps"
 
 		while IFS=$'\t' read -r cmd pkg; do
@@ -252,7 +253,7 @@ _report_optional_deps()
 		first=true
 		read -ra cmds_for_plugin <<< "${_mo_missing_cmds[$plugin]}"
 		for cmd in "${cmds_for_plugin[@]}"; do
-			desc="${_mo_descriptions[$cmd]:-$cmd}"
+			desc="${_mo_descriptions["${plugin}"$'\t'"${cmd}"]:-$cmd}"
 			pkg="${_mo_apt_pkgs[$cmd]:-$cmd}"
 			if $first; then
 				printf "  ${COLOR_YELLOW}%-20s${COLOR_RESET}  %-12s  %s\n" "$plugin" "$cmd" "$desc"
