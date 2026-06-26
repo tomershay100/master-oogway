@@ -80,6 +80,19 @@ _check_required_packages()
 	exit 1
 }
 
+# oh-my-zsh — required, but not an apt package, so checked separately. Checked
+# up front (before any clone) so the user learns every prerequisite in one shot
+# rather than after a full clone + re-exec. We print the official one-liner and
+# exit rather than running it: its installer is interactive and replaces the
+# user's shell — better the user sees the source before running.
+_check_oh_my_zsh()
+{
+	[[ -f "${HOME}/.oh-my-zsh/oh-my-zsh.sh" ]] && return 0
+	die "oh-my-zsh not found — please install it first, then re-run this script:
+
+  sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
+}
+
 copy_file()
 {
 	local src="$1" dst="$2"
@@ -342,6 +355,7 @@ _git_out=""
 if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_oogway_clone; }; then
 	_running_via_pipe || info "Script is not running from a master-oogway clone — bootstrapping..."
 	_check_required_packages
+	_check_oh_my_zsh
 	if git -C "${INSTALL_DIR}" rev-parse --git-dir &>/dev/null 2>&1; then
 		info "Updating ${INSTALL_DIR}..."
 		_git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
@@ -684,14 +698,7 @@ else
 	success "en_US.UTF-8 locale already generated"
 fi
 
-# oh-my-zsh — required, but not an apt package. Print the official one-liner
-# and exit rather than running it ourselves (its installer is interactive and
-# replaces the user's shell — better the user sees the source before running).
-if [[ ! -f "${HOME}/.oh-my-zsh/oh-my-zsh.sh" ]]; then
-	die "oh-my-zsh not found — please install it first, then re-run this script:
-
-  sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
-fi
+_check_oh_my_zsh
 
 # -- .zshrc: installed once; never overwritten unless --force -------------------
 
