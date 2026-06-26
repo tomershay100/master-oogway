@@ -159,7 +159,7 @@ plugins=(
     colored-man-pages         # colorizes man pages for easier reading
     colorize                  # syntax-highlight file contents via 'ccat' / 'cless'
     command-not-found         # suggests packages to install when a command is not found
-    fzf                       # enables Ctrl+R (history), Ctrl+T (file), Alt+C (cd) fuzzy finders
+    # fzf                     # enables Ctrl+R (history), Ctrl+T (file), Alt+C (cd) fuzzy finders
     history-substring-search  # Up/Down arrows search history by the prefix you've already typed
 
     # ── master-oogway plugins ──────────────────────────────────────────────────
@@ -167,12 +167,12 @@ plugins=(
     # inherit the overridden commands. Comment out any line to disable it.
 
     # Override plugins (replace system commands).
-    mo-eza-override            # ls/ll/l/la/tree  → eza
-    mo-bat-override            # cat/less          → bat (syntax-highlighted viewer)
-    mo-nvim-override           # vim               → nvim
+    # mo-eza-override          # ls/ll/l/la/tree  → eza
+    # mo-bat-override          # cat/less         → bat (syntax-highlighted viewer)
+    # mo-nvim-override         # vim              → nvim
     mo-safety-override         # cp/mv/mkdir/reboot with confirmation prompts
     mo-colorize-override       # ip/diff           → colorized output
-    mo-trash                   # rm                → trash-put (restorable); \rm bypasses
+    # mo-trash                 # rm                → trash-put (restorable); \rm bypasses
 
     # Additive plugins (safe to disable individually).
     # mo-projects is first so its aliases lose gracefully to conflicting names below.
@@ -181,12 +181,12 @@ plugins=(
     mo-git                     # git aliases (ga, gs, gp, ...) + gsum, fbranch, flog
     mo-dirs                    # mkcd, up, tmpcd, fcd (fuzzy cd)
     mo-files                   # extract, compress, bak, sizeof, fp (fuzzy file picker)
-    mo-search                  # grep aliases, f (find shortcut), fhist, fman, frg
+    # mo-search                # grep aliases, f (find shortcut), fhist, fman, frg
     mo-network                 # natip (public IP), serve (HTTP server), sshto (fuzzy SSH picker)
     mo-ssh-tunnel              # tunnel <left> to <right> — SSH port-forward helper
     mo-lan-ssh                 # LAN PC aliases + USB gadget ssh-config + hint wrapper (two-host-class model)
     mo-process                 # psgrep, port, fkill (fuzzy process kill)
-    mo-build                   # m (parallel make), mc (make clean)
+    # mo-build                 # m (parallel make), mc (make clean)
     mo-docs                    # md2pdf — Markdown to PDF via pandoc + xelatex
     mo-env                     # fenv (fuzzy environment variable browser)
     mo-mkscript                # mkscript — scaffold a new shell script from template
@@ -194,7 +194,7 @@ plugins=(
     mo-man                     # mo-man <plugin> — view a mo-* plugin README (bat/less)
     mo-shell-tools             # h, ?, cwhich, vwhich, clip, vizsh, soursh, calc, epoch, please, mo-where
     mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path
-    mo-welcome                 # startup banner — fields controlled by MO_WELCOME_FIELDS above
+    # mo-welcome               # startup banner — fields controlled by MO_WELCOME_FIELDS above
 
     # MUST BE LAST — wraps every ZLE widget defined above; new plugins go above
     # this line. zsh-autosuggestions must come BEFORE this entry.

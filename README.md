@@ -28,6 +28,10 @@ The installer sets up `~/.zshrc`, `~/.gitconfig`, `~/.editorconfig`, `~/.zshenv`
 
 Override plugins replace system commands. Comment out any you don't want.
 
+Plugins needing extra tools (eza, bat, neovim, fzf, make, trash-cli) ship
+**commented out** in `~/.zshrc` so a fresh install loads cleanly — install the
+tool, then uncomment the matching line.
+
 | Plugin | Replaces |
 |--------|----------|
 | [mo-eza-override](omz-custom/plugins/mo-eza-override/README.md) | `ls/ll/la/tree` → eza |
