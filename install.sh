@@ -353,7 +353,9 @@ if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_
 		_git_out=$(git clone --recurse-submodules "${REPO_URL}" "${INSTALL_DIR}" 2>&1) \
 			|| die "Clone failed:\n${_git_out}\n\nTo recover: rm -rf ${INSTALL_DIR} and re-run the install command."
 	fi
-	exec bash "${INSTALL_DIR}/install.sh" "$@"
+	# Already pulled + submodule-updated above; tell the re-exec'd update-mode
+	# to skip its redundant pull (avoids the double "Updating" + double fetch).
+	MO_SKIP_PULL=1 exec bash "${INSTALL_DIR}/install.sh" "$@"
 fi
 
 # -- Plugin submodule self-healing ----------------------------------------------
@@ -446,10 +448,15 @@ _zcompile_plugins()
 _MO_UPDATE_MODE=false
 if _running_from_install_dir; then
 	_MO_UPDATE_MODE=true
-	info "Updating ${INSTALL_DIR}..."
-	_git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
-	_init_plugins
-	success "Repository up-to-date"
+	if [[ "${MO_SKIP_PULL:-}" == "1" ]]; then
+		# Bootstrap already pulled before re-exec; just heal submodules.
+		_init_plugins
+	else
+		info "Updating ${INSTALL_DIR}..."
+		_git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
+		_init_plugins
+		success "Repository up-to-date"
+	fi
 fi
 
 # -- Mode: dev (running from a master-oogway clone, not ~/.master-oogway) -------
@@ -725,7 +732,11 @@ _check_zshrc_drift()
 	fi
 }
 
-if [[ ! -f "${ZSHRC}" ]] || [[ "${MO_FORCE}" == true ]]; then
+# Install when the file is absent, forced, or present but NOT master-oogway's
+# (e.g. oh-my-zsh's installer wrote its own template — it carries no managed
+# marker). A marked file may hold user edits, so it is only drifted-checked.
+if [[ ! -f "${ZSHRC}" ]] || [[ "${MO_FORCE}" == true ]] \
+	|| ! grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
 	_install_zshrc
 else
 	_check_zshrc_drift

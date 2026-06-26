@@ -1,3 +1,8 @@
+# master-oogway:managed
+# This marker tells install.sh this ~/.zshrc is master-oogway's. Removing it
+# makes the next install treat the file as foreign and replace it (a backup is
+# kept). Keep it to protect your local edits.
+
 # -- PATH additions -------------------------------------------------------------
 typeset -U path   # deduplicate $path; prevents growth on re-source
 # Non-login zsh shells (e.g. terminal emulators on Raspberry Pi OS) skip /etc/profile,
