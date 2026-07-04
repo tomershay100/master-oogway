@@ -60,9 +60,9 @@ gsum() {
 	ahead=$(git rev-list --count '@{u}..HEAD' 2>/dev/null)
 	behind=$(git rev-list --count 'HEAD..@{u}' 2>/dev/null)
 	# Use zsh array counting — avoids wc -l | tr -d ' ' subprocess chains
-	local -a stash_list; stash_list=( "${(f)$(git stash list 2>/dev/null)}" )
+	local -a stash_list; stash_list=( ${(f)"$(git stash list 2>/dev/null)"} )
 	local stashes=${#stash_list[@]}
-	local -a status_lines; status_lines=( "${(f)$(git status --short 2>/dev/null)}" )
+	local -a status_lines; status_lines=( ${(f)"$(git status --short 2>/dev/null)"} )
 	local -a untracked_lines=( "${(M)status_lines[@]:#\?\?*}" )
 	local untracked=${#untracked_lines[@]}
 	echo "branch : $branch"
