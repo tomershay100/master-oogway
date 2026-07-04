@@ -15,7 +15,6 @@ set_if_unset()
 
 __is_via_ssh() { [[ -n "$SSH_CLIENT" || -n "$SSH_CONNECTION" || -n "$SSH_TTY" ]]; }
 
-TERMINAL_BACKGROUND_COLOR="black"
 RESET_FORMAT="%f%k%b%u"
 typeset -g _DRAGON_EXIT_CODE=0      # set by __save_exit_code; zero-initialized to avoid stale reads
 typeset -g _dragon_left_prev_bg=""  # reset to TERMINAL_BACKGROUND_COLOR at the start of each lprompt render
@@ -40,6 +39,7 @@ for _dragon_k _dragon_v in "${(@kv)_DRAGON_DEFAULTS}"; do
 	set_if_unset "DRAGON__${_dragon_k}" "$_dragon_v"
 done
 unset _dragon_k _dragon_v
+TERMINAL_BACKGROUND_COLOR="$DRAGON__TERMINAL_BACKGROUND"
 
 # Validate integer-typed vars set by conf.zsh; reset to default + warn on bad value.
 _dragon_init_types
