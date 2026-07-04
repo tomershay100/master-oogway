@@ -950,19 +950,18 @@ _install_sshd_acceptenv()
 		info "Removed legacy bare AcceptEnv line from /etc/ssh/sshd_config"
 	fi
 
-	# Write to a temp file, validate, then move atomically into the drop-in dir.
+	# Write drop-in, validate with sshd -t (which reads *.conf), remove on failure.
 	local tmp
 	tmp=$(mktemp)
 	printf '# master-oogway: allow dragon theme vars to be forwarded over SSH\nAcceptEnv DRAGON__*\n' > "$tmp"
 	sudo mkdir -p "$dropin_dir"
-	sudo cp "$tmp" "${dropin}.tmp"
+	sudo cp "$tmp" "$dropin"
 	rm -f "$tmp"
 	if ! sudo sshd -t 2>/dev/null; then
-		warn "sshd config validation failed — drop-in not installed"
-		sudo rm -f "${dropin}.tmp"
+		warn "sshd config validation failed — drop-in removed"
+		sudo rm -f "$dropin"
 		return 1
 	fi
-	sudo mv "${dropin}.tmp" "$dropin"
 	sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
 	success "Added ${dropin} and reloaded sshd"
 }
