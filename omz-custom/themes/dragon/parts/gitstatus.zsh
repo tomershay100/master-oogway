@@ -9,7 +9,7 @@ __start_gitstatus_once()
 	$_IS_GITSTATUS_RUNNING && return
 	# Only mark running on success — a failed start (missing binary, cgroup
 	# error) must not suppress all future retries by setting the flag early.
-	if gitstatus_start -s -1 -u -1 -c -1 -d -1 "$_GITSTATUS_NAME" 2>/dev/null; then
+	if gitstatus_start -s -1 -u -1 -c -1 -d 0 "$_GITSTATUS_NAME" 2>/dev/null; then
 		_IS_GITSTATUS_RUNNING=true
 	fi
 }
