@@ -130,7 +130,7 @@ EOF
 		return 1
 	fi
 
-	local -a ssh_opts=( -N )
+	local -a ssh_opts=( -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 )
 	(( bg )) && ssh_opts+=( -f )
 
 	if [[ "$flag" == "-L" ]]; then
