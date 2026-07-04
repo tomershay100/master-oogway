@@ -813,6 +813,12 @@ _install_gitconfig()
 	git_name=$(git config --file "${GITCONFIG}" user.name  2>/dev/null || true)
 	git_email=$(git config --file "${GITCONFIG}" user.email 2>/dev/null || true)
 
+	if [[ -z "$git_name" ]] || [[ -z "$git_email" ]]; then
+		[[ -r /dev/tty ]] || die "No tty available for interactive prompts." \
+			"Pre-configure git identity before running install:" \
+			"git config --global user.name 'Your Name' && git config --global user.email 'you@example.com'"
+	fi
+
 	if [[ -z "$git_name" ]]; then
 		while [[ -z "$git_name" ]]; do
 			_ask "Git user name: "
