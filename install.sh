@@ -394,13 +394,10 @@ _init_plugins()
 			missing+=("${plugin}")
 		fi
 	done
-	if [[ ${#missing[@]} -gt 0 ]]; then
-		info "Initializing missing plugin submodules: ${missing[*]}"
-		_git_out=$(git -C "${INSTALL_DIR}" submodule update --init --recursive 2>&1) \
-			|| die "Submodule update failed:\n${_git_out}\n\nTo recover: rm -rf ${INSTALL_DIR} and re-run the install command."
-	else
-		success "Plugin submodules already initialized"
-	fi
+	[[ ${#missing[@]} -gt 0 ]] && info "Re-initializing wiped plugin submodules: ${missing[*]}"
+	_git_out=$(git -C "${INSTALL_DIR}" submodule update --init --recursive 2>&1) \
+		|| die "Submodule update failed:\n${_git_out}\n\nTo recover: rm -rf ${INSTALL_DIR} and re-run the install command."
+	success "Plugin submodules up-to-date"
 }
 
 # -- zcompile first-party zsh files --------------------------------------------
