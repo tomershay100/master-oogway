@@ -5,7 +5,7 @@ __set_git_status_content()
 
 __set_git_status_color()
 {
-	if [[ $VCS_STATUS_HAS_UNSTAGED -eq 1 || $VCS_STATUS_HAS_STAGED -eq 1 ]]; then
+	if [[ $VCS_STATUS_HAS_UNSTAGED -eq 1 || $VCS_STATUS_HAS_STAGED -eq 1 || $VCS_STATUS_HAS_UNTRACKED -eq 1 || $VCS_STATUS_HAS_CONFLICTED -eq 1 ]]; then
 		REAL_DRAGON__GIT_STATUS_FOREGROUND_COLOR="$DRAGON__GIT_DIRTY_FOREGROUND_COLOR"
 		REAL_DRAGON__GIT_STATUS_BACKGROUND_COLOR="$DRAGON__GIT_DIRTY_BACKGROUND_COLOR"
 		REAL_DRAGON__GIT_STATUS_BOLD="$DRAGON__GIT_DIRTY_BOLD"
@@ -47,7 +47,7 @@ __set_git_status_prefix_and_suffix()
 	__get_git_remote_state
 	__get_git_stash_count
 	local state_suffix
-	if [[ $VCS_STATUS_HAS_UNSTAGED -eq 1 || $VCS_STATUS_HAS_STAGED -eq 1 ]]; then
+	if [[ $VCS_STATUS_HAS_UNSTAGED -eq 1 || $VCS_STATUS_HAS_STAGED -eq 1 || $VCS_STATUS_HAS_UNTRACKED -eq 1 || $VCS_STATUS_HAS_CONFLICTED -eq 1 ]]; then
 		state_suffix="$DRAGON__GIT_DIRTY_SUFFIX"
 	else
 		state_suffix="$DRAGON__GIT_CLEAN_SUFFIX"
