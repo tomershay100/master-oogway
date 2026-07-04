@@ -7,15 +7,15 @@ mkscript() {
 		return
 	fi
 
-	local path="$1"
-	local name="${path:t}"  # basename
+	local script_path="$1"
+	local name="${script_path:t}"  # basename
 
-	if [[ -e "$path" ]]; then
-		echo "mkscript: '$path' already exists" >&2
+	if [[ -e "$script_path" ]]; then
+		echo "mkscript: '$script_path' already exists" >&2
 		return 1
 	fi
 
-	local parent="${path:h}"
+	local parent="${script_path:h}"
 	if [[ "$parent" != "." && ! -d "$parent" ]]; then
 		echo "mkscript: directory '$parent' does not exist" >&2
 		return 1
@@ -23,14 +23,14 @@ mkscript() {
 
 	local sep='# ------------------------------------------------------------------------------'
 
-	>"$path" print -r -- "#!/usr/bin/env bash
+	>"$script_path" print -r -- "#!/usr/bin/env bash
 ${sep}
 # ${name} -
 ${sep}
 set -Eeuo pipefail
 "
 
-	chmod +x "$path"
-	echo "Created: $path"
-	${EDITOR:-vim} "$path"
+	chmod +x "$script_path"
+	echo "Created: $script_path"
+	${EDITOR:-vim} "$script_path"
 }
