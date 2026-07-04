@@ -1,7 +1,7 @@
 
 h() { fc -l -${1:-50} -1; }
 
-'?'() { echo $?; }
+alias '?'='echo $?'
 
 cwhich() {
 	local target
