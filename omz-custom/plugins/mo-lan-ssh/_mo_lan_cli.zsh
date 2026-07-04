@@ -195,7 +195,7 @@ _mo_lan_setup() {
 	fi
 	if ! grep -qE '^[[:space:]]*Include[[:space:]]+config\.d/' "$_MO_LAN_SSH_USER_CONFIG"; then
 		local tmp="${_MO_LAN_SSH_USER_CONFIG}.tmp"
-		{ cat "$_MO_LAN_SSH_USER_CONFIG"; echo ""; echo "Include config.d/*"; } > "$tmp"
+		{ echo "Include config.d/*"; echo ""; cat "$_MO_LAN_SSH_USER_CONFIG"; } > "$tmp"
 		chmod 600 "$tmp"
 		command mv "$tmp" "$_MO_LAN_SSH_USER_CONFIG"
 		echo "Added 'Include config.d/*' to ${_MO_LAN_SSH_USER_CONFIG}"
