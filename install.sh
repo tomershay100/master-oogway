@@ -407,7 +407,8 @@ if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_
 	_running_via_pipe || info "Script is not running from a master-oogway clone — bootstrapping..."
 	_check_required_packages
 	_check_oh_my_zsh
-	if git -C "${INSTALL_DIR}" rev-parse --git-dir &>/dev/null 2>&1; then
+	_toplevel=$(git -C "${INSTALL_DIR}" rev-parse --show-toplevel 2>/dev/null || true)
+	if [[ -n "${_toplevel}" && "${_toplevel}" == "$(cd "${INSTALL_DIR}" 2>/dev/null && pwd -P)" ]]; then
 		info "Updating ${INSTALL_DIR}..."
 		_git_out=$(git -C "${INSTALL_DIR}" pull --ff-only 2>&1) || die "git pull failed:\n${_git_out}"
 		_git_out=$(git -C "${INSTALL_DIR}" submodule update --init --recursive 2>&1) \
