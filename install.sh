@@ -833,11 +833,22 @@ _install_gitconfig()
 		# Include is missing. Add it only if file doesn't exist yet (first install)
 		# or if --force was passed. Otherwise warn and skip.
 		if [[ ! -f "${GITCONFIG}" ]] || [[ "${MO_FORCE}" == true ]]; then
-			git config --file "${GITCONFIG}" --add include.path '~/.gitconfig.master-oogway'
+			if [[ -f "${GITCONFIG}" ]]; then
+				local tmp
+				tmp=$(mktemp "${GITCONFIG}.XXXXXX")
+				chmod --reference="${GITCONFIG}" "${tmp}"
+				{
+					printf '[include]\n\tpath = ~/.gitconfig.master-oogway\n\n'
+					cat "${GITCONFIG}"
+				} > "${tmp}"
+				mv "${tmp}" "${GITCONFIG}"
+			else
+				printf '[include]\n\tpath = ~/.gitconfig.master-oogway\n' > "${GITCONFIG}"
+			fi
 			success "Added bundle include to ${GITCONFIG}"
 		else
 			warn "~/.gitconfig is not including ~/.gitconfig.master-oogway — git aliases and delta pager won't be active."
-			warn "Re-add with: git config --file ~/.gitconfig --add include.path '~/.gitconfig.master-oogway'"
+			warn "Re-add by prepending: [include] path = ~/.gitconfig.master-oogway to ~/.gitconfig"
 		fi
 	fi
 
