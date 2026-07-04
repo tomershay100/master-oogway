@@ -124,7 +124,7 @@ _mo_backup()
 	[[ -f "$src" ]] || return 0
 	local backup="${src}.pre-master-oogway.$(date +%Y%m%d_%H%M%S)"
 	cp "$src" "$backup"
-	info "Backed up ${src} → ${backup}"
+	info "Backed up ${src} → ${backup}" >&2
 	echo "$backup"
 }
 
