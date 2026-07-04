@@ -1053,6 +1053,7 @@ if _collect_missing_optionals; then
 		_report_optional_deps "warn"
 	else
 		# fresh install: block and show install instructions
+		print_todos
 		_report_optional_deps "block"
 	fi
 else
