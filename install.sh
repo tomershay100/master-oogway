@@ -154,7 +154,7 @@ _find_backup() {
 confirm()
 {
 	local prompt="$1" default="${2:-n}"
-	if [[ ! -t 0 ]]; then
+	if [[ ! -r /dev/tty ]]; then
 		[[ "$default" =~ ^[Yy] ]] && return 0 || return 1
 	fi
 	local suffix="[y/N]"
