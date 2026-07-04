@@ -10,7 +10,10 @@ command -v bat    &>/dev/null && _bat_cmd="bat"
 command -v batcat &>/dev/null && _bat_cmd="${_bat_cmd:-batcat}"
 
 if [[ -n "$_bat_cmd" ]]; then
-	export MANPAGER="sh -c \"col -bx | ${_bat_cmd} -l man -p\""
+	if command -v col &>/dev/null; then
+		export MANPAGER="sh -c \"col -bx | ${_bat_cmd} -l man -p\""
+		export MANROFFOPT="-c"
+	fi
 
 	alias cat="${_bat_cmd} --paging never --style=plain"
 	alias pcat="cat --style=full"                             # pretty: headers, line numbers, git markers
