@@ -16,9 +16,10 @@ _mo_xterm_to_rgb() {
 		r=${sys_r[$((idx+1))]}; g=${sys_g[$((idx+1))]}; b=${sys_b[$((idx+1))]}
 	elif (( idx < 232 )); then
 		local i=$(( idx - 16 ))
-		r=$(( (i / 36) * 51 ))
-		g=$(( ((i % 36) / 6) * 51 ))
-		b=$(( (i % 6) * 51 ))
+		local ri=$(( i / 36 )) gi=$(( (i % 36) / 6 )) bi=$(( i % 6 ))
+		r=$(( ri ? ri * 40 + 55 : 0 ))
+		g=$(( gi ? gi * 40 + 55 : 0 ))
+		b=$(( bi ? bi * 40 + 55 : 0 ))
 	else
 		local v=$(( (idx - 232) * 10 + 8 ))
 		r=$v; g=$v; b=$v
