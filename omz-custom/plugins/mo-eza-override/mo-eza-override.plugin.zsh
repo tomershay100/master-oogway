@@ -7,5 +7,11 @@ alias lsa="ls -A"
 alias ll="lsa -l --smart-group --time-style=long-iso"
 alias l="ls -l --no-user --smart-group --time-style=long-iso"
 alias la="l -A"
-alias lg="ls --git --git-ignore"
-alias tree="lg --tree"
+alias lg="ls --git"
+tree() {
+	local args=()
+	for arg in "$@"; do
+		[[ "$arg" == "-d" ]] && args+=("-D") || args+=("$arg")
+	done
+	lg --tree "${args[@]}"
+}
