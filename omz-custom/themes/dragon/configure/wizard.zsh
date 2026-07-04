@@ -288,10 +288,22 @@ _dragon_select_preset() {
 	local n=${#_DRAGON_PRESET_NAMES}
 	printf "  Choice [1-%d, default=%d]: " "$n" "$default_idx"
 
-	local key chosen_preset
+	local key key2 chosen_preset idx _stty2
 	_dragon_read_key key
-	if [[ "$key" =~ ^[0-9]$ ]] && (( key >= 1 && key <= n )); then
-		chosen_preset="${_DRAGON_PRESET_NAMES[$key]}"
+	if [[ "$key" == [0-9] ]]; then
+		idx="$key"
+		# [1-4] covers first digit of 10-43; widen to [1-9] if preset count exceeds 49
+		if (( n > 9 )) && [[ "$key" == [1-4] ]]; then
+			key2="" _stty2=$(stty -g 2>/dev/null)
+			stty -echo -icanon min 0 time 5 2>/dev/null
+			IFS= read -k1 key2 2>/dev/null || key2=""
+			stty "$_stty2" 2>/dev/null
+			[[ "$key2" == [0-9] ]] && idx="${key}${key2}"
+		fi
+		idx=$(( idx ))
+	fi
+	if [[ -n "${idx:-}" ]] && (( idx >= 1 && idx <= n )); then
+		chosen_preset="${_DRAGON_PRESET_NAMES[$idx]}"
 	else
 		chosen_preset="${_DRAGON_PRESET_NAMES[$default_idx]}"
 	fi
