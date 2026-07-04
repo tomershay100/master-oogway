@@ -65,17 +65,10 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"  # don't mark prompt dirty for untracked fi
 CASE_SENSITIVE="false"                # tab-completion ignores case (read → README.md)
 DISABLE_AUTO_UPDATE="true"            # never auto-check for OMZ updates — quieter shell start
 
-# -- Completion (zsh native + zstyle tweaks) ------------------------------------
+# -- Completion (zsh native) ----------------------------------------------------
 setopt COMPLETE_IN_WORD  # tab completes from the middle of a word
 setopt ALWAYS_TO_END     # after completing, jump cursor to end of word
 # MENU_COMPLETE is set after oh-my-zsh loads — omz/lib/completion.zsh explicitly unsets it
-
-# zstyle configures the completion system — see `man zshcompsys`.
-zstyle ':completion:*' menu select                                 # arrow-key navigable menu
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'          # case-insensitive matching
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"            # colorize menu by file type
-zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'  # yellow header per group
-zstyle ':completion:*' group-name ''                               # group items under their header
 
 # -- optional dependency map ----------------------------------------------------
 # Detects optional tools once via zsh's $commands hash (no forks) and caches
@@ -204,6 +197,14 @@ plugins=(
 source "$ZSH/oh-my-zsh.sh"
 
 setopt MENU_COMPLETE  # first Tab inserts the first match (must follow omz — it unsets this)
+
+# zstyle configures the completion system — see `man zshcompsys`.
+# Must follow oh-my-zsh (compinit runs inside it and resets zstyle state).
+zstyle ':completion:*' menu select                                 # arrow-key navigable menu
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'          # case-insensitive matching
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"            # colorize menu by file type
+zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'  # yellow header per group
+zstyle ':completion:*' group-name ''                               # group items under their header
 
 # -- user plugins ---------------------------------------------------------------
 # Drop a folder my-thing/my-thing.plugin.zsh into
