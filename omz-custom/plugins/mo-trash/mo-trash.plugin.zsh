@@ -23,15 +23,17 @@ trash-restore() {
 		echo "trash-restore: fzf not installed (try: sudo apt install fzf)" >&2
 		return 1
 	fi
-	# Run trash-list once and number every line; fzf shows the numbered list
-	# and we extract the line number from the selected entry — no second call.
-	local numbered selection lineno
-	numbered=$(command trash-list 2>/dev/null | nl -b a -w 4 -s '  ')
-	selection=$(printf '%s\n' "$numbered" | fzf --prompt="Restore> " --height=40%) || return 0
-	lineno=$(printf '%s\n' "$selection" | awk '{print $1}')
-	[[ -z "$lineno" ]] && { echo "trash-restore: could not locate selection" >&2; return 1; }
-	# trash-restore prompts with a numbered list — feed it our index.
-	echo "$lineno" | command trash-restore
+	# trash-list prints "DATE TIME /original/path"; fzf picks one line and we
+	# pull its original path (fields 3+, may contain spaces). We can't reuse
+	# trash-list's own line number: `command trash-restore` builds its OWN
+	# 0-based, cwd-scoped, date-sorted candidate list, so any index from here
+	# points at the wrong file. Instead we scope trash-restore to the exact
+	# path — that yields a one-entry list where index 0 is unambiguous.
+	local selection path
+	selection=$(command trash-list 2>/dev/null | fzf --prompt="Restore> " --height=40%) || return 0
+	path=$(printf '%s\n' "$selection" | awk '{ $1=""; $2=""; sub(/^  /, ""); print }')
+	[[ -z "$path" ]] && { echo "trash-restore: could not locate selection" >&2; return 1; }
+	echo 0 | command trash-restore "$path"
 }
 
 trash-empty() {
