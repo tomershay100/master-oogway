@@ -29,7 +29,8 @@ alias gcp="git cherry-pick"
 alias glog="git log --oneline --decorate --graph"
 alias gundo="git reset --soft HEAD~1"
 alias gca="git commit --amend"
-alias gclean="git clean -fd"
+alias gclean="git clean -id"
+alias gcleanf="git clean -fd"
 
 groot() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
