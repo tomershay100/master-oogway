@@ -345,6 +345,57 @@ _running_from_master_oogway_clone()
 	[[ "$remote" == *"master-oogway"* ]]
 }
 
+# -- Version --------------------------------------------------------------------
+
+_print_version()
+{
+	local version
+	version=$(git -C "${INSTALL_DIR}" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
+		|| echo "unknown")
+	echo "master-oogway ${version}"
+}
+
+MO_FORCE=false
+MO_UNINSTALL=false
+MO_NO_RECOMMENDED=false
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--help|-h)
+			cat <<'EOF'
+Usage: install.sh [--help | --version | --uninstall | --force | --no-recommended-packages]
+
+Modes (auto-detected from where you run the script):
+  curl pipe   bash -c "$(curl -fsSL <url>/install.sh)"
+              Clones the repo to ~/.master-oogway/ then re-execs from there.
+
+  update      ~/.master-oogway/install.sh
+              Runs git pull + submodule update, then re-applies dotfiles.
+
+  dev         /path/to/local/clone/install.sh
+              Symlinks ~/.master-oogway → local clone for live development.
+
+Options:
+  --help                      Show this message and exit
+  --version                   Print the installed version (date + git hash) and exit
+  --uninstall                 Remove all master-oogway files, config, and dotfile changes
+  --force, -f                 Overwrite ~/.zshrc even if it already exists
+  --no-recommended-packages   Skip the recommended-packages check and install anyway
+EOF
+			exit 0
+			;;
+		--version|-v)
+			_print_version
+			exit 0
+			;;
+		--uninstall) MO_UNINSTALL=true ;;
+		--force|-f)  MO_FORCE=true ;;
+		--no-recommended-packages) MO_NO_RECOMMENDED=true ;;
+		*) die "Unknown option: $1 (run with --help for usage)" ;;
+	esac
+	shift
+done
+
 # -- Mode: curl pipe / bootstrap ------------------------------------------------
 # Triggered when piped through bash, OR when the script is run from a directory
 # that is not a master-oogway clone (e.g. a copied script, /tmp, a random path).
@@ -493,57 +544,6 @@ if _running_from_master_oogway_clone && ! _running_from_install_dir; then
 	fi
 	_init_plugins
 fi
-
-# -- Version --------------------------------------------------------------------
-
-_print_version()
-{
-	local version
-	version=$(git -C "${INSTALL_DIR}" log -1 --format="%cd-%h" --date=format:"%Y-%m-%d_%H%M%S" 2>/dev/null \
-		|| echo "unknown")
-	echo "master-oogway ${version}"
-}
-
-MO_FORCE=false
-MO_UNINSTALL=false
-MO_NO_RECOMMENDED=false
-
-while [[ $# -gt 0 ]]; do
-	case "$1" in
-		--help|-h)
-			cat <<'EOF'
-Usage: install.sh [--help | --version | --uninstall | --force | --no-recommended-packages]
-
-Modes (auto-detected from where you run the script):
-  curl pipe   bash -c "$(curl -fsSL <url>/install.sh)"
-              Clones the repo to ~/.master-oogway/ then re-execs from there.
-
-  update      ~/.master-oogway/install.sh
-              Runs git pull + submodule update, then re-applies dotfiles.
-
-  dev         /path/to/local/clone/install.sh
-              Symlinks ~/.master-oogway → local clone for live development.
-
-Options:
-  --help                      Show this message and exit
-  --version                   Print the installed version (date + git hash) and exit
-  --uninstall                 Remove all master-oogway files, config, and dotfile changes
-  --force, -f                 Overwrite ~/.zshrc even if it already exists
-  --no-recommended-packages   Skip the recommended-packages check and install anyway
-EOF
-			exit 0
-			;;
-		--version|-v)
-			_print_version
-			exit 0
-			;;
-		--uninstall) MO_UNINSTALL=true ;;
-		--force|-f)  MO_FORCE=true ;;
-		--no-recommended-packages) MO_NO_RECOMMENDED=true ;;
-		*) die "Unknown option: $1 (run with --help for usage)" ;;
-	esac
-	shift
-done
 
 # -- Uninstall ------------------------------------------------------------------
 
