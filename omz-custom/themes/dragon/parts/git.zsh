@@ -1,6 +1,6 @@
 __set_git_status_content()
 {
-	REAL_DRAGON__GIT_STATUS_CONTENT=${${VCS_STATUS_LOCAL_BRANCH:-@${VCS_STATUS_COMMIT}}//\%/%%}
+	REAL_DRAGON__GIT_STATUS_CONTENT=${${VCS_STATUS_LOCAL_BRANCH:-@${VCS_STATUS_COMMIT[1,8]}}//\%/%%}
 }
 
 __set_git_status_color()
