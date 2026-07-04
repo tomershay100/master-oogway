@@ -14,10 +14,8 @@ path=($path /usr/local/sbin /usr/sbin /sbin)
 # Prefer en_US.UTF-8; fall back to C.UTF-8 on minimal installs/containers.
 if [[ "$(LC_ALL=en_US.UTF-8 locale charmap 2>/dev/null)" == "UTF-8" ]]; then
     export LANG=en_US.UTF-8
-    export LC_ALL=en_US.UTF-8
 else
     export LANG=C.UTF-8
-    export LC_ALL=C.UTF-8
 fi
 
 # -- History --------------------------------------------------------------------
