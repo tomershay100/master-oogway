@@ -5,6 +5,12 @@ alias cp="cp -i"        # prompt before overwrite
 alias mv="mv -i"        # prompt before overwrite
 alias mkdir="mkdir -pv" # create parents silently, print each new dir
 
+if command -v trash-put &>/dev/null; then
+	alias rm="trash-put"
+else
+	alias rm="rm -I"    # prompt when removing 3+ files or recursing
+fi
+
 _confirm_reboot() {
 	echo "This is $(hostname). Are you sure you want to reboot the system? (y/N)"
 	local ans
