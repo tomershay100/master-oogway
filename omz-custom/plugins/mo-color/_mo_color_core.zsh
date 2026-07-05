@@ -6,25 +6,25 @@ source "${0:a:h}/../../lib/colors.zsh"
 # Used to convert xterm-256 indices to 24-bit RGB for terminal output.
 _mo_xterm_to_rgb() {
 	local idx="$1"
-	local r g b
 	if (( idx < 16 )); then
 		# The 16 system colors — well-known approximations.
 		# +1 because zsh arrays are 1-indexed.
 		local -a sys_r=(0 128 0 128 0 128 0 192 128 255 0 255 0 255 0 255)
 		local -a sys_g=(0 0 128 128 0 0 128 192 128 0 255 255 0 0 128 255)
 		local -a sys_b=(0 0 0 0 128 128 128 192 128 0 0 0 255 255 255 255)
-		r=${sys_r[$((idx+1))]}; g=${sys_g[$((idx+1))]}; b=${sys_b[$((idx+1))]}
+		_MO_RGB_R=${sys_r[$((idx+1))]}
+		_MO_RGB_G=${sys_g[$((idx+1))]}
+		_MO_RGB_B=${sys_b[$((idx+1))]}
 	elif (( idx < 232 )); then
 		local i=$(( idx - 16 ))
 		local ri=$(( i / 36 )) gi=$(( (i % 36) / 6 )) bi=$(( i % 6 ))
-		r=$(( ri ? ri * 40 + 55 : 0 ))
-		g=$(( gi ? gi * 40 + 55 : 0 ))
-		b=$(( bi ? bi * 40 + 55 : 0 ))
+		_MO_RGB_R=$(( ri ? ri * 40 + 55 : 0 ))
+		_MO_RGB_G=$(( gi ? gi * 40 + 55 : 0 ))
+		_MO_RGB_B=$(( bi ? bi * 40 + 55 : 0 ))
 	else
 		local v=$(( (idx - 232) * 10 + 8 ))
-		r=$v; g=$v; b=$v
+		_MO_RGB_R=$v; _MO_RGB_G=$v; _MO_RGB_B=$v
 	fi
-	printf '%d %d %d' "$r" "$g" "$b"
 }
 
 # -- Parse a color spec → R G B [xterm-index] ----------------------------------
@@ -38,7 +38,8 @@ _mo_parse_color() {
 	# Named color → xterm index → RGB
 	if [[ -n "${_MO_COLORS[$spec]:-}" ]]; then
 		local idx="${_MO_COLORS[$spec]}"
-		read -r _MO_COLOR_R _MO_COLOR_G _MO_COLOR_B < <(_mo_xterm_to_rgb "$idx")
+		_mo_xterm_to_rgb "$idx"
+		_MO_COLOR_R=$_MO_RGB_R; _MO_COLOR_G=$_MO_RGB_G; _MO_COLOR_B=$_MO_RGB_B
 		_MO_COLOR_IDX="$idx"
 		return 0
 	fi
@@ -60,7 +61,8 @@ _mo_parse_color() {
 	# Decimal xterm index 0–255
 	if [[ "$spec" =~ ^[0-9]+$ ]] && (( 10#$spec <= 255 )); then
 		_MO_COLOR_IDX=$(( 10#$spec ))
-		read -r _MO_COLOR_R _MO_COLOR_G _MO_COLOR_B < <(_mo_xterm_to_rgb "$_MO_COLOR_IDX")
+		_mo_xterm_to_rgb "$_MO_COLOR_IDX"
+		_MO_COLOR_R=$_MO_RGB_R; _MO_COLOR_G=$_MO_RGB_G; _MO_COLOR_B=$_MO_RGB_B
 		return 0
 	fi
 
@@ -82,7 +84,7 @@ _mo_rgb_to_xterm() {
 	local gv=$(( (gray - 232) * 10 + 8 ))
 	local d_cube=$(( (r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2 ))
 	local d_gray=$(( (r - gv) ** 2 + (g - gv) ** 2 + (b - gv) ** 2 ))
-	printf '%d' "$(( d_gray < d_cube ? gray : cube ))"
+	_MO_XTERM_IDX=$(( d_gray < d_cube ? gray : cube ))
 }
 
 # Detect truecolor support once at load time.
@@ -96,7 +98,7 @@ _mo_fg() {
 		printf '\e[38;2;%d;%d;%dm' "$1" "$2" "$3"
 	else
 		local idx=${4:--1}
-		(( idx < 0 )) && idx=$(_mo_rgb_to_xterm "$1" "$2" "$3")
+		if (( idx < 0 )); then _mo_rgb_to_xterm "$1" "$2" "$3"; idx=$_MO_XTERM_IDX; fi
 		printf '\e[38;5;%dm' "$idx"
 	fi
 }
@@ -105,7 +107,7 @@ _mo_bg() {
 		printf '\e[48;2;%d;%d;%dm' "$1" "$2" "$3"
 	else
 		local idx=${4:--1}
-		(( idx < 0 )) && idx=$(_mo_rgb_to_xterm "$1" "$2" "$3")
+		if (( idx < 0 )); then _mo_rgb_to_xterm "$1" "$2" "$3"; idx=$_MO_XTERM_IDX; fi
 		printf '\e[48;5;%dm' "$idx"
 	fi
 }
@@ -121,7 +123,8 @@ _mo_color_palette() {
 	local name idx r g b lum cfr cfg cfb cfi col=0
 	for name in "${names[@]}"; do
 		idx="${_MO_COLORS[$name]}"
-		read -r r g b < <(_mo_xterm_to_rgb "$idx")
+		_mo_xterm_to_rgb "$idx"
+		r=$_MO_RGB_R; g=$_MO_RGB_G; b=$_MO_RGB_B
 		lum=$(( r * 299 + g * 587 + b * 114 ))
 		if (( lum >= 128000 )); then cfr=0; cfg=0; cfb=0; cfi=0; else cfr=255; cfg=255; cfb=255; cfi=15; fi
 		printf '%s %-9s%s%s%-9s%s' \
@@ -135,7 +138,8 @@ _mo_color_palette() {
 	echo "── 256 xterm colors ──────────────────────────────────────"
 	local i
 	for (( i = 0; i <= 255; i++ )); do
-		read -r r g b < <(_mo_xterm_to_rgb "$i")
+		_mo_xterm_to_rgb "$i"
+		r=$_MO_RGB_R; g=$_MO_RGB_G; b=$_MO_RGB_B
 		lum=$(( r * 299 + g * 587 + b * 114 ))
 		if (( lum >= 128000 )); then cfr=0; cfg=0; cfb=0; cfi=0; else cfr=255; cfg=255; cfb=255; cfi=15; fi
 		printf '%s %3d %s%s%3d%s' \

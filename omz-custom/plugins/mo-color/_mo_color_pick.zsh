@@ -67,7 +67,8 @@ _mo_pick_draw_static() {
 	for (( i = 0; i < 256; i++ )); do
 		row=$(( grid_top + i / 16 ))
 		col=$(( 3 + (i % 16) * 4 ))
-		read -r r g b < <(_mo_xterm_to_rgb "$i")
+		_mo_xterm_to_rgb "$i"
+		r=$_MO_RGB_R; g=$_MO_RGB_G; b=$_MO_RGB_B
 		printf '\e[%d;%dH %s  %s ' "$row" "$col" "$(_mo_bg "$r" "$g" "$b" "$i")" "$(_mo_reset)"
 	done
 	footer=$(( grid_top + 17 ))
@@ -79,7 +80,8 @@ _mo_pick_draw_static() {
 # Repaint rows 2 + 3: the live "Selected: ... #hex name" line and the preview band.
 _mo_pick_draw_header() {
 	local idx=$1 buffer="$2" r g b name extra=''
-	read -r r g b < <(_mo_xterm_to_rgb "$idx")
+	_mo_xterm_to_rgb "$idx"
+	r=$_MO_RGB_R; g=$_MO_RGB_G; b=$_MO_RGB_B
 	name=$(_mo_pick_name_for "$idx")
 	[[ -n "$buffer" ]] && extra="   (typing: ${buffer})"
 	printf '\e[2;1H\e[2K  Selected:  %3d   #%02x%02x%02x   %s%s' \
@@ -93,7 +95,8 @@ _mo_pick_paint_cell() {
 	local idx=$1 active=$2 grid_top=$3 r g b
 	local row=$(( grid_top + idx / 16 ))
 	local col=$(( 3 + (idx % 16) * 4 ))
-	read -r r g b < <(_mo_xterm_to_rgb "$idx")
+	_mo_xterm_to_rgb "$idx"
+	r=$_MO_RGB_R; g=$_MO_RGB_G; b=$_MO_RGB_B
 	if (( active )); then
 		printf '\e[%d;%dH\e[1;33m[\e[0m%s  %s\e[1;33m]\e[0m' \
 			"$row" "$col" "$(_mo_bg "$r" "$g" "$b" "$idx")" "$(_mo_reset)"
@@ -185,7 +188,8 @@ _mo_color_pick() {
 	(( cancelled )) && return 130
 
 	local r g b name
-	read -r r g b < <(_mo_xterm_to_rgb "$idx")
+	_mo_xterm_to_rgb "$idx"
+	r=$_MO_RGB_R; g=$_MO_RGB_G; b=$_MO_RGB_B
 	name=$(_mo_pick_name_for "$idx")
 	printf '%d\t#%02x%02x%02x\t%s\n' "$idx" "$r" "$g" "$b" "$name"
 }
