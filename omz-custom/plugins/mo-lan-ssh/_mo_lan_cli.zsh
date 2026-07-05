@@ -107,7 +107,8 @@ _mo_lan_add() {
 
 	command mkdir -p "${_MO_LAN_SSH_MANUAL:h}"
 	if [[ -f "$_MO_LAN_SSH_MANUAL" ]]; then
-		local tmp="${_MO_LAN_SSH_MANUAL}.tmp"
+		local tmp
+		tmp=$(mktemp "${_MO_LAN_SSH_MANUAL}.XXXXXX")
 		grep -vE "^${h}(:.*)?$" "$_MO_LAN_SSH_MANUAL" > "$tmp" 2>/dev/null || true
 		command mv "$tmp" "$_MO_LAN_SSH_MANUAL"
 	else
@@ -134,7 +135,8 @@ _mo_lan_remove() {
 		echo "  (auto-discovered entries are removed via: mo-lan-ssh purge $h)" >&2
 		return 1
 	fi
-	local tmp="${_MO_LAN_SSH_MANUAL}.tmp"
+	local tmp
+	tmp=$(mktemp "${_MO_LAN_SSH_MANUAL}.XXXXXX")
 	grep -vE "^${h}(:.*)?$" "$_MO_LAN_SSH_MANUAL" > "$tmp" 2>/dev/null || true
 	command mv "$tmp" "$_MO_LAN_SSH_MANUAL"
 
@@ -155,7 +157,7 @@ _mo_lan_purge() {
 
 	if [[ -f "$_MO_LAN_SSH_CACHE" ]] \
 	   && grep -qE "^${h}(:.*)?$" "$_MO_LAN_SSH_CACHE" 2>/dev/null; then
-		tmp="${_MO_LAN_SSH_CACHE}.tmp"
+		tmp=$(mktemp "${_MO_LAN_SSH_CACHE}.XXXXXX")
 		grep -vE "^${h}(:.*)?$" "$_MO_LAN_SSH_CACHE" > "$tmp"
 		command mv "$tmp" "$_MO_LAN_SSH_CACHE"
 		removed+=("auto-cache")
@@ -163,7 +165,7 @@ _mo_lan_purge() {
 
 	if [[ -f "$_MO_LAN_SSH_MANUAL" ]] \
 	   && grep -qE "^${h}(:.*)?$" "$_MO_LAN_SSH_MANUAL" 2>/dev/null; then
-		tmp="${_MO_LAN_SSH_MANUAL}.tmp"
+		tmp=$(mktemp "${_MO_LAN_SSH_MANUAL}.XXXXXX")
 		grep -vE "^${h}(:.*)?$" "$_MO_LAN_SSH_MANUAL" > "$tmp"
 		command mv "$tmp" "$_MO_LAN_SSH_MANUAL"
 		removed+=("manual-overlay")
@@ -194,7 +196,8 @@ _mo_lan_setup() {
 		echo "Created ${_MO_LAN_SSH_USER_CONFIG}"
 	fi
 	if ! grep -qE '^[[:space:]]*Include[[:space:]]+config\.d/' "$_MO_LAN_SSH_USER_CONFIG"; then
-		local tmp="${_MO_LAN_SSH_USER_CONFIG}.tmp"
+		local tmp
+		tmp=$(mktemp "${_MO_LAN_SSH_USER_CONFIG}.XXXXXX")
 		{ echo "Include config.d/*"; echo ""; cat "$_MO_LAN_SSH_USER_CONFIG"; } > "$tmp"
 		chmod 600 "$tmp"
 		command mv "$tmp" "$_MO_LAN_SSH_USER_CONFIG"
