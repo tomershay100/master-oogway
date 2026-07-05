@@ -97,6 +97,7 @@ fbranch() {
 		echo "  Preview shows commits ahead of main and the diff stat."
 		return
 	fi
+	git rev-parse --git-dir &>/dev/null || { echo "fbranch: not inside a git repo" >&2; return 1; }
 	command -v fzf &>/dev/null || { echo "fbranch: fzf not installed" >&2; return 1; }
 	local default_branch
 	default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
