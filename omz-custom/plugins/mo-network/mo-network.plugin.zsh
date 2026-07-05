@@ -47,8 +47,18 @@ sshto() {
 		(( _depth++ ))
 		config_files+=( "$_f" )
 		while IFS= read -r _inc; do
-			[[ "$_inc" == /* ]] || _inc="${HOME}/.ssh/${_inc}"
-			_queue+=( ${~_inc}(N) )
+			# Each token on an Include line is a separate pattern; split on whitespace.
+			local -a _pats=( ${=_inc} )
+			local _pat
+			for _pat in "${_pats[@]}"; do
+				# Tilde prefix expands before the ~/.ssh/ relative fallback.
+				if [[ "$_pat" == ~* ]]; then
+					_pat="${HOME}${_pat[2,-1]}"
+				elif [[ "$_pat" != /* ]]; then
+					_pat="${HOME}/.ssh/${_pat}"
+				fi
+				_queue+=( ${~_pat}(N) )
+			done
 		done < <(awk 'tolower($1)=="include"{$1=""; sub(/^ /,""); print}' "$_f" 2>/dev/null)
 	done
 
@@ -56,7 +66,7 @@ sshto() {
 	local host
 	# Parse all Host names; handle multi-name stanzas (Host alpha beta gamma → three entries).
 	# Wildcards and '?' patterns are excluded — they are match rules, not connectable targets.
-	host=$(awk '/^Host / { for (i=2; i<=NF; i++) if ($i !~ /[*?]/) print $i }' "${config_files[@]}" \
+	host=$(awk 'tolower($1)=="host" { for (i=2; i<=NF; i++) if ($i !~ /[*?!]/) print $i }' "${config_files[@]}" \
 		| sort -u \
 		| fzf --height=40% --reverse --header='Select SSH host')
 	[[ -n "$host" ]] && ssh "$host"
