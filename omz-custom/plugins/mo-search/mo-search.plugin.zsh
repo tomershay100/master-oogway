@@ -61,7 +61,7 @@ if [[ -o extendedhistory ]]; then
 	bindkey '^R' fzf-history-widget
 fi
 
-alias grep='noglob command grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} --exclude={*.so,*.apd,*.pd}'
+alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} --exclude={*.so,*.apd,*.pd}'
 alias grepi='grep -i'
 alias f="find . | grepi"
 
