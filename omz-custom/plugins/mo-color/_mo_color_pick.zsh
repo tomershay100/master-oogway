@@ -68,7 +68,7 @@ _mo_pick_draw_static() {
 		row=$(( grid_top + i / 16 ))
 		col=$(( 3 + (i % 16) * 4 ))
 		read -r r g b < <(_mo_xterm_to_rgb "$i")
-		printf '\e[%d;%dH \e[48;2;%d;%d;%dm  \e[0m ' "$row" "$col" "$r" "$g" "$b"
+		printf '\e[%d;%dH %s  %s ' "$row" "$col" "$(_mo_bg "$r" "$g" "$b" "$i")" "$(_mo_reset)"
 	done
 	footer=$(( grid_top + 17 ))
 	printf '\e[%d;1H──────────────────────────────────────────────────────────────' "$footer"
@@ -84,8 +84,8 @@ _mo_pick_draw_header() {
 	[[ -n "$buffer" ]] && extra="   (typing: ${buffer})"
 	printf '\e[2;1H\e[2K  Selected:  %3d   #%02x%02x%02x   %s%s' \
 		"$idx" "$r" "$g" "$b" "$name" "$extra"
-	printf '\e[3;1H\e[2K  Preview:   \e[48;2;%d;%d;%dm            \e[0m  \e[38;2;%d;%d;%dmThe quick brown fox jumps over the lazy dog\e[0m' \
-		"$r" "$g" "$b" "$r" "$g" "$b"
+	printf '\e[3;1H\e[2K  Preview:   %s            %s  %sThe quick brown fox jumps over the lazy dog%s' \
+		"$(_mo_bg "$r" "$g" "$b" "$idx")" "$(_mo_reset)" "$(_mo_fg "$r" "$g" "$b" "$idx")" "$(_mo_reset)"
 }
 
 # Repaint a single swatch cell. active=1 wraps in bright yellow [brackets].
@@ -95,11 +95,11 @@ _mo_pick_paint_cell() {
 	local col=$(( 3 + (idx % 16) * 4 ))
 	read -r r g b < <(_mo_xterm_to_rgb "$idx")
 	if (( active )); then
-		printf '\e[%d;%dH\e[1;33m[\e[0m\e[48;2;%d;%d;%dm  \e[0m\e[1;33m]\e[0m' \
-			"$row" "$col" "$r" "$g" "$b"
+		printf '\e[%d;%dH\e[1;33m[\e[0m%s  %s\e[1;33m]\e[0m' \
+			"$row" "$col" "$(_mo_bg "$r" "$g" "$b" "$idx")" "$(_mo_reset)"
 	else
-		printf '\e[%d;%dH \e[48;2;%d;%d;%dm  \e[0m ' \
-			"$row" "$col" "$r" "$g" "$b"
+		printf '\e[%d;%dH %s  %s ' \
+			"$row" "$col" "$(_mo_bg "$r" "$g" "$b" "$idx")" "$(_mo_reset)"
 	fi
 }
 
