@@ -33,12 +33,17 @@ if [[ -o extendedhistory ]]; then
 		local selected num
 		setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2>/dev/null
 		# fc -rflD format: " num  date  elapsed  cmd" (double-space separated).
-		# awk emits "num\tdate elapsed\tcmd" so fzf can search only the cmd (--nth=2..).
+		# Strip the leading "  num  " prefix first so field positions are stable
+		# regardless of event-number width (1–5 digits, variable leading spaces).
+		# awk then emits "num\tdate elapsed\tcmd" so fzf searches only the cmd.
 		selected=$(fc -rflD 1 \
-			| awk 'BEGIN{FS="  "} {
-				num=$1; gsub(/ /,"",num)
-				cmd=$4; for(i=5;i<=NF;i++) cmd=cmd"  "$i
-				print num "\t" $2 " " $3 "\t" cmd
+			| awk '{
+				line=$0
+				sub(/^[[:space:]]*/, "", line); num=line; sub(/[[:space:]].*/, "", num)
+				sub(/^[[:space:]]*[0-9]+[[:space:]]+/, "")
+				n=split($0, f, "  ")
+				cmd=f[3]; for(i=4;i<=n;i++) cmd=cmd"  "f[i]
+				print num "\t" f[1] " " f[2] "\t" cmd
 			}' \
 			| FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} ${FZF_DEFAULT_OPTS-} \
 				--scheme=history --bind=ctrl-r:toggle-sort,ctrl-z:ignore \
