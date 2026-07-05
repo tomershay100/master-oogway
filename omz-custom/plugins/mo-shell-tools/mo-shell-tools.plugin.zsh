@@ -81,6 +81,7 @@ calc() {
 	fi
 	bc -l <<< "$expr"
 }
+alias calc='noglob calc'
 
 epoch() {
 	local utc=false
