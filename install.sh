@@ -1018,6 +1018,23 @@ _install_user_ext_dirs()
 
 _install_user_ext_dirs
 
+# -- Login shell check ----------------------------------------------------------
+
+_check_login_shell()
+{
+	[[ "${SHELL:-}" == */zsh ]] && return
+	warn "Your login shell is not zsh (current: ${SHELL:-unknown})."
+	warn "master-oogway is a zsh environment — it won't load in bash sessions."
+	if confirm "Change your login shell to zsh now? (runs: chsh -s \"$(command -v zsh)\")"; then
+		chsh -s "$(command -v zsh)"
+		success "Login shell changed to zsh. Log out and back in for it to take effect."
+	else
+		todo_item "Change login shell to zsh: chsh -s \"$(command -v zsh)\""
+	fi
+}
+
+_check_login_shell
+
 # -- Backup-tip -----------------------------------------------------------------
 # Suggest version-controlling the customisation dir. Skipped once the user has
 # already initialised a git repo there (or hasn't installed anything customisable
