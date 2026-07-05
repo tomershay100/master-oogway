@@ -72,4 +72,8 @@ fcd() {
 	&& cd "$dir"
 }
 
-alias n="open ."
+function n() {
+	command -v xdg-open &>/dev/null \
+		|| { echo "n: xdg-open not found (install xdg-utils)" >&2; return 1; }
+	xdg-open .
+}
