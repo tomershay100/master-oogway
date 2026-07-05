@@ -53,6 +53,7 @@ if [[ -o extendedhistory ]]; then
 		return $ret
 	}
 	zle -N fzf-history-widget
+	bindkey '^R' fzf-history-widget
 fi
 
 alias grep='noglob command grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} --exclude={*.so,*.apd,*.pd}'
