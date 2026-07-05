@@ -48,7 +48,7 @@ port() {
 	fi
 	echo "$out" | awk 'NR==1 || !seen[$2]++' \
 		| awk 'NR==1 {print "COMMAND","PID","USER","PROTO","ADDRESS","STATE"}
-			   NR>1  {print $1,$2,$3,$5,$9,$10}' \
+			   NR>1  {proto=(NF>=10)?"TCP":"UDP"; state=(NF>=10)?$10:"-"; print $1,$2,$3,proto,$9,state}' \
 		| column -t
 }
 
