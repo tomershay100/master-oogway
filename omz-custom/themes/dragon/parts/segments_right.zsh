@@ -94,6 +94,8 @@ dragon__set_job_count()
 	__dragon_finalize JOB_COUNT
 }
 
+typeset -g _DRAGON_SSH_COUNT_CACHE=-1
+
 __set_ssh_connection_count_content()
 {
 	if [[ -n "${DRAGON__PREVIEW_FAKE_SSH_CONN_COUNT:-}" ]]; then
@@ -101,23 +103,29 @@ __set_ssh_connection_count_content()
 		return
 	fi
 
-	local -a who_lines=( "${(f)$(who)}" )
-	local -a pts_lines=( "${(M)who_lines[@]:#*pts*}" )
-	local ip_pattern='^\([0-9]{1,3}(\.[0-9]{1,3}){3}\)$'
-	local -a remote_ips=()
-	local line
-	for line in "${pts_lines[@]}"; do
-		local ip="${line##* }"
-		[[ "$ip" =~ $ip_pattern ]] && remote_ips+=( "$ip" )
-	done
-
-	local connection_count=${#remote_ips}
-	if __is_via_ssh && [[ -n "$SSH_CLIENT" ]]; then
-		local current_ip="(${SSH_CLIENT%% *})"
-		local -a other_ips=( "${remote_ips[@]:#$current_ip}" )
-		connection_count=${#other_ips}
+	if (( _DRAGON_SSH_COUNT_CACHE >= 0 )); then
+		REAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT="$_DRAGON_SSH_COUNT_CACHE"
+		return
 	fi
 
+	# Count remote pts sessions: any who line with a pts tty and a parenthesized
+	# address field — covers IPv4, IPv6 literals, and hostname-based sessions.
+	local -a remote_addrs=()
+	local line
+	while IFS= read -r line; do
+		[[ "$line" == *pts* ]] || continue
+		local addr="${line##* }"
+		[[ "$addr" == \(* && "$addr" == *\) ]] && remote_addrs+=( "$addr" )
+	done < <(who)
+
+	local connection_count=${#remote_addrs}
+	if __is_via_ssh && [[ -n "$SSH_CLIENT" ]]; then
+		local current_addr="(${SSH_CLIENT%% *})"
+		local -a other_addrs=( "${remote_addrs[@]:#$current_addr}" )
+		connection_count=${#other_addrs}
+	fi
+
+	_DRAGON_SSH_COUNT_CACHE=$connection_count
 	REAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT="$connection_count"
 }
 
