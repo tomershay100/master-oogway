@@ -14,6 +14,7 @@ typeset -g _MO_LAN_SSH_MANUAL="${HOME}/.config/master-oogway/lan-hosts.manual"
 typeset -g _MO_LAN_SSH_OUTPUT="${HOME}/.ssh/config.d/lan-hosts"
 typeset -g _MO_LAN_SSH_USER_CONFIG="${HOME}/.ssh/config"
 typeset -g _MO_LAN_SSH_USER_CONFIG_DIR="${HOME}/.ssh/config.d"
+typeset -g _MO_LAN_LAST_APPLY_MTIME=0
 
 # -- Defaults ------------------------------------------------------------------
 
@@ -33,6 +34,8 @@ typeset -g _MO_LAN_SSH_USER_CONFIG_DIR="${HOME}/.ssh/config.d"
 # MO_LAN_GADGET_SUBNETS is a zsh array. Declare it here so it's always a
 # proper array even if unset; user sets it in ~/.zshrc before the plugin loads.
 typeset -ga MO_LAN_GADGET_SUBNETS
+
+typeset -g _MO_LAN_LAST_APPLY_MTIME=0
 
 # -- Helpers -------------------------------------------------------------------
 
@@ -95,6 +98,22 @@ _mo_lan_check_network_async() {
 		_mo_lan_log "Network changed (${stored} → ${cur}) — refreshing in background"
 		_mo_lan_refresh_async
 	fi
+}
+
+# Background refreshes write a new cache but can't apply into this shell.
+# Re-apply on next prompt when the cache mtime advanced past our last apply.
+_mo_lan_precmd_check() {
+	local mtime
+	mtime=$(stat -c %Y "$_MO_LAN_SSH_CACHE" 2>/dev/null) || return
+	(( mtime > _MO_LAN_LAST_APPLY_MTIME )) || return
+	_mo_lan_apply
+}
+
+_mo_lan_precmd_check() {
+	local mtime
+	mtime=$(stat -c %Y "$_MO_LAN_SSH_CACHE" 2>/dev/null) || return
+	(( mtime > _MO_LAN_LAST_APPLY_MTIME )) || return
+	_mo_lan_apply
 }
 
 _mo_lan_valid_host() { [[ "$1" =~ ^[a-zA-Z0-9_-]+$ ]] }
@@ -291,6 +310,8 @@ _mo_lan_apply() {
 
 	# 4. ssh-config write (SHA-gated, ~1ms in steady state)
 	_mo_lan_maybe_write_sshconf
+
+	_MO_LAN_LAST_APPLY_MTIME=$(stat -c %Y "$_MO_LAN_SSH_CACHE" 2>/dev/null || echo 0)
 }
 
 # -- Hint wrapper source -------------------------------------------------------
@@ -301,13 +322,19 @@ source "${_MO_LAN_SSH_DIR}/_mo_lan_hint.zsh"
 
 () {
 	if [[ ! -f "$_MO_LAN_SSH_CACHE" && ! -f "$_MO_LAN_SSH_MANUAL" ]]; then
-		[[ "${MO_LAN_AUTO_SCAN:-on}" == "on" ]] && _mo_lan_refresh_async
+		if [[ "${MO_LAN_AUTO_SCAN:-on}" == "on" ]]; then
+			_mo_lan_refresh_async
+			autoload -Uz add-zsh-hook
+			add-zsh-hook precmd _mo_lan_precmd_check
+		fi
 		return
 	fi
 
 	if [[ "${MO_LAN_AUTO_SCAN:-on}" == "on" ]]; then
 		_mo_lan_check_ttl_async
 		_mo_lan_check_network_async
+		autoload -Uz add-zsh-hook
+		add-zsh-hook precmd _mo_lan_precmd_check
 	fi
 
 	_mo_lan_apply
