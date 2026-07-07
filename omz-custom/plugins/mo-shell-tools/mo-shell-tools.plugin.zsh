@@ -1,5 +1,12 @@
 
-h() { fc -l -${1:-50} -1; }
+h() {
+	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+		echo "Usage: h [n]"
+		echo "  Show last n history entries (default: 50)."
+		return
+	fi
+	fc -l -${1:-50} -1
+}
 
 alias '?'='echo $?'
 

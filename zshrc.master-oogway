@@ -61,7 +61,7 @@ HYPHEN_INSENSITIVE="true"             # treat - and _ as identical in tab-comple
 COMPLETION_WAITING_DOTS="true"        # show ... while tab-completion is computing
 DISABLE_UNTRACKED_FILES_DIRTY="true"  # don't mark prompt dirty for untracked files (faster in large repos)
 CASE_SENSITIVE="false"                # tab-completion ignores case (read → README.md)
-DISABLE_AUTO_UPDATE="true"            # never auto-check for OMZ updates — quieter shell start
+zstyle ':omz:update' mode disabled    # never auto-check for OMZ updates — quieter shell start
 
 # -- Completion (zsh native) ----------------------------------------------------
 setopt COMPLETE_IN_WORD  # tab completes from the middle of a word

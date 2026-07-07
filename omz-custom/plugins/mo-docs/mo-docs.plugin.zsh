@@ -17,9 +17,9 @@ md2pdf() {
 	command -v xelatex  &>/dev/null || { echo "md2pdf: xelatex not installed (try: sudo apt install texlive-xetex)" >&2; return 1; }
 	fc-list 'JetBrains Mono' 2>/dev/null | grep -qi 'JetBrains' \
 		|| echo "md2pdf: warning: JetBrains Mono font not found — output will use a fallback monospace font" >&2
-	local failed=0
+	local failed=0 src
 	for src in "$@"; do
-		if [[ "${src##*.}" != "md" ]]; then
+		if [[ "${src##*.}" != (md|MD|markdown|MARKDOWN) ]]; then
 			echo "Skipping '$src': not a .md file" >&2
 			failed=1
 			continue
@@ -29,7 +29,7 @@ md2pdf() {
 			failed=1
 			continue
 		fi
-		local dst="${src%.md}.pdf"
+		local dst="${src%.*}.pdf"
 		local theme="${MD2PDF_THEME:-zenburn}"
 		echo "Converting '$src' → '$dst' ..."
 		if pandoc "$src" \

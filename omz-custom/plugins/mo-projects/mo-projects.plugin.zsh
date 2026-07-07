@@ -62,6 +62,10 @@ fi"
 	for _n in "${proj_dir}"/*(N/); do
 		names+=( "${_n:t}" )
 	done
+	if (( ${#names} == 0 )); then
+		echo "p: no projects found in ${proj_dir}" >&2
+		return 1
+	fi
 	local selected
 	selected=$(printf '%s\0' "${names[@]}" | fzf \
 		--read0 \
