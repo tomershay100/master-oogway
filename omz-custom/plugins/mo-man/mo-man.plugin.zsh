@@ -17,7 +17,8 @@ _mo_man_fzf_pick() {
 		plugins+=("${plugin:h:t}")
 	done
 	(( ${#plugins[@]} == 0 )) && { echo "mo-man: no mo-* plugins with a README found" >&2; return 1; }
-	chosen=$(printf '%s\n' "${plugins[@]}" | fzf --prompt="mo-man> " --preview="cat ${dir}/{}/README.md" --preview-window=right:60%) || return 130
+	local preview_cmd="bat --style=plain --language=markdown ${dir}/{}/README.md 2>/dev/null || batcat --style=plain --language=markdown ${dir}/{}/README.md 2>/dev/null || cat ${dir}/{}/README.md"
+	chosen=$(printf '%s\n' "${plugins[@]}" | fzf --prompt="mo-man> " --preview="$preview_cmd" --preview-window=right:60%) || return 130
 	_mo_man_open "${dir}/${chosen}/README.md"
 }
 

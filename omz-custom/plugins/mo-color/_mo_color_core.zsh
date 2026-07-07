@@ -115,10 +115,7 @@ _mo_reset() { printf '\e[0m'; }
 
 # -- color palette -------------------------------------------------------------
 _mo_color_palette() {
-	local -a names=(
-		black red green yellow blue magenta cyan white
-		gray maroon lime olive navy fuchsia aqua silver
-	)
+	local -a names=( ${(ko)_MO_COLORS} )
 	echo "── Named colors ──────────────────────────────────────────"
 	local name idx r g b lum cfr cfg cfb cfi col=0
 	for name in "${names[@]}"; do

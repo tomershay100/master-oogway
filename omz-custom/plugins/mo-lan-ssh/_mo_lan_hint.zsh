@@ -5,30 +5,6 @@
 # In-scope = PC hostname in _MO_LAN_HOSTSET OR IP matching _MO_LAN_GADGET_GLOBS.
 # Disable entirely: export MO_LAN_TRUST_HINTS=false in ~/.zshrc.
 
-# Return the destination from ssh argv, stripped of user@ prefix.
-# Skips values of option-taking flags so their arguments aren't mistaken
-# for the host.
-_mo_lan_extract_target() {
-	local arg next_is_value=false
-	for arg in "$@"; do
-		if $next_is_value; then
-			next_is_value=false
-			continue
-		fi
-		case "$arg" in
-			-[BbcDEeFIiJLlmOoPpRSWwQ])
-				next_is_value=true
-				;;
-			-*)
-				;;
-			*)
-				print -- "${arg##*@}"
-				return
-				;;
-		esac
-	done
-}
-
 # Return 0 if this looks like a regular interactive ssh (no tunnel/ctl/bg flags,
 # no remote command). Used to skip the probe for scripts and port-forwarding.
 _mo_lan_is_regular_interactive() {
