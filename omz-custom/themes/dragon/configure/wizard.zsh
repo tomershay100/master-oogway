@@ -60,7 +60,7 @@ _dragon_edit_var() {
 			print "  for i in {0..255}; do print -Pn \"%K{\$i}  %k%F{\$i}\${(l:3::0:)i}%f \" \${\${(M)\$((i%6)):#3}:+\$'\\n'}; done"
 			print ""
 			if [[ -n "$current" ]]; then
-				print -P "  %F{245}[e] erase → empty   [Enter] keep current   or type new value%f"
+				print -P "  %F{245}[e] erase → empty   [Enter] keep current   or type new value   [\\e] literal 'e'%f"
 			else
 				print -P "  %F{245}[Enter] keep empty   or type new value%f"
 			fi
@@ -70,6 +70,15 @@ _dragon_edit_var() {
 				read -r val
 				if [[ "$val" == e || "$val" == E ]]; then
 					_DRAGON_CURRENT[$var]=""; break
+				elif [[ "$val" == \\* ]]; then
+					val="${val[2,-1]}"
+					if [[ "$val" =~ '^[0-9]+$' && 10#$val -le 255 ]]; then
+						_DRAGON_CURRENT[$var]="$val"; break
+					elif [[ -n "${_MO_COLORS[${(L)val}]:-}" ]]; then
+						_DRAGON_CURRENT[$var]="${(L)val}"; break
+					else
+						print -P "  %F{red}Invalid color '%F{white}${val}%F{red}' — enter a name or 0-255.%f"
+					fi
 				elif [[ -z "$val" ]]; then
 					break  # keep current
 				elif [[ "$val" =~ '^[0-9]+$' && 10#$val -le 255 ]]; then
@@ -100,15 +109,17 @@ _dragon_edit_var() {
 			;;
 		string)
 			if [[ -n "$current" ]]; then
-				print -P "  %F{245}[e] erase → empty   [Enter] keep current   or type new value%f"
+				print -P "  %F{245}[e] erase → empty   [Enter] keep current   or type new value   [\\e] literal 'e'%f"
 			else
-				print -P "  %F{245}[Enter] keep empty   or type new value%f"
+				print -P "  %F{245}[Enter] keep empty   or type new value   [\\value] strip leading \\%f"
 			fi
 			printf "  New value (Enter = keep '%s'): " "${current:-(empty)}"
 			local val
 			IFS= read -r val
 			if [[ "$val" == e || "$val" == E ]]; then
 				_DRAGON_CURRENT[$var]=""
+			elif [[ "$val" == \\* ]]; then
+				_DRAGON_CURRENT[$var]="${val[2,-1]}"
 			elif [[ -n "$val" ]]; then
 				_DRAGON_CURRENT[$var]="$val"
 			fi

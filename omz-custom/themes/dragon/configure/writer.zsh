@@ -85,6 +85,9 @@ HEADER
 		return 1
 	fi
 
-	command mv "$tmp_file" "${_DRAGON_CONF_FILE}"
+	if ! command mv "$tmp_file" "${_DRAGON_CONF_FILE}"; then
+		print -P "%F{red}[dragon]%f Failed to write ${_DRAGON_CONF_FILE} (disk full?)" >&2
+		return 1
+	fi
 	trap - EXIT
 }
