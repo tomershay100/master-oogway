@@ -1,7 +1,14 @@
 
 natip() {
 	command -v curl &>/dev/null || { echo "natip: curl not installed (try: sudo apt install curl)" >&2; return 1; }
-	curl -s --max-time 5 ifconfig.me
+	local ip
+	ip=$(curl -s --max-time 5 ifconfig.me)
+	if [[ -z "$ip" ]]; then
+		echo "natip: lookup failed (timeout or no connectivity)" >&2
+		echo "(unknown)"
+		return 1
+	fi
+	echo "$ip"
 }
 
 serve() {

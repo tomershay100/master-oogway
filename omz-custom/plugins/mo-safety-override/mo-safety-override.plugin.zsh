@@ -15,6 +15,11 @@ _confirm_reboot() {
 	echo "This is $(hostname). Are you sure you want to reboot the system? (y/N)"
 	local ans
 	read -r -t 30 ans || { echo "Timed out — reboot cancelled."; return 1; }
-	[[ "$ans" =~ ^[Yy]([Ee][Ss])?$ ]] && command reboot "$@"
+	if [[ "$ans" =~ ^[Yy]([Ee][Ss])?$ ]]; then
+		command reboot "$@"
+	else
+		echo "Reboot cancelled."
+		return 1
+	fi
 }
 alias reboot="_confirm_reboot"
