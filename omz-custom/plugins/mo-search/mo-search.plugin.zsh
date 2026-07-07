@@ -2,16 +2,16 @@
 source "${0:h}/requirements.zsh" || return
 
 # -- fzf environment ------------------------------------------------------------
-export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
+export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+${FZF_DEFAULT_OPTS} }--height 40% --layout=reverse --border"
 
 _mo_search_bat=""
 command -v bat    &>/dev/null && _mo_search_bat="bat"
 command -v batcat &>/dev/null && _mo_search_bat="${_mo_search_bat:-batcat}"
 
 if [[ -n "$_mo_search_bat" ]]; then
-	export FZF_CTRL_T_OPTS="--preview '${_mo_search_bat} --color=always --style=plain {} 2>/dev/null || cat {}' --preview-window=right:60%:wrap"
+	export FZF_CTRL_T_OPTS="--preview '${_mo_search_bat} --color=always --style=plain {} 2>/dev/null || ls -la {}' --preview-window=right:60%:wrap"
 else
-	export FZF_CTRL_T_OPTS="--preview 'cat {}' --preview-window=right:60%:wrap"
+	export FZF_CTRL_T_OPTS="--preview 'cat {} 2>/dev/null || ls -la {}' --preview-window=right:60%:wrap"
 fi
 unset _mo_search_bat
 
@@ -98,11 +98,18 @@ fman() {
 		return
 	fi
 	command -v fzf &>/dev/null || { echo "fman: fzf not installed" >&2; return 1; }
-	local page
+	local page section name
 	page=$(man -k '' 2>/dev/null \
-		| fzf --height=50% --reverse --preview 'man {1}' \
+		| fzf --height=50% --reverse --preview 'man $(echo {1} | tr -d "()" | awk -F"[()]" "{print \$2, \$1}")' \
 		| awk '{print $1}')
-	[[ -n "$page" ]] && man "$page"
+	[[ -n "$page" ]] || return 0
+	# page is "name(section)" — split so man opens the right section
+	if [[ "$page" =~ '^(.+)\(([0-9a-z]+)\)$' ]]; then
+		name="${match[1]}" section="${match[2]}"
+		man "$section" "$name"
+	else
+		man "$page"
+	fi
 }
 
 frg() {

@@ -88,7 +88,7 @@ extract() {
 			*.tar.bz2)  _mo_extract_check tar     && tar xjf "$file"        ${=_tar_flags} || failed=1 ;;
 			*.tar.gz)   _mo_extract_check tar     && tar xzf "$file"        ${=_tar_flags} || failed=1 ;;
 			*.tar.xz)   _mo_extract_check tar     && tar xJf "$file"        ${=_tar_flags} || failed=1 ;;
-			*.tar.zst)  _mo_extract_check tar     && tar --zstd -xf "$file" ${=_tar_flags} || failed=1 ;;
+			*.tar.zst)  _mo_extract_check tar && _mo_extract_check zstd && tar --zstd -xf "$file" ${=_tar_flags} || failed=1 ;;
 			*.tar)      _mo_extract_check tar     && tar xf  "$file"        ${=_tar_flags} || failed=1 ;;
 			*.bz2)      _mo_extract_check bunzip2 && bunzip2 "$file"        || failed=1 ;;
 			*.gz)       _mo_extract_check gunzip  && gunzip  "$file"        || failed=1 ;;
@@ -110,7 +110,7 @@ bak() {
 		return
 	fi
 	local ts
-	ts=$(date +%Y%m%d_%H%M%S_%N)
+	ts=$(date +%Y%m%d_%H%M%S)
 	for f in "$@"; do
 		[[ -e "$f" ]] || { echo "bak: not found: $f" >&2; continue; }
 		# -a preserves mode/owner/timestamps/xattrs/symlinks so a later
