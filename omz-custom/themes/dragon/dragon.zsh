@@ -54,6 +54,23 @@ for _dragon_k in "${(@k)_DRAGON_TYPE}"; do
 done
 unset _dragon_k _dragon_varname
 
+# When Nerd Font is off, strip PUA glyphs (U+E000–U+F8FF) from all string-type
+# DRAGON__ vars so preset values like HOSTNAME_PREFIX don't render as tofu.
+if [[ "$DRAGON__USE_NERD_FONT" == "false" ]]; then
+	_dragon_init_types
+	typeset _dragon_pua_k _dragon_pua_var _dragon_pua_val _dragon_pua_stripped
+	for _dragon_pua_k in "${(@k)_DRAGON_TYPE}"; do
+		[[ "${_DRAGON_TYPE[$_dragon_pua_k]}" == "string" ]] || continue
+		_dragon_pua_var="DRAGON__${_dragon_pua_k}"
+		_dragon_pua_val="${(P)_dragon_pua_var}"
+		[[ -n "$_dragon_pua_val" ]] || continue
+		_dragon_pua_stripped="${_dragon_pua_val//[#xe000-#xf8ff]}"
+		[[ "$_dragon_pua_stripped" == "$_dragon_pua_val" ]] || \
+			export "${_dragon_pua_var}=${_dragon_pua_stripped}"
+	done
+	unset _dragon_pua_k _dragon_pua_var _dragon_pua_val _dragon_pua_stripped
+fi
+
 source "${0:a:h}/../../lib/colors.zsh"
 
 # -- Source prompt parts -------------------------------------------------------
