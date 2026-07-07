@@ -10,6 +10,7 @@ readonly INSTALL_DIR="${HOME}/.master-oogway"
 readonly CONF_DIR="${HOME}/.config/master-oogway"
 readonly STATE_FILE="${CONF_DIR}/state"
 readonly ZSHRC="${HOME}/.zshrc"
+readonly ZSHRC_SNAPSHOT="${CONF_DIR}/zshrc.snapshot"
 readonly GITCONFIG="${HOME}/.gitconfig"
 readonly GITCONFIG_BUNDLE="${HOME}/.gitconfig.master-oogway"
 
@@ -700,6 +701,14 @@ _check_oh_my_zsh
 
 # -- .zshrc: installed once; never overwritten unless --force -------------------
 
+# Save the shipped template as the merge base for future 3-way merges. Called
+# on every successful zshrc write so the snapshot always reflects what the
+# user's ~/.zshrc was last derived from.
+_save_zshrc_snapshot()
+{
+	copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC_SNAPSHOT}"
+}
+
 _install_zshrc()
 {
 	local backup_path
@@ -708,28 +717,61 @@ _install_zshrc()
 		info "Your previous ~/.zshrc was saved to ${backup_path}"
 	fi
 	copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}"
+	_save_zshrc_snapshot
 }
 
-_check_zshrc_drift()
+# On update, attempt a `git merge-file` 3-way merge so template changes flow
+# into the user's managed ~/.zshrc without clobbering their local edits:
+#   base   = snapshot (template as of the last install)
+#   ours   = current ~/.zshrc (may hold user edits)
+#   theirs = new template
+# git merge-file exits 0 on a clean merge, 1 when it produced conflict markers,
+# and >1 on a real error. Under `set -e` those non-zero exits would abort the
+# script, so the exit code is captured explicitly with `|| status=$?`.
+_merge_zshrc()
 {
 	local template="${INSTALL_DIR}/zshrc.master-oogway"
-	local snapshot="${ZSHRC}.upstream-snapshot"
 	[[ -f "${template}" ]] || return
-	# Fast path: if the snapshot exists and its SHA matches the template, the
-	# template hasn't changed since the last install — skip the diff entirely.
-	# This is the common case after a re-run with no upstream changes.
-	if [[ -f "${snapshot}" ]] && command -v sha256sum &>/dev/null; then
+
+	# Fast path: snapshot matches the template → nothing changed upstream.
+	if [[ -f "${ZSHRC_SNAPSHOT}" ]] && command -v sha256sum &>/dev/null; then
 		local template_sha snapshot_sha
 		template_sha=$(sha256sum "${template}" | cut -d' ' -f1)
-		snapshot_sha=$(sha256sum "${snapshot}" | cut -d' ' -f1)
+		snapshot_sha=$(sha256sum "${ZSHRC_SNAPSHOT}" | cut -d' ' -f1)
 		[[ "${template_sha}" == "${snapshot_sha}" ]] && return
 	fi
-	# No snapshot yet (first run) or template changed — compare to fall back.
-	# First-run case: compare template against ~/.zshrc itself so new users
-	# who already have a zshrc get a drift warning if it diverges.
-	local ref="${ZSHRC}"
-	[[ -f "${snapshot}" ]] && ref="${snapshot}"
-	if ! diff -q "${template}" "${ref}" &>/dev/null; then
+
+	# No snapshot yet: this is the first update after the merge feature shipped.
+	# We have no reliable base, so don't guess — warn and let the user create a
+	# snapshot by re-running the installer.
+	if [[ ! -f "${ZSHRC_SNAPSHOT}" ]]; then
+		warn "The zshrc template has changed, but no merge snapshot exists yet."
+		warn "Run install.sh once to create ${ZSHRC_SNAPSHOT}, then future"
+		warn "updates will 3-way merge template changes into your ~/.zshrc."
+		warn "Meanwhile review changes with: master-oogway diff-zshrc"
+		return
+	fi
+
+	# Write to a temp file rather than capturing stdout: command substitution
+	# strips the trailing newline, which would corrupt ~/.zshrc on every merge.
+	local tmp status=0
+	tmp=$(mktemp "${ZSHRC}.merge.XXXXXX")
+	git merge-file -p "${ZSHRC}" "${ZSHRC_SNAPSHOT}" "${template}" \
+		> "${tmp}" || status=$?
+
+	if [[ ${status} -eq 0 ]]; then
+		mv "${tmp}" "${ZSHRC}"
+		_save_zshrc_snapshot
+		success "Merged zshrc template changes into ${ZSHRC} (3-way merge, no conflicts)."
+	elif [[ ${status} -eq 1 ]]; then
+		rm -f "${tmp}"
+		warn "The zshrc template changed and conflicts with your local edits."
+		warn "Your ~/.zshrc was left untouched. Merge manually against:"
+		warn "  base:     ${ZSHRC_SNAPSHOT}"
+		warn "  template: ${template}"
+		warn "Or review changes with: master-oogway diff-zshrc"
+	else
+		rm -f "${tmp}"
 		warn "The zshrc template has changed since your last install."
 		warn "New features may have been added. Review with:"
 		warn "  master-oogway diff-zshrc"
@@ -739,16 +781,15 @@ _check_zshrc_drift()
 
 # Install when the file is absent, forced, or present but NOT master-oogway's
 # (e.g. oh-my-zsh's installer wrote its own template — it carries no managed
-# marker). A marked file may hold user edits, so it is only drifted-checked.
+# marker). A marked file may hold user edits, so it is 3-way merged instead.
 if [[ ! -f "${ZSHRC}" ]] || [[ "${MO_FORCE}" == true ]] \
 	|| ! grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
 	_install_zshrc
 else
-	_check_zshrc_drift
+	_merge_zshrc
 fi
 
-# Snapshot the template alongside ~/.zshrc so `master-oogway diff-zshrc`
-# and future drift detection can compare against what shipped.
+# Keep the legacy snapshot (used by `master-oogway diff-zshrc`) up-to-date.
 copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}.upstream-snapshot"
 
 # -- .zshenv --------------------------------------------------------------------
