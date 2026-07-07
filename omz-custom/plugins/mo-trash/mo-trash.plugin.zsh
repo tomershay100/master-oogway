@@ -1,6 +1,8 @@
 source "${0:h}/requirements.zsh" || return
 
-typeset -g MO_TRASH_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/Trash"
+# MO_TRASH_DIR is used by trash-empty (du) and trash-prune (--trash-dir).
+# trash-put ignores it — it always uses its own XDG Trash location.
+: ${MO_TRASH_DIR:=${XDG_DATA_HOME:-$HOME/.local/share}/Trash}
 
 alias rm="trash-put"
 
