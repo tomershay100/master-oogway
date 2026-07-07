@@ -8,7 +8,8 @@ __calc_prompt_length()
 
 dragon__set_lprompt()
 {
-	_dragon_left_prev_bg="$TERMINAL_BACKGROUND_COLOR"
+	__get_xterm_color_by_name "$TERMINAL_BACKGROUND_COLOR"
+	_dragon_left_prev_bg="${XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
 	GIT_SHOULD_BE_ON_NEW_LINE=false
 	left_prompt=""
 	local curr_content
@@ -102,7 +103,8 @@ $left_prompt$curr_content"
 
 dragon__set_rprompt()
 {
-	_dragon_right_prev_bg="$TERMINAL_BACKGROUND_COLOR"
+	__get_xterm_color_by_name "$TERMINAL_BACKGROUND_COLOR"
+	_dragon_right_prev_bg="${XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
 	right_prompt=""
 
 	dragon__set_exit_status
