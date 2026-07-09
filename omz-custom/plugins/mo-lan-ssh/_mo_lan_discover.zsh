@@ -61,8 +61,8 @@ strat_avahi() {
 	[[ -z "$out" ]] && return 1
 	# avahi-browse -r emits "hostname = [foo.local]" lines in the resolved section
 	echo "$out" | awk '/hostname =/ {
-		match($0, /\[([^]]+)\]/, m)
-		n = m[1]
+		match($0, /\[[^]]+\]/)
+		n = substr($0, RSTART+1, RLENGTH-2)
 		sub(/\.$/, "", n)
 		sub(/\.local$/, "", n)
 		if (n != "") print n
