@@ -91,7 +91,8 @@ _mo_welcome_field_ssh() {
 () {
 	local field
 	local -a fields
-	fields=(${(z)${MO_WELCOME_FIELDS:-host os sys now up}})
+	fields=(${(z)${MO_WELCOME_FIELDS-host os sys now up}})
+	(( ${#fields[@]} )) || return
 	print -P ""
 	for field in "${fields[@]}"; do
 		if (( ${+functions[_mo_welcome_field_${field}]} )); then
