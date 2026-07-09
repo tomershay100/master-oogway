@@ -56,14 +56,16 @@ fkill() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 		echo "Usage: fkill [signal]"
 		echo "  Interactively select one or more processes to kill."
-		echo "  signal — signal to send (default: -15 SIGTERM)"
+		echo "  signal — signal to send (default: -15 SIGTERM); must start with '-'"
 		echo "  Examples:"
 		echo "    fkill        — send SIGTERM"
 		echo "    fkill -9     — send SIGKILL (force)"
+		echo "    fkill -KILL  — send SIGKILL by name"
 		echo "  Tip: use TAB to select multiple processes."
 		return
 	fi
 	command -v fzf &>/dev/null || { echo "fkill: fzf not installed" >&2; return 1; }
+	[[ $# -gt 0 && "${1}" != -* ]] && { echo "fkill: signal must start with '-' (e.g. -9, -KILL)" >&2; return 1; }
 	local sig="${1:--15}"
 	local pids
 	pids=$(ps -ef \
