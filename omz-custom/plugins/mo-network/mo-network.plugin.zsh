@@ -38,20 +38,15 @@ sshto() {
 	fi
 	command -v fzf &>/dev/null || { echo "sshto: fzf not installed" >&2; return 1; }
 
-	# Collect SSH config files, following Include directives recursively (BFS).
-	# _seen prevents re-processing the same file if included from multiple places.
-	# Per ssh_config(5), relative Include paths are relative to ~/.ssh/, not the including file.
-	# Depth cap of 16 guards against misconfigured recursive includes that _seen
-	# alone can't catch (e.g. a chain of 100 distinct files).
 	local -a config_files=()
 	local -A _seen=()
 	local -a _queue=( ~/.ssh/config(N) ~/.ssh/config.d/*(N) )
-	local _f _inc _depth=0
-	while (( ${#_queue} > 0 && _depth < 16 )); do
+	local _f _inc _count=0
+	while (( ${#_queue} > 0 && _count < 256 )); do
 		_f="${_queue[1]}"; _queue=( "${_queue[@]:1}" )
 		[[ -f "$_f" && -z "${_seen[$_f]:-}" ]] || continue
 		_seen[$_f]=1
-		(( _depth++ ))
+		(( _count++ ))
 		config_files+=( "$_f" )
 		while IFS= read -r _inc; do
 			# Each token on an Include line is a separate pattern; split on whitespace.
