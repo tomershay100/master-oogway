@@ -168,7 +168,7 @@ EOF
 		local_port="${right_port}"
 		remote_host="localhost"
 		remote_port="${left_port}"
-		echo "tunnel: -R ${remote_port}:${remote_host}:${local_port}  via ${ssh_login}"
+		echo "tunnel: -R ${bind_addr}:${remote_port}:${remote_host}:${local_port}  via ${ssh_login}"
 
 	else
 		echo "tunnel: both sides are remote hosts — cannot determine SSH direction" >&2
@@ -182,7 +182,7 @@ EOF
 	if [[ "$flag" == "-L" ]]; then
 		ssh "${ssh_opts[@]}" "$flag" "${bind_addr}:${local_port}:${remote_host}:${remote_port}" "$ssh_login" || return
 	else
-		ssh "${ssh_opts[@]}" "$flag" "${remote_port}:${remote_host}:${local_port}" "$ssh_login" || return
+		ssh "${ssh_opts[@]}" "$flag" "${bind_addr}:${remote_port}:${remote_host}:${local_port}" "$ssh_login" || return
 	fi
 
 	# A background tunnel forked and detached; record its PID so `tunnel list`
