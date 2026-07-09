@@ -59,6 +59,7 @@ EOF
 	fi
 
 	if [[ "${1-}" == "--dismiss" ]]; then
+		_dragon_init_defaults
 		local current_hash current_mtime
 		current_hash=$(_dragon_vars_hash)
 		current_mtime=$(stat -c '%Y' "${_DRAGON_THEMES_DIR}/schema.zsh" 2>/dev/null)
@@ -70,6 +71,7 @@ EOF
 			>> "${tmp_state}"
 		command mv "${tmp_state}" "${_DRAGON_STATE_FILE}"
 		print -P "%F{green}✓%f Dragon notifier dismissed until next update."
+		_dragon_cleanup
 		return 0
 	fi
 
