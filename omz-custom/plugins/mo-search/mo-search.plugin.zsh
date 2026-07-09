@@ -48,7 +48,7 @@ if [[ -o extendedhistory ]]; then
 			| FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} ${FZF_DEFAULT_OPTS-} \
 				--scheme=history --bind=ctrl-r:toggle-sort,ctrl-z:ignore \
 				${FZF_CTRL_R_OPTS-} --query=${(qqq)LBUFFER} +m" \
-				fzf --delimiter $'\t' --nth='3..' --with-nth='2,3..')
+				fzf --delimiter $'\t' --nth='2..' --with-nth='2,3..')
 		local ret=$?
 		if [[ -n "$selected" ]]; then
 			num="${selected%%$'\t'*}"
