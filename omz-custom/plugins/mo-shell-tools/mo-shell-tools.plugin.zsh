@@ -37,9 +37,9 @@ clip() {
 	local data
 	data=$(command cat)
 	_mo_clip "$data" || { printf '%s\n' "$data"; return 1; }
-	local bytes=${#data}
-	local unit; (( bytes == 1 )) && unit="byte" || unit="bytes"
-	echo "Copied ${bytes} ${unit} to clipboard." >&2
+	local chars=${#data}
+	local unit; (( chars == 1 )) && unit="char" || unit="chars"
+	echo "Copied ${chars} ${unit} to clipboard." >&2
 }
 
 vizsh() { ${EDITOR:-vim} ~/.zshrc; }
