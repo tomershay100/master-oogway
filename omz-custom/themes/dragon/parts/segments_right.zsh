@@ -11,11 +11,11 @@ dragon__set_date_time()
 
 _DRAGON_CMD_RAN=false
 _DRAGON_TIMER_ACTIVE=false
-timer=-1
+_DRAGON_TIMER=-1
 
 __set_timer()
 {
-	timer=$SECONDS
+	_DRAGON_TIMER=$SECONDS
 	_DRAGON_TIMER_ACTIVE=true
 	FINAL_DRAGON__EXEC_TIMER_CONTENT=""
 }
@@ -51,13 +51,13 @@ dragon__set_execution_time()
 		# No command ran (bare Enter) or already consumed — preserve the last
 		# rendered value so the async gitstatus repaint doesn't blank it out.
 		return
-	elif ((timer == -1 || SECONDS - timer < $DRAGON__EXEC_TIMER_THRESHOLD)); then
+	elif ((_DRAGON_TIMER == -1 || SECONDS - _DRAGON_TIMER < $DRAGON__EXEC_TIMER_THRESHOLD)); then
 		FINAL_DRAGON__EXEC_TIMER_CONTENT=""
 		_DRAGON_TIMER_ACTIVE=false
 		return
 	else
 		# Call without $() to avoid a subshell — result written to _DRAGON_READABLE_TIME
-		__get_readable_time $((SECONDS - timer))
+		__get_readable_time $((SECONDS - _DRAGON_TIMER))
 		REAL_DRAGON__EXEC_TIMER_CONTENT="${_DRAGON_READABLE_TIME}"
 		unset _DRAGON_READABLE_TIME
 	fi

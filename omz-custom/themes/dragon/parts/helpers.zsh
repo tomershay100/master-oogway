@@ -1,10 +1,10 @@
 __get_xterm_color_by_name()
 {
-	XTERM_COLOR=""
+	_DRAGON_XTERM_COLOR=""
 	local color_name="$1"
 
 	if [[ $color_name =~ ^[0-9]+$ && 10#$color_name -le 255 ]]; then
-		XTERM_COLOR="$color_name"
+		_DRAGON_XTERM_COLOR="$color_name"
 		return
 	fi
 
@@ -12,7 +12,7 @@ __get_xterm_color_by_name()
 
 	local fg_code="${_MO_COLORS[${(L)color_name}]}"
 	if [[ -n "$fg_code" ]]; then
-		XTERM_COLOR="$fg_code"
+		_DRAGON_XTERM_COLOR="$fg_code"
 	else
 		print -P "%F{red}[dragon] unknown color: '${color_name}' — check ~/.config/master-oogway/conf.zsh%f" >&2
 	fi
@@ -30,7 +30,7 @@ __get_xterm_style_format()
 	[[ "$is_underline" == "true" ]] && STYLE_FORMAT+="%U" || STYLE_FORMAT+="%u"
 
 	__get_xterm_color_by_name "$fg_color"
-	local fg_code="$XTERM_COLOR"
+	local fg_code="$_DRAGON_XTERM_COLOR"
 	if [[ -n "$fg_code" ]]; then
 		STYLE_FORMAT+="%F{$fg_code}"
 	else
@@ -38,7 +38,7 @@ __get_xterm_style_format()
 	fi
 
 	__get_xterm_color_by_name "$bg_color"
-	local bg_code="$XTERM_COLOR"
+	local bg_code="$_DRAGON_XTERM_COLOR"
 	if [[ -n "$bg_code" ]]; then
 		STYLE_FORMAT+="%K{$bg_code}"
 	else
@@ -70,7 +70,7 @@ __dragon__show()
 
 	__get_xterm_style_format "$curr_fg_color" "$curr_bg_color" "$curr_is_bold" "$curr_is_underline"
 
-	SHOW_RESULT="$RESET_FORMAT$STYLE_FORMAT$curr_prefix$curr_content$curr_suffix$RESET_FORMAT"
+	_DRAGON_SHOW_RESULT="$RESET_FORMAT$STYLE_FORMAT$curr_prefix$curr_content$curr_suffix$RESET_FORMAT"
 }
 
 # Two helpers used by every segment in segments_left.zsh / segments_right.zsh
@@ -99,12 +99,12 @@ __dragon_copy_defaults()
 	done
 }
 
-# __dragon_finalize <NAME> [final_var]: __dragon__show then store SHOW_RESULT.
+# __dragon_finalize <NAME> [final_var]: __dragon__show then store _DRAGON_SHOW_RESULT.
 # Pass final_var for the legacy prompt_char case (FINAL_PROMPT_CHAR_CONTENT).
 __dragon_finalize()
 {
 	local name="$1"
 	local final_var="${2:-FINAL_DRAGON__${name}_CONTENT}"
 	__dragon__show "$name"
-	typeset -g "$final_var=$SHOW_RESULT"
+	typeset -g "$final_var=$_DRAGON_SHOW_RESULT"
 }

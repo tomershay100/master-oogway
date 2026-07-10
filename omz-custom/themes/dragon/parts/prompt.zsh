@@ -9,43 +9,43 @@ __calc_prompt_length()
 dragon__set_lprompt()
 {
 	__get_xterm_color_by_name "$TERMINAL_BACKGROUND_COLOR"
-	_dragon_left_prev_bg="${XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
+	_dragon_left_prev_bg="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
 	GIT_SHOULD_BE_ON_NEW_LINE=false
-	left_prompt=""
+	_DRAGON_LEFT_PROMPT=""
 	local curr_content
 
 	if $DRAGON__ENABLE_MULTILINE; then
 		dragon__set_multiline_first_line_prompt
 		__add_separator_between_left_segments "$FINAL_DRAGON__MULTILINE_FIRST_LINE_SEPARATOR_CONTENT" "$DRAGON__PROMPT_SEPARATOR_BACKGROUND_COLOR"
-		left_prompt+="$FINAL_DRAGON__MULTILINE_FIRST_LINE_SEPARATOR_CONTENT"
+		_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__MULTILINE_FIRST_LINE_SEPARATOR_CONTENT"
 	fi
 
 	dragon__set_ssh_prefix
 	__add_separator_between_left_segments "$FINAL_DRAGON__SSH_PREFIX_CONTENT" "$DRAGON__SSH_PREFIX_BACKGROUND_COLOR"
-	left_prompt+="$FINAL_DRAGON__SSH_PREFIX_CONTENT"
+	_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__SSH_PREFIX_CONTENT"
 
 	dragon__set_username
 	__add_separator_between_left_segments "$FINAL_DRAGON__USERNAME_CONTENT" "$DRAGON__USERNAME_BACKGROUND_COLOR"
-	left_prompt+="$FINAL_DRAGON__USERNAME_CONTENT"
+	_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__USERNAME_CONTENT"
 
 	dragon__set_user_host_separator
 	__add_separator_between_left_segments "$FINAL_DRAGON__USER_HOST_SEPARATOR_CONTENT" "$DRAGON__PROMPT_SEPARATOR_BACKGROUND_COLOR"
-	left_prompt+="$FINAL_DRAGON__USER_HOST_SEPARATOR_CONTENT"
+	_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__USER_HOST_SEPARATOR_CONTENT"
 
 	dragon__set_hostname
 	__add_separator_between_left_segments "$FINAL_DRAGON__HOSTNAME_CONTENT" "$DRAGON__HOSTNAME_BACKGROUND_COLOR"
-	left_prompt+="$FINAL_DRAGON__HOSTNAME_CONTENT"
+	_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__HOSTNAME_CONTENT"
 
 	dragon__set_host_dir_separator
 	__add_separator_between_left_segments "$FINAL_DRAGON__HOST_DIR_SEPARATOR_CONTENT" "$DRAGON__PROMPT_SEPARATOR_BACKGROUND_COLOR"
-	left_prompt+="$FINAL_DRAGON__HOST_DIR_SEPARATOR_CONTENT"
+	_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__HOST_DIR_SEPARATOR_CONTENT"
 
 	dragon__set_directory
 	__add_separator_between_left_segments "$FINAL_DRAGON__DIRECTORY_CONTENT" "$DRAGON__DIRECTORY_BACKGROUND_COLOR"
-	left_prompt+="$FINAL_DRAGON__DIRECTORY_CONTENT"
+	_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__DIRECTORY_CONTENT"
 
-	PROMPT="$left_prompt"
-	left_prompt=""
+	PROMPT="$_DRAGON_LEFT_PROMPT"
+	_DRAGON_LEFT_PROMPT=""
 
 	dragon__set_git_prompt
 
@@ -54,79 +54,79 @@ dragon__set_lprompt()
 		curr_content="$FINAL_DRAGON__MULTILINE_NEW_LINE_SEPARATOR_CONTENT"
 		if [[ -n $curr_content ]]; then
 			__add_separator_between_left_segments " " ""
-			PROMPT+="$left_prompt"
-			left_prompt=""
+			PROMPT+="$_DRAGON_LEFT_PROMPT"
+			_DRAGON_LEFT_PROMPT=""
 			__add_separator_between_left_segments "$curr_content" "$DRAGON__PROMPT_SEPARATOR_BACKGROUND_COLOR"
 			PROMPT+="
-$left_prompt$curr_content"
-			left_prompt=""
+$_DRAGON_LEFT_PROMPT$curr_content"
+			_DRAGON_LEFT_PROMPT=""
 		else
 			__add_separator_between_left_segments " " ""
-			PROMPT+="$left_prompt
+			PROMPT+="$_DRAGON_LEFT_PROMPT
 "
-			left_prompt=""
+			_DRAGON_LEFT_PROMPT=""
 		fi
 	fi
 
 	__add_separator_between_left_segments "$FINAL_GIT_STATUS_CONTENT" "$REAL_DRAGON__GIT_STATUS_BACKGROUND_COLOR"
-	PROMPT+="$left_prompt$FINAL_GIT_STATUS_CONTENT"
-	left_prompt=""
+	PROMPT+="$_DRAGON_LEFT_PROMPT$FINAL_GIT_STATUS_CONTENT"
+	_DRAGON_LEFT_PROMPT=""
 	
 	if $DRAGON__ENABLE_MULTILINE; then
 		dragon__set_multiline_last_line_prompt
 		curr_content="$FINAL_DRAGON__MULTILINE_LAST_LINE_SEPARATOR_CONTENT"
 		if [[ -n $curr_content ]]; then
 			__add_separator_between_left_segments " " ""
-			PROMPT+="$left_prompt"
-			left_prompt=""
+			PROMPT+="$_DRAGON_LEFT_PROMPT"
+			_DRAGON_LEFT_PROMPT=""
 			__add_separator_between_left_segments "$curr_content" "$DRAGON__PROMPT_SEPARATOR_BACKGROUND_COLOR"
 			PROMPT+="
-$left_prompt$curr_content"
-			left_prompt=""
+$_DRAGON_LEFT_PROMPT$curr_content"
+			_DRAGON_LEFT_PROMPT=""
 		else
 			__add_separator_between_left_segments " " ""
-			PROMPT+="$left_prompt
+			PROMPT+="$_DRAGON_LEFT_PROMPT
 "
-			left_prompt=""
+			_DRAGON_LEFT_PROMPT=""
 		fi
 	fi
 
 	dragon__set_prompt_char
 	__add_separator_between_left_segments "$FINAL_PROMPT_CHAR_CONTENT" "$REAL_DRAGON__PROMPT_CHAR_BACKGROUND_COLOR"
-	left_prompt+="$FINAL_PROMPT_CHAR_CONTENT"
+	_DRAGON_LEFT_PROMPT+="$FINAL_PROMPT_CHAR_CONTENT"
 
 	__add_separator_between_left_segments " " ""
 
-	PROMPT+="$left_prompt"
-	left_prompt=""
+	PROMPT+="$_DRAGON_LEFT_PROMPT"
+	_DRAGON_LEFT_PROMPT=""
 }
 
 dragon__set_rprompt()
 {
 	__get_xterm_color_by_name "$TERMINAL_BACKGROUND_COLOR"
-	_dragon_right_prev_bg="${XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
-	right_prompt=""
+	_dragon_right_prev_bg="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
+	_DRAGON_RIGHT_PROMPT=""
 
 	dragon__set_exit_status
 	__add_separator_between_right_segments "$FINAL_DRAGON__EXIT_STATUS_CONTENT" "$DRAGON__EXIT_STATUS_BACKGROUND_COLOR"
-	right_prompt+="$FINAL_DRAGON__EXIT_STATUS_CONTENT"
+	_DRAGON_RIGHT_PROMPT+="$FINAL_DRAGON__EXIT_STATUS_CONTENT"
 
 	dragon__set_ssh_connection_count
 	__add_separator_between_right_segments "$FINAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT" "$DRAGON__SSH_CONNECTION_COUNT_BACKGROUND_COLOR"
-	right_prompt+="$FINAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT"
+	_DRAGON_RIGHT_PROMPT+="$FINAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT"
 
 	dragon__set_job_count
 	__add_separator_between_right_segments "$FINAL_DRAGON__JOB_COUNT_CONTENT" "$DRAGON__JOB_COUNT_BACKGROUND_COLOR"
-	right_prompt+="$FINAL_DRAGON__JOB_COUNT_CONTENT"
+	_DRAGON_RIGHT_PROMPT+="$FINAL_DRAGON__JOB_COUNT_CONTENT"
 
 	dragon__set_execution_time
 	__add_separator_between_right_segments "$FINAL_DRAGON__EXEC_TIMER_CONTENT" "$DRAGON__EXEC_TIMER_BACKGROUND_COLOR"
-	right_prompt+="$FINAL_DRAGON__EXEC_TIMER_CONTENT"
+	_DRAGON_RIGHT_PROMPT+="$FINAL_DRAGON__EXEC_TIMER_CONTENT"
 
 	dragon__set_date_time
 	__add_separator_between_right_segments "$FINAL_DRAGON__DATE_TIME_CONTENT" "$DRAGON__DATE_TIME_BACKGROUND_COLOR"
-	right_prompt+="$FINAL_DRAGON__DATE_TIME_CONTENT"
+	_DRAGON_RIGHT_PROMPT+="$FINAL_DRAGON__DATE_TIME_CONTENT"
 
-	RPROMPT="$right_prompt"
-	_DRAGON_SAVED_RPROMPT="$right_prompt"  # saved for verbose transient reuse
+	RPROMPT="$_DRAGON_RIGHT_PROMPT"
+	_DRAGON_SAVED_RPROMPT="$_DRAGON_RIGHT_PROMPT"  # saved for verbose transient reuse
 }

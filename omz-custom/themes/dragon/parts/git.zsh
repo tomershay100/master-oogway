@@ -69,7 +69,7 @@ dragon__set_git_prompt()
 	__set_git_status_prefix_and_suffix
 
 	__dragon__show "GIT_STATUS"
-	FINAL_GIT_STATUS_CONTENT="$SHOW_RESULT"
+	FINAL_GIT_STATUS_CONTENT="$_DRAGON_SHOW_RESULT"
 
 	if [[ $DRAGON__GIT_STATUS_ON_NEW_LINE == "never" ]] || ! $DRAGON__ENABLE_MULTILINE; then
 		GIT_SHOULD_BE_ON_NEW_LINE=false

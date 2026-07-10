@@ -16,7 +16,7 @@ __dragon_render_separator()
 	REAL_DRAGON__PROMPT_SEPARATOR_CONTENT="$content_val"
 	__set_separator_parameters
 	__dragon__show "PROMPT_SEPARATOR"
-	typeset -g "${final_var}=${SHOW_RESULT}"
+	typeset -g "${final_var}=${_DRAGON_SHOW_RESULT}"
 }
 
 dragon__set_user_host_separator()        { __dragon_render_separator "$DRAGON__USER_HOST_SEPARATOR"       FINAL_DRAGON__USER_HOST_SEPARATOR_CONTENT; }
@@ -27,7 +27,7 @@ dragon__set_multiline_last_line_prompt() { __dragon_render_separator "$DRAGON__L
 
 __add_separator_between_left_segments()
 {
-	# adds right separator to the `left_prompt` variable, by the color of the bg of the left segment and the bg of the right segment
+	# adds right separator to the `_DRAGON_LEFT_PROMPT` variable, by the color of the bg of the left segment and the bg of the right segment
 	! $DRAGON__USE_NERD_FONT && return
 
 	local segment_content="$1"
@@ -36,7 +36,7 @@ __add_separator_between_left_segments()
 	[[ -z $segment_content ]] && return
 
 	__get_xterm_color_by_name "$left_segment_left_bg_color"
-	left_segment_left_bg_color="${XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
+	left_segment_left_bg_color="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
 
 	if [[ "$left_segment_left_bg_color" == "$_dragon_left_prev_bg" && "$left_segment_left_bg_color" == "$DRAGON__TERMINAL_BACKGROUND" ]]; then
 		return
@@ -44,17 +44,17 @@ __add_separator_between_left_segments()
 
 	if [[ "$left_segment_left_bg_color" == "$_dragon_left_prev_bg" ]]; then
 		__get_xterm_style_format "$DRAGON__TERMINAL_BACKGROUND" "$_dragon_left_prev_bg" "false" "false"
-		left_prompt+="$STYLE_FORMAT$DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR"
+		_DRAGON_LEFT_PROMPT+="$STYLE_FORMAT$DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR"
 	else
 		__get_xterm_style_format "$_dragon_left_prev_bg" "$left_segment_left_bg_color" "false" "false"
-		left_prompt+="$STYLE_FORMAT$DRAGON__LEFT_SEGMENT_SEPARATOR"
+		_DRAGON_LEFT_PROMPT+="$STYLE_FORMAT$DRAGON__LEFT_SEGMENT_SEPARATOR"
 		_dragon_left_prev_bg="$left_segment_left_bg_color"
 	fi
 }
 
 __add_separator_between_right_segments()
 {
-	# adds left separator to the `right_prompt` variable, by the color of the bg of the right segment and the bg of the left segment
+	# adds left separator to the `_DRAGON_RIGHT_PROMPT` variable, by the color of the bg of the right segment and the bg of the left segment
 	! $DRAGON__USE_NERD_FONT && return
 
 	local segment_content="$1"
@@ -63,7 +63,7 @@ __add_separator_between_right_segments()
 	[[ -z $segment_content ]] && return
 
 	__get_xterm_color_by_name "$right_segment_right_bg_color"
-	right_segment_right_bg_color="${XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
+	right_segment_right_bg_color="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
 
 	if [[ "$right_segment_right_bg_color" == "$_dragon_right_prev_bg" && "$right_segment_right_bg_color" == "$DRAGON__TERMINAL_BACKGROUND" ]]; then
 		return
@@ -71,10 +71,10 @@ __add_separator_between_right_segments()
 
 	if [[ "$right_segment_right_bg_color" == "$_dragon_right_prev_bg" ]]; then
 		__get_xterm_style_format "$DRAGON__TERMINAL_BACKGROUND" "$_dragon_right_prev_bg" "false" "false"
-		right_prompt+="$STYLE_FORMAT$DRAGON__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR"
+		_DRAGON_RIGHT_PROMPT+="$STYLE_FORMAT$DRAGON__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR"
 	else
 		__get_xterm_style_format "$right_segment_right_bg_color" "$_dragon_right_prev_bg" "false" "false"
-		right_prompt+="$STYLE_FORMAT$DRAGON__RIGHT_SEGMENT_SEPARATOR"
+		_DRAGON_RIGHT_PROMPT+="$STYLE_FORMAT$DRAGON__RIGHT_SEGMENT_SEPARATOR"
 		_dragon_right_prev_bg="$right_segment_right_bg_color"
 	fi
 }
