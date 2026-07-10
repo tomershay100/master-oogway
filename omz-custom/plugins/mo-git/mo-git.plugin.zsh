@@ -107,7 +107,8 @@ fbranch() {
 	command -v fzf &>/dev/null || { echo "fbranch: fzf not installed" >&2; return 1; }
 	local default_branch
 	default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
-		| sed 's|refs/remotes/origin/||') || default_branch="main"
+		| sed 's|refs/remotes/origin/||')
+	[[ -n "$default_branch" ]] || default_branch="main"
 
 	# fzf substitutes {} textually into the preview shell — drop branches with chars that could execute.
 	local -a all_branches safe_branches dropped
