@@ -186,10 +186,12 @@ plugins=(
     mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path
     # mo-welcome               # startup banner — fields controlled by MO_WELCOME_FIELDS above
 
-    # MUST BE LAST — wraps every ZLE widget defined above; new plugins go above
-    # this line. zsh-autosuggestions must come BEFORE this entry.
-    history-substring-search  # Up/Down arrows search history by the prefix you've already typed
+    # zsh-syntax-highlighting wraps every ZLE widget defined above; new plugins
+    # go above this line. zsh-autosuggestions must come BEFORE this entry.
     zsh-syntax-highlighting   # colors valid commands green and invalid ones red while typing
+    # SANCTIONED EXCEPTION: upstream history-substring-search requires loading
+    # AFTER zsh-syntax-highlighting so its match highlighting survives wrapping.
+    history-substring-search  # Up/Down arrows search history by the prefix you've already typed
 )
 
 source "$ZSH/oh-my-zsh.sh"

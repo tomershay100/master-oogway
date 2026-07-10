@@ -111,7 +111,7 @@ Plugin usage: `command -v <tool> &>/dev/null` per-function — lazy check, only 
 Hard constraints — violating any breaks behavior, not just style:
 
 1. `zsh-autosuggestions` **before** `zsh-syntax-highlighting`.
-2. `zsh-syntax-highlighting` **must be the very last entry**. It wraps every ZLE widget defined by earlier plugins; widgets added after it are not re-highlighted on keystrokes.
+2. `zsh-syntax-highlighting` **must be the last entry except `history-substring-search`**. It wraps every ZLE widget defined by earlier plugins; widgets added after it are not re-highlighted on keystrokes. `history-substring-search` is the one sanctioned entry below it — its upstream README requires loading *after* zsh-syntax-highlighting.
 3. Override plugins (`mo-*-override`) come **before** additive plugins so additives inherit the overridden commands.
 
 ### Dependency tiers — pick the right one
