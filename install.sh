@@ -360,6 +360,10 @@ MO_FORCE=false
 MO_UNINSTALL=false
 MO_NO_RECOMMENDED=false
 
+# The parse loop consumes "$@"; keep a copy so the bootstrap re-exec can
+# forward the original flags to the re-exec'd install.sh.
+MO_ORIG_ARGS=("$@")
+
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		--help|-h)
@@ -422,7 +426,7 @@ if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_
 	fi
 	# Already pulled + submodule-updated above; tell the re-exec'd update-mode
 	# to skip its redundant pull (avoids the double "Updating" + double fetch).
-	MO_SKIP_PULL=1 exec bash "${INSTALL_DIR}/install.sh" "$@"
+	MO_SKIP_PULL=1 exec bash "${INSTALL_DIR}/install.sh" "${MO_ORIG_ARGS[@]}"
 fi
 
 # -- Plugin submodule self-healing ----------------------------------------------
