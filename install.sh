@@ -1085,8 +1085,14 @@ _check_login_shell()
 	warn "Your login shell is not zsh (current: ${SHELL:-unknown})."
 	warn "master-oogway is a zsh environment — it won't load in bash sessions."
 	if confirm "Change your login shell to zsh now? (runs: chsh -s \"$(command -v zsh)\")"; then
-		chsh -s "$(command -v zsh)"
-		success "Login shell changed to zsh. Log out and back in for it to take effect."
+		# chsh prompts for a password and fails on a typo or Ctrl-C; under
+		# set -e a bare call would abort the whole install at its last step.
+		if chsh -s "$(command -v zsh)"; then
+			success "Login shell changed to zsh. Log out and back in for it to take effect."
+		else
+			warn "chsh failed — login shell unchanged."
+			todo_item "Change login shell to zsh: chsh -s \"$(command -v zsh)\""
+		fi
 	else
 		todo_item "Change login shell to zsh: chsh -s \"$(command -v zsh)\""
 	fi
