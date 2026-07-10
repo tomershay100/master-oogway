@@ -18,19 +18,19 @@ typeset -g _MO_LAN_LAST_APPLY_MTIME=0
 
 # -- Defaults ------------------------------------------------------------------
 
-: ${MO_LAN_TTL:=86400}
-: ${MO_LAN_AUTO_SCAN:=on}
-: ${MO_LAN_SSH_PORTS:=22}
-: ${MO_LAN_PROBE_TIMEOUT:=2}
-: ${MO_LAN_PROBE_PARALLEL:=20}
-: ${MO_LAN_EXCLUDE:=}
-: ${MO_LAN_VERBOSE:=false}
-: ${MO_LAN_GADGET_PORT:=2222}
-: ${MO_LAN_IDENTITY:=}
-: ${MO_LAN_CONNECT_TIMEOUT:=5}
-: ${MO_LAN_SERVER_ALIVE_INTERVAL:=10}
-: ${MO_LAN_SERVER_ALIVE_COUNT_MAX:=2}
-: ${MO_LAN_TRUST_HINTS:=true}
+export MO_LAN_TTL="${MO_LAN_TTL:-86400}"
+export MO_LAN_AUTO_SCAN="${MO_LAN_AUTO_SCAN:-on}"
+export MO_LAN_SSH_PORTS="${MO_LAN_SSH_PORTS:-22}"
+export MO_LAN_PROBE_TIMEOUT="${MO_LAN_PROBE_TIMEOUT:-2}"
+export MO_LAN_PROBE_PARALLEL="${MO_LAN_PROBE_PARALLEL:-20}"
+export MO_LAN_EXCLUDE="${MO_LAN_EXCLUDE:-}"
+export MO_LAN_VERBOSE="${MO_LAN_VERBOSE:-false}"
+export MO_LAN_GADGET_PORT="${MO_LAN_GADGET_PORT:-2222}"
+export MO_LAN_IDENTITY="${MO_LAN_IDENTITY:-}"
+export MO_LAN_CONNECT_TIMEOUT="${MO_LAN_CONNECT_TIMEOUT:-5}"
+export MO_LAN_SERVER_ALIVE_INTERVAL="${MO_LAN_SERVER_ALIVE_INTERVAL:-10}"
+export MO_LAN_SERVER_ALIVE_COUNT_MAX="${MO_LAN_SERVER_ALIVE_COUNT_MAX:-2}"
+export MO_LAN_TRUST_HINTS="${MO_LAN_TRUST_HINTS:-true}"
 # MO_LAN_GADGET_SUBNETS is a zsh array. Declare it here so it's always a
 # proper array even if unset; user sets it in ~/.zshrc before the plugin loads.
 typeset -ga MO_LAN_GADGET_SUBNETS
