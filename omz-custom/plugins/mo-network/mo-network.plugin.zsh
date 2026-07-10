@@ -53,13 +53,14 @@ sshto() {
 			local -a _pats=( ${=_inc} )
 			local _pat
 			for _pat in "${_pats[@]}"; do
-				# Tilde prefix expands before the ~/.ssh/ relative fallback.
-				if [[ "$_pat" == ~* ]]; then
-					_pat="${HOME}${_pat[2,-1]}"
-				elif [[ "$_pat" != /* ]]; then
+				# ${~_pat} tilde-expands both ~/ and ~user/ prefixes; only bare
+				# relative patterns need the ~/.ssh/ fallback. Expansion runs in
+				# a subshell because a bad ~user is a fatal zsh error that would
+				# otherwise abort sshto mid-scan.
+				if [[ "$_pat" != /* && "$_pat" != "~"* ]]; then
 					_pat="${HOME}/.ssh/${_pat}"
 				fi
-				_queue+=( ${~_pat}(N) )
+				_queue+=( ${(f)"$(print -rl -- ${~_pat}(N) 2>/dev/null)"} )
 			done
 		done < <(awk 'tolower($1)=="include"{$1=""; sub(/^ /,""); print}' "$_f" 2>/dev/null)
 	done
