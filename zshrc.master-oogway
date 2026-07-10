@@ -151,7 +151,6 @@ plugins=(
     colorize                  # syntax-highlight file contents via 'ccat' / 'cless'
     command-not-found         # suggests packages to install when a command is not found
     # fzf                     # enables Ctrl+R (history), Ctrl+T (file), Alt+C (cd) fuzzy finders
-    history-substring-search  # Up/Down arrows search history by the prefix you've already typed
 
     # ── master-oogway plugins ──────────────────────────────────────────────────
     # Override plugins must come before additive ones so additive plugins
@@ -189,6 +188,7 @@ plugins=(
 
     # MUST BE LAST — wraps every ZLE widget defined above; new plugins go above
     # this line. zsh-autosuggestions must come BEFORE this entry.
+    history-substring-search  # Up/Down arrows search history by the prefix you've already typed
     zsh-syntax-highlighting   # colors valid commands green and invalid ones red while typing
 )
 
