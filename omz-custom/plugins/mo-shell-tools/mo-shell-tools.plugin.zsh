@@ -43,7 +43,7 @@ clip() {
 }
 
 vizsh() { ${EDITOR:-vim} ~/.zshrc; }
-alias soursh="source ~/.zshrc"
+soursh() { unset DRAGON__FORWARDED; source ~/.zshrc; }
 
 mo-where() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
