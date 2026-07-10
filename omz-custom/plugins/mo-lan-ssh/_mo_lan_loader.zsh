@@ -35,8 +35,6 @@ export MO_LAN_TRUST_HINTS="${MO_LAN_TRUST_HINTS:-true}"
 # proper array even if unset; user sets it in ~/.zshrc before the plugin loads.
 typeset -ga MO_LAN_GADGET_SUBNETS
 
-typeset -g _MO_LAN_LAST_APPLY_MTIME=0
-
 # -- Helpers -------------------------------------------------------------------
 
 _mo_lan_log() {
@@ -100,13 +98,6 @@ _mo_lan_check_network_async() {
 
 # Background refreshes write a new cache but can't apply into this shell.
 # Re-apply on next prompt when the cache mtime advanced past our last apply.
-_mo_lan_precmd_check() {
-	local mtime
-	mtime=$(stat -c %Y "$_MO_LAN_SSH_CACHE" 2>/dev/null) || return
-	(( mtime > _MO_LAN_LAST_APPLY_MTIME )) || return
-	_mo_lan_apply
-}
-
 _mo_lan_precmd_check() {
 	local mtime
 	mtime=$(stat -c %Y "$_MO_LAN_SSH_CACHE" 2>/dev/null) || return
