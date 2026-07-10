@@ -155,7 +155,11 @@ _find_backup() {
 confirm()
 {
 	local prompt="$1" default="${2:-n}"
-	if [[ ! -r /dev/tty ]]; then
+	# [[ -r /dev/tty ]] only checks permissions on the device node (mode 666),
+	# which passes even without a controlling terminal — the later read would
+	# then fail with ENXIO and abort the script under set -e. Actually opening
+	# /dev/tty is the reliable test for headless contexts (cron, CI, setsid).
+	if ! { : < /dev/tty; } 2>/dev/null; then
 		[[ "$default" =~ ^[Yy] ]] && return 0 || return 1
 	fi
 	local suffix="[y/N]"
