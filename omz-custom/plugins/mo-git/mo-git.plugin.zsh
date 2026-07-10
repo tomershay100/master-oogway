@@ -5,7 +5,13 @@ alias ga="git add"
 alias gaa="git add --all"
 alias gac="git add ."
 alias gs="git status"
-alias gd="git difftool -y"
+gd() {
+	if git config --get diff.tool &>/dev/null; then
+		git difftool -y "$@"
+	else
+		git diff "$@"
+	fi
+}
 alias gds="gd --staged"
 alias glc="git log --graph --pretty='%C(yellow)%h%Creset -%C(auto)%d%Creset %C(auto)%s %C(green)(%ad) %C(bold blue)[%an]%Creset' --date=short"
 alias gls="glc --stat"
