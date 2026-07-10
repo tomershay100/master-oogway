@@ -189,15 +189,24 @@ EOF
 	# and `tunnel kill` can manage it later. Foreground tunnels don't return
 	# until closed, so there is nothing to track.
 	(( bg )) || return 0
-	_tunnel_register "$local_port" "$remote_host" "$remote_port" "$flag" "$ssh_login"
+	_tunnel_register "$local_port" "$remote_host" "$remote_port" "$flag" "$ssh_login" "$bind_addr"
 }
 
 # -- _tunnel_register — write the PID file for a background tunnel -------------
 _tunnel_register() {
-	local local_port="$1" remote_host="$2" remote_port="$3" flag="$4" ssh_login="$5"
-	local pid
-	if ! pid="$(_tunnel_find_pid "$local_port")"; then
-		echo "tunnel: started, but could not find its PID to track (need lsof or ss)" >&2
+	local local_port="$1" remote_host="$2" remote_port="$3" flag="$4" ssh_login="$5" bind_addr="$6"
+	local pid=""
+	if [[ "$flag" == "-L" ]]; then
+		pid="$(_tunnel_find_pid "$local_port")" || pid=""
+	else
+		# -R listens on the REMOTE side — there is no local ssh listener, and
+		# lsof on the local port would find whatever local service the tunnel
+		# forwards to ('tunnel kill' would then SIGTERM that instead of ssh).
+		# Match the freshly-forked ssh client by its exact forward argument.
+		pid="$(pgrep -n -f -- "ssh .*-R ${bind_addr}:${remote_port}:${remote_host}:${local_port}" 2>/dev/null)" || pid=""
+	fi
+	if [[ -z "$pid" ]]; then
+		echo "tunnel: started, but could not find its PID to track (needs lsof/ss for -L, pgrep for -R)" >&2
 		echo "  the tunnel is running; it just won't appear in 'tunnel list'." >&2
 		return 0
 	fi

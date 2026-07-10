@@ -10,7 +10,7 @@ SSH port-forwarding with a readable `tunnel <left> to <right>` syntax. Direction
 | `tunnel kill <local_port>` | stop a background tunnel by its local port |
 | `tunnel kill --all` | stop all tracked background tunnels |
 
-Background tunnels are tracked under `~/.config/master-oogway/tunnels/` (one PID file per tunnel). Tracking needs `lsof` (or `ss` as a fallback) to find the `ssh -f` listener; without either, the tunnel still opens but won't appear in `tunnel list`.
+Background tunnels are tracked under `~/.config/master-oogway/tunnels/` (one PID file per tunnel). `-L` tunnels are found via `lsof` (or `ss` as a fallback) on the local listener; `-R` tunnels have no local listener, so the `ssh` client is matched by its forward argument via `pgrep`. If lookup fails, the tunnel still opens but won't appear in `tunnel list`.
 
 Each side is `[host:]port`. Host defaults to `localhost`.
 
