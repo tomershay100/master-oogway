@@ -139,7 +139,8 @@ frg() {
 		  --bind "change:reload:$rg_cmd" \
 		  --preview 'bat --color=always --highlight-line {2} {1} 2>/dev/null \
 					 || batcat --color=always --highlight-line {2} {1} 2>/dev/null \
-					 || cat {1}')
+					 || cat {1}' \
+		  --preview-window '+{2}/2')
 	if [[ -n "$result" ]]; then
 		local file linenum
 		file=$(cut -f1 <<< "$result")
