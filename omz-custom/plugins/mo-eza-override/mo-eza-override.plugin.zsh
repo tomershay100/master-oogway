@@ -9,6 +9,7 @@ alias l="ls -l --no-user --smart-group --time-style=long-iso"
 alias la="l -A"
 alias lg="ls --git"
 tree() {
+	local arg
 	local args=()
 	for arg in "$@"; do
 		[[ "$arg" == "-d" ]] && args+=("-D") || args+=("$arg")
