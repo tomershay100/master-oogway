@@ -33,8 +33,13 @@ trash-restore() {
 	# path — that yields a one-entry list where index 0 is unambiguous.
 	local selection path
 	selection=$(command trash-list 2>/dev/null | fzf --prompt="Restore> " --height=40%) || return 0
-	path=$(printf '%s\n' "$selection" | awk '{ $1=""; $2=""; sub(/^  /, ""); print }')
+	# Strip the two date/time tokens with parameter expansion — an awk field
+	# rebuild would collapse runs of spaces inside the path itself.
+	path="${selection#* }"; path="${path#* }"
 	[[ -z "$path" ]] && { echo "trash-restore: could not locate selection" >&2; return 1; }
+	# Ceiling: if the SAME path was trashed multiple times, the scoped list
+	# has several entries and index 0 restores the oldest version, not
+	# necessarily the line picked in fzf.
 	echo 0 | command trash-restore "$path"
 }
 
