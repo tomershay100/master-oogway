@@ -742,9 +742,19 @@ _merge_zshrc()
 	fi
 
 	# No snapshot yet: this is the first update after the merge feature shipped.
-	# We have no reliable base, so don't guess — warn and let the user create a
-	# snapshot by re-running the installer.
+	# If the user's ~/.zshrc already matches the template, there's nothing to
+	# merge — silently bootstrap the snapshot and return.  Only warn when they
+	# actually differ (user has local edits we can't merge without a baseline).
 	if [[ ! -f "${ZSHRC_SNAPSHOT}" ]]; then
+		if command -v sha256sum &>/dev/null && [[ -f "${ZSHRC}" ]]; then
+			local template_sha zshrc_sha
+			template_sha=$(sha256sum "${template}" | cut -d' ' -f1)
+			zshrc_sha=$(sha256sum "${ZSHRC}" | cut -d' ' -f1)
+			if [[ "${template_sha}" == "${zshrc_sha}" ]]; then
+				_save_zshrc_snapshot
+				return
+			fi
+		fi
 		warn "The zshrc template has changed, but no merge snapshot exists yet."
 		warn "Run install.sh once to create ${ZSHRC_SNAPSHOT}, then future"
 		warn "updates will 3-way merge template changes into your ~/.zshrc."
