@@ -74,9 +74,11 @@ _mo_parse_color() {
 # Used on 256-color terminals for hex inputs, which carry no native index.
 _mo_rgb_to_xterm() {
 	local r=$1 g=$2 b=$3
-	local ci=$(( (r > 114 ? (r - 35) / 40 : 0) ))
-	local cj=$(( (g > 114 ? (g - 35) / 40 : 0) ))
-	local ck=$(( (b > 114 ? (b - 35) / 40 : 0) ))
+	# Nearest cube level for v: 0 below 48 (midpoint of 0 and 95), 1 up to
+	# 114 (midpoint of 95 and 135), then (v-35)/40 for the evenly-spaced rest.
+	local ci=$(( r < 48 ? 0 : (r < 115 ? 1 : (r - 35) / 40) ))
+	local cj=$(( g < 48 ? 0 : (g < 115 ? 1 : (g - 35) / 40) ))
+	local ck=$(( b < 48 ? 0 : (b < 115 ? 1 : (b - 35) / 40) ))
 	local cube=$(( 16 + 36 * ci + 6 * cj + ck ))
 	local gray_v=$(( (r * 299 + g * 587 + b * 114) / 1000 ))
 	local gray=$(( gray_v < 8 ? 232 : (gray_v > 238 ? 255 : 232 + (gray_v - 8) / 10) ))
