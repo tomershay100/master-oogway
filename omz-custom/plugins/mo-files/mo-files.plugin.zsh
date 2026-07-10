@@ -132,6 +132,10 @@ sizeof() {
 	du -sh "$@" | sort -h
 }
 
+_mo_files_fd=""
+command -v fd     &>/dev/null && _mo_files_fd="fd"
+command -v fdfind &>/dev/null && _mo_files_fd="${_mo_files_fd:-fdfind}"
+
 fp() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 		echo "Usage: fp [base-dir]"
@@ -152,9 +156,14 @@ fp() {
 		preview_cmd='cat {}'
 	fi
 	local file
-	file=$(find "$base" -type f -not -path '*/.git/*' -print0 2>/dev/null \
-		| fzf --read0 --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
-	|| return
+	if [[ -n "$_mo_files_fd" ]]; then
+		file=$("$_mo_files_fd" --type f --hidden --exclude .git . "$base" 2>/dev/null \
+			| fzf --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd")
+	else
+		file=$(find "$base" -type f -not -path '*/.git/*' -print0 2>/dev/null \
+			| fzf --read0 --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd")
+	fi
+	[[ -n "$file" ]] || return
 	local fullpath="${file:a}"
 	_mo_clip "$fullpath" && echo "Copied: $fullpath" || echo "$fullpath"
 }

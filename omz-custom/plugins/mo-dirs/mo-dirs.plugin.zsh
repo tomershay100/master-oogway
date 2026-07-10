@@ -49,6 +49,14 @@ tmpcd() {
 	d=$(mktemp -d) && cd "$d" && echo "$d"
 }
 
+_mo_dirs_fd=""
+command -v fd     &>/dev/null && _mo_dirs_fd="fd"
+command -v fdfind &>/dev/null && _mo_dirs_fd="${_mo_dirs_fd:-fdfind}"
+
+if [[ -n "$_mo_dirs_fd" ]]; then
+	export FZF_ALT_C_COMMAND="${_mo_dirs_fd} --type d --hidden --strip-cwd-prefix --exclude .git"
+fi
+
 fcd() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 		echo "Usage: fcd [base-dir]"
@@ -67,9 +75,14 @@ fcd() {
 		preview_cmd='\ls -1 --color=always {}'
 	fi
 	local dir
-	dir=$(find "$base" -type d -not -path '*/.git/*' -print0 2>/dev/null \
-		| fzf --read0 --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd") \
-	&& cd "$dir"
+	if [[ -n "$_mo_dirs_fd" ]]; then
+		dir=$("$_mo_dirs_fd" --type d --hidden --exclude .git . "$base" 2>/dev/null \
+			| fzf --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd")
+	else
+		dir=$(find "$base" -type d -not -path '*/.git/*' -print0 2>/dev/null \
+			| fzf --read0 --height=40% --reverse --preview-window=right:60%:wrap --preview "$preview_cmd")
+	fi
+	[[ -n "$dir" ]] && cd "$dir"
 }
 
 function n() {
