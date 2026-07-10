@@ -64,7 +64,7 @@ if [[ "$DRAGON__USE_NERD_FONT" == "false" ]]; then
 		_dragon_pua_var="DRAGON__${_dragon_pua_k}"
 		_dragon_pua_val="${(P)_dragon_pua_var}"
 		[[ -n "$_dragon_pua_val" ]] || continue
-		_dragon_pua_stripped="${_dragon_pua_val//[#xe000-#xf8ff]}"
+		_dragon_pua_stripped="${_dragon_pua_val//[$'\uE000'-$'\uF8FF']}"
 		[[ "$_dragon_pua_stripped" == "$_dragon_pua_val" ]] || \
 			export "${_dragon_pua_var}=${_dragon_pua_stripped}"
 	done
