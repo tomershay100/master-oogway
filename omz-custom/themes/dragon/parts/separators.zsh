@@ -36,14 +36,14 @@ __add_separator_between_left_segments()
 	[[ -z $segment_content ]] && return
 
 	__get_xterm_color_by_name "$left_segment_left_bg_color"
-	left_segment_left_bg_color="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
+	left_segment_left_bg_color="${_DRAGON_XTERM_COLOR:-$_DRAGON_TERMINAL_BG_CODE}"
 
-	if [[ "$left_segment_left_bg_color" == "$_dragon_left_prev_bg" && "$left_segment_left_bg_color" == "$DRAGON__TERMINAL_BACKGROUND" ]]; then
+	if [[ "$left_segment_left_bg_color" == "$_dragon_left_prev_bg" && "$left_segment_left_bg_color" == "$_DRAGON_TERMINAL_BG_CODE" ]]; then
 		return
 	fi
 
 	if [[ "$left_segment_left_bg_color" == "$_dragon_left_prev_bg" ]]; then
-		__get_xterm_style_format "$DRAGON__TERMINAL_BACKGROUND" "$_dragon_left_prev_bg" "false" "false"
+		__get_xterm_style_format "$_DRAGON_TERMINAL_BG_CODE" "$_dragon_left_prev_bg" "false" "false"
 		_DRAGON_LEFT_PROMPT+="$STYLE_FORMAT$DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR"
 	else
 		__get_xterm_style_format "$_dragon_left_prev_bg" "$left_segment_left_bg_color" "false" "false"
@@ -63,14 +63,14 @@ __add_separator_between_right_segments()
 	[[ -z $segment_content ]] && return
 
 	__get_xterm_color_by_name "$right_segment_right_bg_color"
-	right_segment_right_bg_color="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
+	right_segment_right_bg_color="${_DRAGON_XTERM_COLOR:-$_DRAGON_TERMINAL_BG_CODE}"
 
-	if [[ "$right_segment_right_bg_color" == "$_dragon_right_prev_bg" && "$right_segment_right_bg_color" == "$DRAGON__TERMINAL_BACKGROUND" ]]; then
+	if [[ "$right_segment_right_bg_color" == "$_dragon_right_prev_bg" && "$right_segment_right_bg_color" == "$_DRAGON_TERMINAL_BG_CODE" ]]; then
 		return
 	fi
 
 	if [[ "$right_segment_right_bg_color" == "$_dragon_right_prev_bg" ]]; then
-		__get_xterm_style_format "$DRAGON__TERMINAL_BACKGROUND" "$_dragon_right_prev_bg" "false" "false"
+		__get_xterm_style_format "$_DRAGON_TERMINAL_BG_CODE" "$_dragon_right_prev_bg" "false" "false"
 		_DRAGON_RIGHT_PROMPT+="$STYLE_FORMAT$DRAGON__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR"
 	else
 		__get_xterm_style_format "$right_segment_right_bg_color" "$_dragon_right_prev_bg" "false" "false"

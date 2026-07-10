@@ -8,8 +8,12 @@ __calc_prompt_length()
 
 dragon__set_lprompt()
 {
+	# Resolve the terminal background to its xterm code once; separators.zsh
+	# compares segment bg codes against it — comparing against the raw name
+	# ("black" vs "0") would never match.
 	__get_xterm_color_by_name "$TERMINAL_BACKGROUND_COLOR"
-	_dragon_left_prev_bg="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
+	typeset -g _DRAGON_TERMINAL_BG_CODE="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
+	_dragon_left_prev_bg="$_DRAGON_TERMINAL_BG_CODE"
 	GIT_SHOULD_BE_ON_NEW_LINE=false
 	_DRAGON_LEFT_PROMPT=""
 	local curr_content
@@ -104,7 +108,8 @@ $_DRAGON_LEFT_PROMPT$curr_content"
 dragon__set_rprompt()
 {
 	__get_xterm_color_by_name "$TERMINAL_BACKGROUND_COLOR"
-	_dragon_right_prev_bg="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
+	typeset -g _DRAGON_TERMINAL_BG_CODE="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
+	_dragon_right_prev_bg="$_DRAGON_TERMINAL_BG_CODE"
 	_DRAGON_RIGHT_PROMPT=""
 
 	dragon__set_exit_status
