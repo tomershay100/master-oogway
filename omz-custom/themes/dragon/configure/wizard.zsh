@@ -337,7 +337,7 @@ _dragon_filter_changed_groups() {
 			fi
 		done
 	done
-	_DRAGON_GROUPS=("${changed[@]}")
+	typeset -ga _DRAGON_NAV_GROUPS=("${changed[@]}")
 }
 
 # Shared confirm-and-auto-backup for destructive preset resets. Caller prints
@@ -419,7 +419,7 @@ _dragon_show_start_menu() {
 			print -P "  %F{green}✓ Editing current config%f"
 			sleep 0.4
 			_dragon_filter_changed_groups
-			if (( ${#_DRAGON_GROUPS} == 0 )); then
+			if (( ${#_DRAGON_NAV_GROUPS} == 0 )); then
 				clear
 				print -P "  %F{245}All settings are at their defaults — nothing to edit.%f"
 				print -P "  Run with %B[2]%b Full wizard to review everything."

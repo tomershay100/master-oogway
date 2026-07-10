@@ -337,11 +337,12 @@ EOF
 		_dragon_select_preset
 	fi
 
-	# ── Step through all groups
+	# ── Step through groups (narrowed set for "Edit current", else all)
+	local -a nav_groups=( "${_DRAGON_NAV_GROUPS[@]:-${_DRAGON_GROUPS[@]}}" )
 	local step=0
-	local total=${#_DRAGON_GROUPS}
+	local total=${#nav_groups}
 	while (( step < total )); do
-		_dragon_run_step "${_DRAGON_GROUPS[$((step + 1))]}" $((step + 1)) $total
+		_dragon_run_step "${nav_groups[$((step + 1))]}" $((step + 1)) $total
 		local rc=$?
 		case $rc in
 			0) (( step++ )) ;;
@@ -388,6 +389,6 @@ EOF
 
 _dragon_cleanup() {
 	unset _DRAGON_DEFAULTS _DRAGON_CURRENT _DRAGON_TYPE _DRAGON_HINT _DRAGON_STATE _DRAGON_CHOSEN_PRESET
-	unset _DRAGON_GROUP_TITLE _DRAGON_GROUP_DESC _DRAGON_GROUP_VARS _DRAGON_GROUPS
+	unset _DRAGON_GROUP_TITLE _DRAGON_GROUP_DESC _DRAGON_GROUP_VARS _DRAGON_GROUPS _DRAGON_NAV_GROUPS
 	unset _DRAGON_PRESET_NAMES _DRAGON_PRESET_DESC _DRAGON_PRESET_EXAMPLE
 }
