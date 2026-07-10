@@ -98,18 +98,21 @@ fman() {
 		return
 	fi
 	command -v fzf &>/dev/null || { echo "fman: fzf not installed" >&2; return 1; }
-	local page section name
+	local page
+	# man -k prints "name (sec) - desc" — or "a, b (sec) - desc" for grouped
+	# aliases, so the (sec) field is found by scanning, not assumed at $2.
 	page=$(man -k '' 2>/dev/null \
-		| fzf --height=50% --reverse --preview 'man $(echo {1} | tr -d "()" | awk -F"[()]" "{print \$2, \$1}")' \
-		| awk '{print $1}')
+		| fzf --height=50% --reverse \
+			  --preview 'man $(echo {2} | tr -d "()") $(echo {1} | tr -d ",") 2>/dev/null || man $(echo {1} | tr -d ",")' \
+		| awk '{
+			sec = ""
+			for (i = 2; i <= NF; i++) if ($i ~ /^\([0-9a-zA-Z]+\)$/) { sec = $i; break }
+			gsub(/[()]/, "", sec)
+			name = $1; sub(/,$/, "", name)
+			if (sec != "") print sec, name; else print name
+		}')
 	[[ -n "$page" ]] || return 0
-	# page is "name(section)" — split so man opens the right section
-	if [[ "$page" =~ '^(.+)\(([0-9a-z]+)\)$' ]]; then
-		name="${match[1]}" section="${match[2]}"
-		man "$section" "$name"
-	else
-		man "$page"
-	fi
+	man ${=page}
 }
 
 frg() {
