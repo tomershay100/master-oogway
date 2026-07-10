@@ -123,27 +123,23 @@ frg() {
 	command -v rg  &>/dev/null || { echo "frg: rg not installed (try: sudo apt install ripgrep)" >&2; return 1; }
 	local dir="${1:-.}"
 	[[ -d "$dir" ]] || { echo "frg: not a directory: $dir" >&2; return 1; }
+	local rg_cmd="[[ -z {q} ]] && true || rg --color=always --line-number --null -- {q} '$dir' 2>/dev/null \
+		| awk 'BEGIN { FS=\"\\0\" }
+		       NF == 2 {
+		           f = \$1; rest = \$2
+		           gsub(/\\033\\[[0-9;]*m/, \"\", f)
+		           if (f ~ /[\$\`();|&<>\"\\x27\\\\]/) next
+		           n = index(rest, \":\")
+		           if (n == 0) next
+		           print f \"\\t\" substr(rest, 1, n-1) \"\\t\" substr(rest, n+1)
+		       }' || true"
 	local result
-	# rg --null separates filename from "lineno:content" with a NUL byte,
-	# so filenames containing ':' are never misparsed. awk (FS="\0") splits
-	# on that NUL, strips ANSI from the filename for the security check, then
-	# emits TAB-separated "file TAB lineno TAB content" — fzf field {1} is
-	# always the bare filename, {2} is always the line number.
-	result=$(rg --color=always --line-number --null "" "$dir" 2>/dev/null \
-		| awk 'BEGIN { FS="\0" }
-			   NF == 2 {
-				   f = $1; rest = $2
-				   gsub(/\033\[[0-9;]*m/, "", f)
-				   if (f ~ /[$`();|&<>"\x27\\]/) next
-				   n = index(rest, ":")
-				   if (n == 0) next
-				   print f "\t" substr(rest, 1, n-1) "\t" substr(rest, n+1)
-			   }' \
-		| fzf --ansi --height=60% --reverse \
-			  --delimiter '\t' --nth='1,3..' \
-			  --preview 'bat --color=always --highlight-line {2} {1} 2>/dev/null \
-						 || batcat --color=always --highlight-line {2} {1} 2>/dev/null \
-						 || cat {1}')
+	result=$(fzf --ansi --disabled --height=60% --reverse \
+		  --delimiter '\t' --nth='1,3..' \
+		  --bind "change:reload:$rg_cmd" \
+		  --preview 'bat --color=always --highlight-line {2} {1} 2>/dev/null \
+					 || batcat --color=always --highlight-line {2} {1} 2>/dev/null \
+					 || cat {1}')
 	if [[ -n "$result" ]]; then
 		local file linenum
 		file=$(cut -f1 <<< "$result")
