@@ -94,6 +94,9 @@ dragon__set_job_count()
 	__dragon_finalize JOB_COUNT
 }
 
+# Per-prompt cache: -1 = stale. Reset in __update_prompt (precmd) so each new
+# prompt recounts, while the async gitstatus repaint of the SAME prompt reuses
+# the cached value instead of forking `who` again.
 typeset -g _DRAGON_SSH_COUNT_CACHE=-1
 
 __set_ssh_connection_count_content()

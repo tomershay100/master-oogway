@@ -14,6 +14,7 @@ __refresh_prompt()
 
 __update_prompt()
 {
+	_DRAGON_SSH_COUNT_CACHE=-1  # new prompt → recount SSH sessions once
 	$DRAGON__ENABLE_GIT_STATUS && __update_gitstatusd
 	dragon__update_zsh_prompt
 }
