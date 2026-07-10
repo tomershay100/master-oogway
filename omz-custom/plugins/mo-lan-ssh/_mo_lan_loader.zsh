@@ -87,8 +87,6 @@ _mo_lan_check_ttl_async() {
 }
 
 _mo_lan_check_network_async() {
-	# /proc/net/route mtime changes when the routing table changes — cheap gate.
-	[[ -f "$_MO_LAN_SSH_NETID" && ! /proc/net/route -nt "$_MO_LAN_SSH_NETID" ]] && return
 	local cur stored=""
 	cur=$(_mo_lan_network_id)
 	[[ -z "$cur" || "$cur" == "unknown" ]] && return
