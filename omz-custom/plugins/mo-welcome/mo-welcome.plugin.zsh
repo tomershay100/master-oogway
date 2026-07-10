@@ -74,6 +74,17 @@ _mo_welcome_field_mem() {
 	print -P "  %F{245}mem %f   %F{magenta}${used_gb} / ${total_gb} GB (${pct}%%)%f"
 }
 
+_mo_welcome_field_disk() {
+	local pct color
+	pct=$(df -P / 2>/dev/null | awk 'NR==2{gsub(/%/,"",$5); print $5}')
+	[[ -n "$pct" ]] || return 0
+	if   (( pct >= 90 )); then color=red
+	elif (( pct >= 70 )); then color=yellow
+	else                       color=green
+	fi
+	print -P "  %F{245}disk%f   %F{${color}}/ at ${pct}%%%f"
+}
+
 _mo_welcome_field_tmux() {
 	[[ -n "${TMUX:-}" ]] || return 0
 	local session
