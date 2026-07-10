@@ -43,7 +43,7 @@ __dragon_zle_line_finish()
 	fi
 	__get_xterm_style_format "$fg" "$bg" "$bold" "$underline"
 
-	PROMPT="$RESET_FORMAT$STYLE_FORMAT$char$DRAGON__PROMPT_CHAR_SUFFIX$RESET_FORMAT"
+	PROMPT="$RESET_FORMAT$STYLE_FORMAT${char//\%/%%}${DRAGON__PROMPT_CHAR_SUFFIX//\%/%%}$RESET_FORMAT"
 
 	if $DRAGON__TRANSIENT_PROMPT_VERBOSE; then
 		# Reuse the rprompt computed during precmd — timer is already reset by this
