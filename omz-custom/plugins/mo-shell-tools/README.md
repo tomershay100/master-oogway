@@ -13,9 +13,6 @@ Shell inspection and utility helpers.
 | `soursh` | reload `~/.zshrc` |
 | `calc <expr>` | evaluate a math expression via `bc -l` (supports `sqrt`, `s`, `c`, `l`, `e`) |
 | `epoch [--utc] [ts]` | unix timestamp ↔ human date; no arg = current timestamp; `--utc` for UTC |
-| `please` | re-run the last command with sudo (pipeline-aware) |
 | `mo-where <name>` | show which mo-* plugin defines `<name>` as an alias or function |
-
-For pipelines, `please` runs `sudo` only on the first segment with a real binary; later segments run in the current shell so functions and aliases keep working.
 
 **Dependencies:** `wl-clipboard` or `xclip` for `clip`; `bc` for `calc`; `bat`/`batcat` for `cwhich` syntax highlighting — all optional.
