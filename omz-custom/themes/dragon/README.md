@@ -1,6 +1,6 @@
 # dragon theme
 
-A fully configurable zsh prompt theme with ~130 tunable variables, an interactive wizard, and SSH forwarding.
+A fully configurable zsh prompt theme with ~130 tunable variables and an interactive wizard.
 
 ## Configuration
 
@@ -51,23 +51,6 @@ before overwriting. To revert:
 
 ```bash
 cp ~/.config/master-oogway/conf.zsh.bak.<ts> ~/.config/master-oogway/conf.zsh && soursh
-```
-
-## SSH forwarding
-
-Your theme settings travel with you over SSH to any remote machine that also runs dragon.
-
-The installer configures both sides automatically. If you're setting up a remote manually:
-
-```sshconfig
-# ~/.ssh/config (client)
-Host *
-    SendEnv DRAGON__*
-```
-
-```text
-# /etc/ssh/sshd_config (server)
-AcceptEnv DRAGON__*
 ```
 
 ## Dependencies

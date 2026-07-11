@@ -51,18 +51,15 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-search](omz-custom/plugins/mo-search/README.md) | `grep` aliases, `f`, `fhist`, `fman`, `frg` |
 | [mo-process](omz-custom/plugins/mo-process/README.md) | `psgrep`, `port`, `fkill` |
 | [mo-docs](omz-custom/plugins/mo-docs/README.md) | `md2pdf` — Markdown to PDF |
-| [mo-network](omz-custom/plugins/mo-network/README.md) | `natip`, `serve`, `sshto` |
-| [mo-lan-ssh](omz-custom/plugins/mo-lan-ssh/README.md) | LAN PC aliases + USB gadget ssh-config + SSH hint wrapper |
 | [mo-projects](omz-custom/plugins/mo-projects/README.md) | `<project-name>` aliases + `p` (fzf picker) for every dir in `~/projects` |
 | [mo-mkscript](omz-custom/plugins/mo-mkscript/README.md) | `mkscript` — scaffold a new shell script from template |
-| [mo-shell-tools](omz-custom/plugins/mo-shell-tools/README.md) | `h`, `?`, `cwhich`, `vwhich`, `clip`, `vizsh`, `soursh`, `calc`, `epoch`, `please`, `mo-where` |
+| [mo-shell-tools](omz-custom/plugins/mo-shell-tools/README.md) | `h`, `?`, `cwhich`, `vwhich`, `clip`, `vizsh`, `soursh`, `calc`, `epoch`, `mo-where` |
 | [mo-env](omz-custom/plugins/mo-env/README.md) | `fenv` |
 | [mo-build](omz-custom/plugins/mo-build/README.md) | `m`, `mc` |
 | [mo-welcome](omz-custom/plugins/mo-welcome/README.md) | system snapshot banner on shell open |
 | [mo-cli](omz-custom/plugins/mo-cli/README.md) | `master-oogway` meta CLI |
 | [mo-auto-ls](omz-custom/plugins/mo-auto-ls/README.md) | auto-`ls` after `cd` |
 | [mo-color](omz-custom/plugins/mo-color/README.md) | terminal color preview, palette, and text colorizer |
-| [mo-ssh-tunnel](omz-custom/plugins/mo-ssh-tunnel/README.md) | `tunnel` — SSH port-forward helper |
 | [mo-man](omz-custom/plugins/mo-man/README.md) | `mo-man` — view any mo-* plugin README in the terminal |
 
 ## Shell behaviour differences from stock zsh
