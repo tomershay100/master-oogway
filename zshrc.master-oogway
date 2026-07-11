@@ -172,7 +172,6 @@ plugins=(
     mo-dirs                    # mkcd, up, tmpcd, fcd (fuzzy cd)
     mo-files                   # extract, compress, bak, sizeof, fp (fuzzy file picker)
     # mo-search                # grep aliases, f (find shortcut), fhist, fman, frg
-    mo-ssh-tunnel              # tunnel <left> to <right> — SSH port-forward helper
     mo-lan-ssh                 # LAN PC aliases + USB gadget ssh-config + hint wrapper (two-host-class model)
     mo-process                 # psgrep, port, fkill (fuzzy process kill)
     # mo-build                 # m (parallel make), mc (make clean)
