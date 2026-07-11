@@ -176,11 +176,7 @@ _dragon_pick_preset() {
 		return 0
 	fi
 
-	local _saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]-}"
-	_dragon_apply_preset "$chosen"
-	[[ -n "$_saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$_saved_nerd_font"
-	_dragon_write_conf || return 1
-	_dragon_write_state "$chosen"
+	_dragon_apply_and_save "$chosen" || return 1
 
 	local var val
 	for var val in "${(@kv)_DRAGON_CURRENT}"; do

@@ -119,3 +119,28 @@ _dragon_apply_preset() {
 	done
 	_dragon_load_current_conf_from "${_DRAGON_THEMES_DIR}/presets/${preset}.conf.zsh"
 }
+
+# Apply a preset (built-in or personal) into _DRAGON_CURRENT and persist it.
+# Preserves USE_NERD_FONT (terminal capability, not style). Writes conf.zsh
+# then the state file; returns non-zero without touching state if the conf
+# write fails, so callers skip their success message. Assumes the preset name
+# is already validated as an existing built-in or personal preset.
+_dragon_apply_and_save() {
+	local preset="$1"
+	local user_file="${_DRAGON_STATE_DIR}/presets/${preset}.conf.zsh"
+	local saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]-}"
+
+	if [[ -n "${_DRAGON_PRESET_DESC[$preset]:-}" ]]; then
+		_dragon_apply_preset "$preset"
+	else
+		local var
+		for var in "${(@k)_DRAGON_DEFAULTS}"; do
+			_DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
+		done
+		_dragon_load_current_conf_from "$user_file"
+	fi
+
+	[[ -n "$saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$saved_nerd_font"
+	_dragon_write_conf || return 1
+	_dragon_write_state "$preset"
+}

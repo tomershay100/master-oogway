@@ -283,21 +283,7 @@ EOF
 			return 0
 		fi
 
-		# Preserve USE_NERD_FONT — it reflects terminal capability, not style preference.
-		local _saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]-}"
-		if $_is_builtin; then
-			_dragon_apply_preset "$_preset"
-		else
-			# User preset: reset to defaults then source the preset file into _DRAGON_CURRENT.
-			local var
-			for var in "${(@k)_DRAGON_DEFAULTS}"; do
-				_DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
-			done
-			_dragon_load_current_conf_from "$_user_preset_file"
-		fi
-		[[ -n "$_saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$_saved_nerd_font"
-		_dragon_write_conf || return 1
-		_dragon_write_state "$_preset"
+		_dragon_apply_and_save "$_preset" || return 1
 		print ""
 		print -P "  %F{green}✓ Switched to ${_preset} preset.%f"
 		print -P "  %F{245}Reload to apply: %Brezsh%b"
