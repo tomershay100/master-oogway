@@ -296,7 +296,7 @@ EOF
 			_dragon_load_current_conf_from "$_user_preset_file"
 		fi
 		[[ -n "$_saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$_saved_nerd_font"
-		_dragon_write_conf
+		_dragon_write_conf || return 1
 		_dragon_write_state "$_preset"
 		print ""
 		print -P "  %F{green}✓ Switched to ${_preset} preset.%f"
@@ -368,7 +368,7 @@ EOF
 	fi
 
 	# ── Write conf and state
-	_dragon_write_conf
+	_dragon_write_conf || return 1
 	_dragon_write_state "${_DRAGON_CHOSEN_PRESET}"
 
 	# Apply directly to the current shell — export every chosen value so the

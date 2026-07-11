@@ -179,7 +179,7 @@ _dragon_pick_preset() {
 	local _saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]-}"
 	_dragon_apply_preset "$chosen"
 	[[ -n "$_saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$_saved_nerd_font"
-	_dragon_write_conf
+	_dragon_write_conf || return 1
 	_dragon_write_state "$chosen"
 
 	local var val
