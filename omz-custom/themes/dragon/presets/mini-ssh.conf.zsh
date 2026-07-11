@@ -1,6 +1,5 @@
 # dragon preset: mini-ssh
 # Compact local prompt; bold red SSH banner makes remote sessions unmistakable.
-# Pairs with mo-lan-ssh: auto-discovered hosts inherit this visual distinction.
 export DRAGON__ENABLE_USERNAME='false'
 export DRAGON__HOSTNAME_FOREGROUND_COLOR='244'
 export DRAGON__ENABLE_HOSTNAME_COLORING_VIA_SSH='true'

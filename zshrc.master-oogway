@@ -126,14 +126,6 @@ HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'      # case-insensitive
 # mo-welcome — space-separated, order preserved. "" to silence.
 MO_WELCOME_FIELDS="host os sys now up"   # also: ip shell load mem tmux ssh
 
-# mo-lan-ssh — LAN PC + USB gadget SSH discovery (set BEFORE plugins load).
-# MO_LAN_GADGET_SUBNETS=(192.168.7.0/24)  # USB gadget CIDR subnets (/24 only); generates wildcard Host block
-# MO_LAN_GADGET_PORT=2222                  # gadget SSH port (default 2222)
-# MO_LAN_AUTO_SCAN=on                      # on (default) / off — disables background scans at shell start
-# MO_LAN_TRUST_HINTS=true                  # false disables the ssh hint wrapper entirely
-# MO_LAN_IDENTITY=~/.ssh/id_ed25519        # IdentityFile written into both PC and gadget config blocks
-# MO_LAN_TTL=86400                         # cache freshness in seconds (default 24 h)
-
 # -- plugins --------------------------------------------------------------------
 # gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info).
 if [[ -f "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh" ]]; then
@@ -172,7 +164,6 @@ plugins=(
     mo-dirs                    # mkcd, up, tmpcd, fcd (fuzzy cd)
     mo-files                   # extract, compress, bak, sizeof, fp (fuzzy file picker)
     # mo-search                # grep aliases, f (find shortcut), fhist, fman, frg
-    mo-lan-ssh                 # LAN PC aliases + USB gadget ssh-config + hint wrapper (two-host-class model)
     mo-process                 # psgrep, port, fkill (fuzzy process kill)
     # mo-build                 # m (parallel make), mc (make clean)
     mo-docs                    # md2pdf — Markdown to PDF via pandoc + xelatex
