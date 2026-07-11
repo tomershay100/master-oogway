@@ -21,7 +21,6 @@ port() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 		echo "Usage: port <number>"
 		echo "  Show which process is listening on the given TCP/UDP port."
-		echo "  Falls back to sudo if the port is not visible without elevated permissions."
 		echo "  Note: UDP sockets are shown without state filtering (UDP is connectionless)."
 		return
 	fi
@@ -34,14 +33,8 @@ port() {
 		return 1
 	fi
 	command -v lsof &>/dev/null || { echo "port: lsof not installed (try: sudo apt install lsof)" >&2; return 1; }
-	local out lsof_rc
-	out=$(lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN -P -n 2>/dev/null); lsof_rc=$?
-	if [[ -z "$out" && $lsof_rc -ne 0 ]]; then
-		# Listener owned by another user — surface the elevation explicitly
-		# so the sudo password prompt isn't a surprise.
-		echo "port: nothing visible without root, retrying with sudo..." >&2
-		out=$(sudo lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN -P -n 2>/dev/null)
-	fi
+	local out
+	out=$(lsof -iTCP:"$1" -iUDP:"$1" -sTCP:LISTEN -P -n 2>/dev/null)
 	if [[ -z "$out" ]]; then
 		echo "port: nothing listening on $1" >&2
 		return 1
