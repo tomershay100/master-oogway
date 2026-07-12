@@ -8,8 +8,10 @@ _dragon_ask_nerd_font() {
 	print -P "%B%F{cyan}── dragon: Font check ───────────────────────────────────────────────%f%b"
 	print ""
 	print -P "  dragon uses special characters for a richer look."
-	print -P "  Powerline arrow:  "
-	print -P "  Nerd Font icon:   "
+	# \u escapes so the glyph bytes survive editing: U+E0B0 powerline
+	# right-arrow, U+F07B nerd folder.
+	print "  Powerline arrow:  "$''
+	print "  Nerd Font icon:   "$''
 	print ""
 	printf "  Do both characters render as a solid arrow and a folder icon? [y/N] "
 	local _nf_key

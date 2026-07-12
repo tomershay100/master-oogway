@@ -4,7 +4,9 @@
 # the active preset since the state file was removed). Empty if absent.
 _dragon_active_preset() {
 	[[ -f "${_DRAGON_CONF_FILE}" ]] || return
-	grep -m1 '^# preset: ' "${_DRAGON_CONF_FILE}" 2>/dev/null | cut -d' ' -f3
+	# `command grep` bypasses any user grep alias (e.g. one adding --exclude
+	# globs, which zsh's nomatch would abort on).
+	command grep -m1 '^# preset: ' "${_DRAGON_CONF_FILE}" 2>/dev/null | cut -d' ' -f3
 }
 
 _dragon_load_current_conf_from() {

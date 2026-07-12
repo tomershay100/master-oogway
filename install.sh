@@ -910,7 +910,7 @@ _regen_theme_conf()
 		_dragon_init_hints;    _dragon_init_groups
 		_dragon_load_current_conf
 		local preset
-		preset=$(grep -m1 "^# preset: " "$2" | cut -d" " -f3)
+		preset=$(command grep -m1 "^# preset: " "$2" | cut -d" " -f3)
 		_dragon_write_conf "$preset"
 	' -- "${themes_dir}" "${conf_file}" 2>/dev/null; then
 		success "dragon theme config refreshed (backup kept)"
