@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This directory is a **standalone, separately-published git repo** (`github.com/tomershay100/master-oogway`) that is also vendored inside the parent `custum-linux-configs/` dotfiles repo. It has its own `.git/`, its own remote, and its own submodules. Treat it as the project root — git commands here operate on master-oogway, not the parent. The parent's `CLAUDE.md` covers umbrella dotfile conventions; this file covers master-oogway specifics.
 
-The repo ships a complete zsh environment: the **dragon** prompt theme (~130 tunable vars, interactive wizard, 43 presets) plus 22 `mo-*` plugins (5 override + 17 additive) on top of oh-my-zsh.
+The repo ships a complete zsh environment: the **dragon** prompt theme (~130 tunable vars, TUI preset picker, 43 presets) plus 22 `mo-*` plugins (5 override + 17 additive) on top of oh-my-zsh.
 
 End-user docs live in `README.md`. Contributor mechanics (adding plugins/presets/variables, plugin README structure) live in `CONTRIBUTING.md` — read it before substantive theme or plugin work; this file does not duplicate it.
 
@@ -22,7 +22,7 @@ zsh -n omz-custom/themes/dragon.zsh-theme \
 shellcheck install.sh
 ```
 
-The wizard separately runs `zsh -n` on its own generated `conf.zsh` before writing (see `configure/writer.zsh`), so wizard output is self-validating — only source files need the checks above.
+`_dragon_write_conf` runs `zsh -n` on the generated `conf.zsh` before writing it (see `configure/writer.zsh`), so generated config is self-validating — only source files need the checks above.
 
 ## Install modes — auto-detected by `install.sh`
 
@@ -54,23 +54,21 @@ Entry shim: `omz-custom/themes/dragon.zsh-theme` → `omz-custom/themes/dragon/d
 dragon.zsh           defaults loop (set_if_unset per schema), hook registration
 schema.zsh           SINGLE SOURCE OF TRUTH for all DRAGON__* vars
 configure.zsh        entry for `dragon-configure`
-configure/           wizard implementation
-  state.zsh            conf I/O, preset apply, separator-glyph loader ($'\uXXXX' eval)
-  preview.zsh          key reader, prompt preview, gallery renderer
-  pick.zsh             TUI preset browser (--pick)
-  wizard.zsh           interactive steps, menus, variable editor
-  writer.zsh           generates conf.zsh (and validates it with `zsh -n` before writing)
+configure/           configurator implementation
+  state.zsh            conf I/O, preset apply, active-preset header read, glyph loader ($'\uXXXX' eval)
+  preview.zsh          prompt preview + gallery renderer
+  pick.zsh             TUI preset picker — the front door (bare / --pick)
+  writer.zsh           generates conf.zsh w/ `# preset:` header (validates via `zsh -n` before writing)
 parts/                 segment + prompt assembly (9 files)
 presets/               43 *.conf.zsh presets — only override values that differ from defaults
 aliases.zsh            rezsh, reset_theme_variables
-notifier.zsh           shell-start notification when new DRAGON__ vars are detected
 ```
 
 **Render path per keypress:** `gitstatus callback → __refresh_prompt (transient.zsh) → dragon__set_lprompt/dragon__set_rprompt (prompt.zsh) → __dragon__show per segment (helpers.zsh) → PROMPT / RPROMPT assembled`.
 
 ### Adding a `DRAGON__*` variable — 5 places must be updated
 
-Touching fewer than all five leaves the variable either unset, hidden from the wizard, or unrendered:
+Touching fewer than all five leaves the variable either unset, missing or ungrouped in the generated `conf.zsh`, or unrendered:
 
 1. `schema.zsh` → `_DRAGON_DEFAULTS[KEY]="default"`
 2. `schema.zsh` → `_DRAGON_TYPE[KEY]="bool|color|string|enum:a|b|c"`
@@ -138,7 +136,7 @@ Applies to every file in this repo — source comments, READMEs, PR descriptions
 - **Default to no comments.** Well-named identifiers and the code itself already say *what* it does. Add a comment only when the reader cannot see the *why* from the code — a hidden invariant, a workaround for a known bug, a non-obvious constraint.
 - **Explain WHY, not WHAT.** "Increment counter" is noise; "RIGHT_SEGMENT_SEPARATOR_SWAP_COLORS needed because flame glyphs render with inverted fg/bg" is signal.
 - **Rationale belongs in commit messages**, not in comments. Comments rot in place; commit messages are timestamped and reviewable.
-- **User-facing config files are the exception.** `zshrc.master-oogway`, preset `.conf.zsh` files, `optional-deps.zsh`, and the wizard-generated `conf.zsh` are *read and edited by users* — inline `# what this knob does` annotations are part of the UX there. Still keep them tight: one phrase per line, never paragraphs.
+- **User-facing config files are the exception.** `zshrc.master-oogway`, preset `.conf.zsh` files, `optional-deps.zsh`, and the generated `conf.zsh` are *read and edited by users* — inline `# what this knob does` annotations are part of the UX there. Still keep them tight: one phrase per line, never paragraphs.
 - **READMEs**: short, scannable, tables over prose. Don't restate what the table already says.
 
 ## Files Claude should NOT edit

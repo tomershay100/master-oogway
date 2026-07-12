@@ -16,19 +16,17 @@ editorconfig.master-oogway        always re-copied to ~/.editorconfig on each in
 
 omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
   themes/
-    dragon.zsh-theme              OMZ entry point shim — sources dragon/{dragon,configure,aliases,notifier}.zsh
+    dragon.zsh-theme              OMZ entry point shim — sources dragon/{dragon,configure,aliases}.zsh
     dragon/                       all dragon theme code lives here
       dragon.zsh                  theme entry point — defaults loop, hook registration
       schema.zsh                  single source of truth for all DRAGON__* vars (defaults, types, hints, groups)
       configure.zsh               entry point for `dragon-configure` — sources configure/*.zsh
-      configure/                  wizard implementation
-        state.zsh                 state I/O, conf loading, preset apply
-        preview.zsh               key reader, prompt preview, gallery renderer
-        pick.zsh                  TUI preset browser (--pick)
-        wizard.zsh                interactive steps, menus, variable editor
-        writer.zsh                conf file generator
+      configure/                  configurator implementation
+        state.zsh                 conf loading, preset apply, active-preset header read
+        preview.zsh               prompt preview + gallery renderer
+        pick.zsh                  TUI preset picker (the front door)
+        writer.zsh                conf file generator (self-validates with `zsh -n`)
       aliases.zsh                 rezsh, reset_theme_variables
-      notifier.zsh                shell-start notifier — fires when new theme vars exist
       parts/
         helpers.zsh               __get_xterm_*, __dragon__show (segment renderer)
         segments_left.zsh         username, hostname, directory, prompt_char, ssh_prefix
@@ -86,7 +84,7 @@ Different files have different latency depending on how they reach disk:
 
 | What you changed | How to test |
 |---|---|
-| Any `omz-custom/` file (plugins, theme parts, configure, notifier) | `soursh` — live via symlink |
+| Any `omz-custom/` file (plugins, theme parts, configure) | `soursh` — live via symlink |
 | `zshenv.master-oogway` | re-run `./install.sh`, then `soursh` |
 | `gitconfig.master-oogway` | re-run `./install.sh` — copies to `~/.gitconfig.master-oogway`; `~/.gitconfig` is NOT replaced, only an `[include]` pointing to it is added once |
 | `editorconfig.master-oogway` | re-run `./install.sh` |
@@ -119,6 +117,7 @@ bash -n install.sh
 zsh -n omz-custom/themes/dragon.zsh-theme \
        omz-custom/themes/dragon/*.zsh \
        omz-custom/themes/dragon/parts/*.zsh \
+       omz-custom/themes/dragon/configure/*.zsh \
        omz-custom/plugins/mo-*/mo-*.plugin.zsh
 
 # 3. static analysis on install.sh
@@ -127,7 +126,7 @@ shellcheck install.sh
 
 If any of these fail, fix the underlying issue — never commit a file that fails parsing.
 
-> **Note:** The wizard already validates its own output — `dragon-configure` runs `zsh -n` on the generated `conf.zsh` before writing it, so any wizard-produced config that fails syntax is rejected automatically (see `configure/writer.zsh`). You only need to run the checks above on source files.
+> **Note:** The configurator validates its own output — `_dragon_write_conf` runs `zsh -n` on the generated `conf.zsh` before writing it (see `configure/writer.zsh`), so any generated config that fails syntax is rejected automatically. You only need to run the checks above on source files.
 
 ---
 
@@ -320,8 +319,9 @@ for each entry, so the live variable name is always `DRAGON__` + the schema key
 (e.g. schema key `ENABLE_GIT_STATUS` → runtime variable `$DRAGON__ENABLE_GIT_STATUS`).
 
 You must touch **all five** of the following — missing any one means the variable
-either has no default, is invisible to `dragon-configure`, or renders nothing.
-(This rule is also summarised in `CLAUDE.md` under "Adding a `DRAGON__*` variable".)
+either has no default, is missing or ungrouped in the generated `conf.zsh`, or
+renders nothing. (This rule is also summarised in `CLAUDE.md` under "Adding a
+`DRAGON__*` variable".)
 
 ### 1. `_DRAGON_DEFAULTS` — declare the key and its default value
 
@@ -333,7 +333,7 @@ typeset -gA _DRAGON_DEFAULTS=(
 )
 ```
 
-### 2. `_DRAGON_TYPE` — declare the type for the configurator wizard
+### 2. `_DRAGON_TYPE` — declare the type
 
 ```zsh
 typeset -gA _DRAGON_TYPE=(
@@ -343,19 +343,19 @@ typeset -gA _DRAGON_TYPE=(
 )
 ```
 
-Types:
+Types drive the annotation written next to the var in `conf.zsh`:
 
-- `bool` — wizard shows a yes/no toggle
-- `color` — wizard shows a color picker; empty string `""` means no background color applied
-- `integer` — wizard shows a numeric-only prompt; non-integers are rejected before saving
-- `string` — wizard shows a free-text prompt
-- `enum:a|b|c` — wizard shows a selection menu
+- `bool` — true / false
+- `color` — a color name or 0-255; empty string `""` means no background color applied
+- `integer` — a whole number; non-integers are reset to the default on load, with a warning
+- `string` — free text
+- `enum:a|b|c` — one of the listed options (written as a `# Values: a|b|c` hint)
 
 > **`*_BACKGROUND_COLOR` convention:** every background-color variable defaults to `""` (empty string),
 > meaning "use the terminal's default background". Only set hints for vars where the semantics deviate
 > from this rule (e.g. `GIT_CLEAN_BACKGROUND_COLOR` has a non-empty default and a hint explaining it).
 
-### 3. `_DRAGON_GROUP_VARS` — assign the key to a wizard group
+### 3. `_DRAGON_GROUP_VARS` — assign the key to a group
 
 Add the key to the space-separated value of the appropriate group:
 
@@ -370,9 +370,10 @@ typeset -gA _DRAGON_GROUP_VARS=(
 If you need a new group entirely, also add it to `_DRAGON_GROUPS` (ordered list),
 `_DRAGON_GROUP_TITLE` (display name), and `_DRAGON_GROUP_DESC` (one-line description).
 
-### 4. Optionally — `_DRAGON_HINT` — add a hint shown in the wizard
+### 4. Optionally — `_DRAGON_HINT` — add a hint shown in `conf.zsh`
 
-Only needed when the value format or semantics aren't obvious from the type alone:
+Only needed when the value format or semantics aren't obvious from the type alone
+(written as a comment above the var in the generated file):
 
 ```zsh
 typeset -gA _DRAGON_HINT=(
@@ -389,11 +390,12 @@ also call it from `dragon__set_lprompt` or `dragon__set_rprompt` in `prompt.zsh`
 
 ---
 
-Users are notified on next shell start that new variables are available
-(`dragon-configure --new-only` to configure just the new ones).
+On the next `master-oogway update`, existing users' `conf.zsh` is regenerated
+automatically: the new variable appears as a commented default in its group,
+values preserved, a backup kept. Nothing else is needed on their side.
 
 If the new variable is user-facing, also update the [README.md](README.md)
-"Theme configurator" section.
+"Configuration" section.
 
 ---
 
