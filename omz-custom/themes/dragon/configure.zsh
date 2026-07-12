@@ -33,11 +33,11 @@ dragon-configure() {
 Usage: dragon-configure [options]
 
 Options:
-  (none)              Full interactive wizard — step through every setting
-  --pick              TUI preset browser — arrow keys, live preview, Enter to apply
+  (none), --pick      TUI preset browser — arrow keys, live preview, Enter to apply
   --preset <name>     Instantly switch to a preset (built-in or personal)
+  --edit              Open conf.zsh in $EDITOR to fine-tune individual settings
   --export <name>     Save current config as a personal preset
-  --gallery           Print every preset stacked, with a labeled banner
+  --gallery           Print every built-in preset stacked, with a labeled banner
   --help, -h          Show this help
 
 Config file:    ~/.config/master-oogway/conf.zsh
@@ -46,29 +46,20 @@ EOF
 		return 0
 	fi
 
-	# ── TUI preset picker: dragon-configure --pick
-	if [[ "${1-}" == "--pick" ]]; then
-		if [[ "${ZSH_THEME:-}" != "dragon" ]]; then
-			print -P "%F{yellow}[dragon] Warning: ZSH_THEME is '${ZSH_THEME:-<unset>}', not 'dragon'.%f"
-		fi
-		_dragon_init_defaults
-		_dragon_init_types
-		_dragon_init_hints
-		_dragon_init_groups
-		_dragon_init_presets || return 1
-		typeset -g _DRAGON_CHOSEN_PRESET="default"
-		typeset -gA _DRAGON_STATE=()
-		_dragon_load_current_conf
-		_dragon_pick_preset
-		_dragon_cleanup
-		return 0
-	fi
-
 	if [[ "${ZSH_THEME:-}" != "dragon" ]]; then
 		print -P "%F{yellow}[dragon] Warning: ZSH_THEME is '${ZSH_THEME:-<unset>}', not 'dragon' — conf.zsh changes will have no effect until you switch themes.%f"
 	fi
 
-	local new_only=false
+	# ── Edit the config file directly: dragon-configure --edit
+	if [[ "${1-}" == "--edit" ]]; then
+		if [[ ! -f "${_DRAGON_CONF_FILE}" ]]; then
+			print -P "%F{red}✗%f No conf.zsh found — run %Bdragon-configure%b first to pick a preset."
+			return 1
+		fi
+		${EDITOR:-nano} "${_DRAGON_CONF_FILE}"
+		print -P "  %F{245}Reload to apply: %Brezsh%b%f"
+		return 0
+	fi
 
 	# Init all data
 	_dragon_init_defaults
@@ -193,84 +184,8 @@ EOF
 		return 0
 	fi
 
-	# ── New-only mode: check for new vars
-	if $new_only; then
-		_dragon_read_state
-		local stored_hash="${_DRAGON_STATE[vars_hash]:-}"
-		local current_hash
-		current_hash=$(_dragon_vars_hash)
-		if [[ "$stored_hash" == "$current_hash" ]]; then
-			print -P "%F{green}✓ No new dragon theme variables detected.%f"
-			print -P "  Run %Bdragon-configure%b (without --new-only) to reconfigure everything."
-			_dragon_cleanup
-			return 0
-		fi
-		clear
-		print -P "%B%F{cyan}── dragon: New Theme Features ───────────────────────────────────────%f%b"
-		print ""
-		print -P "  New theme variables have been added since you last configured."
-		print -P "  Default values have been applied for them."
-		print -P "  Stepping through all groups — your existing settings are preserved."
-		print ""
-		print -P "  %F{245}Press any key to start...%f"
-		_dragon_read_key _dragon_any
-		_DRAGON_CHOSEN_PRESET="${_DRAGON_STATE[preset]:-default}"
-	elif [[ -f "${_DRAGON_CONF_FILE}" ]]; then
-		_dragon_read_state
-		_dragon_show_start_menu || return 0
-	else
-		# First run — guided tour then preset selection
-		_dragon_guided_tour
-		_dragon_select_preset
-	fi
-
-	# ── Step through groups (narrowed set for "Edit current", else all)
-	local -a nav_groups=( "${_DRAGON_NAV_GROUPS[@]:-${_DRAGON_GROUPS[@]}}" )
-	local step=0
-	local total=${#nav_groups}
-	while (( step < total )); do
-		_dragon_run_step "${nav_groups[$((step + 1))]}" $((step + 1)) $total
-		local rc=$?
-		case $rc in
-			0) (( step++ )) ;;
-			1) (( step > 0 )) && (( step-- )) ;;
-			2) break ;;
-		esac
-	done
-
-	# ── Final preview
-	clear
-	print -P "%B%F{cyan}── Final Result ─────────────────────────────────────────────────────────%f%b"
-	print ""
-	print -P "  Your configured prompt:"
-	_dragon_render_preview
-	print ""
-	printf "  Save configuration? [Y/n]: "
-	local confirm
-	read -r confirm
-	if [[ "$confirm" == n* || "$confirm" == N* ]]; then
-		print -P "  %F{yellow}Discarded. No changes were saved.%f"
-		_dragon_cleanup
-		return 0
-	fi
-
-	# ── Write conf and state
-	_dragon_write_conf || return 1
-	_dragon_write_state "${_DRAGON_CHOSEN_PRESET}"
-
-	# Apply directly to the current shell — export every chosen value so the
-	# already-set DRAGON__ vars are overwritten (set_if_unset won't help here).
-	local var val
-	for var val in "${(@kv)_DRAGON_CURRENT}"; do
-		export "DRAGON__${var}=${val}"
-	done
-	dragon__update_zsh_prompt 2>/dev/null
-
-	print ""
-	print -P "  %F{green}✓ Saved to %B${_DRAGON_CONF_FILE}%b%F{green} — prompt updated immediately.%f"
-	print -P "  %F{245}Edit that file directly to change individual settings without re-running the wizard.%f"
-	print ""
-
+	# ── Bare / --pick: front door is the TUI preset picker.
+	_dragon_pick_preset
 	_dragon_cleanup
 }
 
@@ -278,4 +193,5 @@ _dragon_cleanup() {
 	unset _DRAGON_DEFAULTS _DRAGON_CURRENT _DRAGON_TYPE _DRAGON_HINT _DRAGON_STATE _DRAGON_CHOSEN_PRESET
 	unset _DRAGON_GROUP_TITLE _DRAGON_GROUP_DESC _DRAGON_GROUP_VARS _DRAGON_GROUPS _DRAGON_NAV_GROUPS
 	unset _DRAGON_PRESET_NAMES _DRAGON_PRESET_DESC _DRAGON_PRESET_EXAMPLE
+	unset _DRAGON_PICK_NAMES _DRAGON_PICK_TYPE _DRAGON_PICK_DESC
 }
