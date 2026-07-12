@@ -20,7 +20,6 @@ source "${0:a:h}/schema.zsh"
 source "${0:a:h}/configure/state.zsh"
 source "${0:a:h}/configure/preview.zsh"
 source "${0:a:h}/configure/pick.zsh"
-source "${0:a:h}/configure/wizard.zsh"
 source "${0:a:h}/configure/writer.zsh"
 
 # -----------------------------------------------------------------------------
@@ -191,7 +190,7 @@ EOF
 
 _dragon_cleanup() {
 	unset _DRAGON_DEFAULTS _DRAGON_CURRENT _DRAGON_TYPE _DRAGON_HINT _DRAGON_STATE _DRAGON_CHOSEN_PRESET
-	unset _DRAGON_GROUP_TITLE _DRAGON_GROUP_DESC _DRAGON_GROUP_VARS _DRAGON_GROUPS _DRAGON_NAV_GROUPS
+	unset _DRAGON_GROUP_TITLE _DRAGON_GROUP_DESC _DRAGON_GROUP_VARS _DRAGON_GROUPS
 	unset _DRAGON_PRESET_NAMES _DRAGON_PRESET_DESC _DRAGON_PRESET_EXAMPLE
 	unset _DRAGON_PICK_NAMES _DRAGON_PICK_TYPE _DRAGON_PICK_DESC
 }

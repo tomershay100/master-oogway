@@ -120,6 +120,28 @@ _dragon_apply_preset() {
 	_dragon_load_current_conf_from "${_DRAGON_THEMES_DIR}/presets/${preset}.conf.zsh"
 }
 
+# Shared confirm-and-auto-backup for destructive preset resets. Caller prints
+# its own header so the question can be specific. Returns 0 if the user
+# accepts (and the backup, if any, succeeded); 1 if they decline.
+_dragon_warn_preset_reset() {
+	local prompt="${1:-Continue?}"
+	if [[ -f "${_DRAGON_CONF_FILE}" ]]; then
+		print -P "  Your current settings will be replaced."
+		print -P "  %F{245}A timestamped backup will be saved to ${_DRAGON_CONF_FILE}.bak.<ts>%f"
+		print ""
+	fi
+	printf "  %s [y/N] " "$prompt"
+	local _confirm
+	read -r _confirm
+	[[ "$_confirm" == y* || "$_confirm" == Y* ]] || return 1
+	if [[ -f "${_DRAGON_CONF_FILE}" ]]; then
+		local _bak="${_DRAGON_CONF_FILE}.bak.$(date +%Y%m%d_%H%M%S)"
+		cp "${_DRAGON_CONF_FILE}" "$_bak"
+		print -P "  %F{green}✓%f Backup saved: %B${_bak}%b"
+	fi
+	return 0
+}
+
 # Apply a preset (built-in or personal) into _DRAGON_CURRENT and persist it.
 # Preserves USE_NERD_FONT (terminal capability, not style). Writes conf.zsh
 # then the state file; returns non-zero without touching state if the conf

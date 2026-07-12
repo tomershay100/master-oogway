@@ -1,29 +1,14 @@
-# configure/preview.zsh — key reader + prompt preview renderers
-
-# Read a single keypress without echoing it to the terminal.
-# Uses stty to disable echo at the TTY driver level (more reliable than read -s).
-_dragon_read_key() {
-	local _dragon_stty
-	_dragon_stty=$(stty -g 2>/dev/null)
-	{
-		stty -echo -icanon -isig min 1 time 0 2>/dev/null
-		read -k1 "$1"
-	} always {
-		stty "$_dragon_stty" 2>/dev/null
-	}
-}
+# configure/preview.zsh — prompt preview renderers
 
 _dragon_render_preview() {
 	# Run entirely in a subshell so all exports (DRAGON__*, SSH_TTY, VCS_STATUS_*)
 	# are automatically discarded on exit — including Ctrl+C.
 	(
-		# Flags: --ssh, --fail, --transient, --group=<name>
-		local ssh_mode=false fail_mode=false transient_mode=false group="" _dragon_flag
+		# Flags: --ssh, --fail
+		local ssh_mode=false fail_mode=false _dragon_flag
 		for _dragon_flag in "$@"; do
-			[[ "$_dragon_flag" == "--ssh"       ]] && ssh_mode=true
-			[[ "$_dragon_flag" == "--fail"      ]] && fail_mode=true
-			[[ "$_dragon_flag" == "--transient" ]] && transient_mode=true
-			[[ "$_dragon_flag" == --group=*     ]] && group="${_dragon_flag#--group=}"
+			[[ "$_dragon_flag" == "--ssh"  ]] && ssh_mode=true
+			[[ "$_dragon_flag" == "--fail" ]] && fail_mode=true
 		done
 
 		# Export all current DRAGON__ vars so the nested zsh -c inherits them.
@@ -37,18 +22,6 @@ _dragon_render_preview() {
 		local preview_exit_code=0
 		$ssh_mode  && export SSH_TTY=/dev/pts/0
 		$fail_mode && preview_exit_code=1
-
-		# Export group-specific fake data via env vars honoured by the theme segments.
-		case "$group" in
-			exec_timer)   export DRAGON__PREVIEW_FAKE_EXEC_TIME="1m 5s" ;;
-			job_count)    export DRAGON__PREVIEW_FAKE_JOB_COUNT=2 ;;
-			ssh_conn_count) export DRAGON__PREVIEW_FAKE_SSH_CONN_COUNT=2 ;;
-			git_stash_remote)
-				export VCS_STATUS_STASHES=2
-				export VCS_STATUS_COMMITS_AHEAD=3
-				export VCS_STATUS_COMMITS_BEHIND=1 ;;
-			git_clean_dirty) export VCS_STATUS_HAS_UNSTAGED=1 ;;
-		esac
 
 		local preview
 		preview=$(zsh -c "
@@ -73,17 +46,13 @@ _dragon_render_preview() {
 			_DRAGON_EXIT_CODE=${preview_exit_code}
 			__LAST_EXIT_CODE=${preview_exit_code}
 			dragon__update_zsh_prompt 2>/dev/null
-			if [[ '${transient_mode}' == true ]]; then
-				__dragon_zle_line_finish 2>/dev/null
-			fi
 			print -rP -- \"\${PROMPT}\"
 			[[ -n \"\${RPROMPT}\" ]] && printf 'RPROMPT: ' && print -rP -- \"\${RPROMPT}\"
 		" 2>/dev/null)
 
 		local label=""
-		$ssh_mode       && label=" %F{245}(SSH)%f"
-		$fail_mode      && label=" %F{245}(exit: 1)%f"
-		$transient_mode && label=" %F{245}(after command — collapsed)%f"
+		$ssh_mode  && label=" %F{245}(SSH)%f"
+		$fail_mode && label=" %F{245}(exit: 1)%f"
 
 		if [[ -n "$preview" ]]; then
 			print -P "%F{245}  ┌────────────────────────────────────────────────────────%f${label}"
