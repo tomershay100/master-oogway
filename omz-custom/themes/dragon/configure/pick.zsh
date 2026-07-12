@@ -216,6 +216,14 @@ _dragon_pick_preset() {
 			stty "$_pick_stty" 2>/dev/null
 		}
 
+		# Bare Esc (no following [ or O) = cancel. A real arrow key arrives as
+		# \e[A / \eOA etc.; anything else starting with \e that isn't a known
+		# arrow is treated as cancel too, so a lone Esc always exits even when
+		# the trailing read times out with a stray/partial byte.
+		if [[ "$key" == $'\e' && "$seq" != '['* && "$seq" != 'O'* ]]; then
+			chosen=""; break
+		fi
+
 		case "${key}${seq}" in
 			$'\e[A'|$'\eOA'|k|K)                                # up (skip dividers)
 				(( sel > 1 )) && (( sel-- ))
@@ -232,8 +240,7 @@ _dragon_pick_preset() {
 					*)     ctx="plain" ;;
 				esac
 				;;
-			$'\e')           chosen=""; break ;;                # bare Esc = cancel
-			$'\e'*)          ;;                                  # other escape — ignore
+			$'\e'*)          ;;                                  # unhandled arrow (\e[C/\e[D) — ignore
 			$'\n'|"")
 				chosen="${_DRAGON_PICK_NAMES[$sel]}"
 				break
