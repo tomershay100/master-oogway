@@ -65,7 +65,10 @@ if [[ -o extendedhistory ]]; then
 	bindkey '^R' fzf-history-widget
 fi
 
-alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox} --exclude={*.so,*.apd,*.pd}'
+# Patterns are single-quoted so zsh passes them to grep literally: an unquoted
+# --exclude=*.so is brace/glob-expanded by zsh and aborts under `nomatch` in any
+# directory without a matching file.
+alias grep="grep --color=auto --exclude-dir=.bzr --exclude-dir=CVS --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn --exclude-dir=.idea --exclude-dir=.tox --exclude='*.so' --exclude='*.apd' --exclude='*.pd'"
 alias grepi='grep -i'
 alias f="find . | grepi"
 

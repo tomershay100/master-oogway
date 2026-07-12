@@ -33,7 +33,7 @@ _mo_extract_zip() {
 	local entries
 	entries=$(unzip -Z1 "$f" 2>/dev/null) \
 		|| { echo "extract: cannot list entries in '$f'" >&2; return 1; }
-	if grep -qE '(^/|(^|/)\.\.(/|$))' <<< "$entries"; then
+	if command grep -qE '(^/|(^|/)\.\.(/|$))' <<< "$entries"; then
 		echo "extract: refusing '$f' — contains absolute or traversal paths" >&2
 		echo "  inspect with: unzip -Z1 '$f'" >&2
 		return 1
@@ -115,7 +115,7 @@ bak() {
 		[[ -e "$f" ]] || { echo "bak: not found: $f" >&2; continue; }
 		# -a preserves mode/owner/timestamps/xattrs/symlinks so a later
 		# restore reproduces the original file faithfully (including +x).
-		cp -av "$f" "${f}.bak.${ts}"
+		command cp -av "$f" "${f}.bak.${ts}"
 	done
 }
 

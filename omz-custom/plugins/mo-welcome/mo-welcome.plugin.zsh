@@ -51,7 +51,7 @@ _mo_welcome_field_shell() {
 _mo_welcome_field_load() {
 	local load1 cores pct color
 	read -r load1 _ < /proc/loadavg
-	cores=$(grep -c '^processor' /proc/cpuinfo 2>/dev/null)
+	cores=$(command grep -c '^processor' /proc/cpuinfo 2>/dev/null)
 	(( cores > 0 )) || cores=1
 	printf -v pct "%.0f" "$(( load1 * 100 / cores ))"
 	if   (( pct >= 80 )); then color=red

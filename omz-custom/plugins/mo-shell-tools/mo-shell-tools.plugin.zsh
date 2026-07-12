@@ -59,7 +59,7 @@ mo-where() {
 		while IFS= read -r match; do
 			printf "%s:%s\n" "$plugin" "$match"
 			found=1
-		done < <(grep -nE \
+		done < <(command grep -nE \
 			"^alias ['\"]?${name}['\"]?=|^function ${name}([^a-zA-Z0-9_]|\{|$)|^${name}[[:space:]]*\(\)" \
 			"$f" 2>/dev/null)
 	done

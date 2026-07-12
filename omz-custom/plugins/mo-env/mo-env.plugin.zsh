@@ -57,7 +57,9 @@ fenv() {
 		print -r -- "$var_value" > "$tmpfile"
 		${EDITOR:-vim} "$tmpfile"
 		new_value=$(command cat "$tmpfile")
-		rm -f "$tmpfile"
+		# `command rm` so a secrets temp file is really deleted, not sent to a
+		# trash can by an `rm`→trash-put alias.
+		command rm -f "$tmpfile"
 	fi
 	export "${var_name}=${new_value}"
 	print -r -- "Exported: $var_name=$new_value"

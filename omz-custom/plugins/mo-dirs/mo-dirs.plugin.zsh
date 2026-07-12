@@ -5,7 +5,7 @@ mkcd() {
 		echo "  Create <dir> (including parents) and cd into it."
 		return
 	fi
-	mkdir -p "$1" && cd "$1"
+	command mkdir -p "$1" && cd "$1"
 }
 
 up() {
