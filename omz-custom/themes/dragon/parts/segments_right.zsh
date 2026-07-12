@@ -45,9 +45,7 @@ dragon__set_execution_time()
 {
 	! $DRAGON__ENABLE_EXEC_TIMER && { FINAL_DRAGON__EXEC_TIMER_CONTENT=""; return; }
 
-	if [[ -n "${DRAGON__PREVIEW_FAKE_EXEC_TIME:-}" ]]; then
-		REAL_DRAGON__EXEC_TIMER_CONTENT="${DRAGON__PREVIEW_FAKE_EXEC_TIME}"
-	elif ! $_DRAGON_TIMER_ACTIVE; then
+	if ! $_DRAGON_TIMER_ACTIVE; then
 		# No command ran (bare Enter) or already consumed — preserve the last
 		# rendered value so the async gitstatus repaint doesn't blank it out.
 		return
@@ -85,7 +83,7 @@ dragon__set_job_count()
 	FINAL_DRAGON__JOB_COUNT_CONTENT=""
 	! $DRAGON__ENABLE_JOB_COUNT && return
 
-	local jobs_count="${DRAGON__PREVIEW_FAKE_JOB_COUNT:-${#jobstates[@]}}"
+	local jobs_count="${#jobstates[@]}"
 	(( jobs_count == 0 )) && return
 
 	REAL_DRAGON__JOB_COUNT_CONTENT="%j"
@@ -101,11 +99,6 @@ typeset -g _DRAGON_SSH_COUNT_CACHE=-1
 
 __set_ssh_connection_count_content()
 {
-	if [[ -n "${DRAGON__PREVIEW_FAKE_SSH_CONN_COUNT:-}" ]]; then
-		REAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT="${DRAGON__PREVIEW_FAKE_SSH_CONN_COUNT}"
-		return
-	fi
-
 	if (( _DRAGON_SSH_COUNT_CACHE >= 0 )); then
 		REAL_DRAGON__SSH_CONNECTION_COUNT_CONTENT="$_DRAGON_SSH_COUNT_CACHE"
 		return
