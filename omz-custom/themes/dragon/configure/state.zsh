@@ -163,6 +163,6 @@ _dragon_apply_and_save() {
 	fi
 
 	[[ -n "$saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$saved_nerd_font"
-	_dragon_write_conf || return 1
+	_dragon_write_conf "$preset" || return 1
 	_dragon_write_state "$preset"
 }

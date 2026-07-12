@@ -1,6 +1,10 @@
 # configure/writer.zsh — conf file generator
 
+# $1 (optional): the preset this config is based on. Written as a
+# `# preset: <name>` header so the picker can preselect it and the on-update
+# regen knows the base — this is the sole source of truth for the active preset.
 _dragon_write_conf() {
+	local preset="${1:-}"
 	local tmp_file="${_DRAGON_CONF_FILE}.wizard.tmp"
 	# Guarantee cleanup of the tmp file on any exit path — including a failed
 	# mv (read-only filesystem, ENOSPC, etc.). Cleared to `trap - EXIT` on
@@ -8,6 +12,7 @@ _dragon_write_conf() {
 	trap 'rm -f "${tmp_file}"' EXIT
 
 	{
+		[[ -n "$preset" ]] && printf '# preset: %s\n' "$preset"
 		cat <<'HEADER'
 ##########################################
 #### Theme configuration: dragon #####

@@ -8,7 +8,6 @@ set -Eeuo pipefail
 readonly REPO_URL="https://github.com/tomershay100/master-oogway.git"
 readonly INSTALL_DIR="${HOME}/.master-oogway"
 readonly CONF_DIR="${HOME}/.config/master-oogway"
-readonly STATE_FILE="${CONF_DIR}/state"
 readonly ZSHRC="${HOME}/.zshrc"
 readonly ZSHRC_SNAPSHOT="${CONF_DIR}/zshrc.snapshot"
 readonly GITCONFIG="${HOME}/.gitconfig"
@@ -878,35 +877,49 @@ _install_gitconfig()
 
 _install_gitconfig
 
-# -- dragon theme: check for new variables -----------------------------------
+# -- dragon theme: regenerate conf.zsh -----------------------------------------
 
-_check_theme_vars()
+# On every update, silently rewrite conf.zsh through the writer: existing user
+# values are preserved, any newly-added schema vars appear as commented defaults
+# in their group, and a timestamped .bak is kept. No prompt, no change-detection
+# — new options are simply visible in the file next time it is opened. Skipped
+# when conf.zsh does not yet exist (a fresh install has nothing to preserve).
+_regen_theme_conf()
 {
 	local themes_dir="${INSTALL_DIR}/omz-custom/themes/dragon"
-	local current_hash
-	# Hash sorted _DRAGON_DEFAULTS keys via a one-shot zsh — immune to
-	# grep over-matching comments. Must match configure.zsh and notifier.zsh.
-	current_hash=$(zsh -c '
-		source "$1/schema.zsh"
-		_dragon_init_defaults
-		printf "%s\n" "${(@k)_DRAGON_DEFAULTS}" | sort | md5sum | cut -d" " -f1
-	' -- "${themes_dir}" 2>/dev/null)
+	local conf_file="${CONF_DIR}/conf.zsh"
 
-	if [[ ! -f "${STATE_FILE}" ]]; then
+	if [[ ! -f "${conf_file}" ]]; then
 		todo_item "Configure your prompt: open a new terminal and run 'dragon-configure'"
 		return
 	fi
 
-	local stored_hash
-	stored_hash=$(grep '^vars_hash=' "${STATE_FILE}" 2>/dev/null | cut -d= -f2)
-	if [[ "${current_hash}" != "${stored_hash}" ]]; then
-		todo_item "New dragon theme options available: run 'dragon-configure --new-only'"
+	cp "${conf_file}" "${conf_file}.bak.$(date +%Y%m%d_%H%M%S)"
+
+	# Regenerate in a one-shot zsh: init the schema, load the current values,
+	# carry over the `# preset:` header, and re-emit through the writer. The
+	# writer self-validates with `zsh -n` and writes atomically.
+	if zsh -c '
+		typeset -g _DRAGON_CONF_FILE="$2"
+		typeset -g _DRAGON_STATE_DIR="${2:h}"
+		typeset -g _DRAGON_THEMES_DIR="$1"
+		source "$1/schema.zsh"
+		source "$1/configure/state.zsh"
+		source "$1/configure/writer.zsh"
+		_dragon_init_defaults; _dragon_init_types
+		_dragon_init_hints;    _dragon_init_groups
+		_dragon_load_current_conf
+		local preset
+		preset=$(grep -m1 "^# preset: " "$2" | cut -d" " -f3)
+		_dragon_write_conf "$preset"
+	' -- "${themes_dir}" "${conf_file}" 2>/dev/null; then
+		success "dragon theme config refreshed (backup kept)"
 	else
-		success "dragon theme already configured"
+		warn "dragon theme config could not be refreshed — left unchanged"
 	fi
 }
 
-_check_theme_vars
+_regen_theme_conf
 _zcompile_plugins
 
 # -- User extension directories -------------------------------------------------
