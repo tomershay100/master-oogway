@@ -9,7 +9,6 @@
 typeset -g _DRAGON_CONF_FILE="${HOME}/.config/master-oogway/conf.zsh"
 typeset -g _DRAGON_THEMES_DIR="${0:a:h}"   # .../dragon/ — derived from script location
 typeset -g _DRAGON_STATE_DIR="${HOME}/.config/master-oogway"
-typeset -g _DRAGON_STATE_FILE="${_DRAGON_STATE_DIR}/state"
 
 # -- Schema (defaults, types, hints, groups) ----------------------------------
 
@@ -66,8 +65,6 @@ EOF
 	_dragon_init_hints
 	_dragon_init_groups
 	_dragon_init_presets || return 1
-	typeset -g _DRAGON_CHOSEN_PRESET="default"
-	typeset -gA _DRAGON_STATE=()
 
 	# Load existing conf (sets _DRAGON_CURRENT from defaults + active conf values)
 	_dragon_load_current_conf
@@ -189,7 +186,7 @@ EOF
 }
 
 _dragon_cleanup() {
-	unset _DRAGON_DEFAULTS _DRAGON_CURRENT _DRAGON_TYPE _DRAGON_HINT _DRAGON_STATE _DRAGON_CHOSEN_PRESET
+	unset _DRAGON_DEFAULTS _DRAGON_CURRENT _DRAGON_TYPE _DRAGON_HINT
 	unset _DRAGON_GROUP_TITLE _DRAGON_GROUP_DESC _DRAGON_GROUP_VARS _DRAGON_GROUPS
 	unset _DRAGON_PRESET_NAMES _DRAGON_PRESET_DESC _DRAGON_PRESET_EXAMPLE
 	unset _DRAGON_PICK_NAMES _DRAGON_PICK_TYPE _DRAGON_PICK_DESC

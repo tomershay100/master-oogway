@@ -1,40 +1,10 @@
-# configure/state.zsh — state-file I/O and conf loading
+# configure/state.zsh — conf loading and preset apply
 
-_dragon_vars_hash() {
-	# Hash the sorted list of _DRAGON_DEFAULTS keys — the authoritative schema
-	# source of truth. Immune to grep over-matching comments/docs.
-	# Must match notifier.zsh and install.sh — change all three together.
-	printf '%s\n' "${(@k)_DRAGON_DEFAULTS}" | sort | md5sum | cut -d' ' -f1
-}
-
-_dragon_read_state() {
-	typeset -gA _DRAGON_STATE=()
-	[[ -f "${_DRAGON_STATE_FILE}" ]] || return
-	while IFS= read -r line; do
-		[[ "$line" == '#'* || -z "$line" ]] && continue
-		# %%=* strips up to the first = for the key (keys are DRAGON__[A-Z_]+ — no = possible).
-		# #*=  strips only the first = and keeps everything after, so values like "foo=bar" survive.
-		local key="${line%%=*}" val="${line#*=}"
-		_DRAGON_STATE[$key]="$val"
-	done < "${_DRAGON_STATE_FILE}"
-}
-
-_dragon_write_state() {
-	local preset="${1:-default}"
-	local hash mtime
-	hash=$(_dragon_vars_hash)
-	mtime=$(stat -c '%Y' "${_DRAGON_THEMES_DIR}/schema.zsh" 2>/dev/null)
-	_dragon_read_state   # load current state so we can preserve dismissed_hash
-	mkdir -p "${_DRAGON_STATE_DIR}"
-	{
-		echo "configured=true"
-		echo "preset=${preset}"
-		echo "vars_hash=${hash}"
-		echo "themes_mtime=${mtime}"
-		# Preserve dismissed_hash across configure runs so --dismiss stays effective
-		[[ -n "${_DRAGON_STATE[dismissed_hash]:-}" ]] \
-			&& echo "dismissed_hash=${_DRAGON_STATE[dismissed_hash]}"
-	} > "${_DRAGON_STATE_FILE}"
+# Read the `# preset: <name>` header from conf.zsh (the sole source of truth for
+# the active preset since the state file was removed). Empty if absent.
+_dragon_active_preset() {
+	[[ -f "${_DRAGON_CONF_FILE}" ]] || return
+	grep -m1 '^# preset: ' "${_DRAGON_CONF_FILE}" 2>/dev/null | cut -d' ' -f3
 }
 
 _dragon_load_current_conf_from() {
@@ -144,9 +114,9 @@ _dragon_warn_preset_reset() {
 
 # Apply a preset (built-in or personal) into _DRAGON_CURRENT and persist it.
 # Preserves USE_NERD_FONT (terminal capability, not style). Writes conf.zsh
-# then the state file; returns non-zero without touching state if the conf
-# write fails, so callers skip their success message. Assumes the preset name
-# is already validated as an existing built-in or personal preset.
+# (with the `# preset:` header); returns non-zero if the write fails, so callers
+# skip their success message. Assumes the preset name is already validated as an
+# existing built-in or personal preset.
 _dragon_apply_and_save() {
 	local preset="$1"
 	local user_file="${_DRAGON_STATE_DIR}/presets/${preset}.conf.zsh"
@@ -164,5 +134,4 @@ _dragon_apply_and_save() {
 
 	[[ -n "$saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$saved_nerd_font"
 	_dragon_write_conf "$preset" || return 1
-	_dragon_write_state "$preset"
 }

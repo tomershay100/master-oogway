@@ -140,11 +140,11 @@ _dragon_pick_preset() {
 	# Preview context toggled with 's': plain → ssh → fail → plain.
 	local ctx="plain"
 
-	# Determine starting selection: match current preset from state, else the
-	# first selectable (non-divider) row.
+	# Determine starting selection: match the active preset (from conf.zsh's
+	# `# preset:` header), else the first selectable (non-divider) row.
 	local sel=1
-	_dragon_read_state
-	local cur_preset="${_DRAGON_STATE[preset]:-}"
+	local cur_preset
+	cur_preset=$(_dragon_active_preset)
 	local i
 	for (( i = 1; i <= n; i++ )); do
 		[[ "${_DRAGON_PICK_TYPE[$i]}" == "divider" ]] && continue
