@@ -54,7 +54,7 @@ mo-where() {
 	local name="$1"
 	local dir="${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins"
 	local found=0 f plugin match
-	for f in "${dir}"/mo-*/*.plugin.zsh(N); do
+	for f in "${dir}"/mo-*/*.plugin.zsh(#qN); do
 		plugin="${f:h:t}"
 		while IFS= read -r match; do
 			printf "%s:%s\n" "$plugin" "$match"

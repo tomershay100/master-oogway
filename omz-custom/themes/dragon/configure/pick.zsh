@@ -36,7 +36,7 @@ _dragon_pick_build_list() {
 		_DRAGON_PICK_TYPE+=("builtin")
 		_DRAGON_PICK_DESC+=("${_DRAGON_PRESET_DESC[$name]:-}")
 	done
-	local -a _user=( "${_DRAGON_STATE_DIR}"/presets/*.conf.zsh(N) )
+	local -a _user=( "${_DRAGON_STATE_DIR}"/presets/*.conf.zsh(#qN) )
 	if (( ${#_user} > 0 )); then
 		_DRAGON_PICK_NAMES+=(""); _DRAGON_PICK_TYPE+=("divider"); _DRAGON_PICK_DESC+=("")
 		local f

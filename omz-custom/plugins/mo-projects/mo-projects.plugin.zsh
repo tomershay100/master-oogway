@@ -19,7 +19,7 @@ _mo_projects_register_aliases() {
 	[[ -z "$proj_dir" || ! -d "$proj_dir" ]] && return
 
 	local name
-	for name in "$proj_dir"/*(N/); do
+	for name in "$proj_dir"/*(#qN/); do
 		name="${name:t}"
 		# Skip if already taken by a builtin, command, function, or alias.
 		(( $+builtins[$name] || $+commands[$name] || $+functions[$name] || $+aliases[$name] )) && continue
@@ -59,7 +59,7 @@ fi"
 
 	local names=()
 	local _n
-	for _n in "${proj_dir}"/*(N/); do
+	for _n in "${proj_dir}"/*(#qN/); do
 		names+=( "${_n:t}" )
 	done
 	if (( ${#names} == 0 )); then

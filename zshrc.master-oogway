@@ -81,7 +81,7 @@ setopt ALWAYS_TO_END     # after completing, jump cursor to end of word
 # -- user pre-plugin extensions -------------------------------------------------
 # Drop *.zsh files in $MO_CONFIG_DIR/custom-pre-zsh/ to source them here,
 # before plugins and oh-my-zsh (good for PATH changes, env vars, early overrides).
-for __mo_file in "$MO_CONFIG_DIR/custom-pre-zsh/"*.zsh(N); do
+for __mo_file in "$MO_CONFIG_DIR/custom-pre-zsh/"*.zsh(#qN); do
     source "$__mo_file" || print -P "%F{yellow}[master-oogway]%f warn: failed to source $__mo_file" >&2
 done
 unset __mo_file
@@ -199,7 +199,7 @@ zstyle ':completion:*' group-name ''                               # group items
 # Drop a folder my-thing/my-thing.plugin.zsh into
 # $MO_CONFIG_DIR/custom-plugins/ to load it as a plugin — sourced
 # here, after oh-my-zsh and all built-in plugins.
-for __mo_plugin in "$MO_CONFIG_DIR/custom-plugins"/*(N/); do
+for __mo_plugin in "$MO_CONFIG_DIR/custom-plugins"/*(#qN/); do
     __mo_name="${${__mo_plugin%/}:t}"
     [[ -f "${__mo_plugin}${__mo_name}.plugin.zsh" ]] \
         && { source "${__mo_plugin}${__mo_name}.plugin.zsh" || print -P "%F{yellow}[master-oogway]%f warn: failed to source ${__mo_name}" >&2; }
@@ -209,7 +209,7 @@ unset __mo_plugin __mo_name
 # -- user post-plugin extensions ------------------------------------------------
 # Drop *.zsh files in $MO_CONFIG_DIR/custom-zsh/ to source them here,
 # after plugins and oh-my-zsh (good for aliases, functions, prompt tweaks).
-for __mo_file in "$MO_CONFIG_DIR/custom-zsh/"*.zsh(N); do
+for __mo_file in "$MO_CONFIG_DIR/custom-zsh/"*.zsh(#qN); do
     source "$__mo_file" || print -P "%F{yellow}[master-oogway]%f warn: failed to source $__mo_file" >&2
 done
 unset __mo_file

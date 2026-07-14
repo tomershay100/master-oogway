@@ -13,7 +13,7 @@ _mo_man_fzf_pick() {
 	local dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins"
 	local plugin readme chosen
 	local -a plugins=()
-	for plugin in "${dir}"/mo-*/README.md(N); do
+	for plugin in "${dir}"/mo-*/README.md(#qN); do
 		plugins+=("${plugin:h:t}")
 	done
 	(( ${#plugins[@]} == 0 )) && { echo "mo-man: no mo-* plugins with a README found" >&2; return 1; }

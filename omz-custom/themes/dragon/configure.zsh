@@ -146,7 +146,7 @@ EOF
 		if [[ -z "$_preset" ]] || ! ( $_is_builtin || $_is_user ); then
 			print -P "%F{red}✗%f Invalid preset: '${_preset:-<none>}'"
 			print -P "  Built-in presets: %B${(j:%b  %B:)_DRAGON_PRESET_NAMES[@]}%b"
-			local _user_presets=( "${_DRAGON_STATE_DIR}"/presets/*.conf.zsh(N) )
+			local _user_presets=( "${_DRAGON_STATE_DIR}"/presets/*.conf.zsh(#qN) )
 			if (( ${#_user_presets} > 0 )); then
 				local _unames=( "${_user_presets[@]##*/}" )
 				_unames=( "${_unames[@]%.conf.zsh}" )
