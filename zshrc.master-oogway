@@ -5,12 +5,8 @@
 
 # -- PATH additions -------------------------------------------------------------
 typeset -U path   # deduplicate $path; prevents growth on re-source
-# Include the base system dirs explicitly. `/etc/zsh/zshenv` only seeds
-# /usr/bin:/bin at login (guarded one-shot); re-sourcing ~/.zshrc (soursh) does
-# NOT re-run it, so listing them here keeps a plain `source ~/.zshrc` from ever
-# leaving the shell without core binaries. `typeset -U path` collapses the
-# duplicates at login. /usr/sbin + /sbin also cover non-login shells (e.g.
-# Raspberry Pi terminal emulators) that skip /etc/profile.
+# List base dirs explicitly: /etc/zsh/zshenv seeds /usr/bin:/bin only at login,
+# so a re-source (source ~/.zshrc) would otherwise drop them. -U path dedups.
 path=($path /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin)
 
 # -- Locale ---------------------------------------------------------------------
