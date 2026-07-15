@@ -680,44 +680,36 @@ _install_zshrc()
 }
 
 # On update, ~/.zshrc is never auto-modified (it may hold user edits). We only
-# track whether the shipped template changed since the last install, via a
-# snapshot (a copy of the template as of that install):
-#   - snapshot == template  → nothing new, stay silent.
-#   - snapshot != template  → tell the user ONCE that the template moved (info,
-#     not a warning — their file still works), point them at `diff-zshrc` to see
-#     and hand-apply what they want, then advance the snapshot to the new
-#     template so the next install is silent again.
-# The user is notified only on the install that actually ships a template change.
+# ~/.zshrc is never auto-modified (it may hold user edits). Three files matter:
+#   template = the zshrc shipped by this install
+#   snapshot = the template as of the LAST install (~/.config/.../zshrc.snapshot)
+#   ~/.zshrc = the user's current file
+# and two messages:
+#   template != snapshot  → WARN: the template changed in this update. Advance
+#       the snapshot to the new template so the next install is silent.
+#   template == snapshot AND snapshot != ~/.zshrc  → INFO: the user has local
+#       edits vs the shipped template — remind them `diff-zshrc` can show them.
+# Otherwise (template == snapshot == ~/.zshrc) → silent.
 _sync_zshrc_snapshot()
 {
 	local template="${INSTALL_DIR}/zshrc.master-oogway"
 	[[ -f "${template}" ]] || return 0
 
-	# No sha256sum (minimal environments): fall back to cmp for the comparison.
-	local changed=true
-	if [[ -f "${ZSHRC_SNAPSHOT}" ]]; then
-		if command -v sha256sum &>/dev/null; then
-			[[ "$(sha256sum "${template}" | cut -d' ' -f1)" \
-			== "$(sha256sum "${ZSHRC_SNAPSHOT}" | cut -d' ' -f1)" ]] && changed=false
-		else
-			cmp -s "${template}" "${ZSHRC_SNAPSHOT}" && changed=false
-		fi
-	fi
-
-	${changed} || return 0   # snapshot already matches the template — nothing to say
-
-	# First-ever snapshot (fresh install just wrote ~/.zshrc from the template),
-	# or ~/.zshrc is byte-identical to the template: nothing has diverged, so
-	# seed the snapshot silently.
-	if [[ ! -f "${ZSHRC_SNAPSHOT}" ]] && [[ -f "${ZSHRC}" ]] \
-		&& cmp -s "${template}" "${ZSHRC}"; then
+	# template != snapshot → the update ships a new template. Warn once, then
+	# advance the snapshot (a missing snapshot counts as "changed" too).
+	if [[ ! -f "${ZSHRC_SNAPSHOT}" ]] || ! cmp -s "${template}" "${ZSHRC_SNAPSHOT}"; then
+		warn "The zshrc template changed in this update. Your ~/.zshrc was left"
+		warn "untouched — review with 'master-oogway diff-zshrc' and apply any changes."
 		_save_zshrc_snapshot
-		return
+		return 0
 	fi
 
-	info "The zshrc template changed. Your ~/.zshrc was left untouched — review"
-	info "the changes with 'master-oogway diff-zshrc' and apply any you want."
-	_save_zshrc_snapshot
+	# template == snapshot: nothing new upstream. Only speak up if the user's
+	# own ~/.zshrc has drifted from it — a gentle reminder, not a warning.
+	if [[ -f "${ZSHRC}" ]] && ! cmp -s "${ZSHRC_SNAPSHOT}" "${ZSHRC}"; then
+		info "Your ~/.zshrc differs from the installed template — 'master-oogway"
+		info "diff-zshrc' shows the diff any time."
+	fi
 }
 
 # Install when the file is absent, forced, or present but NOT master-oogway's
