@@ -2,8 +2,8 @@
 source "${0:h}/requirements.zsh" || return
 
 # -- fzf environment ------------------------------------------------------------
-# Append-once: soursh re-sources this file, and unguarded appends would grow
-# the variable on every reload.
+# Append-once: guard against re-sourcing this file (unguarded appends would grow
+# the variable on every reload).
 if [[ "${FZF_DEFAULT_OPTS:-}" != *'--height 40% --layout=reverse --border'* ]]; then
 	export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+${FZF_DEFAULT_OPTS} }--height 40% --layout=reverse --border"
 fi

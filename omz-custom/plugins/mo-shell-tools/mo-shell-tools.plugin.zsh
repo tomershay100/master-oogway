@@ -66,6 +66,11 @@ mo-where() {
 	(( found == 0 )) && { echo "mo-where: '${name}' not found in any mo-* plugin" >&2; return 1; }
 }
 
+# `unalias` first so re-sourcing this file (source ~/.zshrc) doesn't hit
+# "defining function based on alias `calc'": the `noglob calc` alias below
+# already exists from the previous load, and zsh expands it while parsing the
+# `calc()` line, which is a parse error that aborts the rest of the file.
+unalias calc 2>/dev/null
 calc() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 		echo "Usage: calc <expression>"

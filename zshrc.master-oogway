@@ -5,10 +5,13 @@
 
 # -- PATH additions -------------------------------------------------------------
 typeset -U path   # deduplicate $path; prevents growth on re-source
-# Non-login zsh shells (e.g. terminal emulators on Raspberry Pi OS) skip /etc/profile,
-# so /usr/sbin and /sbin are absent. Add them explicitly — they hold system tools like
-# avahi-daemon, arp-scan, ip, etc.
-path=($path /usr/local/sbin /usr/sbin /sbin)
+# Include the base system dirs explicitly. `/etc/zsh/zshenv` only seeds
+# /usr/bin:/bin at login (guarded one-shot); re-sourcing ~/.zshrc (soursh) does
+# NOT re-run it, so listing them here keeps a plain `source ~/.zshrc` from ever
+# leaving the shell without core binaries. `typeset -U path` collapses the
+# duplicates at login. /usr/sbin + /sbin also cover non-login shells (e.g.
+# Raspberry Pi terminal emulators) that skip /etc/profile.
+path=($path /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin)
 
 # -- Locale ---------------------------------------------------------------------
 # Prefer en_US.UTF-8; fall back to C.UTF-8 on minimal installs/containers.
