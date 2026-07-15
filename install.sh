@@ -691,7 +691,7 @@ _install_zshrc()
 _sync_zshrc_snapshot()
 {
 	local template="${INSTALL_DIR}/zshrc.master-oogway"
-	[[ -f "${template}" ]] || return
+	[[ -f "${template}" ]] || return 0
 
 	# No sha256sum (minimal environments): fall back to cmp for the comparison.
 	local changed=true
@@ -704,7 +704,7 @@ _sync_zshrc_snapshot()
 		fi
 	fi
 
-	${changed} || return   # snapshot already matches the template — nothing to say
+	${changed} || return 0   # snapshot already matches the template — nothing to say
 
 	# First-ever snapshot (fresh install just wrote ~/.zshrc from the template),
 	# or ~/.zshrc is byte-identical to the template: nothing has diverged, so
