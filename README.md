@@ -20,7 +20,17 @@ The installer sets up `~/.zshrc`, `~/.gitconfig`, `~/.editorconfig`, `~/.zshenv`
 
 ## What gets installed
 
-- `~/.zshrc` — created once, never overwritten again; edit freely
+Your four config files become **real files under `~/.config/master-oogway/`**, symlinked back into `$HOME`. On first install any existing file is backed up to `~/.<name>.pre-master-oogway.<timestamp>`, then replaced with the symlink. After that master-oogway never rewrites them — edit freely.
+
+| Symlink in `$HOME` | Real file |
+|---|---|
+| `~/.zshrc` | `~/.config/master-oogway/zshrc` |
+| `~/.zshenv` | `~/.config/master-oogway/zshenv` |
+| `~/.gitconfig` | `~/.config/master-oogway/gitconfig` |
+| `~/.editorconfig` | `~/.config/master-oogway/editorconfig` |
+
+**Back it up:** `git init ~/.config/master-oogway` versions all four dotfiles plus your `conf.zsh` theme settings in one directory — master-oogway won't fight your edits or your backup.
+
 - `~/.config/master-oogway/conf.zsh` — theme settings; edit via `dragon-configure`
 - `~/.gitconfig` — gets an `[include]` pointing to the curated git defaults; your `[user]` section is untouched. Notable opinion: `pull.rebase = true` (linear history). Override in your `~/.gitconfig` if you prefer merge commits.
 
