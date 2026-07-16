@@ -9,9 +9,17 @@ readonly REPO_URL="https://github.com/tomershay100/master-oogway.git"
 readonly INSTALL_DIR="${HOME}/.master-oogway"
 readonly CONF_DIR="${HOME}/.config/master-oogway"
 readonly ZSHRC="${HOME}/.zshrc"
-readonly ZSHRC_SNAPSHOT="${CONF_DIR}/zshrc.snapshot"
 readonly GITCONFIG="${HOME}/.gitconfig"
 readonly GITCONFIG_BUNDLE="${HOME}/.gitconfig.master-oogway"
+
+# User-owned config files live as real files under $CONF_DIR (git-backupable)
+# and are symlinked into $HOME. Real files carry no dot prefix; the ~/ symlinks
+# keep it so zsh/git/editorconfig find them.
+readonly ZSHRC_REAL="${CONF_DIR}/zshrc"
+readonly ZSHENV_REAL="${CONF_DIR}/zshenv"
+readonly GITCONFIG_REAL="${CONF_DIR}/gitconfig"
+readonly EDITORCONFIG_REAL="${CONF_DIR}/editorconfig"
+readonly ZSHRC_SNAPSHOT="${CONF_DIR}/zshrc.snapshot"
 
 # -- Colors & logging -----------------------------------------------------------
 
@@ -149,6 +157,61 @@ _find_backup() {
 		return
 	fi
 	[[ -f "$base" ]] && echo "$base"
+}
+
+# True when $1 is already a symlink pointing into $CONF_DIR — the marker that
+# master-oogway migrated this file. Replaces the old '# master-oogway:managed'
+# grep: the symlink itself proves ownership.
+_mo_is_managed_symlink()
+{
+	local link="$1"
+	[[ -L "$link" ]] || return 1
+	[[ "$(readlink "$link")" == "${CONF_DIR}/"* ]]
+}
+
+# Migrate a user config file to the symlink layout, idempotently.
+#   $1 home path  (e.g. ~/.zshrc)      $2 real path (e.g. $CONF_DIR/zshrc)
+#   $3 seed       action when the real file doesn't exist yet:
+#                 a source-file path → copy it in (zshrc/editorconfig template)
+#                 "" (empty)         → create an empty real file (caller then
+#                                      populates it, e.g. append source lines)
+# The home file is backed up (if a non-managed real file/foreign symlink) and
+# replaced with a symlink. If already our symlink, this is a no-op.
+_mo_migrate_to_symlink()
+{
+	local home_path="$1" real_path="$2" seed="${3:-}"
+
+	if _mo_is_managed_symlink "$home_path" && [[ -e "$real_path" ]]; then
+		success "already linked: ${home_path} → ${real_path}"
+		return 0
+	fi
+
+	mkdir -p "$(dirname "$real_path")"
+
+	# Seed the real file if it doesn't exist yet. An existing real file is the
+	# user's — never clobbered here (only --force paths overwrite, done by
+	# callers before calling us).
+	if [[ ! -e "$real_path" ]]; then
+		if [[ -n "$seed" ]] && [[ -f "$home_path" ]] && [[ ! -L "$home_path" ]]; then
+			# migrate the user's existing real file verbatim
+			cp -p "$home_path" "$real_path"
+		elif [[ -n "$seed" ]]; then
+			cp -p "$seed" "$real_path"
+		else
+			: > "$real_path"
+		fi
+	fi
+
+	# Back up whatever is at the home path (real file or foreign symlink) unless
+	# it's already our managed symlink.
+	if [[ -e "$home_path" || -L "$home_path" ]] && ! _mo_is_managed_symlink "$home_path"; then
+		local backup
+		backup=$(_mo_backup "$home_path")
+		[[ -n "$backup" ]] && info "Backed up ${home_path} → ${backup}"
+	fi
+
+	ln -sfn "$real_path" "$home_path"
+	success "linked: ${home_path} → ${real_path}"
 }
 
 confirm()
@@ -558,34 +621,48 @@ fi
 if [[ "$MO_UNINSTALL" == true ]]; then
 	info "Uninstalling dragon (master-oogway)..."
 
+	# For each symlinked user file: drop our symlink, restore the pre-install
+	# backup if one exists. The real file under $CONF_DIR is never deleted here
+	# (it may hold user edits) — $CONF_DIR removal is prompted separately below.
+	_uninstall_symlinked_file()
+	{
+		local home_path="$1"
+		local backup
+		backup=$(_find_backup "${home_path}.pre-master-oogway")
+
+		if _mo_is_managed_symlink "$home_path"; then
+			rm -f "$home_path"
+			success "Removed symlink ${home_path}"
+		fi
+
+		if [[ -n "$backup" ]]; then
+			# only restore if we actually removed a link (or nothing is there)
+			if [[ ! -e "$home_path" ]]; then
+				cp "$backup" "$home_path"
+				rm -f "$backup"
+				success "Restored ${home_path} from ${backup} (backup removed)"
+			fi
+		fi
+	}
+
 	# .zshrc
-	_uninstall_zshrc_backup=$(_find_backup "${ZSHRC}.pre-master-oogway")
-	if [[ -n "$_uninstall_zshrc_backup" ]]; then
-		cp "$_uninstall_zshrc_backup" "${ZSHRC}"
-		rm -f "$_uninstall_zshrc_backup"
-		success "Restored ${ZSHRC} from ${_uninstall_zshrc_backup} (backup removed)"
-	elif grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
-		_zshrc_uninstall_backup="${ZSHRC}.pre-uninstall.$(date +%Y%m%d_%H%M%S)"
-		cp "${ZSHRC}" "${_zshrc_uninstall_backup}"
-		rm -f "${ZSHRC}"
-		warn "Removed managed ${ZSHRC} — saved your copy to ${_zshrc_uninstall_backup}"
-	else
-		success "${ZSHRC} not managed by master-oogway — left untouched"
-	fi
+	_uninstall_symlinked_file "${ZSHRC}"
 	rm -f "${ZSHRC}.upstream-snapshot"
 
-	# .gitconfig
-	_uninstall_gitconfig_backup=$(_find_backup "${HOME}/.gitconfig.pre-master-oogway")
-	if [[ -n "$_uninstall_gitconfig_backup" ]]; then
-		cp "$_uninstall_gitconfig_backup" "${HOME}/.gitconfig"
-		rm -f "$_uninstall_gitconfig_backup"
-		success "Restored ~/.gitconfig from ${_uninstall_gitconfig_backup} (backup removed)"
-	elif [[ -f "${HOME}/.gitconfig" ]]; then
-		git config --file "${HOME}/.gitconfig" --unset-all include.path '~/.gitconfig.master-oogway' 2>/dev/null || true
-		success "Removed bundle [include] from ~/.gitconfig"
-	fi
-	rm -f "${HOME}/.gitconfig.master-oogway"
-	success "Removed ~/.gitconfig.master-oogway"
+	# .gitconfig — drop the symlink + restore backup; the bundle payload goes too.
+	_uninstall_symlinked_file "${GITCONFIG}"
+	rm -f "${GITCONFIG_BUNDLE}"
+	success "Removed ${GITCONFIG_BUNDLE}"
+
+	# .zshenv — drop symlink + restore backup, then remove the managed payload.
+	# Done BEFORE the CONF_DIR prompt so restoring the backup isn't undone by it.
+	_uninstall_symlinked_file "${HOME}/.zshenv"
+	rm -f "${HOME}/.zshenv.master-oogway"
+	success "Removed ~/.zshenv.master-oogway"
+
+	# .editorconfig — drop symlink + restore backup. The real file under
+	# $CONF_DIR is left for the CONF_DIR prompt below (never force-deleted here).
+	_uninstall_symlinked_file "${HOME}/.editorconfig"
 
 	# ~/.config/master-oogway — user conf dir (contains conf.zsh, state, drop-ins)
 	if [[ -d "${CONF_DIR}" ]]; then
@@ -614,25 +691,6 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 		success "${INSTALL_DIR} not found — nothing to remove"
 	fi
 
-	# .zshenv
-	rm -f "${HOME}/.zshenv.master-oogway"
-	success "Removed ~/.zshenv.master-oogway"
-	if [[ -f "${HOME}/.zshenv" ]]; then
-		sed -i '/zshenv\.master-oogway/d' "${HOME}/.zshenv"
-		if [[ -z "$(tr -d '[:space:]' < "${HOME}/.zshenv")" ]]; then
-			rm -f "${HOME}/.zshenv"
-			success "Removed empty ~/.zshenv"
-		else
-			success "Removed source line from ~/.zshenv"
-		fi
-	fi
-
-	# .editorconfig — not removed; may predate dragon or have been
-	# edited by the user. Left in place with clear guidance.
-	warn "${HOME}/.editorconfig was NOT removed."
-	warn "  master-oogway wrote tab-indent / LF-ending conventions there."
-	warn "  remove or edit: ${HOME}/.editorconfig"
-
 	success "dragon uninstall complete. Open a new terminal to apply changes."
 	exit 0
 fi
@@ -659,7 +717,7 @@ fi
 
 _check_oh_my_zsh
 
-# -- .zshrc: installed once; never overwritten unless --force -------------------
+# -- .zshrc: migrated once to $CONF_DIR/zshrc, symlinked, then never touched ----
 
 # Record the shipped template as the snapshot: the template as of this install.
 # The next install compares against it to decide whether the template moved.
@@ -668,28 +726,30 @@ _save_zshrc_snapshot()
 	copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC_SNAPSHOT}"
 }
 
+# First install: seed $CONF_DIR/zshrc (from the user's existing ~/.zshrc if any,
+# else the shipped template), back up the old ~/.zshrc, symlink it in.
 _install_zshrc()
 {
-	local backup_path
-	backup_path=$(_mo_backup "${ZSHRC}")
-	if [[ -n "$backup_path" ]]; then
-		info "Your previous ~/.zshrc was saved to ${backup_path}"
+	if [[ "${MO_FORCE}" == true ]] && [[ ! -L "${ZSHRC}" ]]; then
+		# --force with a real ~/.zshrc: overwrite the real file with the template
+		# rather than migrating the user's old content in.
+		copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC_REAL}"
 	fi
-	copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC}"
+	_mo_migrate_to_symlink "${ZSHRC}" "${ZSHRC_REAL}" "${INSTALL_DIR}/zshrc.master-oogway"
 	_save_zshrc_snapshot
 }
 
-# On update, ~/.zshrc is never auto-modified (it may hold user edits). We only
-# ~/.zshrc is never auto-modified (it may hold user edits). Three files matter:
+# On update, the real zshrc ($CONF_DIR/zshrc, reached via the ~/.zshrc symlink)
+# is never auto-modified — it may hold user edits. Three files matter:
 #   template = the zshrc shipped by this install
 #   snapshot = the template as of the LAST install (~/.config/.../zshrc.snapshot)
-#   ~/.zshrc = the user's current file
+#   real     = $CONF_DIR/zshrc, the user's current file
 # and two messages:
 #   template != snapshot  → WARN: the template changed in this update. Advance
 #       the snapshot to the new template so the next install is silent.
-#   template == snapshot AND snapshot != ~/.zshrc  → INFO: the user has local
-#       edits vs the shipped template — remind them `diff-zshrc` can show them.
-# Otherwise (template == snapshot == ~/.zshrc) → silent.
+#   template == snapshot AND snapshot != real  → INFO: the user has local edits
+#       vs the shipped template — remind them `diff-zshrc` can show them.
+# Otherwise (template == snapshot == real) → silent.
 _sync_zshrc_snapshot()
 {
 	local template="${INSTALL_DIR}/zshrc.master-oogway"
@@ -705,18 +765,17 @@ _sync_zshrc_snapshot()
 	fi
 
 	# template == snapshot: nothing new upstream. Only speak up if the user's
-	# own ~/.zshrc has drifted from it — a gentle reminder, not a warning.
-	if [[ -f "${ZSHRC}" ]] && ! cmp -s "${ZSHRC_SNAPSHOT}" "${ZSHRC}"; then
+	# own real zshrc has drifted from it — a gentle reminder, not a warning.
+	if [[ -f "${ZSHRC_REAL}" ]] && ! cmp -s "${ZSHRC_SNAPSHOT}" "${ZSHRC_REAL}"; then
 		info "Your ~/.zshrc differs from the installed template — 'master-oogway"
 		info "diff-zshrc' shows the diff any time."
 	fi
 }
 
-# Install when the file is absent, forced, or present but NOT master-oogway's
-# (e.g. oh-my-zsh's installer wrote its own template — it carries no managed
-# marker). A marked file may hold user edits, so it is 3-way merged instead.
-if [[ ! -f "${ZSHRC}" ]] || [[ "${MO_FORCE}" == true ]] \
-	|| ! grep -qF '# master-oogway:managed' "${ZSHRC}" 2>/dev/null; then
+# Migrate when ~/.zshrc isn't yet our managed symlink (fresh install, or an
+# oh-my-zsh/user file predating this layout), or when --force. An already-linked
+# file may hold user edits, so it's only drift-checked.
+if ! _mo_is_managed_symlink "${ZSHRC}" || [[ "${MO_FORCE}" == true ]]; then
 	_install_zshrc
 else
 	_sync_zshrc_snapshot
@@ -728,22 +787,22 @@ _install_zshenv()
 {
 	local template="${INSTALL_DIR}/zshenv.master-oogway"
 	local managed="${HOME}/.zshenv.master-oogway"
-	local zshenv="${HOME}/.zshenv"
 	local source_line="source ~/.zshenv.master-oogway"
 
 	copy_file "$template" "$managed"
 
-	if [[ ! -f "$zshenv" ]]; then
-		printf '%s\n' "$source_line" > "$zshenv"
-		success "Created ${zshenv} sourcing ${managed}"
-	elif grep -qFx "$source_line" "$zshenv"; then
-		success "already up-to-date: ${zshenv}"
-	elif [[ "${MO_FORCE}" == true ]]; then
-		printf '\n%s\n' "$source_line" >> "$zshenv"
-		success "Added source line to ${zshenv}"
+	# Migrate ~/.zshenv → $CONF_DIR/zshenv (seeding from the user's existing file
+	# if any, else an empty file), then ensure the source line is present in the
+	# real file. The line points at the managed payload, which keeps updating.
+	_mo_migrate_to_symlink "${HOME}/.zshenv" "${ZSHENV_REAL}" ""
+
+	if grep -qFx "$source_line" "${ZSHENV_REAL}"; then
+		success "already up-to-date: ${ZSHENV_REAL}"
 	else
-		warn "~/.zshenv is not sourcing ~/.zshenv.master-oogway — EDITOR/VISUAL won't be auto-set."
-		warn "Re-add with: echo 'source ~/.zshenv.master-oogway' >> ~/.zshenv"
+		# prepend a newline only if the file has content, to keep it tidy
+		[[ -s "${ZSHENV_REAL}" ]] && printf '\n' >> "${ZSHENV_REAL}"
+		printf '%s\n' "$source_line" >> "${ZSHENV_REAL}"
+		success "Added source line to ${ZSHENV_REAL}"
 	fi
 }
 
@@ -756,15 +815,15 @@ _install_zshenv
 _install_editorconfig()
 {
 	local template="${INSTALL_DIR}/editorconfig.master-oogway"
-	local editorconfig="${HOME}/.editorconfig"
 
-	if [[ ! -f "$editorconfig" ]] || [[ "${MO_FORCE}" == true ]]; then
-		copy_file "$template" "$editorconfig"
-	elif cmp -s "$template" "$editorconfig"; then
-		success "already up-to-date: ${editorconfig}"
-	else
+	if [[ "${MO_FORCE}" == true ]] && [[ ! -L "${HOME}/.editorconfig" ]]; then
+		copy_file "$template" "${EDITORCONFIG_REAL}"
+	fi
+	_mo_migrate_to_symlink "${HOME}/.editorconfig" "${EDITORCONFIG_REAL}" "$template"
+
+	if ! cmp -s "$template" "${EDITORCONFIG_REAL}"; then
 		warn "~/.editorconfig has drifted from the master-oogway template."
-		warn "Review with: diff ~/.editorconfig ~/.master-oogway/editorconfig.master-oogway"
+		warn "Review with: diff ${EDITORCONFIG_REAL} ${INSTALL_DIR}/editorconfig.master-oogway"
 	fi
 }
 
@@ -804,34 +863,32 @@ _install_gitconfig()
 		done
 	fi
 
-	# If ~/.gitconfig already includes the bundle, leave it alone.
-	if grep -qF 'gitconfig.master-oogway' "${GITCONFIG}" 2>/dev/null; then
-		success "${GITCONFIG} already includes gitconfig.master-oogway — not overwritten"
+	# Migrate ~/.gitconfig → $CONF_DIR/gitconfig (seeding from the user's existing
+	# file if any, else empty) and symlink it in. All writes below target the
+	# real file; the ~/.gitconfig symlink resolves to it transparently.
+	_mo_migrate_to_symlink "${GITCONFIG}" "${GITCONFIG_REAL}" ""
+
+	# Prepend the bundle [include] once, if absent. It stays in the user-owned
+	# real file; the included ~/.gitconfig.master-oogway keeps updating.
+	if grep -qF 'gitconfig.master-oogway' "${GITCONFIG_REAL}" 2>/dev/null; then
+		success "${GITCONFIG_REAL} already includes gitconfig.master-oogway"
+	elif [[ -s "${GITCONFIG_REAL}" ]]; then
+		local tmp
+		tmp=$(mktemp "${GITCONFIG_REAL}.XXXXXX")
+		chmod --reference="${GITCONFIG_REAL}" "${tmp}"
+		{
+			printf '[include]\n\tpath = ~/.gitconfig.master-oogway\n\n'
+			cat "${GITCONFIG_REAL}"
+		} > "${tmp}"
+		mv "${tmp}" "${GITCONFIG_REAL}"
+		success "Added bundle include to ${GITCONFIG_REAL}"
 	else
-		# Include is missing. Add it only if file doesn't exist yet (first install)
-		# or if --force was passed. Otherwise warn and skip.
-		if [[ ! -f "${GITCONFIG}" ]] || [[ "${MO_FORCE}" == true ]]; then
-			if [[ -f "${GITCONFIG}" ]]; then
-				local tmp
-				tmp=$(mktemp "${GITCONFIG}.XXXXXX")
-				chmod --reference="${GITCONFIG}" "${tmp}"
-				{
-					printf '[include]\n\tpath = ~/.gitconfig.master-oogway\n\n'
-					cat "${GITCONFIG}"
-				} > "${tmp}"
-				mv "${tmp}" "${GITCONFIG}"
-			else
-				printf '[include]\n\tpath = ~/.gitconfig.master-oogway\n' > "${GITCONFIG}"
-			fi
-			success "Added bundle include to ${GITCONFIG}"
-		else
-			warn "~/.gitconfig is not including ~/.gitconfig.master-oogway — git aliases and delta pager won't be active."
-			warn "Re-add by prepending: [include] path = ~/.gitconfig.master-oogway to ~/.gitconfig"
-		fi
+		printf '[include]\n\tpath = ~/.gitconfig.master-oogway\n' > "${GITCONFIG_REAL}"
+		success "Added bundle include to ${GITCONFIG_REAL}"
 	fi
 
-	git config --file "${GITCONFIG}" user.name  "$git_name"
-	git config --file "${GITCONFIG}" user.email "$git_email"
+	git config --file "${GITCONFIG_REAL}" user.name  "$git_name"
+	git config --file "${GITCONFIG_REAL}" user.email "$git_email"
 	success "Git identity: ${git_name} <${git_email}>"
 }
 

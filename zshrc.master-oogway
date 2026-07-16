@@ -1,8 +1,3 @@
-# master-oogway:managed
-# This marker tells install.sh this ~/.zshrc is master-oogway's. Removing it
-# makes the next install treat the file as foreign and replace it (a backup is
-# kept). Keep it to protect your local edits.
-
 # -- PATH additions -------------------------------------------------------------
 typeset -U path   # deduplicate $path; prevents growth on re-source
 # List base dirs explicitly: /etc/zsh/zshenv seeds /usr/bin:/bin only at login,
