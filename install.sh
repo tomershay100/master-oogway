@@ -730,9 +730,13 @@ _save_zshrc_snapshot()
 # else the shipped template), back up the old ~/.zshrc, symlink it in.
 _install_zshrc()
 {
-	if [[ "${MO_FORCE}" == true ]] && [[ ! -L "${ZSHRC}" ]]; then
-		# --force with a real ~/.zshrc: overwrite the real file with the template
-		# rather than migrating the user's old content in.
+	if [[ "${MO_FORCE}" == true ]]; then
+		# --force means "reset to the shipped template" — overwrite the real file
+		# whether or not ~/.zshrc is already our symlink (the link resolves to it).
+		# Back up the current real file first so --force never loses user edits.
+		local backup
+		backup=$(_mo_backup "${ZSHRC_REAL}")
+		[[ -n "$backup" ]] && info "Backed up ${ZSHRC_REAL} → ${backup}"
 		copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC_REAL}"
 	fi
 	_mo_migrate_to_symlink "${ZSHRC}" "${ZSHRC_REAL}" "${INSTALL_DIR}/zshrc.master-oogway"
@@ -816,7 +820,10 @@ _install_editorconfig()
 {
 	local template="${INSTALL_DIR}/editorconfig.master-oogway"
 
-	if [[ "${MO_FORCE}" == true ]] && [[ ! -L "${HOME}/.editorconfig" ]]; then
+	if [[ "${MO_FORCE}" == true ]]; then
+		local backup
+		backup=$(_mo_backup "${EDITORCONFIG_REAL}")
+		[[ -n "$backup" ]] && info "Backed up ${EDITORCONFIG_REAL} → ${backup}"
 		copy_file "$template" "${EDITORCONFIG_REAL}"
 	fi
 	_mo_migrate_to_symlink "${HOME}/.editorconfig" "${EDITORCONFIG_REAL}" "$template"
