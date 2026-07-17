@@ -8,6 +8,10 @@ set -Eeuo pipefail
 readonly REPO_URL="https://github.com/tomershay100/master-oogway.git"
 readonly INSTALL_DIR="${HOME}/.master-oogway"
 readonly CONF_DIR="${HOME}/.config/master-oogway"
+# First-ever install: $CONF_DIR doesn't exist yet. Captured before any config
+# write creates it, so the welcome banner shows only on the genuine first run.
+if [[ -d "${CONF_DIR}" ]]; then MO_FIRST_INSTALL=false; else MO_FIRST_INSTALL=true; fi
+readonly MO_FIRST_INSTALL
 readonly ZSHRC="${HOME}/.zshrc"
 readonly GITCONFIG="${HOME}/.gitconfig"
 readonly GITCONFIG_BUNDLE="${HOME}/.gitconfig.master-oogway"
@@ -231,6 +235,25 @@ confirm()
 	local reply
 	read -r reply < /dev/tty
 	[[ "$reply" =~ ^[Yy]([Ee][Ss])?$ ]]
+}
+
+# Welcome banner — first install only. Single-quoted heredoc so the $$ art is
+# literal (no expansion). cat can be aliased; use command cat.
+_mo_banner()
+{
+	command cat <<'MO_BANNER'
+$$\      $$\                       $$\                                $$$$$$\
+$$$\    $$$ |                      $$ |                              $$  __$$\
+$$$$\  $$$$ | $$$$$$\   $$$$$$$\ $$$$$$\    $$$$$$\   $$$$$$\        $$ /  $$ | $$$$$$\   $$$$$$\  $$\  $$\  $$\  $$$$$$\  $$\   $$\
+$$\$$\$$ $$ | \____$$\ $$  _____|\_$$  _|  $$  __$$\ $$  __$$\       $$ |  $$ |$$  __$$\ $$  __$$\ $$ | $$ | $$ | \____$$\ $$ |  $$ |
+$$ \$$$  $$ | $$$$$$$ |\$$$$$$\    $$ |    $$$$$$$$ |$$ |  \__|      $$ |  $$ |$$ /  $$ |$$ /  $$ |$$ | $$ | $$ | $$$$$$$ |$$ |  $$ |
+$$ |\$  /$$ |$$  __$$ | \____$$\   $$ |$$\ $$   ____|$$ |            $$ |  $$ |$$ |  $$ |$$ |  $$ |$$ | $$ | $$ |$$  __$$ |$$ |  $$ |
+$$ | \_/ $$ |\$$$$$$$ |$$$$$$$  |  \$$$$  |\$$$$$$$\ $$ |             $$$$$$  |\$$$$$$  |\$$$$$$$ |\$$$$$\$$$$  |\$$$$$$$ |\$$$$$$$ |
+\__|     \__| \_______|\_______/    \____/  \_______|\__|             \______/  \______/  \____$$ | \_____\____/  \_______| \____$$ |
+                                                                                         $$\   $$ |                        $$\   $$ |
+                                                                                         \$$$$$$  |                        \$$$$$$  |
+                                                                                          \______/                          \______/
+MO_BANNER
 }
 
 _TODO_ITEMS=()
@@ -715,6 +738,8 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 fi
 
 # -- Pre-flight -----------------------------------------------------------------
+
+[[ "${MO_FIRST_INSTALL}" == true ]] && _mo_banner
 
 [[ "$(uname)" == "Linux" ]] || die "dragon requires Linux (Ubuntu 24.04). macOS/BSD are not supported."
 
