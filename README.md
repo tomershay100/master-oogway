@@ -22,6 +22,8 @@ The installer sets up `~/.zshrc`, `~/.gitconfig`, `~/.editorconfig`, `~/.zshenv`
 
 Your four config files become **real files under `~/.config/master-oogway/`**, symlinked back into `$HOME`. On first install any existing file is backed up to `~/.<name>.pre-master-oogway.<timestamp>`, then replaced with the symlink. After that master-oogway never rewrites them — edit freely.
 
+`~/.zshenv`, `~/.gitconfig`, and `~/.editorconfig` keep your existing content. **`~/.zshrc` is master-oogway's** — it ships the full plugin list and environment, so first install seeds it from the template. Your old `~/.zshrc` is in the backup; port any custom settings into `~/.config/master-oogway/zshrc` and run `soursh`.
+
 | Symlink in `$HOME` | Real file |
 |---|---|
 | `~/.zshrc` | `~/.config/master-oogway/zshrc` |

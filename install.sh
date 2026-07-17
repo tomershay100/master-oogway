@@ -745,20 +745,31 @@ _save_zshrc_snapshot()
 	copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC_SNAPSHOT}"
 }
 
-# First install: seed $CONF_DIR/zshrc (from the user's existing ~/.zshrc if any,
-# else the shipped template), back up the old ~/.zshrc, symlink it in.
+# First install: seed $CONF_DIR/zshrc from the shipped template, back up any
+# existing ~/.zshrc (oh-my-zsh stock or user's own), symlink it in. master-oogway
+# owns the zshrc — a replaced real file is flagged via todo_item so the user can
+# port edits back from the backup.
 _install_zshrc()
 {
-	if [[ "${MO_FORCE}" == true ]]; then
-		# --force means "reset to the shipped template" — overwrite the real file
-		# whether or not ~/.zshrc is already our symlink (the link resolves to it).
-		# Back up the current real file first so --force never loses user edits.
+	# master-oogway owns ~/.zshrc — it ships the full plugin list, exports and
+	# environment, not just a theme. On first install (or --force) we always seed
+	# our template; any pre-existing ~/.zshrc (oh-my-zsh stock or the user's own)
+	# is backed up by _mo_migrate_to_symlink and flagged below so the user can
+	# port edits back. Passing an empty seed skips the verbatim-migrate branch;
+	# we write the template ourselves.
+	if [[ ! -e "${ZSHRC_REAL}" ]] || [[ "${MO_FORCE}" == true ]]; then
 		local backup
 		backup=$(_mo_backup "${ZSHRC_REAL}")
 		[[ -n "$backup" ]] && info "Backed up ${ZSHRC_REAL} → ${backup}"
 		copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC_REAL}"
 	fi
-	_mo_migrate_to_symlink "${ZSHRC}" "${ZSHRC_REAL}" "${INSTALL_DIR}/zshrc.master-oogway"
+	# Warn the user before their real ~/.zshrc is replaced with our symlink.
+	if [[ -f "${ZSHRC}" ]] && [[ ! -L "${ZSHRC}" ]]; then
+		todo_item "Your previous ~/.zshrc was replaced by master-oogway. The original \
+is backed up (~/.zshrc.pre-master-oogway.*) — port any custom settings into \
+~/.config/master-oogway/zshrc, then run 'soursh'."
+	fi
+	_mo_migrate_to_symlink "${ZSHRC}" "${ZSHRC_REAL}" ""
 	_save_zshrc_snapshot
 }
 

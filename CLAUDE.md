@@ -41,7 +41,7 @@ Run `./install.sh` from this directory once for dev setup; afterwards edits to a
 | Any `omz-custom/` file | `soursh` — live via symlink |
 | `zshenv.master-oogway` | re-run `./install.sh`, then `soursh` |
 | `gitconfig.master-oogway` / `editorconfig.master-oogway` | re-run `./install.sh` |
-| `zshrc.master-oogway` | migrated **once** to `~/.config/master-oogway/zshrc`; edit that file (or `~/.zshrc`, which symlinks to it) then `soursh`. To re-seed from the template: `rm ~/.config/master-oogway/zshrc && ./install.sh` |
+| `zshrc.master-oogway` | seeded **once** into `~/.config/master-oogway/zshrc` from the template (any pre-existing `~/.zshrc` is backed up, not preserved as content — master-oogway owns the zshrc); edit that file (or `~/.zshrc`, which symlinks to it) then `soursh`. To re-seed from the template: `rm ~/.config/master-oogway/zshrc && ./install.sh` |
 | `install.sh` itself | just re-run — idempotent |
 
 The four user config files (`~/.zshrc`, `~/.zshenv`, `~/.gitconfig`, `~/.editorconfig`) are **symlinks** into `~/.config/master-oogway/` — that symlink is master-oogway's managed marker (detection uses `_mo_is_managed_symlink`, not the old `master-oogway:managed` comment). After first install master-oogway never rewrites the real files. Users back up `~/.config/master-oogway/` in their own git repo.
