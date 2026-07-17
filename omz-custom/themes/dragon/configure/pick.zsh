@@ -288,6 +288,6 @@ _dragon_pick_preset() {
 
 	print ""
 	print -P "  %F{green}✓ Switched to %B${chosen}%b%F{green} preset — prompt updated immediately.%f"
-	print -P "  %F{245}Fine-tune with: %Bdragon-configure%b%f"
+	print -P "  %F{245}Fine-tune with: %Bdragon-configure --edit%b%f"
 	print ""
 }
