@@ -11,6 +11,10 @@ reset_theme_variables() {
 	for var in "${(@k)_DRAGON_DEFAULTS}"; do
 		unset "DRAGON__${var}"
 	done
+	# Let conf.zsh re-apply on the next source (soursh). The SSH-forwarding guard
+	# in conf.zsh keys off this var to skip re-applying on remotes; safe to clear
+	# here because we're deliberately resetting local state.
+	unset DRAGON__FORWARDED
 }
 
 alias rezsh="reset_theme_variables && soursh"

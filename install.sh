@@ -664,6 +664,25 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 	# $CONF_DIR is left for the CONF_DIR prompt below (never force-deleted here).
 	_uninstall_symlinked_file "${HOME}/.editorconfig"
 
+	# lan-ssh — reverse 'master-oogway lan-ssh setup': crontab line, ssh_config
+	# SendEnv stanza, sshd AcceptEnv drop-in, generated alias file.
+	if crontab -l 2>/dev/null | grep -qF "# master-oogway:lan-scan"; then
+		crontab -l 2>/dev/null | grep -vF "# master-oogway:lan-scan" | crontab -
+		success "Removed lan-scan crontab line"
+	fi
+	if grep -qF "# BEGIN master-oogway:sendenv" "${HOME}/.ssh/config" 2>/dev/null; then
+		sed -i '/# BEGIN master-oogway:sendenv/,/# END master-oogway:sendenv/d' "${HOME}/.ssh/config"
+		success "Removed SendEnv stanza from ~/.ssh/config"
+	fi
+	if [[ -f /etc/ssh/sshd_config.d/99-master-oogway-acceptenv.conf ]]; then
+		if confirm "Remove sshd AcceptEnv drop-in and reload sshd? (sudo)"; then
+			sudo rm -f /etc/ssh/sshd_config.d/99-master-oogway-acceptenv.conf
+			sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
+			success "Removed sshd AcceptEnv drop-in"
+		fi
+	fi
+	rm -f "${CONF_DIR}/custom-zsh/lan-hosts.zsh"
+
 	# ~/.config/master-oogway — user conf dir (contains conf.zsh, state, drop-ins)
 	if [[ -d "${CONF_DIR}" ]]; then
 		if confirm "Remove ${CONF_DIR} (contains your dragon theme config)?"; then
