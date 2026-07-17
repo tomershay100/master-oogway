@@ -101,6 +101,11 @@ _dragon_pick_draw_preview() {
 	else
 		_dragon_apply_preset "$name"
 	fi
+	# Font answer is a terminal capability, not preset style — it must win over
+	# the preset's hardcoded USE_NERD_FONT so the preview honours "I can't see
+	# icons" instead of rendering the preset's nerd glyphs. Mirrors the same
+	# override in _dragon_apply_and_save.
+	_DRAGON_CURRENT[USE_NERD_FONT]="${_pick_saved[USE_NERD_FONT]}"
 	case "$ctx" in
 		ssh)  _dragon_render_preview --ssh ;;
 		fail) _dragon_render_preview --fail ;;
