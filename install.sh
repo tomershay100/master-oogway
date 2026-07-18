@@ -161,6 +161,7 @@ _find_backup() {
 		return
 	fi
 	[[ -f "$base" ]] && echo "$base"
+	return 0
 }
 
 # True when $1 is already a symlink pointing into $CONF_DIR — the marker that
