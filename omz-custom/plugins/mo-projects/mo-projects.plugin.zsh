@@ -21,8 +21,6 @@ _mo_projects_register_aliases() {
 	local name
 	for name in "$proj_dir"/*(#qN/); do
 		name="${name:t}"
-		# Skip if already taken by a builtin, command, function, or alias.
-		(( $+builtins[$name] || $+commands[$name] || $+functions[$name] || $+aliases[$name] )) && continue
 		[[ "$name" != *=* ]] || continue
 		alias -- "$name"="cd ${(q)proj_dir}/${(q)name}"
 	done
