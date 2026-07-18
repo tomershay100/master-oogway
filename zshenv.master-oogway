@@ -26,3 +26,7 @@ if [[ -z "${EDITOR:-}" ]]; then
 fi
 : "${VISUAL:=${EDITOR}}"
 export VISUAL
+
+# Ubuntu's /etc/zsh/zshrc runs its own compinit before oh-my-zsh gets a
+# chance to; skip it so oh-my-zsh's compinit is the only one that runs.
+skip_global_compinit=1
