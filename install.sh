@@ -691,7 +691,7 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 	# lan-ssh — reverse 'master-oogway lan-ssh setup': crontab line, ssh_config
 	# SendEnv stanza, sshd AcceptEnv drop-in, generated alias file.
 	if crontab -l 2>/dev/null | grep -qF "# master-oogway:lan-scan"; then
-		crontab -l 2>/dev/null | grep -vF "# master-oogway:lan-scan" | crontab -
+		crontab -l 2>/dev/null | { grep -vF "# master-oogway:lan-scan" || true; } | crontab -
 		success "Removed lan-scan crontab line"
 	fi
 	if grep -qF "# BEGIN master-oogway:sendenv" "${HOME}/.ssh/config" 2>/dev/null; then
