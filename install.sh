@@ -603,7 +603,7 @@ _zcompile_plugins()
 # -- Mode: update (running from ~/.master-oogway/install.sh) ------------------
 
 _MO_UPDATE_MODE=false
-if _running_from_install_dir; then
+if _running_from_install_dir && [[ "$MO_UNINSTALL" != true ]]; then
 	_MO_UPDATE_MODE=true
 	if [[ "${MO_SKIP_PULL:-}" == "1" ]]; then
 		# Bootstrap already pulled before re-exec; just heal submodules.
@@ -659,12 +659,17 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 			success "Removed symlink ${home_path}"
 		fi
 
-		if [[ -n "$backup" ]]; then
-			# only restore if we actually removed a link (or nothing is there)
+		if [[ -n "$backup" && -f "$backup" ]]; then
 			if [[ ! -e "$home_path" ]]; then
+				# our symlink is gone and nothing took its place — restore the original
 				cp "$backup" "$home_path"
 				rm -f "$backup"
 				success "Restored ${home_path} from ${backup} (backup removed)"
+			else
+				# user put their own file where our symlink was — keep it, but don't
+				# leave the pre-install backup orphaned on disk
+				rm -f "$backup"
+				warn "${home_path} not managed by master-oogway — left as-is, removed stale backup ${backup}"
 			fi
 		fi
 	}
@@ -675,14 +680,18 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 
 	# .gitconfig — drop the symlink + restore backup; the bundle payload goes too.
 	_uninstall_symlinked_file "${GITCONFIG}"
-	rm -f "${GITCONFIG_BUNDLE}"
-	success "Removed ${GITCONFIG_BUNDLE}"
+	if [[ -e "${GITCONFIG_BUNDLE}" ]]; then
+		rm -f "${GITCONFIG_BUNDLE}"
+		success "Removed ${GITCONFIG_BUNDLE}"
+	fi
 
 	# .zshenv — drop symlink + restore backup, then remove the managed payload.
 	# Done BEFORE the CONF_DIR prompt so restoring the backup isn't undone by it.
 	_uninstall_symlinked_file "${HOME}/.zshenv"
-	rm -f "${HOME}/.zshenv.master-oogway"
-	success "Removed ~/.zshenv.master-oogway"
+	if [[ -e "${HOME}/.zshenv.master-oogway" ]]; then
+		rm -f "${HOME}/.zshenv.master-oogway"
+		success "Removed ~/.zshenv.master-oogway"
+	fi
 
 	# .editorconfig — drop symlink + restore backup. The real file under
 	# $CONF_DIR is left for the CONF_DIR prompt below (never force-deleted here).
