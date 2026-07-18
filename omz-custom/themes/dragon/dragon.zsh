@@ -21,6 +21,17 @@ typeset -g _dragon_left_prev_bg=""  # reset to TERMINAL_BACKGROUND_COLOR at the 
 typeset -g _dragon_right_prev_bg="" # reset to TERMINAL_BACKGROUND_COLOR at the start of each rprompt render
 typeset -g _DRAGON_TERMINAL_BG_CODE=""  # terminal bg resolved to its xterm code (set per render in prompt.zsh)
 
+# Decode an SSH-forwarded theme, if any. conf.zsh on the sending machine bakes
+# all settings into base64 DRAGON__PAYLOAD (see writer.zsh); 'lan-ssh setup'
+# forwards that single var. Sourcing it here — before the defaults loop — sets
+# the forwarded DRAGON__* so set_if_unset below treats them as already-set and
+# leaves them. USE_NERD_FONT rides along, so a forwarded font preference wins
+# over the SSH default of false. base64 is required (see writer.zsh); if it is
+# missing we skip silently and fall back to this machine's own theme.
+if [[ -n "${DRAGON__PAYLOAD:-}" ]] && command -v base64 &>/dev/null; then
+	eval "$(printf '%s' "$DRAGON__PAYLOAD" | base64 -d 2>/dev/null)"
+fi
+
 # Load defaults from schema and apply them via set_if_unset.
 # set_if_unset only sets vars not already exported — SSH-forwarded vars win.
 # USE_NERD_FONT is handled separately: its default depends on SSH context.
@@ -40,13 +51,6 @@ for _dragon_k _dragon_v in "${(@kv)_DRAGON_DEFAULTS}"; do
 	set_if_unset "DRAGON__${_dragon_k}" "$_dragon_v"
 done
 unset _dragon_k _dragon_v
-
-# Mark this shell's DRAGON__* as forwardable so `SendEnv DRAGON__*` carries the
-# guard var even when no conf.zsh exists (defaults-only client). conf.zsh sets
-# it earlier when present, making this a no-op; this is the fallback for clients
-# that never ran dragon-configure. On a receiving SSH session the value arrives
-# pre-set, so set_if_unset never overwrites forwarded state.
-set_if_unset DRAGON__FORWARDED 1
 
 TERMINAL_BACKGROUND_COLOR="$DRAGON__TERMINAL_BACKGROUND"
 

@@ -12,7 +12,9 @@ _mo_version() {
 
 _mo_lan_scan_script() { echo "${_MO_INSTALL_DIR}/omz-custom/plugins/mo-cli/lan_scan.sh"; }
 
-# Client side: SendEnv DRAGON__* + HashKnownHosts no in ~/.ssh/config.
+# Client side: SendEnv DRAGON__PAYLOAD + HashKnownHosts no in ~/.ssh/config.
+# One packed var, not a DRAGON__* wildcard — the wildcard shipped ~130 vars and
+# hit sshd's per-session AcceptEnv cap, silently dropping the tail.
 _mo_lan_ssh_client() {
 	local ssh_config="${HOME}/.ssh/config"
 	local begin="# BEGIN master-oogway:sendenv"
@@ -22,13 +24,13 @@ _mo_lan_ssh_client() {
 		return 0
 	fi
 	mkdir -p "${HOME}/.ssh"; chmod 700 "${HOME}/.ssh"
-	printf '\n%s\nHost *\n    SendEnv DRAGON__*\n    HashKnownHosts no\n%s\n' \
+	printf '\n%s\nHost *\n    SendEnv DRAGON__PAYLOAD\n    HashKnownHosts no\n%s\n' \
 		"$begin" "$end" >> "$ssh_config"
 	chmod 600 "$ssh_config"
-	echo "master-oogway: added SendEnv DRAGON__* + HashKnownHosts no to $ssh_config"
+	echo "master-oogway: added SendEnv DRAGON__PAYLOAD + HashKnownHosts no to $ssh_config"
 }
 
-# Server side: AcceptEnv DRAGON__* drop-in, validated with sshd -t (sudo).
+# Server side: AcceptEnv DRAGON__PAYLOAD drop-in, validated with sshd -t (sudo).
 _mo_lan_ssh_server() {
 	local dropin="/etc/ssh/sshd_config.d/99-master-oogway-acceptenv.conf"
 	if [[ ! -f /etc/ssh/sshd_config ]]; then
@@ -39,9 +41,9 @@ _mo_lan_ssh_server() {
 		echo "master-oogway: AcceptEnv already in $dropin"
 		return 0
 	fi
-	echo "master-oogway: adding $dropin so this host accepts forwarded DRAGON__* (sudo)"
+	echo "master-oogway: adding $dropin so this host accepts forwarded DRAGON__PAYLOAD (sudo)"
 	local tmp; tmp=$(mktemp)
-	printf '# master-oogway: accept forwarded dragon theme vars over SSH\nAcceptEnv DRAGON__*\n' > "$tmp"
+	printf '# master-oogway: accept forwarded dragon theme payload over SSH\nAcceptEnv DRAGON__PAYLOAD\n' > "$tmp"
 	sudo mkdir -p /etc/ssh/sshd_config.d
 	sudo cp "$tmp" "$dropin"; command rm -f "$tmp"
 	if ! sudo sshd -t 2>/dev/null; then

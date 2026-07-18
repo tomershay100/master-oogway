@@ -20,8 +20,8 @@ The `master-oogway` meta CLI — manage the framework from the command line.
 
 `master-oogway lan-ssh setup` wires up dragon-theme forwarding across your LAN:
 
-- Adds `SendEnv DRAGON__*` and `HashKnownHosts no` to `~/.ssh/config` (so your prompt travels when you SSH out, and hostnames are saved unhashed).
-- Adds `AcceptEnv DRAGON__*` as a validated `sshd_config.d` drop-in (sudo) so this host accepts forwarded vars when others SSH *in*. Run setup on each machine you want covered.
+- Adds `SendEnv DRAGON__PAYLOAD` and `HashKnownHosts no` to `~/.ssh/config` (so your prompt travels when you SSH out, and hostnames are saved unhashed). Your whole theme is packed into one base64 var, so it stays under sshd's per-session env limit.
+- Adds `AcceptEnv DRAGON__PAYLOAD` as a validated `sshd_config.d` drop-in (sudo) so this host accepts the forwarded theme when others SSH *in*. Run setup on each machine you want covered.
 - Installs a daily cron running `lan_scan.sh`, which reverse-resolves every host on your subnet and writes `~/.config/master-oogway/custom-zsh/lan-hosts.zsh` — one `alias host='ssh $SSH_FLAGS $USER@host'` per host, auto-sourced on the next shell.
 
 Tune the scan by editing the config vars at the top of `lan_scan.sh` (`MO_LAN_SUBNET`, `MO_LAN_SSH_USER`, `MO_LAN_SSH_FLAGS`). `$USER` stays literal in the alias; the flags are baked in when written. Needs `nmap` (falls back to a slower `dig` loop on `/24`).

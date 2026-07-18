@@ -6,6 +6,13 @@
 _dragon_write_conf() {
 	local preset="${1:-}"
 	local tmp_file="${_DRAGON_CONF_FILE}.wizard.tmp"
+	# base64 is required: the SSH-forwarding payload (baked below) has no
+	# fallback encoder. Fail loudly here — this runs from dragon-configure /
+	# install, an interactive setup path where an error is actionable.
+	if ! command -v base64 &>/dev/null; then
+		print -P "%F{red}[dragon]%f base64 not found — install coreutils, then re-run dragon-configure." >&2
+		return 1
+	fi
 	# Guarantee cleanup of the tmp file on any exit path — including a failed
 	# mv (read-only filesystem, ENOSPC, etc.). Cleared to `trap - EXIT` on
 	# success so it doesn't fire after the mv completes.
@@ -21,13 +28,11 @@ _dragon_write_conf() {
 # Uncommented lines (export ...) override theme defaults.
 # Commented-out lines (# export ...) show all available options at their defaults.
 #
-# SSH forwarding: 'master-oogway lan-ssh setup' adds SendEnv DRAGON__* to
-# ~/.ssh/config so your theme travels to remote machines running dragon. On the
-# sending machine, conf.zsh exports DRAGON__FORWARDED=1 so it rides the wildcard
-# SendEnv. On the receiving machine, conf.zsh sees DRAGON__FORWARDED already set
-# and returns immediately — forwarded values are never overwritten.
-[[ "${DRAGON__FORWARDED:-}" == "1" ]] && return
-export DRAGON__FORWARDED=1
+# SSH forwarding: 'master-oogway lan-ssh setup' adds SendEnv DRAGON__PAYLOAD to
+# ~/.ssh/config so your theme travels to remote machines running dragon. This
+# file bakes all settings into the single DRAGON__PAYLOAD var at the bottom;
+# the remote's dragon.zsh decodes it. Forwarding one packed var (not ~130
+# separate ones) stays under sshd's per-session AcceptEnv limit.
 #
 # Variable naming convention:
 #   DRAGON__ENABLE_{FEATURE}           — bool: true / false
@@ -83,6 +88,21 @@ HEADER
 			done
 			printf '\n'
 		done
+
+		# Bake ALL resolved values into one base64 var so SSH forwarding ships a
+		# single DRAGON__PAYLOAD (see header). Iterate every schema key, not the
+		# grouped emit above — some vars (e.g. USE_NERD_FONT) belong to no editor
+		# group but must still forward. `:=` keeps a payload already forwarded
+		# from an upstream hop, so it survives A→B→C chains.
+		local -a payload_lines
+		local pk pv
+		for pk in "${(@k)_DRAGON_CURRENT}"; do
+			pv="${_DRAGON_CURRENT[$pk]//$q/$q\\$q$q}"
+			payload_lines+=( "export DRAGON__${pk}='${pv}'" )
+		done
+		local payload
+		payload="$(printf '%s\n' "${payload_lines[@]}" | base64 -w0)"
+		printf '\n: ${DRAGON__PAYLOAD:=%s}\nexport DRAGON__PAYLOAD\n' "$q$payload$q"
 	} > "$tmp_file"
 
 	if ! zsh -n "$tmp_file" 2>/dev/null; then

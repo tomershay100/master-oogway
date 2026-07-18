@@ -977,8 +977,28 @@ _regen_theme_conf()
 	local themes_dir="${INSTALL_DIR}/omz-custom/themes/dragon"
 	local conf_file="${CONF_DIR}/conf.zsh"
 
+	# Seed a default conf.zsh when none exists. conf.zsh must always exist so the
+	# baked DRAGON__PAYLOAD (SSH forwarding) is present even for default-preset
+	# users who never ran dragon-configure. Uses the same writer as the regen
+	# path below, with no preset (schema defaults).
 	if [[ ! -f "${conf_file}" ]]; then
-		todo_item "Configure your prompt: open a new terminal and run 'dragon-configure'"
+		if zsh -c '
+			typeset -g _DRAGON_CONF_FILE="$2"
+			typeset -g _DRAGON_STATE_DIR="${2:h}"
+			typeset -g _DRAGON_THEMES_DIR="$1"
+			source "$1/schema.zsh"
+			source "$1/configure/state.zsh"
+			source "$1/configure/writer.zsh"
+			_dragon_init_defaults; _dragon_init_types
+			_dragon_init_hints;    _dragon_init_groups
+			_dragon_load_current_conf
+			_dragon_write_conf ""
+		' -- "${themes_dir}" "${conf_file}" 2>/dev/null; then
+			success "dragon theme config seeded (default preset)"
+		else
+			warn "dragon theme config could not be seeded"
+		fi
+		todo_item "Customize your prompt: open a new terminal and run 'dragon-configure'"
 		return
 	fi
 
