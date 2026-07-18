@@ -128,21 +128,22 @@ master-oogway() {
 			;;
 		diff-zshrc)
 			local tool="${2:-}"
-			local template="${_MO_INSTALL_DIR}/zshrc.master-oogway"
-			local zshrc="${HOME}/.zshrc"
-			[[ -f "$template" ]] || { echo "master-oogway: template not found at $template" >&2; return 1; }
+			local conf_dir="${MO_CONFIG_DIR:-$HOME/.config/master-oogway}"
+			local snapshot="${conf_dir}/zshrc.snapshot"
+			local zshrc="${conf_dir}/zshrc"
+			[[ -f "$snapshot" ]] || { echo "master-oogway: snapshot not found at $snapshot" >&2; return 1; }
 			[[ -f "$zshrc" ]]    || { echo "master-oogway: $zshrc not found" >&2; return 1; }
-			if diff -q "$template" "$zshrc" &>/dev/null; then
-				echo "$zshrc matches the template — no diff."
+			if diff -q "$snapshot" "$zshrc" &>/dev/null; then
+				echo "$zshrc matches the installed template — no diff."
 				return 0
 			fi
 			if [[ -n "$tool" ]]; then
 				# ${=tool} splits on whitespace so 'code --diff' works.
-				${=tool} "$template" "$zshrc"
+				${=tool} "$snapshot" "$zshrc"
 			elif command -v git &>/dev/null && [[ -n "$(git config --get diff.tool 2>/dev/null)" ]]; then
-				git difftool --no-index "$template" "$zshrc"
+				git difftool --no-index "$snapshot" "$zshrc"
 			else
-				diff -u "$template" "$zshrc"
+				diff -u "$snapshot" "$zshrc"
 			fi
 			;;
 		help|-h|--help)
@@ -155,9 +156,9 @@ Commands:
   version              Print the installed dragon version (date + commit)
   configure [args]     Open dragon-configure (forwards args, e.g. --pick, --preset short)
   edit                 Open ~/.zshrc in \$EDITOR
-  diff-zshrc [tool]    Show diff between your ~/.zshrc and the current template.
-					   [tool] overrides; otherwise uses git's diff.tool if set,
-					   else \`diff -u\`.
+  diff-zshrc [tool]    Show diff between your ~/.zshrc and the template snapshot
+					   from your last install/update. [tool] overrides;
+					   otherwise uses git's diff.tool if set, else \`diff -u\`.
   path                 Print the master-oogway install dir
   lan-ssh <cmd>        LAN SSH forwarding + host aliases:
                          setup    ~/.ssh/config SendEnv + sshd AcceptEnv + daily

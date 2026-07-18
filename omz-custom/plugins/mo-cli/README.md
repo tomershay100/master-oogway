@@ -9,7 +9,7 @@ The `master-oogway` meta CLI — manage the framework from the command line.
 | `master-oogway version` | print the installed version (date + commit) |
 | `master-oogway configure [args]` | open `dragon-configure` (forwards args, e.g. `--preset short`) |
 | `master-oogway edit` | open `~/.zshrc` in `$EDITOR` |
-| `master-oogway diff-zshrc [tool]` | diff the current template against `~/.zshrc` (additions in your file show as `+`; unadopted template changes show as `-`); uses `[tool]`, else git's `diff.tool`, else `diff -u` |
+| `master-oogway diff-zshrc [tool]` | diff your `~/.zshrc` against the template snapshot from your last install/update (your edits show as `+`); uses `[tool]`, else git's `diff.tool`, else `diff -u` |
 | `master-oogway path` | print the master-oogway install directory |
 | `master-oogway lan-ssh setup` | configure DRAGON var forwarding + LAN host aliases (see below) |
 | `master-oogway lan-ssh refresh` | re-scan the LAN now and rewrite host aliases |

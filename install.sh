@@ -826,8 +826,7 @@ _sync_zshrc_snapshot()
 	# template == snapshot: nothing new upstream. Only speak up if the user's
 	# own real zshrc has drifted from it — a gentle reminder, not a warning.
 	if [[ -f "${ZSHRC_REAL}" ]] && ! cmp -s "${ZSHRC_SNAPSHOT}" "${ZSHRC_REAL}"; then
-		info "Your ~/.zshrc differs from the installed template — 'master-oogway"
-		info "diff-zshrc' shows the diff any time."
+		info "Your ~/.zshrc differs from the installed template — 'master-oogway diff-zshrc' shows the diff any time."
 	fi
 }
 
