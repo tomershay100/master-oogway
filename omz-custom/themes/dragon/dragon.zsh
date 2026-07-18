@@ -40,6 +40,14 @@ for _dragon_k _dragon_v in "${(@kv)_DRAGON_DEFAULTS}"; do
 	set_if_unset "DRAGON__${_dragon_k}" "$_dragon_v"
 done
 unset _dragon_k _dragon_v
+
+# Mark this shell's DRAGON__* as forwardable so `SendEnv DRAGON__*` carries the
+# guard var even when no conf.zsh exists (defaults-only client). conf.zsh sets
+# it earlier when present, making this a no-op; this is the fallback for clients
+# that never ran dragon-configure. On a receiving SSH session the value arrives
+# pre-set, so set_if_unset never overwrites forwarded state.
+set_if_unset DRAGON__FORWARDED 1
+
 TERMINAL_BACKGROUND_COLOR="$DRAGON__TERMINAL_BACKGROUND"
 
 # Validate integer-typed vars set by conf.zsh; reset to default + warn on bad value.
