@@ -50,8 +50,36 @@ _dragon_write_conf() {
 
 HEADER
 
-		# Write each group
-		local group title pad_len dashes vars var val default hint vtype q=\' safe_val
+		# Single-quoted output: immune to shell expansion of $, `, and \. The only
+		# char needing escape inside '...' is ' itself, via the standard '\'' idiom
+		# (close-quote, escaped-quote, reopen-quote). q declared here (not in the
+		# emit fn) to dodge a zsh local-in-loop re-declaration bug.
+		local group title pad_len dashes var q=\'
+		_emit_var() {
+			local var="$1"
+			local val="${_DRAGON_CURRENT[$var]}"
+			local default="${_DRAGON_DEFAULTS[$var]:-}"
+			local hint="${_DRAGON_HINT[$var]:-}"
+			local vtype="${_DRAGON_TYPE[$var]:-string}"
+			local safe_val="${val//$q/$q\\$q$q}"
+			if [[ -n "$hint" ]]; then
+				printf '# %s\n' "$hint"
+			elif [[ "$vtype" == enum:* ]]; then
+				printf '# Values: %s\n' "${vtype#enum:}"
+			fi
+			if [[ "$val" == "$default" ]]; then
+				printf "# export DRAGON__%s='%s'  # default\n" "$var" "$safe_val"
+			else
+				printf "export DRAGON__%s='%s'\n" "$var" "$safe_val"
+			fi
+		}
+
+		# Persistence is driven by the schema (every DRAGON__* var), never by group
+		# membership — groups only decide ordering and headers here. A var missing
+		# from every group (e.g. USE_NERD_FONT, a terminal capability hidden from
+		# --edit) would otherwise land only in the SSH-only base64 payload below,
+		# which local shells never decode, silently losing its configured value.
+		typeset -A _grouped=()
 		for group in "${_DRAGON_GROUPS[@]}"; do
 			title="${_DRAGON_GROUP_TITLE[$group]}"
 			pad_len=$(( 76 - 4 - ${#title} - 1 ))
@@ -59,35 +87,20 @@ HEADER
 			dashes="${(r:$pad_len::─:):-}"
 			printf '# ── %s %s\n' "$title" "$dashes"
 			printf '# %s\n' "${_DRAGON_GROUP_DESC[$group]}"
-
-			vars=( ${(s: :)_DRAGON_GROUP_VARS[$group]} )
-			for var in "${vars[@]}"; do
-				val="${_DRAGON_CURRENT[$var]}"
-				default="${_DRAGON_DEFAULTS[$var]:-}"
-				hint="${_DRAGON_HINT[$var]:-}"
-				vtype="${_DRAGON_TYPE[$var]:-string}"
-				# Single-quoted output: immune to shell expansion of $, `, and \.
-				# The only char needing escape inside '...' is ' itself, via the
-				# standard '\'' idiom (close-quote, escaped-quote, reopen-quote).
-				# q/safe_val declared above the loops to avoid zsh local-in-loop
-				# re-declaration bug that leaks array values to the redirect fd.
-				safe_val="${val//$q/$q\\$q$q}"
-
-				# Emit type hint for special vars
-				if [[ -n "$hint" ]]; then
-					printf '# %s\n' "$hint"
-				elif [[ "$vtype" == enum:* ]]; then
-					printf '# Values: %s\n' "${vtype#enum:}"
-				fi
-
-				if [[ "$val" == "$default" ]]; then
-					printf "# export DRAGON__%s='%s'  # default\n" "$var" "$safe_val"
-				else
-					printf "export DRAGON__%s='%s'\n" "$var" "$safe_val"
-				fi
+			for var in ${(s: :)_DRAGON_GROUP_VARS[$group]}; do
+				_grouped[$var]=1
+				_emit_var "$var"
 			done
 			printf '\n'
 		done
+
+		# Everything the groups didn't claim, so no schema var is ever dropped.
+		printf '# ── Other ─%s\n' "${(r:66::─:):-}"
+		for var in "${(@k)_DRAGON_DEFAULTS}"; do
+			(( ${+_grouped[$var]} )) || _emit_var "$var"
+		done
+		printf '\n'
+		unfunction _emit_var
 
 		# Bake ALL resolved values into one base64 var so SSH forwarding ships a
 		# single DRAGON__PAYLOAD (see header). Iterate every schema key, not the
