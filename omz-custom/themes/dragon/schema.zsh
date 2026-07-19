@@ -65,7 +65,7 @@ _dragon_init_defaults() {
 		[PROMPT_CHAR_FAILURE_BOLD]="false"
 		[PROMPT_CHAR_FAILURE_UNDERLINE]="false"
 		# transient prompt
-		[ENABLE_TRANSIENT_PROMPT]="per-dir"
+		[ENABLE_TRANSIENT_PROMPT]="false"
 		[TRANSIENT_PROMPT_CHAR]=""
 		[TRANSIENT_PROMPT_VERBOSE]="true"
 		# ssh prefix
