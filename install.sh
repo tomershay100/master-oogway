@@ -998,7 +998,10 @@ _regen_theme_conf()
 		else
 			warn "dragon theme config could not be seeded"
 		fi
-		todo_item "Customize your prompt: open a new terminal and run 'dragon-configure'"
+		todo_item "Run 'dragon-configure' to customize your prompt. It also asks
+		  whether your terminal has a Nerd Font — the default assumes yes, so until
+		  you run it (or if you answer no) some segment icons may show as blank
+		  boxes or garbled characters."
 		return
 	fi
 
