@@ -24,6 +24,9 @@ _dragon_render_preview() {
 		$fail_mode && preview_exit_code=1
 
 		local preview
+		# Strip any SSH-forwarded payload: dragon.zsh would eval it and clobber the
+		# preset vars we just exported, making every preset preview render identical.
+		unset DRAGON__PAYLOAD DRAGON__FORWARDED
 		preview=$(zsh -c "
 			zle()             { :; }
 			gitstatus_start() { :; }

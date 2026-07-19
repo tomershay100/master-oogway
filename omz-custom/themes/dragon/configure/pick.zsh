@@ -280,14 +280,9 @@ _dragon_pick_preset() {
 
 	_dragon_apply_and_save "$chosen" || return 1
 
-	local var val
-	for var val in "${(@kv)_DRAGON_CURRENT}"; do
-		export "DRAGON__${var}=${val}"
-	done
-	dragon__update_zsh_prompt 2>/dev/null
-
 	print ""
-	print -P "  %F{green}✓ Switched to %B${chosen}%b%F{green} preset — prompt updated immediately.%f"
-	print -P "  %F{245}Fine-tune with: %Bdragon-configure --edit%b%f"
+	print -P "  %F{green}✓ Switched to %B${chosen}%b%F{green} preset.%f"
+	print -P "  %F{245}Reload to apply: %Brezsh%b%f"
+	print -P "  %F{245}Fine-tune with:  %Bdragon-configure --edit%b%f"
 	print ""
 }

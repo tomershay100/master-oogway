@@ -28,7 +28,11 @@ typeset -g _DRAGON_TERMINAL_BG_CODE=""  # terminal bg resolved to its xterm code
 # leaves them. USE_NERD_FONT rides along, so a forwarded font preference wins
 # over the SSH default of false. base64 is required (see writer.zsh); if it is
 # missing we skip silently and fall back to this machine's own theme.
-if [[ -n "${DRAGON__PAYLOAD:-}" ]] && command -v base64 &>/dev/null; then
+#
+# Only apply the payload in an actual SSH session. Locally the same var is still
+# exported by our own conf.zsh (so it re-forwards on outbound SSH), but evaluating
+# it here would override this machine's conf.zsh — breaking dragon-configure edits.
+if __is_via_ssh && [[ -n "${DRAGON__PAYLOAD:-}" ]] && command -v base64 &>/dev/null; then
 	eval "$(printf '%s' "$DRAGON__PAYLOAD" | base64 -d 2>/dev/null)"
 fi
 
