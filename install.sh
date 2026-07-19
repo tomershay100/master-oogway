@@ -1129,4 +1129,19 @@ else
 	print_todos
 fi
 _print_backup_tip
+
+# Fresh-install call to action — the last thing on screen so it can't be missed.
+if [[ "${MO_FIRST_INSTALL}" == true ]]; then
+	echo ""
+	echo -e "${COLOR_CYAN}╔══════════════════════════════════════════════════════════╗${COLOR_RESET}"
+	echo -e "${COLOR_CYAN}║  Next: run these once (from a new terminal)              ║${COLOR_RESET}"
+	echo -e "${COLOR_CYAN}╠══════════════════════════════════════════════════════════╣${COLOR_RESET}"
+	echo -e "${COLOR_CYAN}║${COLOR_RESET}  Pick your prompt preset:                                ${COLOR_CYAN}║${COLOR_RESET}"
+	echo -e "${COLOR_CYAN}║${COLOR_RESET}      ${COLOR_GREEN}master-oogway configure${COLOR_RESET}                             ${COLOR_CYAN}║${COLOR_RESET}"
+	echo -e "${COLOR_CYAN}║${COLOR_RESET}  Forward your theme over SSH to other machines:          ${COLOR_CYAN}║${COLOR_RESET}"
+	echo -e "${COLOR_CYAN}║${COLOR_RESET}      ${COLOR_GREEN}master-oogway lan-ssh setup${COLOR_RESET}                         ${COLOR_CYAN}║${COLOR_RESET}"
+	echo -e "${COLOR_CYAN}╚══════════════════════════════════════════════════════════╝${COLOR_RESET}"
+	echo ""
+fi
+
 success "dragon installation complete. Open a new terminal to apply changes."
