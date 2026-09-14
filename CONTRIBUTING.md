@@ -41,6 +41,15 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
     colors.zsh                    named xterm-256 color table — shared by dragon theme and mo-color plugin
   plugins/
     mo-*/mo-*.plugin.zsh          23 master-oogway plugins (5 override + 18 additive)
+test/
+  run.zsh                         sources every test/**/*_test.zsh and reports pass/fail/skip
+  assert.zsh                      assert_eq, assert_contains, assert_match, t_skip
+  lint_platform.zsh               the platform invariant: no plugin hardcodes a Linux-only command
+  platform/platform_test.zsh      lib/platform.zsh primitives, branching on the host OS
+  plugins/plugins_test.zsh        every plugin parses and ships a README, plus command spot-checks
+  behaviour/*_test.zsh            one file per fixed bug or ported command
+  e2e/run.sh                      install into a throwaway HOME, drive a real login shell, uninstall
+  e2e/feature_sweep.zsh           the command checks the e2e runner executes
 ```
 
 ---

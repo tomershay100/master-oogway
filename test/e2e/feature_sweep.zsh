@@ -138,13 +138,13 @@ check "extract .tar.gz"   "hi"        "cd $SB && mkdir -p o && cd o && tar -czf 
 # A zip whose entry really is ../evil — `zip` refuses to store one, so the
 # path is rewritten in the archive bytes after the fact.
 if python3 -c 'import zipfile' 2>/dev/null; then
-  python3 - "$SB" <<'PYZ' 2>/dev/null
+	python3 - "$SB" <<'PYZ' 2>/dev/null
 import sys, zipfile
 z = zipfile.ZipFile(sys.argv[1] + "/trav.zip", "w")
 z.writestr("../evil.txt", "x")
 z.close()
 PYZ
-  check "extract refuses traversal" "refusing" "cd $SB && extract trav.zip 2>&1 | head -1"
+	check "extract refuses traversal" "refusing" "cd $SB && extract trav.zip 2>&1 | head -1"
 else skip "extract refuses traversal" "python3 absent"; fi
 check "bak"               "->"        "cd $SB && bak s/f.txt"
 check "sizeof"            "f.txt"     "cd $SB && sizeof s/f.txt"
@@ -156,8 +156,8 @@ check "sizeof"            "f.txt"     "cd $SB && sizeof s/f.txt"
 # on the one platform where the fallback is what is being exercised, so
 # installing the recommended package left the check silently not running.
 if command -v bat &>/dev/null || command -v batcat &>/dev/null; then
-  check "cat -A (BSD -vet)" 'b$' \
-    "source \$ZSH_CUSTOM/plugins/mo-bat-override/mo-bat-override.plugin.zsh 2>/dev/null; cd $SB && printf 'a\tb\n' > tab.txt && cat -A tab.txt"
+	check "cat -A (BSD -vet)" 'b$' \
+		"source \$ZSH_CUSTOM/plugins/mo-bat-override/mo-bat-override.plugin.zsh 2>/dev/null; cd $SB && printf 'a\tb\n' > tab.txt && cat -A tab.txt"
 else skip "cat -A" "bat absent"; fi
 
 print -r -- "\n\e[1m── mo-git ──\e[0m"
@@ -201,33 +201,33 @@ else
 	skip "man -k . populated" "no whatis database"
 fi
 if command -v rg &>/dev/null && command -v fzf &>/dev/null; then
-  check "frg pipeline yields rows" "needle" \
-    "cd $SB && printf 'hay\nneedle\n' > n.txt && rg --color=always --line-number --null -- needle . 2>/dev/null | tr '\0' '\t' | awk 'BEGIN{FS=\"\t\"} NF==2{print \$2}' | head -1"
+	check "frg pipeline yields rows" "needle" \
+		"cd $SB && printf 'hay\nneedle\n' > n.txt && rg --color=always --line-number --null -- needle . 2>/dev/null | tr '\0' '\t' | awk 'BEGIN{FS=\"\t\"} NF==2{print \$2}' | head -1"
 else skip "frg pipeline" "rg or fzf absent"; fi
 
 print -r -- "\n\e[1m── mo-trash ──\e[0m"
 if [[ -n "$(_mo_trash_tool 2>/dev/null)" ]]; then
-  print -- keep > "$SB/e2e-trash-$$.txt"
-  check "rm trashes"        "gone"        "cd $SB && rm e2e-trash-$$.txt; [[ -e e2e-trash-$$.txt ]] && print STILL || print gone"
-  if _mo_is_macos; then
-    check "index records path" "$SB"      "grep e2e-trash-$$ \${MO_TRASH_INDEX:-\$HOME/.config/master-oogway/trash-index.tsv} | tail -1"
-  else
-    skip "index records path" "trash-cli records it itself on Linux"
-  fi
-  # /usr/bin/trash always writes to the real user's ~/.Trash regardless of
-  # $HOME, so point MO_TRASH_DIR there for this check.
-  check "trash-list shows it" "e2e-trash-$$" "MO_TRASH_DIR=\$(eval echo ~\$USER)/.Trash trash-list"
-  if _mo_is_macos; then
-    check "rm -h shows the bypass" '\rm'  'rm -h'
-  else
-    skip "rm -h shows the bypass" "trash-cli owns rm on Linux"
-  fi
-  print -- bye > "$SB/e2e-bypass-$$.txt"
-  # ~$USER, not $HOME: /usr/bin/trash writes to the real user's Trash
-  # regardless of $HOME, and under the e2e $HOME is the throwaway dir — so
-  # this assertion could never fail and the cleanup below missed its target.
-  check "\\rm really deletes" "gone"      "cd $SB && \\rm e2e-bypass-$$.txt; [[ -e $(eval echo ~$USER)/.Trash/e2e-bypass-$$.txt ]] && print TRASHED || print gone"
-  command rm -f "$(eval echo ~$USER)/.Trash/e2e-trash-$$.txt" 2>/dev/null
+	print -- keep > "$SB/e2e-trash-$$.txt"
+	check "rm trashes"        "gone"        "cd $SB && rm e2e-trash-$$.txt; [[ -e e2e-trash-$$.txt ]] && print STILL || print gone"
+	if _mo_is_macos; then
+		check "index records path" "$SB"      "grep e2e-trash-$$ \${MO_TRASH_INDEX:-\$HOME/.config/master-oogway/trash-index.tsv} | tail -1"
+	else
+		skip "index records path" "trash-cli records it itself on Linux"
+	fi
+	# /usr/bin/trash always writes to the real user's ~/.Trash regardless of
+	# $HOME, so point MO_TRASH_DIR there for this check.
+	check "trash-list shows it" "e2e-trash-$$" "MO_TRASH_DIR=\$(eval echo ~\$USER)/.Trash trash-list"
+	if _mo_is_macos; then
+		check "rm -h shows the bypass" '\rm'  'rm -h'
+	else
+		skip "rm -h shows the bypass" "trash-cli owns rm on Linux"
+	fi
+	print -- bye > "$SB/e2e-bypass-$$.txt"
+	# ~$USER, not $HOME: /usr/bin/trash writes to the real user's Trash
+	# regardless of $HOME, and under the e2e $HOME is the throwaway dir — so
+	# this assertion could never fail and the cleanup below missed its target.
+	check "\\rm really deletes" "gone"      "cd $SB && \\rm e2e-bypass-$$.txt; [[ -e $(eval echo ~$USER)/.Trash/e2e-bypass-$$.txt ]] && print TRASHED || print gone"
+	command rm -f "$(eval echo ~$USER)/.Trash/e2e-trash-$$.txt" 2>/dev/null
 else skip "mo-trash" "no trash tool"; fi
 
 print -r -- "\n\e[1m── mo-welcome ──\e[0m"
@@ -238,9 +238,9 @@ typeset -A _wre=(
 	[disk]='[0-9]+%'          [arch]='(arm64|x86_64|aarch64)'
 )
 for fld in host os sys up load mem disk arch; do
-  # A needle per field: an empty one matched "command not found" too, so
-  # these passed even when the plugin never loaded.
-  checkmatch "welcome:$fld" "${_wre[$fld]}" "MO_WELCOME_FIELDS= ; _mo_welcome_field_$fld"
+	# A needle per field: an empty one matched "command not found" too, so
+	# these passed even when the plugin never loaded.
+	checkmatch "welcome:$fld" "${_wre[$fld]}" "MO_WELCOME_FIELDS= ; _mo_welcome_field_$fld"
 done
 
 print -r -- "\n\e[1m── mo-cli ──\e[0m"

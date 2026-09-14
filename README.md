@@ -78,6 +78,7 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-auto-ls](omz-custom/plugins/mo-auto-ls/README.md) | auto-`ls` after `cd` |
 | [mo-color](omz-custom/plugins/mo-color/README.md) | terminal color preview, palette, and text colorizer |
 | [mo-man](omz-custom/plugins/mo-man/README.md) | `mo-man` — view any mo-* plugin README in the terminal |
+| [mo-brew](omz-custom/plugins/mo-brew/README.md) | `bup`, `bi`, `bun`, `bs`, `bl`, `bout` — Homebrew helpers (macOS only; not loaded on Linux) |
 
 ## macOS notes
 
@@ -85,7 +86,7 @@ Additive plugins add new commands and never change existing behavior.
   [mo-trash](omz-custom/plugins/mo-trash/README.md) for how `trash-restore`
   recovers the original path.
 - [mo-brew](omz-custom/plugins/mo-brew/README.md) adds Homebrew helpers. It is
-  in the default plugin list and is a silent no-op on Linux.
+  in the default plugin list and silently does not load on Linux.
 - `mo-colorize-override` does not alias `ip` or `dmesg`: macOS has no `ip`, and
   its BSD `dmesg` takes no `--color`.
 - `epoch` accepts an ISO datetime but not natural language, since BSD `date`
