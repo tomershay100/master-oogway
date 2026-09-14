@@ -41,9 +41,18 @@ _dragon_render_preview() {
 			# wherever the user happened to be. cd into a throwaway tree that
 			# mirrors the demo path under a fake HOME, so %~ abbreviates it to
 			# ~/projects/myapp/src/components as intended.
-			_demo=\${TMPDIR:-/tmp}/.dragon-preview-\$\$/projects/myapp/src/components
+			_root=\${TMPDIR:-/tmp}/.dragon-preview-\$\$
+			_demo=\$_root/projects/myapp/src/components
+			# This is a child zsh, so the trap has to live here: a trap in the
+			# caller never sees a tree created on the other side of the fork.
+			# EXIT does not fire on a signal, so route INT/TERM through exit.
+			trap 'command rm -rf \"\$_root\"' EXIT
+			trap 'exit 130' INT TERM
 			command mkdir -p "\$_demo" 2>/dev/null && builtin cd -q "\$_demo" 2>/dev/null
-			HOME=\${TMPDIR:-/tmp}/.dragon-preview-\$\$
+			# HOME from the PWD cd produced, not from \$_root: macOS sets TMPDIR
+			# to .../T/, and a HOME containing // is never a prefix of the
+			# canonical PWD, so %~ printed the raw path instead of ~/projects/....
+			HOME=\${PWD%/projects/myapp/src/components}
 			VCS_STATUS_RESULT='ok-sync'
 			VCS_STATUS_LOCAL_BRANCH='main'
 			VCS_STATUS_HAS_UNSTAGED=\${VCS_STATUS_HAS_UNSTAGED:-0}
