@@ -98,6 +98,58 @@ if _mo_is_macos && [[ -n "$(_mo_trash_tool)" ]]; then
 	assert_not_contains "$(_mo_trash_t 'rm --')" "No such file" \
 		"a bare -- is not treated as a filename"
 
+	# -- tab and newline are legal in filenames; the index is line-oriented --
+	# Both fields were written verbatim, so one such name split a record into
+	# junk rows: the file was trashed but could never be listed or restored.
+	# The index now stores both paths with \\, \t and \n escaped, and every
+	# reader decodes only when it touches the filesystem.
+	local _nl=$'\n' _tab=$'\t'
+	mkdir -p "$MO_TRASH_SANDBOX/odd"
+	print -- NL   > "$MO_TRASH_SANDBOX/odd/mo-t-$$-n${_nl}ame.txt"
+	print -- TAB  > "$MO_TRASH_SANDBOX/odd/mo-t-$$-t${_tab}ab.txt"
+	print -- BS   > "$MO_TRASH_SANDBOX/odd/mo-t-$$-b\\tslash.txt"
+	_mo_trash_t "rm -- \"$MO_TRASH_SANDBOX/odd/\"mo-t-$$-*(N)" >/dev/null
+	local -a odd_rows=( ${(f)"$(grep -c "mo-t-$$-[ntb]" "$MO_TRASH_SANDBOX/index.tsv")"} )
+	assert_eq 3 "${odd_rows[1]}" "tab, newline and backslash names each take exactly one index row"
+	assert_eq 0 "$(awk -F'\t' 'NF != 3' "$MO_TRASH_SANDBOX/index.tsv" | wc -l | tr -d ' ')" \
+		"every index row still has three fields"
+
+	local _enc_nl="mo-t-$$-n\\name.txt" _enc_tab="mo-t-$$-t\\tab.txt" _enc_bs="mo-t-$$-b\\\\tslash.txt"
+	assert_eq "${MO_TRASH_SANDBOX:A}/odd/mo-t-$$-n${_nl}ame.txt" \
+		"$(_mo_trash_t "_mo_trash_decode \"\$(_mo_trash_lookup '$_enc_nl')\"; print -rn -- \$REPLY")" \
+		"lookup by escaped name decodes to the real original path (newline)"
+	assert_eq "${MO_TRASH_SANDBOX:A}/odd/mo-t-$$-t${_tab}ab.txt" \
+		"$(_mo_trash_t "_mo_trash_decode \"\$(_mo_trash_lookup '$_enc_tab')\"; print -rn -- \$REPLY")" \
+		"lookup by escaped name decodes to the real original path (tab)"
+	assert_eq "${MO_TRASH_SANDBOX:A}/odd/mo-t-$$-b\\tslash.txt" \
+		"$(_mo_trash_t "_mo_trash_decode \"\$(_mo_trash_lookup '$_enc_bs')\"; print -rn -- \$REPLY")" \
+		"a literal backslash-t in a name is not decoded as a tab"
+	local _list; _list="$(_mo_trash_t 'trash-list')"
+	assert_contains "$_list" "$_enc_nl" \
+		"trash-list shows a newline name on one line, escaped"
+	assert_contains "$_list" "odd/$_enc_nl" \
+		"trash-list shows a newline in the ORIGINAL column escaped too"
+	assert_eq 1 "$(print -r -- "$_list" | grep -cF "$_enc_nl")" \
+		"a newline-named file takes exactly one trash-list row"
+	assert_eq 3 "$(_mo_trash_t "_mo_trash_names | grep -c 'mo-t-$$-[ntb]'")" \
+		"_mo_trash_names lists the three odd names, one per line"
+	local _odd
+	for _odd in "mo-t-$$-n${_nl}ame.txt" "mo-t-$$-t${_tab}ab.txt" "mo-t-$$-b\\tslash.txt"; do
+		_MO_TRASHED+=("$_odd")
+	done
+
+	# -- lookup must compare names as strings ---------------------------------
+	# awk's == compared "01" and "1" as numbers, so restore put a file back at
+	# another file's original path.
+	mkdir -p "$MO_TRASH_SANDBOX/n1" "$MO_TRASH_SANDBOX/n2"
+	print -- a > "$MO_TRASH_SANDBOX/n1/01"
+	print -- b > "$MO_TRASH_SANDBOX/n2/1"
+	_mo_trash_t "rm '$MO_TRASH_SANDBOX/n1/01'; rm '$MO_TRASH_SANDBOX/n2/1'" >/dev/null
+	local -a _num=( ${(f)"$(awk -F'\t' -v s="$MO_TRASH_SANDBOX/n" '$3 ~ s {print $2}' "$MO_TRASH_SANDBOX/index.tsv")"} )
+	_MO_TRASHED+=("${_num[@]}")
+	assert_contains "$(_mo_trash_t "_mo_trash_lookup '${_num[1]}'")" "/n1/01" \
+		"lookup of the name that landed for 01 does not return 1's path"
+
 	# -- clean up: only the files this test created ---------------------------
 	local _n
 	for _n in "${_MO_TRASHED[@]}"; do

@@ -71,13 +71,24 @@ else
 fi
 
 # Original path for a trashed name, from our index. Last match wins: a name can
-# be reused after an earlier entry is emptied.
+# be reused after an earlier entry is emptied. Takes and prints the escaped
+# form, as every reader of the index and of _mo_trash_names has it.
+#
+# Done in zsh, not awk: awk -v runs escape processing on its value, turning a
+# stored \t back into a tab before comparing, and awk's == treats two fields
+# that both look numeric as numbers, so "01" matched "1" and restore put a
+# file back at another file's original path.
 _mo_trash_lookup() {
 	[[ -r "$MO_TRASH_INDEX" ]] || return 1
-	awk -F'\t' -v n="$1" '$2 == n {p = $3} END {if (p) print p}' "$MO_TRASH_INDEX"
+	local n orig p=""
+	while IFS=$'\t' read -r _ n orig; do
+		[[ "$n" == "$1" ]] && p="$orig"
+	done < "$MO_TRASH_INDEX"
+	[[ -n "$p" ]] || return 1
+	print -r -- "$p"
 }
 
-# Names currently in the trash, newest first.
+# Names currently in the trash, newest first, in escaped single-line form.
 #
 # Two sources, because neither is complete on macOS: the directory scan sees
 # files Finder trashed but is blocked by TCC unless the terminal has Full Disk
@@ -93,7 +104,8 @@ _mo_trash_names() {
 	if [[ -r "$MO_TRASH_INDEX" ]]; then
 		while IFS=$'\t' read -r _ n _; do
 			[[ -n "$n" ]] || continue
-			[[ -e "${MO_TRASH_DIR}/${n}" ]] || continue   # emptied since
+			_mo_trash_decode "$n"
+			[[ -e "${MO_TRASH_DIR}/${REPLY}" ]] || continue   # emptied since
 			(( ${+seen[$n]} )) && continue
 			seen[$n]=1
 			out+=("$n")
@@ -107,9 +119,10 @@ _mo_trash_names() {
 	if _mo_trash_dir_readable "$MO_TRASH_DIR"; then
 		local f
 		for f in "${MO_TRASH_DIR}"/*(ND-om); do
-			(( ${+seen[${f:t}]} )) && continue
-			seen[${f:t}]=1
-			out+=("${f:t}")
+			_mo_trash_encode "${f:t}"; n=$REPLY
+			(( ${+seen[$n]} )) && continue
+			seen[$n]=1
+			out+=("$n")
 		done
 	fi
 
@@ -160,10 +173,13 @@ trash-list() {
 	{
 		print -- "WHEN\tSIZE\tNAME\tORIGINAL"
 		for n in "${names[@]}"; do
-			f="${MO_TRASH_DIR}/${n}"
+			_mo_trash_decode "$n"; f="${MO_TRASH_DIR}/${REPLY}"
 			origin=$(_mo_trash_lookup "$n") || origin=""
+			# du echoes the path after the size, so cut it at the first tab
+			# rather than the first line — a newline in the name is a newline
+			# in du's output too.
 			printf '%s\t%s\t%s\t%s\n' "$(date -r "$f" '+%Y-%m-%d %H:%M' 2>/dev/null)" \
-				"$(du -sh "$f" 2>/dev/null | cut -f1)" "$n" "${origin:-—}"
+				"${$(du -sh "$f" 2>/dev/null)%%$'\t'*}" "$n" "${origin:-—}"
 		done
 	} | column -t -s $'\t'
 }
@@ -190,16 +206,18 @@ trash-restore() {
 		local chosen
 		chosen=$(printf '%s\n' "${names[@]}" | fzf --prompt="Restore> " --height=40%) || return 130
 		[[ -n "$chosen" ]] || return 0
-		local dest origin
-		origin=$(_mo_trash_lookup "$chosen")
+		local dest origin name
+		_mo_trash_decode "$chosen"; name=$REPLY
+		origin=$(_mo_trash_lookup "$chosen") || origin=""
 		if [[ -n "$origin" ]]; then
-			dest="$origin"; mkdir -p "${dest:h}" 2>/dev/null
+			_mo_trash_decode "$origin"; dest=$REPLY
+			mkdir -p "${dest:h}" 2>/dev/null
 		else
-			dest="${PWD}/${chosen}"
+			dest="${PWD}/${name}"
 			echo "trash-restore: original location unknown — restoring to $PWD" >&2
 		fi
 		[[ -e "$dest" ]] && { echo "trash-restore: refusing — '$dest' already exists" >&2; return 1 }
-		command mv "${MO_TRASH_DIR}/${chosen}" "$dest" && echo "Restored: $dest"
+		command mv "${MO_TRASH_DIR}/${name}" "$dest" && echo "Restored: $dest"
 		return
 	fi
 
@@ -269,7 +287,8 @@ trash-prune() {
 	setopt local_options null_glob
 	local -a old=("${MO_TRASH_DIR}"/*(ND.md+${days}) "${MO_TRASH_DIR}"/*(ND/md+${days}))
 	(( ${#old} )) || { echo "trash-prune: nothing older than ${days} day(s)"; return 0 }
-	printf '  %s\n' "${old[@]:t}"
+	local f
+	for f in "${old[@]}"; do _mo_trash_encode "${f:t}"; print -r -- "  $REPLY"; done
 	command rm -rf -- "${old[@]}"
 	_mo_trash_compact_index
 }
@@ -282,9 +301,10 @@ trash-prune() {
 #
 #     { p = dir "/" $2; if (system("[ -e \"" p "\" ]") == 0) print }
 #
-# A file named  a";echo PWNED;"b  then executes echo. _mo_trash_rm writes the
-# landed basename verbatim, so trashing a file from an untrusted archive and
-# later running trash-prune would run whatever its name contained.
+# A file named  a";echo PWNED;"b  then executes echo. The index stores the
+# landed name with only \\, \t and \n escaped — quotes and semicolons pass
+# through — so trashing a file from an untrusted archive and later running
+# trash-prune would run whatever its name contained.
 _mo_trash_compact_index() {
 	[[ -w "$MO_TRASH_INDEX" ]] || return 0
 	local tmp="${MO_TRASH_INDEX}.tmp$$"
@@ -292,7 +312,8 @@ _mo_trash_compact_index() {
 	: > "$tmp" || return 0
 	while IFS=$'\t' read -r ts name orig; do
 		[[ -n "$name" ]] || continue
-		[[ -e "${MO_TRASH_DIR}/${name}" ]] || continue
+		_mo_trash_decode "$name"
+		[[ -e "${MO_TRASH_DIR}/${REPLY}" ]] || continue
 		printf '%s\t%s\t%s\n' "$ts" "$name" "$orig" >> "$tmp"
 	done < "$MO_TRASH_INDEX"
 	command mv "$tmp" "$MO_TRASH_INDEX" 2>/dev/null || command rm -f "$tmp"

@@ -693,6 +693,26 @@ _mo_trash_dir() {
 # on collision ("notes.txt" -> "notes.txt 00-32-27-841.txt"), and an index built
 # from the source basename would then point at somebody else's file — restoring
 # it would overwrite the wrong path.
+#
+# Tab and newline are legal in filenames, and the index that mo-trash keeps is
+# one tab-separated record per line. Both path fields are stored with \\, \t
+# and \n escaped, and decoded only at the point a reader touches the
+# filesystem. Every name mo-trash passes around — index rows, trash-list
+# output, the fzf picker — is in this escaped, single-line form.
+#
+# Both return through REPLY, not stdout: $(...) would strip a trailing newline
+# from a decoded name, and forking once per index row made listing a few
+# thousand entries take seconds.
+_mo_trash_encode() {
+	REPLY="$1"
+	REPLY=${REPLY//\\/\\\\}
+	REPLY=${REPLY//$'\t'/\\t}
+	REPLY=${REPLY//$'\n'/\\n}
+}
+# The encoded form contains no backslash sequence other than \\, \t and \n,
+# so echo-style escape processing is an exact inverse.
+_mo_trash_decode() { REPLY="${(g::)1}" }
+
 _mo_trash_put() {
 	local tool
 	tool=$(_mo_trash_tool) || return 1
@@ -708,25 +728,36 @@ _mo_trash_put() {
 
 	if ! _mo_is_macos; then
 		command "$tool" "${srcs[@]}" || return 1
-		for f in "${srcs[@]}"; do print -- "${f}\t${f:t}"; done
+		local a b
+		for f in "${srcs[@]}"; do
+			_mo_trash_encode "$f"; a=$REPLY
+			_mo_trash_encode "${f:t}"; b=$REPLY
+			printf '%s\t%s\n' "$a" "$b"
+		done
 		return 0
 	fi
 
 	# trash -v reports:  # Moved "<src>" to "<dest>"
-	local out rc=0
-	out=$(command "$tool" -v "${srcs[@]}" 2>&1) || rc=$?
-	(( rc == 0 )) || { print -r -- "$out" >&2; return $rc }
-
-	print -r -- "$out" | awk '
-		/^# Moved / {
-			if (match($0, /" to "/)) {
-				src  = substr($0, 10, RSTART - 10)
-				dest = substr($0, RSTART + 6)
-				sub(/"$/, "", dest)
-				n = split(dest, parts, "/")
-				printf "%s\t%s\n", src, parts[n]
-			}
-		}'
+	# One call per file, because the report is the only way to learn the name
+	# the file landed under (the tool renames on collision) and a newline in
+	# the name spreads the report over several lines. We already know <src>
+	# exactly, so strip it as a literal prefix rather than parsing the line.
+	local out rc=0 dest a b
+	for f in "${srcs[@]}"; do
+		out=$(command "$tool" -v "$f" 2>&1) || rc=$?
+		if (( rc != 0 )); then print -r -- "$out" >&2; return $rc; fi
+		dest=${out#"# Moved \"${f}\" to \""}
+		if [[ "$dest" == "$out" || "$dest" != *\" ]]; then
+			# The file is in the trash; only its landed name is unknown. Say so
+			# rather than silently leaving it out of the index.
+			print -r -- "rm: trashed ${f}, but could not read where it landed: ${out}" >&2
+			continue
+		fi
+		dest=${dest%\"}
+		_mo_trash_encode "$f"; a=$REPLY
+		_mo_trash_encode "${dest:t}"; b=$REPLY
+		printf '%s\t%s\n' "$a" "$b"
+	done
 }
 
 # True when the platform's trash tool can list and restore by original path.

@@ -32,6 +32,10 @@ function rather than an alias, and it appends each original path to:
 $MO_CONFIG_DIR/trash-index.tsv    <epoch>  <trashed-name>  <original-path>
 ```
 
+Tab and newline are legal in filenames, so both path fields are stored with
+`\\`, `\t` and `\n` escaped. `trash-list`, `trash-prune` and the `trash-restore`
+picker show names and original paths in that same escaped, one-per-line form.
+
 `trash-restore` reads that index and puts the file back exactly where it came
 from. Files trashed by Finder are absent from it and restore to the current
 directory instead, with a note saying so.
