@@ -721,10 +721,12 @@ _mo_trash_put() {
 	# Hand the tool absolute paths, never the name as typed. A relative name
 	# beginning with "-" is read as an option — /usr/bin/trash has no "--" of
 	# its own and answers "Un-recognized argument" — so `rm -- -x.txt` could
-	# not reach the trash at all.
+	# not reach the trash at all. :a, not :A — :A resolves symlinks, so
+	# `rm link` trashed the link's target (a whole directory, if it pointed at
+	# one) and left the link dangling. rm removes the link itself.
 	local -a srcs=()
 	local f
-	for f in "$@"; do srcs+=("${f:A}"); done
+	for f in "$@"; do srcs+=("${f:a}"); done
 
 	if ! _mo_is_macos; then
 		command "$tool" "${srcs[@]}" || return 1

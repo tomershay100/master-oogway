@@ -115,13 +115,13 @@ if _mo_is_macos && [[ -n "$(_mo_trash_tool)" ]]; then
 		"every index row still has three fields"
 
 	local _enc_nl="mo-t-$$-n\\name.txt" _enc_tab="mo-t-$$-t\\tab.txt" _enc_bs="mo-t-$$-b\\\\tslash.txt"
-	assert_eq "${MO_TRASH_SANDBOX:A}/odd/mo-t-$$-n${_nl}ame.txt" \
+	assert_eq "${MO_TRASH_SANDBOX:a}/odd/mo-t-$$-n${_nl}ame.txt" \
 		"$(_mo_trash_t "_mo_trash_decode \"\$(_mo_trash_lookup '$_enc_nl')\"; print -rn -- \$REPLY")" \
 		"lookup by escaped name decodes to the real original path (newline)"
-	assert_eq "${MO_TRASH_SANDBOX:A}/odd/mo-t-$$-t${_tab}ab.txt" \
+	assert_eq "${MO_TRASH_SANDBOX:a}/odd/mo-t-$$-t${_tab}ab.txt" \
 		"$(_mo_trash_t "_mo_trash_decode \"\$(_mo_trash_lookup '$_enc_tab')\"; print -rn -- \$REPLY")" \
 		"lookup by escaped name decodes to the real original path (tab)"
-	assert_eq "${MO_TRASH_SANDBOX:A}/odd/mo-t-$$-b\\tslash.txt" \
+	assert_eq "${MO_TRASH_SANDBOX:a}/odd/mo-t-$$-b\\tslash.txt" \
 		"$(_mo_trash_t "_mo_trash_decode \"\$(_mo_trash_lookup '$_enc_bs')\"; print -rn -- \$REPLY")" \
 		"a literal backslash-t in a name is not decoded as a tab"
 	local _list; _list="$(_mo_trash_t 'trash-list')"
@@ -137,6 +137,25 @@ if _mo_is_macos && [[ -n "$(_mo_trash_tool)" ]]; then
 	for _odd in "mo-t-$$-n${_nl}ame.txt" "mo-t-$$-t${_tab}ab.txt" "mo-t-$$-b\\tslash.txt"; do
 		_MO_TRASHED+=("$_odd")
 	done
+
+	# -- a symlink is trashed as a link, not as its target --------------------
+	# ${f:A} resolved the link, so `rm link` moved the TARGET — a whole
+	# directory, if it pointed at one — to the trash and left the link dangling.
+	mkdir -p "$MO_TRASH_SANDBOX/tgt-$$"
+	print -- keep > "$MO_TRASH_SANDBOX/tgt-$$/kept.txt"
+	ln -s "$MO_TRASH_SANDBOX/tgt-$$" "$MO_TRASH_SANDBOX/mo-t-$$-link"
+	_mo_trash_t "rm '$MO_TRASH_SANDBOX/mo-t-$$-link'" >/dev/null
+	_MO_TRASHED+=("mo-t-$$-link")
+	assert_ok "rm on a symlink removes the link" test ! -L "$MO_TRASH_SANDBOX/mo-t-$$-link"
+	assert_ok "rm on a symlink leaves the target alone" test -f "$MO_TRASH_SANDBOX/tgt-$$/kept.txt"
+
+	# A dangling link is accepted by rm, so the index must not hide it: -e is
+	# false for it, and compaction used to drop its row.
+	ln -s "/nonexistent/mo-t-$$" "$MO_TRASH_SANDBOX/mo-t-$$-dangling"
+	_mo_trash_t "rm '$MO_TRASH_SANDBOX/mo-t-$$-dangling'" >/dev/null
+	_MO_TRASHED+=("mo-t-$$-dangling")
+	assert_contains "$(_mo_trash_t '_mo_trash_names')" "mo-t-$$-dangling" \
+		"a trashed dangling symlink is still listed from the index"
 
 	# -- lookup must compare names as strings ---------------------------------
 	# awk's == compared "01" and "1" as numbers, so restore put a file back at

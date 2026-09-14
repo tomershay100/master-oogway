@@ -105,7 +105,9 @@ _mo_trash_names() {
 		while IFS=$'\t' read -r _ n _; do
 			[[ -n "$n" ]] || continue
 			_mo_trash_decode "$n"
-			[[ -e "${MO_TRASH_DIR}/${REPLY}" ]] || continue   # emptied since
+			# -L as well: rm accepts a dangling symlink, and -e alone would hide
+			# it here and let _mo_trash_compact_index drop its row.
+			[[ -e "${MO_TRASH_DIR}/${REPLY}" || -L "${MO_TRASH_DIR}/${REPLY}" ]] || continue   # emptied since
 			(( ${+seen[$n]} )) && continue
 			seen[$n]=1
 			out+=("$n")
@@ -216,7 +218,7 @@ trash-restore() {
 			dest="${PWD}/${name}"
 			echo "trash-restore: original location unknown — restoring to $PWD" >&2
 		fi
-		[[ -e "$dest" ]] && { echo "trash-restore: refusing — '$dest' already exists" >&2; return 1 }
+		[[ -e "$dest" || -L "$dest" ]] && { echo "trash-restore: refusing — '$dest' already exists" >&2; return 1 }
 		command mv "${MO_TRASH_DIR}/${name}" "$dest" && echo "Restored: $dest"
 		return
 	fi
@@ -313,7 +315,7 @@ _mo_trash_compact_index() {
 	while IFS=$'\t' read -r ts name orig; do
 		[[ -n "$name" ]] || continue
 		_mo_trash_decode "$name"
-		[[ -e "${MO_TRASH_DIR}/${REPLY}" ]] || continue
+		[[ -e "${MO_TRASH_DIR}/${REPLY}" || -L "${MO_TRASH_DIR}/${REPLY}" ]] || continue
 		printf '%s\t%s\t%s\n' "$ts" "$name" "$orig" >> "$tmp"
 	done < "$MO_TRASH_INDEX"
 	command mv "$tmp" "$MO_TRASH_INDEX" 2>/dev/null || command rm -f "$tmp"
