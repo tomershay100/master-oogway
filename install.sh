@@ -25,11 +25,213 @@ readonly GITCONFIG_REAL="${CONF_DIR}/gitconfig"
 readonly EDITORCONFIG_REAL="${CONF_DIR}/editorconfig"
 readonly ZSHRC_SNAPSHOT="${CONF_DIR}/zshrc.snapshot"
 
+# -- Platform -------------------------------------------------------------------
+# install.sh runs under bash before any zsh is sourced, so it cannot use
+# omz-custom/lib/platform.zsh. The few primitives it needs are mirrored here;
+# keep the two in step.
+# platform-lint: allow — this IS the platform detection.
+case "$(uname -s)" in
+	Linux)  MO_PLATFORM=linux ;;
+	Darwin) MO_PLATFORM=macos ;;
+	*)      MO_PLATFORM=linux ;;
+esac
+
+_mo_is_macos() { [[ "$MO_PLATFORM" == macos ]]; }
+
+# How to get a Nerd Font on this platform. Not part of the recommended-package
+# list: a font is useless until the terminal is pointed at it, which no
+# installer can do for the user.
+_mo_pkg_hint_font()
+{
+	if _mo_is_macos; then
+		echo "brew install --cask font-jetbrains-mono-nerd-font"
+	else
+		echo "see https://github.com/ryanoasis/nerd-fonts, or your distro's fonts-* packages"
+	fi
+}
+
+# Is any Nerd Font installed? The theme defaults DRAGON__USE_NERD_FONT to true,
+# and when that assumption is wrong every powerline separator and segment icon
+# renders as a tofu box — which reads as a broken install rather than a missing
+# font. Checking costs one find; assuming costs the user a confusing prompt.
+# -print -quit stops at the first hit instead of walking the whole tree.
+_nerd_font_installed()
+{
+	local d
+	if _mo_is_macos; then
+		for d in "${HOME}/Library/Fonts" /Library/Fonts /System/Library/Fonts; do
+			[[ -d "$d" ]] || continue
+			[[ -n "$(find "$d" -iname '*nerd*font*' -print -quit 2>/dev/null)" ]] && return 0
+		done
+		return 1
+	fi
+	# platform-lint: allow — fontconfig is the Linux answer and this line is
+	# already inside the non-macOS branch; the macOS branch above returns first.
+	command -v fc-list &>/dev/null && fc-list 2>/dev/null | grep -qi nerd && return 0
+	for d in "${HOME}/.local/share/fonts" "${HOME}/.fonts" /usr/share/fonts; do
+		[[ -d "$d" ]] || continue
+		[[ -n "$(find "$d" -iname '*nerd*font*' -print -quit 2>/dev/null)" ]] && return 0
+	done
+	return 1
+}
+
+# Names the Nerd Font already on disk, so the todo can say "point your terminal
+# at this one" rather than "install a font you already have". Filenames are the
+# only metadata reachable without a font parser: JetBrainsMonoNerdFont-Bold.ttf
+# is a family followed by a style suffix.
+_nerd_font_family()
+{
+	local d f name
+	local -a dirs
+	if _mo_is_macos; then
+		dirs=("${HOME}/Library/Fonts" /Library/Fonts /System/Library/Fonts)
+	else
+		dirs=("${HOME}/.local/share/fonts" "${HOME}/.fonts" /usr/share/fonts)
+	fi
+	for d in ${dirs[@]+"${dirs[@]}"}; do
+		[[ -d "$d" ]] || continue
+		f="$(find "$d" -iname '*nerd*font*' -print -quit 2>/dev/null)"
+		[[ -n "$f" ]] || continue
+		name="${f##*/}"; name="${name%.*}"; name="${name%%-*}"
+		[[ "$name" == *NerdFont* ]] && name="${name%%NerdFont*} Nerd Font"
+		printf '%s' "$name"
+		return 0
+	done
+	return 1
+}
+
+# Whether the glyphs will render, which is not what _nerd_font_installed
+# answers: a font on disk says nothing about the font the terminal is set to.
+# No portable way exists to read a terminal's active font, and under tmux or
+# ssh that font belongs to a terminal this script cannot see — so the probe
+# narrows it and the person looking at the screen settles it.
+#
+# Worded to match _dragon_ask_nerd_font in the theme's configure/pick.zsh, so
+# the installer and dragon-configure never ask the same question two ways.
+# Enter means no: a wrong no is a readable prompt, a wrong yes is tofu on
+# every line. \x rather than \u — macOS ships bash 3.2, which has no \u.
+_nerd_font_renders()
+{
+	_nerd_font_installed || return 1
+	_mo_has_tty || return 0
+	_ask "dragon can use special characters for a richer prompt.\n\n      Powerline arrow:  \xee\x82\xb0\n      Nerd Font icon:   \xef\x81\xbb\n\n      Do both render as a solid arrow and a folder icon? [y/N] "
+	local reply
+	reply="$(_mo_read_tty)"
+	[[ "$reply" =~ ^[Yy]([Ee][Ss])?$ ]]
+}
+
+# Mirrors of the two lib/platform.zsh primitives this script needs. It runs
+# under bash before any zsh is sourced, so it cannot call them directly.
+# GNU stat takes -c %a, BSD stat takes -f %OLp; GNU sed refuses an argument to
+# -i, BSD sed requires one.
+_mo_stat_mode() {
+	if _mo_is_macos; then stat -f '%OLp' "$1" 2>/dev/null
+	# platform-lint: allow — the Linux half of _mo_stat_mode.
+	else                  stat -c '%a'   "$1" 2>/dev/null
+	fi
+}
+
+_mo_sed_inplace() {
+	# platform-lint: allow — this IS _mo_sed_inplace.
+	if _mo_is_macos; then sed -i '' "$1" "$2"
+	else                  sed -i    "$1" "$2"
+	fi
+}
+
+# Debian package name -> Homebrew equivalent, where they differ. A case rather
+# than an associative array: macOS ships bash 3.2, which has none.
+# Kept in step with _MO_PKG_MACOS in omz-custom/lib/platform.zsh — this script
+# runs under bash before any zsh is sourced, so it cannot read that map.
+#
+# @builtin  macOS ships this exact tool.
+# @none:M   macOS solves the same problem another way, so neither the Debian
+#           name nor any formula is right. These used to answer @builtin, which
+#           told the user that xclip or iproute2 "ships with macOS — check your
+#           PATH" and sent them hunting for something that cannot exist there.
+_mo_brew_formula() {
+	case "$1" in
+		build-essential)                       echo "@xcode"   ;;
+		texlive-xetex)                         echo "@cask:basictex" ;;
+		meld)                                  echo "@cask:meld" ;;
+		fd-find)                               echo "fd"       ;;
+		p7zip-full)                            echo "sevenzip" ;;
+		xz-utils)                              echo "xz"       ;;
+		unrar)                                 echo "unar"     ;;
+		# Ship with macOS.
+		procps|bc|coreutils|less|curl)         echo "@builtin" ;;
+		tar|unzip|zip|gzip|bzip2|git)          echo "@builtin" ;;
+		# Solved differently on macOS.
+		# platform-lint: allow — this is the package-name map itself.
+		wl-clipboard|xclip|xsel)               echo "@none:macOS uses pbcopy/pbpaste — no install needed" ;;
+		xdg-utils)                             echo "@none:macOS uses open(1) — no install needed" ;;
+		iproute2)                              echo "@none:macOS has no ip(8); ifconfig and netstat cover it" ;;
+		trash-cli)                             echo "@none:macOS ships /usr/bin/trash — no install needed" ;;
+		*)                                     echo "$1"       ;;
+	esac
+}
+
+# Install command for one or more packages, phrased for this platform.
+_mo_pkg_hint() {
+	if ! _mo_is_macos; then
+		# platform-lint: allow — the Linux half of _mo_pkg_hint.
+		echo "sudo apt install $*"
+		return
+	fi
+	local pkg mapped note
+	local formulae="" casks="" notes=""
+	for pkg in "$@"; do
+		mapped="$(_mo_brew_formula "$pkg")"
+		note=""
+		case "$mapped" in
+			# No early return: it dropped every package after the first
+			# non-formula, so `_mo_pkg_hint build-essential fzf` never
+			# mentioned fzf.
+			@xcode)   note="xcode-select --install" ;;
+			@builtin) note="${pkg} ships with macOS — check your PATH" ;;
+			@none:*)  note="${mapped#@none:}" ;;
+			@cask:*)  casks="${casks}${casks:+ }${mapped#@cask:}" ;;
+			*)        formulae="${formulae}${formulae:+ }${mapped}" ;;
+		esac
+		# Deduplicated, as lib/platform.zsh does: xclip and wl-clipboard carry
+		# the identical sentence, and saying it twice reads as two separate
+		# instructions. Matched with the separators attached so one note
+		# cannot match inside another.
+		if [[ -n "$note" ]]; then
+			case "; ${notes};" in
+				*"; ${note};"*) ;;
+				*) notes="${notes}${notes:+; }${note}" ;;
+			esac
+		fi
+	done
+	# Formulae and casks cannot share one brew invocation.
+	local out=""
+	[[ -n "$formulae" ]] && out="brew install ${formulae}"
+	[[ -n "$casks"    ]] && out="${out}${out:+ && }brew install --cask ${casks}"
+	# Parenthesised rather than appended after "; ", matching the zsh original
+	# in lib/platform.zsh. This string is shown under "Install recommended
+	# packages" as a line to paste, and "; macOS uses pbcopy/pbpaste" is not a
+	# command.
+	if [[ -n "$notes" ]]; then
+		if [[ -n "$out" ]]; then out="${out} (${notes})"; else out="${notes}"; fi
+	fi
+	# Always succeed: an empty hint returned 1 here, and under the ERR trap
+	# that turned a package that needs no install into a scary [ERR] line.
+	printf '%s\n' "$out"
+	return 0
+}
+
 # -- Colors & logging -----------------------------------------------------------
 
 if [[ -t 1 ]] && [[ "${NO_COLOR:-}" == "" ]] && [[ "${TERM:-}" != "dumb" ]] && command -v tput &>/dev/null; then
-	readonly COLOR_RESET="$(tput sgr0)"
-	readonly COLOR_GREEN="$(tput setaf 2)" COLOR_YELLOW="$(tput bold)$(tput setaf 3)" COLOR_RED="$(tput setaf 1)" COLOR_CYAN="$(tput setaf 6)" COLOR_MAGENTA="$(tput setaf 5)"
+	# Assigned before `readonly` so a failing tput surfaces as a non-zero
+	# status instead of being masked by the declaration's own exit code.
+	COLOR_RESET="$(tput sgr0)"
+	COLOR_GREEN="$(tput setaf 2)"
+	COLOR_YELLOW="$(tput bold)$(tput setaf 3)"
+	COLOR_RED="$(tput setaf 1)"
+	COLOR_CYAN="$(tput setaf 6)"
+	COLOR_MAGENTA="$(tput setaf 5)"
+	readonly COLOR_RESET COLOR_GREEN COLOR_YELLOW COLOR_RED COLOR_CYAN COLOR_MAGENTA
 else
 	readonly COLOR_RESET='' COLOR_GREEN='' COLOR_YELLOW='' COLOR_RED='' COLOR_CYAN='' COLOR_MAGENTA=''
 fi
@@ -40,11 +242,47 @@ warn()    { echo -e "${COLOR_YELLOW}[WRN]${COLOR_RESET} $*" >&2; }
 die()     { echo -e "${COLOR_RED}[ERR]${COLOR_RESET} $*" >&2; exit 1; }
 _ask()    { echo -en "${COLOR_MAGENTA}[ASK]${COLOR_RESET} $*" > /dev/tty; }
 
+# `[[ -r /dev/tty ]]` only stats the device node, whose mode is 666, so it
+# passes with no controlling terminal and the read then dies under set -e.
+# Opening it is the only reliable test — see 0e768f5.
+_mo_has_tty() { { : < /dev/tty; } 2>/dev/null; }
+_mo_read_tty() { local r=""; read -r r < /dev/tty || r=""; printf '%s' "$r"; }
+
+# Every prompt site needs the same refusal, so it lives in one place.
+_die_no_git_identity()
+{
+	die "Cannot prompt for a git identity: no controlling terminal, or input closed." \
+		"Pre-configure it before running install:" \
+		"git config --global user.name 'Your Name' && git config --global user.email 'you@example.com'"
+}
+
+# Asked before anything is written. _install_gitconfig cannot prompt with no
+# controlling terminal, and it reached that discovery only after ~/.zshenv and
+# ~/.editorconfig were already symlinked — the install died having half
+# configured the shell, and only a re-run finished the job. Same condition,
+# same message, raised while the machine is still untouched.
+_preflight_git_identity()
+{
+	local n e
+	n=$(git config --file "${GITCONFIG}" user.name  2>/dev/null || true)
+	e=$(git config --file "${GITCONFIG}" user.email 2>/dev/null || true)
+	[[ -n "$n" && -n "$e" ]] && return 0
+	{ : < /dev/tty; } 2>/dev/null || _die_no_git_identity
+}
+
 # -- Error handling -------------------------------------------------------------
 
 _on_error()
 {
 	local exit_code=$?
+	# `set -E` makes subshells inherit this trap, and a command substitution
+	# is a subshell — so a deliberately guarded `out=$(cmd) || die "..."`
+	# fired here first and printed a confusing "command failed at line N"
+	# above the caller's real message (and "unknown (main)" under the
+	# curl-pipe bootstrap, where BASH_SOURCE is not a file). The guard in the
+	# caller is what handles a subshell failure; only the top-level shell
+	# reports. BASH_SUBSHELL predates the bash 3.2 macOS ships.
+	(( BASH_SUBSHELL == 0 )) || return "$exit_code"
 	local func="${FUNCNAME[1]:-main}"
 	local file="${BASH_SOURCE[1]:-unknown}"
 	trap - ERR
@@ -58,7 +296,7 @@ trap '_on_error $LINENO' ERR
 require_cmd()
 {
 	local cmd="$1" pkg="${2:-$1}"
-	command -v "$cmd" &>/dev/null || die "'${cmd}' not found. Install: sudo apt install ${pkg}"
+	command -v "$cmd" &>/dev/null || die "'${cmd}' not found. Install: $(_mo_pkg_hint "${pkg}")"
 }
 
 # -- Required package check -----------------------------------------------------
@@ -81,13 +319,13 @@ _check_required_packages()
 	echo "" >&2
 	echo -e "  The following packages are required by master-oogway:" >&2
 	echo "" >&2
-	for pkg in "${missing[@]}"; do
+	for pkg in ${missing[@]+"${missing[@]}"}; do
 		echo -e "    ${COLOR_RED}•${COLOR_RESET} ${pkg}" >&2
 	done
 	echo "" >&2
 	echo -e "  Install them first, then re-run the installer:" >&2
 	echo "" >&2
-	echo -e "    ${COLOR_CYAN}sudo apt install ${missing[*]}${COLOR_RESET}" >&2
+	echo -e "    ${COLOR_CYAN}$(_mo_pkg_hint ${missing[@]+"${missing[@]}"})${COLOR_RESET}" >&2
 	echo "" >&2
 	exit 1
 }
@@ -124,18 +362,52 @@ copy_file()
 # without timestamp suffix, e.g. ~/.zshrc.pre-master-oogway). Echoes the
 # resolved path, or nothing if no backup exists.
 #
+# Ordered by the YYYYMMDD_HHMMSS suffix in the name, not by mtime: the name
+# records when the backup was taken, while mtime is rewritten by copying or
+# restoring the file. The suffix is fixed-width, so a lexical compare is
+# chronological.
+#
 # Why both forms: since 2026-05-17 _install_zshrc writes timestamped backups
 # (so a re-install doesn't clobber an existing one). Older installs left a
 # single .pre-master-oogway file with no timestamp. Restoring needs to find
 # either — newest timestamped wins; legacy bare name is the fallback.
+# Names any backup left behind. Uninstall restores and removes the newest one
+# only; older ones are from earlier installs, and the OLDEST is the file that
+# predates master-oogway entirely. Deleting somebody's original on the way out
+# is not ours to do — but leaving it silently on disk is how it gets found by
+# accident a year later, so say it is there.
+_report_leftover_backups()
+{
+	local _had_nullglob
+	shopt -q nullglob && _had_nullglob=true || _had_nullglob=false
+	shopt -s nullglob
+
+	# Every base in one call, so the explanation is printed once however many
+	# files turn up.
+	local -a found=()
+	local base b
+	for base in "$@"; do
+		local -a rest=( "${base}".[0-9]* )
+		for b in ${rest[@]+"${rest[@]}"}; do [[ -f "$b" ]] && found+=("$b"); done
+	done
+	$_had_nullglob || shopt -u nullglob
+	(( ${#found[@]} > 0 )) || return 0
+
+	info "Earlier backup(s) left in place — remove them yourself if you no longer want them:"
+	for b in ${found[@]+"${found[@]}"}; do info "    ${b}"; done
+}
+
 # Back up $1 to $1.pre-master-oogway.<timestamp> if it exists.
 # Echoes the backup path, or nothing if the source didn't exist.
 _mo_backup()
 {
 	local src="$1"
 	[[ -f "$src" ]] || return 0
-	local backup="${src}.pre-master-oogway.$(date +%Y%m%d_%H%M%S)"
+	local backup
+	backup="${src}.pre-master-oogway.$(date +%Y%m%d_%H%M%S)"
 	cp "$src" "$backup"
+	# The single place a backup is announced. Three call sites used to repeat
+	# this line right after calling us, so every migration logged it twice.
 	info "Backed up ${src} → ${backup}" >&2
 	echo "$backup"
 }
@@ -151,10 +423,14 @@ _find_backup() {
 	local -a backups=( "${base}".[0-9]* )
 	$_had_nullglob || shopt -u nullglob
 
+	# "${backups[@]}" on an empty array is an unbound-variable error under
+	# `set -u` in the bash 3.2 macOS ships (bash 4.4+ made it safe). Without
+	# the guard this aborted on the FIRST dotfile, so --uninstall reversed
+	# nothing at all. Same idiom as the MO_ORIG_ARGS site below.
 	local newest="" candidate
-	for candidate in "${backups[@]}"; do
+	for candidate in ${backups[@]+"${backups[@]}"}; do
 		[[ -f "$candidate" ]] || continue
-		[[ -z "$newest" || "$candidate" -nt "$newest" ]] && newest="$candidate"
+		[[ -z "$newest" || "$candidate" > "$newest" ]] && newest="$candidate"
 	done
 	if [[ -n "$newest" ]]; then
 		echo "$newest"
@@ -212,7 +488,6 @@ _mo_migrate_to_symlink()
 	if [[ -e "$home_path" || -L "$home_path" ]] && ! _mo_is_managed_symlink "$home_path"; then
 		local backup
 		backup=$(_mo_backup "$home_path")
-		[[ -n "$backup" ]] && info "Backed up ${home_path} → ${backup}"
 	fi
 
 	ln -sfn "$real_path" "$home_path"
@@ -266,9 +541,14 @@ print_todos()
 	echo -e "${COLOR_YELLOW}┌─────────────────────────────────────────────────────┐${COLOR_RESET}"
 	echo -e "${COLOR_YELLOW}│  Manual steps required after install                │${COLOR_RESET}"
 	echo -e "${COLOR_YELLOW}└─────────────────────────────────────────────────────┘${COLOR_RESET}"
-	local i=1
-	for item in "${_TODO_ITEMS[@]}"; do
-		echo -e "${COLOR_YELLOW}  ${i}. ${item}${COLOR_RESET}"
+	local i=1 item rendered
+	for item in ${_TODO_ITEMS[@]+"${_TODO_ITEMS[@]}"}; do
+		# A multi-line todo is written as an indented string in the source, and
+		# that indentation reached the screen verbatim — tabs and all — so the
+		# continuation lines landed far to the right of the text they continue.
+		# Re-indent them to sit under the first line, past the "N. " prefix.
+		rendered=$(printf '%s\n' "$item" | sed '2,$s/^[[:space:]]*/     /')
+		echo -e "${COLOR_YELLOW}  ${i}. ${rendered}${COLOR_RESET}"
 		i=$(( i + 1 ))
 	done
 	echo ""
@@ -286,55 +566,47 @@ _collect_missing_optionals()
 {
 	local plugins_dir="${INSTALL_DIR}/omz-custom/plugins"
 
-	local plugin_dir dep_file plugin_name raw_deps raw_apt cmd desc pkg
+	_MO_MISSING=()
+
+	local dep_file plugin_name raw cmd desc pkg
 	for dep_file in "${plugins_dir}"/mo-*/optional-deps.zsh; do
 		[[ -f "$dep_file" ]] || continue
-		plugin_dir="${dep_file%/optional-deps.zsh}"
-		plugin_name="${plugin_dir##*/}"
+		plugin_name="$(basename "$(dirname "$dep_file")")"
 
-		raw_deps=$(zsh -c '
-			source "$1"
+		# One pass emits cmd, description and package together, so the three
+		# maps the old version kept in step cannot drift apart.
+		raw=$(zsh -c '
+			source "$1" 2>/dev/null || exit 0
 			for k in "${(@k)MO_OPTIONAL_DEPS}"; do
-				printf "%s\t%s\n" "$k" "${MO_OPTIONAL_DEPS[$k]}"
+				printf "%s\t%s\t%s\n" "$k" "${MO_OPTIONAL_DEPS[$k]}" "${MO_OPTIONAL_APT[$k]:-$k}"
 			done
 		' -- "$dep_file" 2>/dev/null) || continue
 
-		raw_apt=$(zsh -c '
-			source "$1"
-			for k in "${(@k)MO_OPTIONAL_APT}"; do
-				printf "%s\t%s\n" "$k" "${MO_OPTIONAL_APT[$k]}"
-			done
-		' -- "$dep_file" 2>/dev/null) || continue
-
-		while IFS=$'\t' read -r cmd desc; do
+		while IFS=$'\t' read -r cmd desc pkg; do
 			[[ -n "$cmd" ]] || continue
-			# key by plugin+cmd: the same command has a different description per plugin
-			_mo_descriptions["${plugin_name}"$'\t'"${cmd}"]="$desc"
-		done <<< "$raw_deps"
-
-		while IFS=$'\t' read -r cmd pkg; do
-			[[ -n "$cmd" ]] || continue
-			_mo_apt_pkgs["$cmd"]="$pkg"
-		done <<< "$raw_apt"
-
-		local missing_for_plugin=""
-		while IFS=$'\t' read -r cmd _; do
-			[[ -n "$cmd" ]] || continue
-			# command -v is PATH-only; daemons/tools in /usr/sbin are invisible to non-root on Debian
+			# command -v is PATH-only; tools in /usr/sbin are invisible to a
+			# non-root user on Debian.
 			{ command -v "$cmd" &>/dev/null || [[ -x "/usr/sbin/$cmd" ]] || [[ -x "/sbin/$cmd" ]]; } \
 				&& continue
 			case "$cmd" in
 				fd)  command -v fdfind &>/dev/null && continue ;;
 				bat) command -v batcat &>/dev/null && continue ;;
 			esac
-			missing_for_plugin="${missing_for_plugin} ${cmd}"
-		done <<< "$raw_deps"
-
-		missing_for_plugin="${missing_for_plugin# }"
-		[[ -n "$missing_for_plugin" ]] && _mo_missing_cmds["$plugin_name"]="$missing_for_plugin"
+			# Skip tools this platform provides by other means — reporting
+			# xclip as missing on macOS, where pbcopy covers it, is noise.
+			# "@none:<why>" is that class just as much as "@builtin": the
+			# package cannot be brew-installed and the hint beside it says so,
+			# so listing it told the user to install what it called needless.
+			if _mo_is_macos; then
+				case "$(_mo_brew_formula "$pkg")" in
+					@builtin|@none:*) continue ;;
+				esac
+			fi
+			_MO_MISSING+=("${plugin_name}"$'\t'"${cmd}"$'\t'"${desc}"$'\t'"${pkg}")
+		done <<< "$raw"
 	done
 
-	[[ ${#_mo_missing_cmds[@]} -gt 0 ]]
+	[[ ${#_MO_MISSING[@]} -gt 0 ]]
 }
 
 # _report_optional_deps: prints the optional-package table and install hint.
@@ -351,40 +623,39 @@ _report_optional_deps()
 	echo -e "${COLOR_YELLOW}│  Recommended packages not installed                 │${COLOR_RESET}"
 	echo -e "${COLOR_YELLOW}└─────────────────────────────────────────────────────┘${COLOR_RESET}"
 
-	local all_missing_pkgs=()
-	local plugin first cmd desc pkg; local -a cmds_for_plugin
-	for plugin in "${!_mo_missing_cmds[@]}"; do
-		first=true
-		read -ra cmds_for_plugin <<< "${_mo_missing_cmds[$plugin]}"
-		for cmd in "${cmds_for_plugin[@]}"; do
-			desc="${_mo_descriptions["${plugin}"$'\t'"${cmd}"]:-$cmd}"
-			pkg="${_mo_apt_pkgs[$cmd]:-$cmd}"
-			if $first; then
-				printf "  ${COLOR_YELLOW}%-20s${COLOR_RESET}  %-12s  %s\n" "$plugin" "$cmd" "$desc"
-				first=false
-			else
-				printf "  %-20s  %-12s  %s\n" "" "$cmd" "$desc"
-			fi
-			all_missing_pkgs+=("$pkg")
-		done
-	done
-
-	local unique_pkgs=()
-	declare -A _seen_pkg=()
-	for p in "${all_missing_pkgs[@]}"; do
-		[[ -z "${_seen_pkg[$p]+set}" ]] || continue
-		_seen_pkg["$p"]=1
-		unique_pkgs+=("$p")
+	local record plugin cmd desc pkg last_plugin="" seen=""
+	local -a unique_pkgs=()
+	for record in ${_MO_MISSING[@]+"${_MO_MISSING[@]}"}; do
+		IFS=$'\t' read -r plugin cmd desc pkg <<< "$record"
+		if [[ "$plugin" != "$last_plugin" ]]; then
+			printf "  ${COLOR_YELLOW}%-20s${COLOR_RESET}  %-12s  %s\n" "$plugin" "$cmd" "$desc"
+			last_plugin="$plugin"
+		else
+			printf "  %-20s  %-12s  %s\n" "" "$cmd" "$desc"
+		fi
+		# Dedup without an associative array: bash 3.2, which macOS ships, has none.
+		case " ${seen} " in
+			*" ${pkg} "*) ;;
+			*) seen="${seen} ${pkg}"; unique_pkgs+=("$pkg") ;;
+		esac
 	done
 
 	echo ""
+	# "block" is a misnomer by the time this runs. The only caller is at the
+	# very bottom of the script, so every dotfile has already been linked and
+	# there is nothing left to prevent. It used to print "Or skip them and
+	# install without the recommended packages", which reads as though nothing
+	# had been installed, and then `exit 1` — reporting failure for an install
+	# that had in fact succeeded, so `install.sh && something` never ran the
+	# something. Both are now dropped; what differs from "warn" is only the
+	# note about silencing this report.
 	if [[ "$mode" == "block" ]]; then
-		echo -e "  These packages are optional but recommended for the best experience."
-		echo -e "  Install them alongside master-oogway:"
+		echo -e "  master-oogway is installed. These packages are optional, but"
+		echo -e "  recommended for the best experience:"
 		echo ""
-		echo -e "    ${COLOR_CYAN}sudo apt install ${unique_pkgs[*]}${COLOR_RESET}"
+		echo -e "    ${COLOR_CYAN}$(_mo_pkg_hint ${unique_pkgs[@]+"${unique_pkgs[@]}"})${COLOR_RESET}"
 		echo ""
-		echo -e "  Or skip them and install without the recommended packages:"
+		echo -e "  To skip this report on future runs:"
 		echo ""
 		if _running_via_pipe; then
 			echo -e "    ${COLOR_CYAN}~/.master-oogway/install.sh --no-recommended-packages${COLOR_RESET}"
@@ -392,11 +663,10 @@ _report_optional_deps()
 			echo -e "    ${COLOR_CYAN}./install.sh --no-recommended-packages${COLOR_RESET}"
 		fi
 		echo ""
-		exit 1
 	else
 		echo -e "  Install recommended packages for the best experience:"
 		echo ""
-		echo -e "    ${COLOR_CYAN}sudo apt install ${unique_pkgs[*]}${COLOR_RESET}"
+		echo -e "    ${COLOR_CYAN}$(_mo_pkg_hint ${unique_pkgs[@]+"${unique_pkgs[@]}"})${COLOR_RESET}"
 		echo ""
 	fi
 }
@@ -408,6 +678,7 @@ _SCRIPT_SOURCE="${BASH_SOURCE[0]:-}"
 _running_via_pipe()
 {
 	case "${_SCRIPT_SOURCE}" in
+		# platform-lint: allow — matching the shapes a pipe gives $0, not reading /proc.
 		""|bash|/dev/stdin|/dev/fd/*|/proc/self/fd/*) return 0 ;;
 	esac
 	return 1
@@ -421,11 +692,17 @@ _script_dir()
 	echo "$dir"
 }
 
+# INSTALL_DIR is spelled "$HOME/.master-oogway", and that is the path an
+# update-mode run was invoked through, so both sides of this comparison must
+# stay logical. Resolving INSTALL_DIR with `pwd -P` instead made dev mode
+# (where ~/.master-oogway is a symlink to the clone) look like update mode and
+# pull the developer's working tree, and made a HOME behind a symlink fail the
+# comparison so the bootstrap could never reach update mode at all.
 _running_from_install_dir()
 {
-	local real_install_dir
-	real_install_dir=$(cd "${INSTALL_DIR}" 2>/dev/null && pwd -P) || return 1
-	[[ "$(_script_dir)" == "${real_install_dir}" ]]
+	local dir
+	dir=$(_script_dir) || return 1
+	[[ "$dir" == "${INSTALL_DIR}" ]]
 }
 
 _running_from_master_oogway_clone()
@@ -516,7 +793,9 @@ if _running_via_pipe || { ! _running_from_install_dir && ! _running_from_master_
 	fi
 	# Already pulled + submodule-updated above; tell the re-exec'd update-mode
 	# to skip its redundant pull (avoids the double "Updating" + double fetch).
-	MO_SKIP_PULL=1 exec bash "${INSTALL_DIR}/install.sh" "${MO_ORIG_ARGS[@]}"
+	# Same bash 3.2 empty-array guard: a curl-pipe install passes no flags, so
+	# this expansion was fatal on a stock macOS before the shell even started.
+	MO_SKIP_PULL=1 exec bash "${INSTALL_DIR}/install.sh" ${MO_ORIG_ARGS[@]+"${MO_ORIG_ARGS[@]}"}
 fi
 
 # -- Plugin submodule self-healing ----------------------------------------------
@@ -534,7 +813,11 @@ _init_plugins()
 		[[ "$line" =~ path[[:space:]]*=[[:space:]]*omz-custom/plugins/([^[:space:]]+) ]] \
 			&& submodules+=("${BASH_REMATCH[1]}")
 	done < "${INSTALL_DIR}/.gitmodules"
-	for plugin in "${submodules[@]}"; do
+	# Guard the expansion: if .gitmodules ever stops matching, an empty array
+	# is an unbound-variable error under `set -u` in bash 3.2, and the
+	# installer would die here with an obscure message instead of simply
+	# having nothing to heal.
+	for plugin in ${submodules[@]+"${submodules[@]}"}; do
 		local plugin_dir="${plugins_dir}/${plugin}"
 		if [[ ! -e "${plugin_dir}/.git" ]]; then
 			[[ -d "${plugin_dir}" ]] && rm -rf "${plugin_dir}"
@@ -619,6 +902,12 @@ fi
 # -- Mode: dev (running from a master-oogway clone, not ~/.master-oogway) -------
 # Symlinks the local clone → ~/.master-oogway/ so edits are live immediately.
 
+# Checked here, not 200 lines down: discovering the missing dependency after
+# the fact left ~/.master-oogway pointing at the clone and the submodules
+# initialised, so an install that failed had still changed the machine. Pipe
+# mode has always checked before cloning; dev mode had not.
+[[ "$MO_UNINSTALL" == true ]] || _check_oh_my_zsh
+
 if _running_from_master_oogway_clone && ! _running_from_install_dir; then
 	_MO_DEV_DIR="$(_script_dir)"
 	if [[ -L "${INSTALL_DIR}" && "$(realpath "${INSTALL_DIR}" 2>/dev/null)" == "$(realpath "${_MO_DEV_DIR}" 2>/dev/null)" ]]; then
@@ -672,6 +961,8 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 				warn "${home_path} not managed by master-oogway — left as-is, removed stale backup ${backup}"
 			fi
 		fi
+
+		_report_leftover_backups "${home_path}.pre-master-oogway"
 	}
 
 	# .zshrc
@@ -704,13 +995,21 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 		success "Removed lan-scan crontab line"
 	fi
 	if grep -qF "# BEGIN master-oogway:sendenv" "${HOME}/.ssh/config" 2>/dev/null; then
-		sed -i '/# BEGIN master-oogway:sendenv/,/# END master-oogway:sendenv/d' "${HOME}/.ssh/config"
+		_mo_sed_inplace '/# BEGIN master-oogway:sendenv/,/# END master-oogway:sendenv/d' "${HOME}/.ssh/config"
 		success "Removed SendEnv stanza from ~/.ssh/config"
 	fi
 	if [[ -f /etc/ssh/sshd_config.d/99-master-oogway-acceptenv.conf ]]; then
 		if confirm "Remove sshd AcceptEnv drop-in and reload sshd? (sudo)"; then
 			sudo rm -f /etc/ssh/sshd_config.d/99-master-oogway-acceptenv.conf
-			sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
+			# lan-ssh runs on macOS now, so this can no longer assume systemd.
+			# launchd starts sshd per connection, so the removal already
+			# applies to the next one; kick it only if it happens to be up.
+			if _mo_is_macos; then
+				sudo launchctl kickstart -k system/com.openssh.sshd 2>/dev/null || true
+			else
+				# platform-lint: allow — Linux half of the branch above.
+				sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
+			fi
 			success "Removed sshd AcceptEnv drop-in"
 		fi
 	fi
@@ -723,6 +1022,14 @@ if [[ "$MO_UNINSTALL" == true ]]; then
 			success "Removed ${CONF_DIR}"
 		else
 			warn "Skipped — ${CONF_DIR} left in place"
+			# --force backs the user-owned files up in place, under $CONF_DIR
+			# rather than beside the ~/ symlink, so the loop above never sees
+			# them and they accumulate across every forced install.
+			_report_leftover_backups \
+				"${ZSHRC_REAL}.pre-master-oogway" \
+				"${ZSHENV_REAL}.pre-master-oogway" \
+				"${GITCONFIG_REAL}.pre-master-oogway" \
+				"${EDITORCONFIG_REAL}.pre-master-oogway"
 		fi
 	else
 		success "${CONF_DIR} not found — nothing to remove"
@@ -751,25 +1058,43 @@ fi
 
 [[ "${MO_FIRST_INSTALL}" == true ]] && _mo_banner
 
-[[ "$(uname)" == "Linux" ]] || die "dragon requires Linux (Ubuntu 24.04). macOS/BSD are not supported."
+case "$MO_PLATFORM" in
+	linux) success "Linux detected" ;;
+	# platform-lint: allow — reporting the detected platform.
+	macos) success "macOS detected ($(uname -m))" ;;
+	*)     die "Unsupported platform: $(uname -s). master-oogway supports Linux and macOS." ;;
+esac
 
 _check_required_packages
 
 # en_US.UTF-8 locale — required for correct terminal rendering and zshrc's
 # locale block. Not auto-fixed: update-locale writes /etc/default/locale and
 # takes effect only in a new login shell, so the user must run it themselves.
-if ! locale -a 2>/dev/null | grep -qiE '^en_US\.(utf-?8|UTF-8)$'; then
+# Captured rather than piped: `grep -q` exits on the first match, and the
+# SIGPIPE that gives `locale` makes the whole pipeline fail under
+# `set -o pipefail` — reporting the locale as missing when it is present.
+# macOS lists 80+ UTF-8 locales, so the early exit is guaranteed there.
+_mo_locales="$(locale -a 2>/dev/null || true)"
+if ! grep -qiE '^en_US\.(utf-?8|UTF-8)$' <<< "$_mo_locales"; then
 	warn "en_US.UTF-8 locale is not generated on this system."
-	todo_item "Set up locale (run these commands, then open a new terminal):
+	if _mo_is_macos; then
+		# macOS always ships en_US.UTF-8; reaching here means the locale
+		# database is genuinely unusual, so there is nothing to generate.
+		warn "en_US.UTF-8 not reported by locale -a — unusual on macOS; check your terminal's locale settings"
+	else
+		# platform-lint: allow — instructions printed only on the Linux branch.
+		todo_item "Set up locale (run these commands, then open a new terminal):
 	  sudo apt install -y locales
 	  sudo sed -i 's/^# *en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
 	  sudo locale-gen en_US.UTF-8
 	  sudo update-locale LANG=en_US.UTF-8"
+	fi
 else
 	success "en_US.UTF-8 locale already generated"
 fi
 
 _check_oh_my_zsh
+_preflight_git_identity
 
 # -- .zshrc: migrated once to $CONF_DIR/zshrc, symlinked, then never touched ----
 
@@ -795,7 +1120,6 @@ _install_zshrc()
 	if [[ ! -e "${ZSHRC_REAL}" ]] || [[ "${MO_FORCE}" == true ]]; then
 		local backup
 		backup=$(_mo_backup "${ZSHRC_REAL}")
-		[[ -n "$backup" ]] && info "Backed up ${ZSHRC_REAL} → ${backup}"
 		copy_file "${INSTALL_DIR}/zshrc.master-oogway" "${ZSHRC_REAL}"
 	fi
 	# Warn the user before their real ~/.zshrc is replaced with our symlink.
@@ -887,12 +1211,12 @@ _install_editorconfig()
 	if [[ "${MO_FORCE}" == true ]]; then
 		local backup
 		backup=$(_mo_backup "${EDITORCONFIG_REAL}")
-		[[ -n "$backup" ]] && info "Backed up ${EDITORCONFIG_REAL} → ${backup}"
 		copy_file "$template" "${EDITORCONFIG_REAL}"
 	fi
 	_mo_migrate_to_symlink "${HOME}/.editorconfig" "${EDITORCONFIG_REAL}" "$template"
 
 	if ! cmp -s "$template" "${EDITORCONFIG_REAL}"; then
+		# shellcheck disable=SC2088  # literal text in a message, not a path
 		warn "~/.editorconfig has drifted from the master-oogway template."
 		warn "Review with: diff ${EDITORCONFIG_REAL} ${INSTALL_DIR}/editorconfig.master-oogway"
 	fi
@@ -915,22 +1239,30 @@ _install_gitconfig()
 	git_name=$(git config --file "${GITCONFIG}" user.name  2>/dev/null || true)
 	git_email=$(git config --file "${GITCONFIG}" user.email 2>/dev/null || true)
 
+	# Opening /dev/tty is the reliable probe, exactly as confirm() explains:
+	# `[[ -r /dev/tty ]]` only stats the device node, whose mode is 666, so it
+	# passes with no controlling terminal at all. That check was left here when
+	# confirm() was fixed, and the read below then failed — under set -u/-e a
+	# failed read aborts the script, so the install died here having ALREADY
+	# replaced ~/.zshrc and ~/.zshenv, leaving a half-configured shell and a
+	# stack line instead of an explanation.
 	if [[ -z "$git_name" ]] || [[ -z "$git_email" ]]; then
-		[[ -r /dev/tty ]] || die "No tty available for interactive prompts." \
-			"Pre-configure git identity before running install:" \
-			"git config --global user.name 'Your Name' && git config --global user.email 'you@example.com'"
+		{ : < /dev/tty; } 2>/dev/null || _die_no_git_identity
 	fi
 
+	# `read` also fails on EOF — Ctrl-D at the prompt, or any driver feeding the
+	# installer a fixed number of lines. Same situation, so say the same thing
+	# rather than aborting mid-install on an unhandled non-zero status.
 	if [[ -z "$git_name" ]]; then
 		while [[ -z "$git_name" ]]; do
 			_ask "Git user name: "
-			read -r git_name < /dev/tty
+			read -r git_name < /dev/tty || _die_no_git_identity
 		done
 	fi
 	if [[ -z "$git_email" ]]; then
 		while [[ -z "$git_email" ]]; do
 			_ask "Git email: "
-			read -r git_email < /dev/tty
+			read -r git_email < /dev/tty || _die_no_git_identity
 		done
 	fi
 
@@ -946,7 +1278,12 @@ _install_gitconfig()
 	elif [[ -s "${GITCONFIG_REAL}" ]]; then
 		local tmp
 		tmp=$(mktemp "${GITCONFIG_REAL}.XXXXXX")
-		chmod --reference="${GITCONFIG_REAL}" "${tmp}"
+		# chmod --reference is GNU-only; macOS errors "illegal option -- -"
+		# and the ERR trap then kills an upgrade install. Fresh installs never
+		# reached this branch, which is why it went unnoticed.
+		local _mode
+		_mode=$(_mo_stat_mode "${GITCONFIG_REAL}")
+		[[ -n "${_mode}" ]] && chmod "${_mode}" "${tmp}"
 		{
 			printf '[include]\n\tpath = ~/.gitconfig.master-oogway\n\n'
 			cat "${GITCONFIG_REAL}"
@@ -982,6 +1319,8 @@ _regen_theme_conf()
 	# users who never ran dragon-configure. Uses the same writer as the regen
 	# path below, with no preset (schema defaults).
 	if [[ ! -f "${conf_file}" ]]; then
+		local _seed_nerd
+		_nerd_font_renders && _seed_nerd=true || _seed_nerd=false
 		if zsh -c '
 			typeset -g _DRAGON_CONF_FILE="$2"
 			typeset -g _DRAGON_STATE_DIR="${2:h}"
@@ -992,20 +1331,50 @@ _regen_theme_conf()
 			_dragon_init_defaults; _dragon_init_types
 			_dragon_init_hints;    _dragon_init_groups
 			_dragon_load_current_conf
+			# Seed the Nerd Font answer from the machine rather than the schema
+			# default. The default is true, and on a machine with no Nerd Font
+			# that renders every separator and icon as a tofu box on the very
+			# first prompt — the install looks broken when it is not. $3 carries
+			# the answer from the bash probe above.
+			[[ -n "$3" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$3"
 			_dragon_write_conf ""
-		' -- "${themes_dir}" "${conf_file}" 2>/dev/null; then
-			success "dragon theme config seeded (default preset)"
+		' -- "${themes_dir}" "${conf_file}" "${_seed_nerd}" 2>/dev/null; then
+			if [[ "$_seed_nerd" == false ]]; then
+				success "dragon theme config seeded (no Nerd Font found — plain separators)"
+			else
+				success "dragon theme config seeded (default preset)"
+			fi
 		else
 			warn "dragon theme config could not be seeded"
 		fi
-		todo_item "Run 'dragon-configure' to customize your prompt. It also asks
-		  whether your terminal has a Nerd Font — the default assumes yes, so until
-		  you run it (or if you answer no) some segment icons may show as blank
-		  boxes or garbled characters."
+		# Only plain separators leave the user something to fix.
+		if [[ "$_seed_nerd" == false ]]; then
+			if _nerd_font_installed; then
+				# fc-list can report a font living outside the dirs
+				# _nerd_font_family scans, so the name may be empty.
+				local _fam
+				_fam="$(_nerd_font_family || true)"
+				[[ -n "$_fam" ]] && _fam=" ($_fam)"
+				todo_item "A Nerd Font is installed${_fam} but your terminal
+				  isn't using it, so the prompt was set up with plain separators. Point your
+				  terminal's font setting at it — no installer can do that for you — then run
+				  'dragon-configure' and answer yes to the font question."
+			else
+				todo_item "No Nerd Font found, so the prompt was set up with plain
+				  separators — nothing will render as an empty box. For the icon prompt,
+				  install a Nerd Font:
+				    $(_mo_pkg_hint_font)
+				  then point your terminal at it in its settings — no installer can do
+				  that for you — and run 'dragon-configure', answering yes to the
+				  Nerd Font question."
+			fi
+		fi
 		return
 	fi
 
-	cp "${conf_file}" "${conf_file}.bak.$(date +%Y%m%d_%H%M%S)"
+	local conf_bak
+	conf_bak="${conf_file}.bak.$(date +%Y%m%d_%H%M%S)"
+	cp "${conf_file}" "${conf_bak}"
 
 	# Regenerate in a one-shot zsh: init the schema, load the current values,
 	# carry over the `# preset:` header, and re-emit through the writer. The
@@ -1024,8 +1393,17 @@ _regen_theme_conf()
 		preset=$(command grep -m1 "^# preset: " "$2" | cut -d" " -f3)
 		_dragon_write_conf "$preset"
 	' -- "${themes_dir}" "${conf_file}" 2>/dev/null; then
-		success "dragon theme config refreshed (backup kept)"
+		# An update that changes nothing leaves nothing worth keeping. The
+		# backup was written unconditionally, so every re-run dropped another
+		# ~23 KB copy next to conf.zsh that differed only in its filename.
+		if cmp -s "${conf_bak}" "${conf_file}"; then
+			rm -f "${conf_bak}"
+			success "dragon theme config already current"
+		else
+			success "dragon theme config refreshed (backup: ${conf_bak##*/})"
+		fi
 	else
+		# Keep the backup: the file on disk is whatever the failed run left.
 		warn "dragon theme config could not be refreshed — left unchanged"
 	fi
 }
@@ -1110,7 +1488,8 @@ EOF
 
 # -- Done -----------------------------------------------------------------------
 
-declare -A _mo_missing_cmds=() _mo_descriptions=() _mo_apt_pkgs=()
+# Records of missing optional tools: "plugin<TAB>cmd<TAB>desc<TAB>package".
+_MO_MISSING=()
 if _collect_missing_optionals; then
 	if [[ "$_MO_UPDATE_MODE" == true ]]; then
 		# update: never block, report at end so the user is informed

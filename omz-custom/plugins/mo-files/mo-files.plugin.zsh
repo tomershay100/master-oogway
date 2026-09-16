@@ -1,5 +1,8 @@
 
 # Tool name → apt package hint, shared by extract() and compress().
+# oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+
 typeset -gA _MO_EXTRACT_HINTS=(
 	[tar]="tar"
 	[bunzip2]="bzip2"
@@ -14,9 +17,45 @@ typeset -gA _MO_EXTRACT_HINTS=(
 	[zstd]="zstd"
 )
 
+# The 7-Zip CLI is named 7zz by Homebrew's sevenzip, 7z by Debian's p7zip-full,
+# and 7za by some others. Likewise .rar: Homebrew dropped the unrar formula, so
+# unar is the reachable free extractor.
+# extract learned 7z/7zz/7za; compress hardcoded 7z, so the very package the
+# hint recommends (Homebrew sevenzip, whose binary is 7zz) could not satisfy it.
+_mo_compress_7z() {
+	local archive="$1"; shift
+	local bin
+	for bin in 7z 7zz 7za; do
+		command -v "$bin" &>/dev/null && { command "$bin" a "$archive" "$@"; return }
+	done
+	echo "compress: no 7-Zip binary found (try: $(_mo_pkg_hint p7zip-full))" >&2
+	return 1
+}
+
+_mo_extract_7z() {
+	local bin
+	for bin in 7z 7zz 7za; do
+		command -v "$bin" &>/dev/null && { command "$bin" x "$1"; return }
+	done
+	echo "extract: no 7-Zip binary found (try: $(_mo_pkg_hint p7zip-full))" >&2
+	return 1
+}
+
+_mo_extract_rar() {
+	local bin
+	for bin in unrar unar; do
+		command -v "$bin" &>/dev/null || continue
+		# unar takes the archive directly; unrar needs the x subcommand.
+		[[ "$bin" == unar ]] && { command unar "$1"; return }
+		command unrar x "$1"; return
+	done
+	echo "extract: no RAR extractor found (try: $(_mo_pkg_hint unrar))" >&2
+	return 1
+}
+
 _mo_extract_check() {
 	command -v "$1" &>/dev/null && return 0
-	echo "extract: '$1' not installed (try: sudo apt install ${_MO_EXTRACT_HINTS[$1]:-$1})" >&2
+	echo "extract: '$1' not installed (try: $(_mo_pkg_hint ${_MO_EXTRACT_HINTS[$1]:-$1}))" >&2
 	return 1
 }
 
@@ -43,7 +82,19 @@ _mo_extract_zip() {
 		echo "extract: refusing — '$outdir' already exists; remove it first, extract manually, or use --force-merge" >&2
 		return 1
 	fi
-	unzip -K -d "$outdir" "$f"
+	# -o only when merging: without an overwrite policy unzip stops on an
+	# interactive "replace ...? [y]es,[n]o,[A]ll" prompt that nothing answers.
+	# $force_merge holds the WORD "true" or "false", so -n was always true and
+	# -o was passed on every extraction — silently overwriting on a duplicate
+	# entry, in the one function whose entire purpose is safe extraction of an
+	# untrusted zip. Run it as the command it is, the way line 66 already does.
+	local -a policy=()
+	$force_merge && policy=(-o)
+	# No -K. It means "keep setuid/setgid/sticky bits from the archive", which
+	# is the opposite of what the rest of this function is for: everything
+	# above exists to make extracting an untrusted zip safe. Dropping it lets
+	# the umask apply, as it already does for tar via _mo_untar.
+	unzip "${policy[@]}" -d "$outdir" "$f"
 }
 
 extract() {
@@ -83,18 +134,21 @@ extract() {
 					;;
 			esac
 		fi
-		local _tar_flags="--no-overwrite-dir --no-same-owner --no-same-permissions"
+		# _mo_untar keeps GNU tar's hardening flags on Linux; bsdtar has no
+		# equivalent and already declines to restore owner or permissions for a
+		# non-root user.
 		case "$file" in
-			*.tar.bz2)  _mo_extract_check tar     && tar xjf "$file"        ${=_tar_flags} || failed=1 ;;
-			*.tar.gz)   _mo_extract_check tar     && tar xzf "$file"        ${=_tar_flags} || failed=1 ;;
-			*.tar.xz)   _mo_extract_check tar     && tar xJf "$file"        ${=_tar_flags} || failed=1 ;;
-			*.tar.zst)  _mo_extract_check tar && _mo_extract_check zstd && tar --zstd -xf "$file" ${=_tar_flags} || failed=1 ;;
-			*.tar)      _mo_extract_check tar     && tar xf  "$file"        ${=_tar_flags} || failed=1 ;;
+			*.tar.bz2)  _mo_extract_check tar     && _mo_untar "$file" . || failed=1 ;;
+			*.tar.gz)   _mo_extract_check tar     && _mo_untar "$file" . || failed=1 ;;
+			*.tar.xz)   _mo_extract_check tar     && _mo_untar "$file" . || failed=1 ;;
+			*.tar.zst)  _mo_extract_check tar && _mo_extract_check zstd \
+			                                      && _mo_untar "$file" . || failed=1 ;;
+			*.tar)      _mo_extract_check tar     && _mo_untar "$file" . || failed=1 ;;
 			*.bz2)      _mo_extract_check bunzip2 && bunzip2 "$file"        || failed=1 ;;
 			*.gz)       _mo_extract_check gunzip  && gunzip  "$file"        || failed=1 ;;
 			*.zip)      _mo_extract_check unzip   && _mo_extract_zip "$file" "$force_merge" || failed=1 ;;
-			*.7z)       _mo_extract_check 7z      && 7z x    "$file"        || failed=1 ;;
-			*.rar)      _mo_extract_check unrar   && unrar x "$file"        || failed=1 ;;
+			*.7z)       _mo_extract_7z  "$file" || failed=1 ;;
+			*.rar)      _mo_extract_rar "$file" || failed=1 ;;
 			*.xz)       _mo_extract_check xz      && xz -d   "$file"        || failed=1 ;;
 			*.zst)      _mo_extract_check zstd    && zstd -d "$file"        || failed=1 ;;
 			*) echo "extract: unknown format '$file'" >&2; failed=1 ;;
@@ -141,7 +195,7 @@ fp() {
 		echo "Usage: fp [base-dir]"
 		echo "  Interactively select a file and copy its full path to clipboard."
 		echo "  base-dir — where to search (default: current directory)"
-		echo "  Copies path to clipboard (wl-copy or xclip), or prints it if neither is available."
+		echo "  Copies the path to the system clipboard, or prints it if that fails."
 		echo "  Tip: CTRL+T (fzf plugin) inserts a file path inline at the prompt."
 		return
 	fi
@@ -170,7 +224,7 @@ fp() {
 
 _mo_compress_check() {
 	command -v "$1" &>/dev/null && return 0
-	echo "compress: '$1' not installed (try: sudo apt install ${_MO_EXTRACT_HINTS[$1]:-$1})" >&2
+	echo "compress: '$1' not installed (try: $(_mo_pkg_hint ${_MO_EXTRACT_HINTS[$1]:-$1}))" >&2
 	return 1
 }
 
@@ -238,8 +292,7 @@ EOF
 						&& tar cf  "$archive" "${sources[@]}" ;;
 		*.zip)      _mo_compress_check zip  \
 						&& zip -r  "$archive" "${sources[@]}" ;;
-		*.7z)       _mo_compress_check 7z   \
-						&& 7z a    "$archive" "${sources[@]}" ;;
+		*.7z)       _mo_compress_7z "$archive" "${sources[@]}" ;;
 		*)
 			echo "compress: unknown format for '$archive'" >&2
 			echo "  Supported: .tar.zst .tar.gz .tar.bz2 .tar.xz .tar .zip .7z" >&2

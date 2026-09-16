@@ -1,6 +1,10 @@
 # master-oogway
 
-A complete zsh environment — dragon prompt theme, git aliases, fuzzy-finder functions, and 25 opt-in plugins — distributed as a standalone git repo.
+A complete zsh environment — dragon prompt theme, git aliases, fuzzy-finder functions, and 23 opt-in plugins — distributed as a standalone git repo.
+
+Runs on **Linux and macOS**. Everything platform-specific lives in
+[`omz-custom/lib/platform.zsh`](omz-custom/lib/platform.zsh); no plugin branches
+on the OS itself, and `zsh test/lint_platform.zsh` enforces that.
 
 ## Installation
 
@@ -10,7 +14,8 @@ oh-my-zsh must be installed first:
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ```
 
-Then install master-oogway:
+On macOS, `zsh`, `git` and `curl` are already present; Homebrew is used for the
+optional tools. Then install master-oogway:
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/tomershay100/master-oogway/main/install.sh)"
@@ -73,6 +78,21 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-auto-ls](omz-custom/plugins/mo-auto-ls/README.md) | auto-`ls` after `cd` |
 | [mo-color](omz-custom/plugins/mo-color/README.md) | terminal color preview, palette, and text colorizer |
 | [mo-man](omz-custom/plugins/mo-man/README.md) | `mo-man` — view any mo-* plugin README in the terminal |
+| [mo-brew](omz-custom/plugins/mo-brew/README.md) | `bup`, `bi`, `bun`, `bs`, `bl`, `bout` — Homebrew helpers (macOS only; not loaded on Linux) |
+
+## macOS notes
+
+- `rm` trashes to `~/.Trash` and Finder's *Put Back* works; see
+  [mo-trash](omz-custom/plugins/mo-trash/README.md) for how `trash-restore`
+  recovers the original path.
+- [mo-brew](omz-custom/plugins/mo-brew/README.md) adds Homebrew helpers. It is
+  in the default plugin list and silently does not load on Linux.
+- `mo-colorize-override` does not alias `ip` or `dmesg`: macOS has no `ip`, and
+  its BSD `dmesg` takes no `--color`.
+- `epoch` accepts an ISO datetime but not natural language, since BSD `date`
+  cannot parse it.
+- The `load` line in `mo-welcome` reports core tiers read from the hardware, so
+  an Apple Silicon machine shows e.g. `6S+12P` rather than a flat count.
 
 ## Shell behaviour differences from stock zsh
 

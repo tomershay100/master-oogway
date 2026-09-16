@@ -1,7 +1,11 @@
 
+# oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+
 source "${0:h}/requirements.zsh" || return
 
-_mo_build_jobs=$(nproc 2>/dev/null) || _mo_build_jobs=1
+_mo_build_jobs_value() { _mo_cpu_count }
+_mo_build_jobs=$(_mo_build_jobs_value)
 _mo_build_has_colormake=false
 command -v colormake &>/dev/null && _mo_build_has_colormake=true
 

@@ -1,5 +1,28 @@
 
+# oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+
 _MO_INSTALL_DIR="${HOME}/.master-oogway"
+
+# diff-zshrc needs a tool that both runs AND writes to the terminal, so it asks
+# mo-git's two predicates together. `gd` asks only the first: a GUI is a fine
+# answer there, and refusing one would break meld for the Linux users the
+# shipped gitconfig set it up for. Falls back to a name check when mo-git is
+# disabled — that list must stay in step with _mo_difftool_is_gui, which the
+# unit suite asserts.
+_mo_cli_difftool_usable() {
+	local tool="$1"
+	[[ -n "$tool" ]] || return 1
+	if (( ${+functions[_mo_difftool_usable]} )); then
+		_mo_difftool_usable "$tool" && ! _mo_difftool_is_gui "$tool"
+		return
+	fi
+	case "$tool" in
+		opendiff|kaleidoscope|araxis|bc|bc3|diffmerge|ecmerge|p4merge|smerge|meld|kdiff3|tkdiff|winmerge|vscode|code)
+			return 1 ;;
+	esac
+	command -v "$tool" &>/dev/null
+}
 
 _mo_version() {
 	if git -C "$_MO_INSTALL_DIR" rev-parse --git-dir &>/dev/null; then
@@ -33,8 +56,11 @@ _mo_lan_ssh_client() {
 # Server side: AcceptEnv DRAGON__PAYLOAD drop-in, validated with sshd -t (sudo).
 _mo_lan_ssh_server() {
 	local dropin="/etc/ssh/sshd_config.d/99-master-oogway-acceptenv.conf"
-	if [[ ! -f /etc/ssh/sshd_config ]]; then
-		echo "master-oogway: sshd not found — skipping AcceptEnv (not a server)"
+	if ! _mo_sshd_is_server; then
+		echo "master-oogway: this host is not accepting SSH — skipping AcceptEnv."
+		echo "  Nothing is listening on port 22. Enable Remote Login (macOS:"
+		echo "  System Settings -> General -> Sharing) or start sshd, then re-run"
+		echo "  'master-oogway lan-ssh setup' to add the drop-in."
 		return 0
 	fi
 	if [[ -f "$dropin" ]]; then
@@ -50,7 +76,15 @@ _mo_lan_ssh_server() {
 		echo "master-oogway: sshd -t failed — drop-in removed" >&2
 		sudo rm -f "$dropin"; return 1
 	fi
-	sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
+	if _mo_is_macos; then
+		# launchd starts sshd per connection (type = Submitted), so a new
+		# drop-in applies to the next connection with no reload at all. Kick it
+		# anyway when it happens to be resident.
+		sudo launchctl kickstart -k system/com.openssh.sshd 2>/dev/null || true
+	else
+		# platform-lint: allow — Linux half of the _mo_is_macos branch above.
+		sudo systemctl reload ssh 2>/dev/null || sudo systemctl reload sshd 2>/dev/null || true
+	fi
 	echo "master-oogway: added $dropin and reloaded sshd"
 }
 
@@ -91,15 +125,22 @@ master-oogway() {
 			echo "$_MO_INSTALL_DIR"
 			;;
 		lan-ssh)
+			# This was gated to Linux on the grounds that macOS needs launchd
+			# rather than cron, ships no /etc/ssh/sshd_config.d, and would
+			# raise TCC prompts on the scan. All three were wrong: macOS has
+			# /usr/sbin/cron and a working crontab, /etc/ssh/sshd_config.d
+			# exists with its Include already active, and nmap -sL is a list
+			# scan that sends no packets to the hosts. The one real difference
+			# was subnet detection, which is now a primitive.
 			local action="${2:-help}"
 			local script; script=$(_mo_lan_scan_script)
 			case "$action" in
 				setup)
 					if ! command -v nmap &>/dev/null; then
 						if command -v dig &>/dev/null; then
-							echo "master-oogway: nmap not found — using slower dig fallback (/24 only). Install nmap for full scans: sudo apt install nmap" >&2
+							echo "master-oogway: nmap not found — using slower dig fallback (/24 only). Install nmap for full scans: $(_mo_pkg_hint nmap)" >&2
 						else
-							echo "master-oogway: lan-ssh needs nmap to scan the LAN — install it first: sudo apt install nmap" >&2
+							echo "master-oogway: lan-ssh needs nmap to scan the LAN — install it first: $(_mo_pkg_hint nmap)" >&2
 							return 1
 						fi
 					fi
@@ -142,8 +183,9 @@ master-oogway() {
 			if [[ -n "$tool" ]]; then
 				# ${=tool} splits on whitespace so 'code --diff' works.
 				${=tool} "$snapshot" "$zshrc"
-			elif command -v git &>/dev/null && [[ -n "$(git config --get diff.tool 2>/dev/null)" ]]; then
-				git difftool --no-index "$snapshot" "$zshrc"
+			elif command -v git &>/dev/null \
+			     && _mo_cli_difftool_usable "$(git config --get diff.tool 2>/dev/null)"; then
+				git difftool --no-index --no-prompt "$snapshot" "$zshrc"
 			else
 				diff -u "$snapshot" "$zshrc"
 			fi

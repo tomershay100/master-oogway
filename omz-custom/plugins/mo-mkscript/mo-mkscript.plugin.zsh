@@ -1,10 +1,17 @@
 
 mkscript() {
+	# A missing argument used to share the help branch's `return`, so
+	# `mkscript` with no path printed usage and exited 0. Every other function
+	# in the project returns 1 for a missing argument.
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -eq 0 ]]; then
-		echo "Usage: mkscript <path>"
-		echo "  Create a new shell script at <path> with the project header template,"
-		echo "  make it executable, and open it in \$EDITOR."
-		return
+		local _rc=0 _fd=1
+		(( $# == 0 )) && { _rc=1; _fd=2 }
+		{
+			echo "Usage: mkscript <path>"
+			echo "  Create a new shell script at <path> with the project header template,"
+			echo "  make it executable, and open it in \$EDITOR."
+		} >&$_fd
+		return $_rc
 	fi
 
 	local script_path="$1"

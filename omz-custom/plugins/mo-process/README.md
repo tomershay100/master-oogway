@@ -9,4 +9,4 @@ Process management helpers.
 | `fkill [signal]` | fuzzy-select one or more processes to kill (TAB for multi-select; default SIGTERM) |
 | `connected [-v]` | list machines currently SSH-ed into this host; `-v` adds TTY, source IP:port, PID and login time |
 
-**Dependencies:** `pgrep` for `psgrep`; `lsof` for `port`; `fzf` for `fkill`; `ss` for `connected -v` — each checked at call time.
+**Dependencies:** `pgrep` for `psgrep`; `lsof` for `port`; `fzf` for `fkill`. `connected -v` resolves the peer socket with `ss` on Linux and `netstat` on macOS, via `_mo_ssh_peer`. Each is checked at call time.

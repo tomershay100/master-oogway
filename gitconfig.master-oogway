@@ -16,7 +16,13 @@
 [diff]
 	algorithm = histogram               # better hunk grouping than default myers — fewer spurious diff lines
 	colorMoved = zebra                  # moved lines shown in a distinct colour, not as add+delete noise
-# meld is not installed by default — install with: sudo apt install meld
+# meld is not installed by default:
+#   Linux  sudo apt install meld
+#   macOS  brew install --cask meld
+# If it is absent, `gd` falls back to `git diff` rather than failing silently,
+# and `git difftool` can be pointed at anything else with:
+#   git config --global diff.tool vimdiff      (both platforms)
+#   git config --global diff.tool opendiff     (macOS, needs full Xcode)
 # To use vimdiff instead, add to ~/.gitconfig:  [diff]  tool = vimdiff
 	tool = meld                         # `git difftool` opens meld (GUI 3-pane diff)
 

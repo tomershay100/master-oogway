@@ -1,3 +1,6 @@
+# oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+
 _mo_man_open() {
 	local readme="$1"
 	if command -v bat &>/dev/null; then

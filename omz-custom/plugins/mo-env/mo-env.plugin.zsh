@@ -1,4 +1,7 @@
 
+# oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+
 fenv() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 		echo "Usage: fenv [-e | -E | -c]"
@@ -32,14 +35,7 @@ fenv() {
 		return
 	fi
 	if [[ "$mode" == "copy" ]]; then
-		if command -v xclip &>/dev/null; then
-			print -rn -- "$var_value" | xclip -selection clipboard
-		elif command -v xsel &>/dev/null; then
-			print -rn -- "$var_value" | xsel --clipboard --input
-		else
-			echo "fenv: neither xclip nor xsel installed" >&2
-			return 1
-		fi
+		_mo_clip "$var_value" || { echo "fenv: could not copy to clipboard" >&2; return 1; }
 		echo "Copied $var_name to clipboard"
 		return
 	fi
@@ -50,15 +46,26 @@ fenv() {
 		read -r new_value
 	elif [[ "$mode" == "editor" ]]; then
 		local tmpfile tmpdir
-		# XDG_RUNTIME_DIR is a per-user tmpfs cleared on logout — safer than /tmp
+		# A per-user runtime dir, not /tmp: XDG_RUNTIME_DIR on Linux, TMPDIR
+		# (0700, under /var/folders) on macOS. Reading XDG_RUNTIME_DIR
+		# directly fell through to /tmp on macOS — the exact thing this
+		# comment says to avoid.
 		# for secrets. Fall back to /tmp if unset (non-systemd environments).
-		tmpdir="${XDG_RUNTIME_DIR:-/tmp}"
+		tmpdir="$(_mo_runtime_dir)"
 		tmpfile=$(mktemp -p "$tmpdir")
 		print -r -- "$var_value" > "$tmpfile"
-		${EDITOR:-vim} "$tmpfile"
+		# Split on words: zsh does not word-split an unquoted parameter, so
+		# EDITOR="code -w" was looked up as one command name, the edit never
+		# happened, and the OLD value was exported with status 0.
+		local -a _ed=( ${(z)${EDITOR:-vim}} )
+		"${_ed[@]}" "$tmpfile" || {
+			echo "fenv: editor failed: ${_ed[*]}" >&2
+			command rm -f "$tmpfile"
+			return 1
+		}
 		new_value=$(command cat "$tmpfile")
 		# `command rm` so a secrets temp file is really deleted, not sent to a
-		# trash can by an `rm`→trash-put alias.
+		# trash can by the `rm` alias mo-trash installs.
 		command rm -f "$tmpfile"
 	fi
 	export "${var_name}=${new_value}"

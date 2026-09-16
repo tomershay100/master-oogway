@@ -1,5 +1,6 @@
 # -- PATH additions -------------------------------------------------------------
-typeset -U path   # deduplicate $path; prevents growth on re-source
+typeset -gU path  # -g: soursh sources this inside a function, where a bare
+                  # typeset would shadow the global $path with an empty local
 # List base dirs explicitly: /etc/zsh/zshenv seeds /usr/bin:/bin only at login,
 # so a re-source (source ~/.zshrc) would otherwise drop them. -U path dedups.
 path=($path /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin)
@@ -65,6 +66,17 @@ setopt ALWAYS_TO_END     # after completing, jump cursor to end of word
 # -- optional dependency map ----------------------------------------------------
 # Detects optional tools once via zsh's $commands hash (no forks) and caches
 
+# -- shared libs ----------------------------------------------------------------
+# Sourced explicitly: oh-my-zsh reads $ZSH_CUSTOM/lib/<name>.zsh only as an
+# override of a same-named file in its own lib/, so a lib with a new name is
+# never picked up. lib/colors.zsh happened to work because dragon.zsh sources
+# it directly; lib/clip.zsh had no such line, so _mo_clip was undefined and
+# clip, fp and flog silently fell back to printing instead of copying.
+for __mo_lib in "$ZSH_CUSTOM/lib/"*.zsh(#qN); do
+    source "$__mo_lib" || print -P "%F{yellow}[master-oogway]%f failed to source ${__mo_lib}" >&2
+done
+unset __mo_lib
+
 # -- dragon theme config --------------------------------------------------------
 # Sourced before oh-my-zsh so your overrides win over theme defaults.
 # Edit with: dragon-configure
@@ -118,7 +130,7 @@ HISTORY_SUBSTRING_SEARCH_FUZZY=1                 # fuzzy match, not strict subst
 HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'      # case-insensitive
 
 # mo-welcome — space-separated, order preserved. "" to silence.
-MO_WELCOME_FIELDS="host os sys now up"   # also: ip shell load mem tmux ssh
+: ${MO_WELCOME_FIELDS="host os sys now up"}   # also: ip disk arch shell load mem tmux ssh
 
 # -- plugins --------------------------------------------------------------------
 # gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info).
@@ -164,6 +176,7 @@ plugins=(
     mo-env                     # fenv (fuzzy environment variable browser)
     mo-mkscript                # mkscript — scaffold a new shell script from template
     mo-color                   # color — terminal color preview, palette, and text colorizer
+    mo-brew                    # bup, bi, bun, bs, bl, bout — Homebrew helpers (macOS only; no-op on Linux)
     mo-man                     # mo-man <plugin> — view a mo-* plugin README (bat/less)
     mo-shell-tools             # h, ?, cwhich, vwhich, clip, vizsh, soursh, calc, epoch, mo-where
     mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path
@@ -214,8 +227,14 @@ export LESS='-FRX'   # -F exit if fits screen, -R pass color, -X don't clear on 
 # -- key bindings ---------------------------------------------------------------
 # history-substring-search: Up/Down arrows search by the prefix already typed.
 # terminfo values map to the correct escape sequences for your terminal.
-bindkey "${terminfo[kcuu1]}" history-substring-search-up
-bindkey "${terminfo[kcud1]}" history-substring-search-down
+#
+# Guarded: terminfo has no kcuu1/kcud1 for a TERM that does not define one —
+# dumb, a minimal container, a shell started with TERM unset — and `bindkey ""`
+# then errors "cannot bind to an empty key sequence" on stderr at EVERY shell
+# start. The raw VT sequences below already cover those terminals, so skipping
+# the terminfo binding costs nothing.
+[[ -n "${terminfo[kcuu1]}" ]] && bindkey "${terminfo[kcuu1]}" history-substring-search-up
+[[ -n "${terminfo[kcud1]}" ]] && bindkey "${terminfo[kcud1]}" history-substring-search-down
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 

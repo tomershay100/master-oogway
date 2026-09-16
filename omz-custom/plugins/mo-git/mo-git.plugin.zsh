@@ -1,4 +1,7 @@
 
+# oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+
 source "${0:h}/requirements.zsh" || return
 
 alias ga="git add"
@@ -6,11 +9,65 @@ alias gaa="git add --all"
 alias gac="git add ."
 alias gs="git status"
 gd() {
-	if git config --get diff.tool &>/dev/null; then
+	# Upstream is `alias gd="git difftool -y"`, and opening a GUI is the point:
+	# gitconfig.master-oogway configures meld deliberately. What macOS adds is
+	# tools that are configured but cannot run, which git difftool reports as an
+	# empty diff and exit 0 — silently showing nothing:
+	#   meld      has no macOS build, yet the shipped gitconfig sets it
+	#   opendiff  git's default on macOS; the xcrun shim exists without Xcode and
+	#             fails only when invoked ("tool 'opendiff' requires Xcode")
+	# So gate on whether the tool can run. Deliberately NOT on whether it is a
+	# GUI: refusing GUIs here would take meld away from the Linux users who
+	# configured it on purpose.
+	local tool
+	tool=$(git config --get diff.tool 2>/dev/null)
+	if [[ -n "$tool" ]] && _mo_difftool_usable "$tool"; then
 		git difftool -y "$@"
 	else
 		git diff "$@"
 	fi
+}
+
+# `git difftool` runs difftool.<tool>.cmd when one is set, so the binary that
+# actually runs is not always the tool name — the shipped gitconfig sets
+# `difftool.meld.cmd = meld "$LOCAL" "$REMOTE"`.
+_mo_difftool_binary() {
+	local tool="$1" cmd
+	cmd=$(git config --get "difftool.${tool}.cmd" 2>/dev/null)
+	[[ -n "$cmd" ]] && tool="${${(z)cmd}[1]}"
+	print -r -- "$tool"
+}
+
+# Can the tool actually run? Nothing about whether a human would enjoy it.
+_mo_difftool_usable() {
+	local tool
+	tool=$(_mo_difftool_binary "$1")
+	[[ -n "$tool" ]] || return 1
+	command -v "$tool" &>/dev/null || return 1
+	# opendiff exists as an xcrun shim even without Xcode, so `command -v` says
+	# yes on every Mac; ask xcode-select whether it will really open.
+	if [[ "$tool" == opendiff ]]; then
+		local dev
+		dev=$(xcode-select -p 2>/dev/null) || return 1
+		[[ -d "${dev}/Applications" || "$dev" == *Xcode.app* ]] || return 1
+	fi
+	return 0
+}
+
+# Is the tool a GUI? A separate question from "can it run", and only
+# `diff-zshrc` asks it — that command prints a config diff for someone already
+# reading terminal output, so a window is the wrong answer there. These two
+# questions were once a single predicate, which needed an `[[ -t 1 ]]` fudge to
+# serve both; the fudge let a GUI through whenever stdout was not a terminal,
+# so a piped `gd` opened FileMerge with nobody there to close it.
+_mo_difftool_is_gui() {
+	local tool
+	tool=$(_mo_difftool_binary "$1")
+	case "$tool" in
+		opendiff|kaleidoscope|araxis|bc|bc3|diffmerge|ecmerge|p4merge|smerge|meld|kdiff3|tkdiff|winmerge|vscode|code)
+			return 0 ;;
+	esac
+	return 1
 }
 alias gds="gd --staged"
 alias glc="git log --graph --pretty='%C(yellow)%h%Creset -%C(auto)%d%Creset %C(auto)%s %C(green)(%ad) %C(bold blue)[%an]%Creset' --date=short"
@@ -76,6 +133,9 @@ gsum() {
 	printf '%s\n' "${status_lines[@]}" | head -20
 	(( stashes   > 0 )) && echo "stashes: $stashes"
 	(( untracked > 0 )) && echo "untracked: $untracked file(s)"
+	# Explicit: the test above was the function's last statement, so a clean
+	# repo returned 1 and any `gsum && ...` chain silently broke.
+	return 0
 }
 
 gtag() {
@@ -147,10 +207,13 @@ flog() {
 		echo "Usage: flog"
 		echo "  Interactively browse git log and copy the selected commit hash."
 		echo "  Preview pane shows the commit diff stat."
-		echo "  Copies hash to clipboard (wl-copy or xclip), or prints it if neither is available."
+		echo "  Copies the hash to the system clipboard, or prints it if that fails."
 		return
 	fi
 	command -v fzf &>/dev/null || { echo "flog: fzf not installed" >&2; return 1; }
+	# gtag and fbranch both check this; flog did not, so outside a repo it
+	# picked from empty input and returned 0 with no output at all.
+	git rev-parse --git-dir &>/dev/null || { echo "flog: not a git repo" >&2; return 1; }
 	local hash
 	hash=$(git log --oneline --color=always 2>/dev/null \
 		| fzf --ansi --height=60% --reverse \

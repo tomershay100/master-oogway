@@ -39,9 +39,17 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
         transient.zsh             zle hooks, transient prompt collapse
   lib/
     colors.zsh                    named xterm-256 color table — shared by dragon theme and mo-color plugin
-    clip.zsh                      clipboard helper (copy/paste wrappers)
   plugins/
-    mo-*/mo-*.plugin.zsh          22 master-oogway plugins (5 override + 17 additive)
+    mo-*/mo-*.plugin.zsh          23 master-oogway plugins (5 override + 18 additive)
+test/
+  run.zsh                         sources every test/**/*_test.zsh and reports pass/fail/skip
+  assert.zsh                      assert_eq, assert_contains, assert_match, t_skip
+  lint_platform.zsh               the platform invariant: no plugin hardcodes a Linux-only command
+  platform/platform_test.zsh      lib/platform.zsh primitives, branching on the host OS
+  plugins/plugins_test.zsh        every plugin parses and ships a README, plus command spot-checks
+  behaviour/*_test.zsh            one file per fixed bug or ported command
+  e2e/run.sh                      install into a throwaway HOME, drive a real login shell, uninstall
+  e2e/feature_sweep.zsh           the command checks the e2e runner executes
 ```
 
 ---
@@ -416,3 +424,54 @@ gitstatus callback → __refresh_prompt (transient.zsh)
                    → PROMPT / RPROMPT strings assembled
 ```
 
+## Platform-specific code
+
+master-oogway runs on Linux and macOS. Nothing under `omz-custom/plugins/` or
+`omz-custom/themes/` may call `uname`, read `/proc`, or use a GNU-only flag —
+it calls a primitive in `omz-custom/lib/platform.zsh` instead.
+`zsh test/lint_platform.zsh` fails the build otherwise.
+
+When you need a capability the layer does not have yet:
+
+1. Add the primitive to `lib/platform.zsh`, pairing the Linux implementation
+   with the macOS one so a reviewer sees both.
+2. Add a direct test in `test/platform/platform_test.zsh`, branching on
+   `_mo_is_macos` where the expected value differs.
+3. Call it from the plugin.
+
+Do not add a `[[ $(uname) == Darwin ]]` branch inside a plugin. Spreading the
+decision across 23 plugins is what makes a codebase hard to port; one file with
+two branches keeps each plugin readable and makes a third platform one file.
+
+Code that is genuinely platform-bound may opt out by declaring why. Prefer the
+**per-line** form — it goes on the offending line, or within the three lines
+above it, and requires a reason:
+
+```zsh
+# platform-lint: allow — Linux half of the _mo_is_macos branch above.
+sudo systemctl reload ssh 2>/dev/null || true
+```
+
+The whole-file form survives for `optional-deps.zsh`, which names Debian
+packages on purpose:
+
+```zsh
+# platform-lint: metadata — names Linux package names for the installer.
+```
+
+A file-level waiver hides every *later* addition to that file too. That is how
+`mo-cli` accumulated unnoticed Linux-isms while it carried a `linux-only`
+waiver for lan-ssh: once the waiver was there, nothing in the file was checked
+again. The `linux-only` form has been removed for that reason — use a per-line
+`allow` with a reason instead.
+
+`install.sh` runs under bash before any zsh is sourced, so it mirrors the few
+primitives it needs. Keep it **bash 3.2 compatible** — macOS ships bash 3.2 as
+`/bin/bash`, which `/usr/bin/env bash` resolves to, so no associative arrays.
+
+## Tests
+
+```bash
+zsh test/run.zsh            # everything
+zsh test/lint_platform.zsh  # the platform invariant
+```

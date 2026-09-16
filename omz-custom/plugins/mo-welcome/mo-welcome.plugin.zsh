@@ -1,20 +1,20 @@
+# oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+
 _mo_welcome_field_host() {
 	print -P "  %F{245}host%f   %F{cyan}%B${USER}%b%F{245} @ %f%F{green}%B${HOST%%.*}%b%f"
 }
 
 _mo_welcome_field_os() {
-	local os_name
-	if [[ -r /etc/os-release ]]; then
-		os_name=$(awk -F= '$1=="PRETTY_NAME"{gsub(/"/,"",$2); print $2; exit}' /etc/os-release)
-	fi
-	os_name="${os_name:-$(uname -s)}"
-	print -P "  %F{245}os  %f   %F{magenta}${os_name}%f"
+	print -P "  %F{245}os  %f   %F{magenta}$(_mo_os_name)%f"
 }
 
 _mo_welcome_field_sys() {
-	local kver
-	kver=$(<"/proc/sys/kernel/osrelease")
-	print -P "  %F{245}sys %f   %F{blue}${kver}%f"
+	print -P "  %F{245}sys %f   %F{blue}$(_mo_kernel)%f"
+}
+
+_mo_welcome_field_arch() {
+	print -P "  %F{245}arch%f   %F{blue}$(_mo_arch)%f"
 }
 
 _mo_welcome_field_now() {
@@ -26,21 +26,14 @@ _mo_welcome_field_now() {
 
 _mo_welcome_field_up() {
 	local up_secs up_str
-	IFS=. read -r up_secs _ < /proc/uptime
+	up_secs=$(_mo_uptime_secs)
 	up_str="$(( up_secs / 86400 ))d $(( up_secs % 86400 / 3600 ))h $(( up_secs % 3600 / 60 ))m"
 	print -P "  %F{245}up  %f   %F{green}${up_str}%f"
 }
 
 _mo_welcome_field_ip() {
 	local ip
-	# `ip route get 1.1.1.1` asks the kernel which source IP it would use to
-	# reach an external address — no packets are sent, works fully offline.
-	# It reliably returns the primary outbound interface IP even without internet.
-	# Falls back to the first non-loopback address if no default route exists.
-	ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '/src/{for(i=1;i<=NF;i++) if($i=="src") {print $(i+1); exit}}')
-	if [[ -z "$ip" ]]; then
-		ip=$(ip -4 addr show 2>/dev/null | awk '/inet /{gsub(/\/.*/, "", $2); if ($2 != "127.0.0.1") {print $2; exit}}')
-	fi
+	ip=$(_mo_local_ip)
 	[[ -n "$ip" ]] && print -P "  %F{245}ip  %f   %F{cyan}${ip}%f"
 }
 
@@ -49,40 +42,46 @@ _mo_welcome_field_shell() {
 }
 
 _mo_welcome_field_load() {
-	local load1 cores pct color
-	read -r load1 _ < /proc/loadavg
-	cores=$(command grep -c '^processor' /proc/cpuinfo 2>/dev/null)
+	local load1 cores summary pct color
+	load1=$(_mo_load_avg)
+	cores=$(_mo_cpu_count)
 	(( cores > 0 )) || cores=1
+	# Apple Silicon core tiers are named per chip, so the summary is read from
+	# the hardware rather than assumed; on Linux this is just the count.
+	summary=$(_mo_core_summary)
 	printf -v pct "%.0f" "$(( load1 * 100 / cores ))"
 	if   (( pct >= 80 )); then color=red
 	elif (( pct >= 50 )); then color=yellow
 	else                       color=green
 	fi
 	printf -v load1 "%.2f" "$load1"
-	print -P "  %F{245}load%f   %F{${color}}${load1} load  ·  ${cores} cores  ·  ${pct}%% busy%f"
+	print -P "  %F{245}load%f   %F{${color}}${load1} load  ·  ${summary} cores  ·  ${pct}%% busy%f"
 }
 
 _mo_welcome_field_mem() {
-	local total avail used_kb pct
-	total=$(awk '/^MemTotal:/{print $2}' /proc/meminfo)
-	avail=$(awk '/^MemAvailable:/{print $2}' /proc/meminfo)
-	used_kb=$(( total - avail ))
-	pct=$(( used_kb * 100 / total ))
-	local used_gb total_gb
-	printf -v used_gb  "%.1f" "$(( used_kb  / 1024.0 / 1024.0 ))"
-	printf -v total_gb "%.1f" "$(( total / 1024.0 / 1024.0 ))"
+	local used total pct used_gb total_gb
+	read -r used total <<< "$(_mo_mem_stats)"
+	(( total > 0 )) || return 0
+	pct=$(( used * 100 / total ))
+	printf -v used_gb  "%.1f" "$(( used  / 1073741824.0 ))"
+	printf -v total_gb "%.1f" "$(( total / 1073741824.0 ))"
 	print -P "  %F{245}mem %f   %F{magenta}${used_gb} / ${total_gb} GB (${pct}%%)%f"
 }
 
 _mo_welcome_field_disk() {
-	local pct color
-	pct=$(df -P / 2>/dev/null | awk 'NR==2{gsub(/%/,"",$5); print $5}')
+	# _mo_disk_pct, not `df -P /`: on macOS / is the sealed, read-only system
+	# snapshot, which sits at a couple of percent no matter how full the disk
+	# is — so this under-reported badly and the thresholds below could never
+	# fire. The writable volume is /System/Volumes/Data.
+	local pct color mount=/
+	pct=$(_mo_disk_pct)
 	[[ -n "$pct" ]] || return 0
+	_mo_is_macos && [[ -d /System/Volumes/Data ]] && mount="/System/Volumes/Data"
 	if   (( pct >= 90 )); then color=red
 	elif (( pct >= 70 )); then color=yellow
 	else                       color=green
 	fi
-	print -P "  %F{245}disk%f   %F{${color}}/ at ${pct}%%%f"
+	print -P "  %F{245}disk%f   %F{${color}}${mount} at ${pct}%%%f"
 }
 
 _mo_welcome_field_tmux() {

@@ -1,0 +1,168 @@
+name: test
+
+# The suite has only ever run on macOS, while the platform layer changes
+# behaviour on both. Linux is the half that was never executed — several fixes
+# in this project (the epoch --utc flag, the zstd dependency check, mo-where's
+# detector, rm-to-trash, gsum's exit status) alter Linux behaviour, and nothing
+# proved they still work there.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+# A new push supersedes the old run; without this a hung job keeps a runner for
+# six hours while newer commits queue behind it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: unit (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install shell dependencies
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update -qq
+            # bc for calc, trash-cli so the Linux trash path is exercised
+            # rather than skipped, and the archive tools extract/compress use.
+            # xclip under Xvfb, which the test steps start with xvfb-run: that
+            # is what makes the Linux clipboard branch run instead of skip.
+            # wl-clipboard is installed but not exercised — there is no Wayland
+            # compositor here, so _mo_clip_tool passes it over. Installed but
+            # unusable is deliberate: it is the state that hung the suite on a
+            # real desktop reached over SSH, and the guard against it belongs
+            # under test too.
+            # fzf is a hard dep of mo-search: without it the plugin does not
+            # load and every fman assertion skips, which is how the man-page
+            # parser reached Linux untested.
+            sudo apt-get install -y -qq zsh bc trash-cli zstd xz-utils unzip zip \
+              wl-clipboard xvfb xclip shellcheck fzf
+            # Build the man index synchronously. apt leaves man-db rebuilding it
+            # in the background, and while that runs every apropos query returns
+            # nothing — which failed the `man -k .` assertion on one run and
+            # passed on the next. Without this the test is not flaky, it simply
+            # skips, and the Linux side of that check stops being covered.
+            sudo mandb -q 2>/dev/null || true
+          else
+            # macOS ships zsh, bc, tar, unzip and /usr/bin/trash already.
+            brew install --quiet zstd || true
+          fi
+
+      - name: Install oh-my-zsh
+        run: |
+          RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
+            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+      - name: Syntax
+        run: |
+          set -eu
+          bash -n install.sh
+          for f in $(git ls-files '*.zsh' '*.zsh-theme'); do zsh -n "$f"; done
+          zsh -n zshrc.master-oogway zshenv.master-oogway
+
+      - name: install.sh runs under bash 3.2 semantics
+        # macOS ships bash 3.2, where expanding an empty array under `set -u`
+        # is fatal. Nothing in CI ships that bash, so assert the constructs
+        # that depend on 4.x are absent rather than pretending to test it.
+        run: |
+          set -eu
+          # bash 4 only. Written with an explicit exit, not `! grep`: `set -e`
+          # exempts any command whose status is inverted with !, so the negated
+          # form silently never fails.
+          if grep -q 'declare -A' install.sh; then
+            echo "declare -A requires bash 4; macOS ships 3.2" >&2
+            grep -n 'declare -A' install.sh >&2
+            exit 1
+          fi
+          # An empty array expanded as "${a[@]}" is an unbound-variable error
+          # under `set -u` in bash 3.2. The safe form is ${a[@]+"${a[@]}"} —
+          # which contains the unsafe text, so strip guarded lines and
+          # comments before looking.
+          if grep -v '^[[:space:]]*#' install.sh \
+             | grep -v '\[@\]+' \
+             | grep -qE '"\$\{[A-Za-z_][A-Za-z0-9_]*\[@\]\}"'; then
+            echo "unguarded empty-array expansion (fatal on bash 3.2):" >&2
+            grep -nv '^[[:space:]]*#' install.sh | grep -v '\[@\]+' \
+              | grep -E '"\$\{[A-Za-z_][A-Za-z0-9_]*\[@\]\}"' >&2
+            exit 1
+          fi
+
+      # CLAUDE.md lists this among the checks to run before every commit, but
+      # nothing ran it, so install.sh sat on eight warnings none of us saw.
+      # Linux only: shellcheck's verdict does not vary by runner.
+      - name: Shellcheck
+        if: runner.os == 'Linux'
+        run: shellcheck install.sh
+
+      - name: Platform lint
+        run: zsh test/lint_platform.zsh
+
+      # Under a virtual display, so the Linux clipboard branch runs instead of
+      # skipping. xvfb was installed for this and then never started: nothing
+      # set DISPLAY, so _mo_clip_tool correctly found no display and every
+      # clipboard assertion skipped while the step claimed to cover them. That
+      # branch is where the upstream bug lived — lib/clip.zsh was sourced by
+      # nothing, so clip/fp/flog reached no clipboard on Linux either.
+      - name: Unit suite
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run -a zsh test/run.zsh
+          else
+            zsh test/run.zsh
+          fi
+
+  e2e:
+    name: e2e install/uninstall (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    # A hang must fail fast, not burn the six-hour default and report as
+    # "cancelled" with no useful log.
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install shell dependencies
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update -qq
+            # xvfb and xclip so the sweep's clipboard check runs under a
+            # display rather than skipping; mandb for the same reason the unit
+            # job builds it — apt leaves the index rebuilding in the background
+            # and `man -k .` finds nothing while it does.
+            sudo apt-get install -y -qq zsh bc trash-cli zstd xz-utils unzip zip util-linux \
+              xvfb xclip
+            sudo mandb -q 2>/dev/null || true
+          fi
+
+      - name: Install oh-my-zsh
+        run: |
+          RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
+            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+      # Installs into a throwaway HOME, exercises every command in a real
+      # interactive login shell, then uninstalls and checks the dotfiles came
+      # back. This is the only test that can see a lib nothing sources.
+      - name: End-to-end
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run -a bash test/e2e/run.sh
+          else
+            bash test/e2e/run.sh
+          fi

@@ -11,18 +11,25 @@ _mo_pick_name_for() {
 
 # Read one keystroke (or an escape sequence) and set REPLY to a canonical name.
 # Recognised: up down left right home end pgup pgdn enter esc q backspace 0-9.
+#
+# The caller owns the tty mode. This used to set raw mode and restore it around
+# every single keystroke, which left ISIG re-enabled in the gap between reads:
+# a Ctrl+C arriving in that window was delivered as a real SIGINT and killed
+# the shell, instead of being read as \x03 and treated as cancel. Setting it
+# once around the whole loop closes that window.
 _mo_pick_read_key() {
-	local key c2 c3 stty_save
-	stty_save=$(stty -g 2>/dev/null)
+	local key c2 c3
 	{
-		# -isig: Ctrl+C becomes literal \x03 instead of SIGINT, so we handle
-		# it explicitly below — the interactive shell never intercepts it.
-		stty -echo -icanon -isig min 1 time 0 2>/dev/null
 		read -k1 key
 		if [[ "$key" == $'\e' ]]; then
-			stty min 0 time 1 2>/dev/null
+			# zsh's own timeout, not `stty min 0 time 1`: `read -k` calls the
+			# shell's setcbreak(), which unconditionally re-applies VMIN=1
+			# VTIME=0 from its saved tty state and so undoes the stty on the
+			# line before. A bare Esc therefore blocked until some other key
+			# arrived — with -isig still in force, so Ctrl+C could not break
+			# out either. Affects Linux identically; it is zsh's utils.c.
 			c2=''
-			read -k1 c2 2>/dev/null || c2=''
+			read -t 0.05 -k1 c2 2>/dev/null || c2=''
 			if [[ -z "$c2" ]]; then
 				REPLY=esc
 			elif [[ "$c2" == '[' || "$c2" == 'O' ]]; then
@@ -54,8 +61,6 @@ _mo_pick_read_key() {
 				*)                 REPLY=unknown ;;
 			esac
 		fi
-	} always {
-		stty "$stty_save" 2>/dev/null
 	}
 }
 
@@ -123,9 +128,20 @@ _mo_color_pick() {
 	fi
 
 	local idx=0 buffer='' grid_top=5 cancelled=1 prev
+	# Global, not local: zsh tears a function's locals down BEFORE running its
+	# EXIT trap, so a trap referring to a local restores `stty ""` and leaves
+	# the terminal with no echo and no Ctrl+C. Verified:
+	#   f(){ local S=x; trap 'print "[$S]"' EXIT; return 7 }; f   ->  []
+	typeset -g _MO_PICK_STTY
 	{
+		_MO_PICK_STTY=$(stty -g 2>/dev/null)
 		tput smcup; tput civis
-		trap 'tput cnorm; tput rmcup' EXIT TERM HUP
+		# Raw mode once, for the whole session. -isig makes Ctrl+C arrive as a
+		# literal \x03 that the key reader turns into "cancel"; the restore is
+		# in the trap as well as at the end, so an unexpected exit cannot leave
+		# the terminal without echo.
+		stty -echo -icanon -isig min 1 time 0 2>/dev/null
+		trap 'stty "$_MO_PICK_STTY" 2>/dev/null; tput cnorm; tput rmcup' EXIT TERM HUP
 
 		_mo_pick_draw_static "$grid_top"
 		_mo_pick_draw_header "$idx" ""
@@ -181,8 +197,12 @@ _mo_color_pick() {
 			_mo_pick_draw_header "$idx" "$buffer"
 		done
 
+		stty "$_MO_PICK_STTY" 2>/dev/null
 		tput cnorm; tput rmcup
-		trap - EXIT INT TERM HUP
+		trap - EXIT TERM HUP
+	} always {
+		stty "$_MO_PICK_STTY" 2>/dev/null
+		tput cnorm 2>/dev/null; tput rmcup 2>/dev/null
 	} >/dev/tty </dev/tty
 
 	(( cancelled )) && return 130

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This directory is a **standalone, separately-published git repo** (`github.com/tomershay100/master-oogway`) that is also vendored inside the parent `custum-linux-configs/` dotfiles repo. It has its own `.git/`, its own remote, and its own submodules. Treat it as the project root — git commands here operate on master-oogway, not the parent. The parent's `CLAUDE.md` covers umbrella dotfile conventions; this file covers master-oogway specifics.
 
-The repo ships a complete zsh environment: the **dragon** prompt theme (~130 tunable vars, TUI preset picker, 43 presets) plus 22 `mo-*` plugins (5 override + 17 additive) on top of oh-my-zsh.
+The repo ships a complete zsh environment: the **dragon** prompt theme (~130 tunable vars, TUI preset picker, 43 presets) plus 23 `mo-*` plugins (5 override + 18 additive) on top of oh-my-zsh.
 
 End-user docs live in `README.md`. Contributor mechanics (adding plugins/presets/variables, plugin README structure) live in `CONTRIBUTING.md` — read it before substantive theme or plugin work; this file does not duplicate it.
 
@@ -88,17 +88,26 @@ Separator glyphs in preset files use `$'\uXXXX'` Unicode-escape form (the state-
 
 ## Shared libs
 
-`omz-custom/lib/` holds one file sourced automatically by oh-my-zsh before any plugin or theme:
+`omz-custom/lib/` holds shared code. **oh-my-zsh does not load it** — its lib loop only consults `$ZSH_CUSTOM/lib/<name>.zsh` as an override of a file that exists in oh-my-zsh's own `lib/`, and neither name does. Each consumer loads what it needs:
 
-| File | Global | Purpose |
-|------|--------|---------|
-| `lib/colors.zsh` | `_MO_COLORS[name]` | Named xterm-256 color table — shared by dragon theme and mo-color plugin. Edit here; do not duplicate in either consumer. |
+| File | Global | Loaded by | Purpose |
+|------|--------|-----------|---------|
+| `lib/colors.zsh` | `_MO_COLORS[name]` | `dragon.zsh` sources it directly | Named xterm-256 color table — shared by dragon theme and mo-color plugin. Edit here; do not duplicate in either consumer. |
+| `lib/platform.zsh` | `_mo_*` primitives | every plugin that uses one, guard-sourced | The one place OS differences live. `test/lint_platform.zsh` forbids `uname`/`/proc`/GNU-only flags anywhere else. |
+
+A plugin that calls any `_mo_*` primitive must carry the guard-source at its top, **above** `source "${0:h}/requirements.zsh"` (requirements files call primitives too):
+
+```zsh
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+```
+
+The zshrc template also sources `lib/*.zsh`, but that file is seeded once and never rewritten on update — so a plugin that relies on it alone silently loses every primitive on an install that predates the lib. `test/behaviour/lib_autoload_test.zsh` enforces the guard.
 
 Plugin usage: `command -v <tool> &>/dev/null` per-function — lazy check, only pays cost on invocation. For tools with package aliases (bat/batcat, fd/fdfind) check both: `command -v bat &>/dev/null || command -v batcat &>/dev/null`.
 
 ## Plugin system
 
-22 master-oogway plugins live in `omz-custom/plugins/mo-*/`. Each is `mo-<name>/mo-<name>.plugin.zsh` plus optional `requirements.zsh`, `optional-deps.zsh`, `README.md`.
+23 master-oogway plugins live in `omz-custom/plugins/mo-*/`. Each is `mo-<name>/mo-<name>.plugin.zsh` plus optional `requirements.zsh`, `optional-deps.zsh`, `README.md`.
 
 ### Plugin ordering in `zshrc.master-oogway` (`plugins=(…)`)
 

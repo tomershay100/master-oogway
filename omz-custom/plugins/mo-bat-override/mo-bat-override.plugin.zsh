@@ -1,5 +1,8 @@
 # Remove this file to use the system cat and less as-is.
 
+# oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+
 source "${0:h}/requirements.zsh" || return
 
 : "${BAT_THEME:=Coldark-Dark}"  # `bat --list-themes` to see options; set BAT_THEME before loading to override
@@ -20,7 +23,9 @@ if [[ -n "$_MO_BAT_CMD" ]]; then
 	cat() {
 		local arg
 		for arg in "$@"; do
-			[[ "$arg" == -*[Avet]* ]] && { command cat "$@"; return; }
+			# _mo_cat_raw, not `command cat`: BSD cat has no -A (it spells
+			# the same thing -vet) and errors out on it.
+			[[ "$arg" == -*[Avet]* ]] && { _mo_cat_raw "$@"; return; }
 		done
 		command "$_MO_BAT_CMD" --paging never --style=plain "$@"
 	}

@@ -1,4 +1,7 @@
 
+# oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
+
 md2pdf() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 		echo "Usage: md2pdf <file.md> [file2.md ...]"
@@ -13,9 +16,9 @@ md2pdf() {
 		echo "Usage: md2pdf <file.md> [file2.md ...]  (use -h for details)" >&2
 		return 1
 	fi
-	command -v pandoc   &>/dev/null || { echo "md2pdf: pandoc not installed (try: sudo apt install pandoc)" >&2; return 1; }
-	command -v xelatex  &>/dev/null || { echo "md2pdf: xelatex not installed (try: sudo apt install texlive-xetex)" >&2; return 1; }
-	fc-list 'JetBrains Mono' 2>/dev/null | command grep -qi 'JetBrains' \
+	command -v pandoc   &>/dev/null || { echo "md2pdf: pandoc not installed (try: $(_mo_pkg_hint pandoc))" >&2; return 1; }
+	command -v xelatex  &>/dev/null || { echo "md2pdf: xelatex not installed (try: $(_mo_pkg_hint texlive-xetex))" >&2; return 1; }
+	_mo_font_installed 'JetBrains Mono' \
 		|| echo "md2pdf: warning: JetBrains Mono font not found — output will use a fallback monospace font" >&2
 	local failed=0 src
 	for src in "$@"; do
