@@ -32,6 +32,7 @@ __add_separator_between_left_segments()
 
 	local segment_content="$1"
 	local left_segment_left_bg_color="$2"
+	local is_last="${3:-0}"
 
 	[[ -z $segment_content ]] && return
 
@@ -42,14 +43,37 @@ __add_separator_between_left_segments()
 		return
 	fi
 
+	# Positional overrides: empty = fall back to the regular separator, so
+	# presets that don't set them render identically to before. is_first is
+	# tracker-driven: the first boundary that renders a glyph consumes it,
+	# so the cap lands on the first *visible* pill, not a fixed slot that
+	# may be empty (e.g. ssh_prefix when not over SSH).
+	local is_first=0
+	[[ $_dragon_left_first_pending == 1 ]] && is_first=1
+	local sep="$DRAGON__LEFT_SEGMENT_SEPARATOR"
+	local sep_same="$DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR"
+	[[ $is_first == 1 && -n "$DRAGON__LEFT_FIRST_SEGMENT_SEPARATOR" ]] && sep="$DRAGON__LEFT_FIRST_SEGMENT_SEPARATOR"
+	[[ $is_first == 1 && -n "$DRAGON__LEFT_FIRST_SEGMENT_SEPARATOR_SAME_COLOR" ]] && sep_same="$DRAGON__LEFT_FIRST_SEGMENT_SEPARATOR_SAME_COLOR"
+	[[ $is_last == 1 && -n "$DRAGON__LEFT_LAST_SEGMENT_SEPARATOR" ]] && sep="$DRAGON__LEFT_LAST_SEGMENT_SEPARATOR"
+	[[ $is_last == 1 && -n "$DRAGON__LEFT_LAST_SEGMENT_SEPARATOR_SAME_COLOR" ]] && sep_same="$DRAGON__LEFT_LAST_SEGMENT_SEPARATOR_SAME_COLOR"
+
 	if [[ "$left_segment_left_bg_color" == "$_dragon_left_prev_bg" ]]; then
 		__get_xterm_style_format "$_DRAGON_TERMINAL_BG_CODE" "$_dragon_left_prev_bg" "false" "false"
-		_DRAGON_LEFT_PROMPT+="$STYLE_FORMAT$DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR"
+		_DRAGON_LEFT_PROMPT+="$STYLE_FORMAT$sep_same"
 	else
-		__get_xterm_style_format "$_dragon_left_prev_bg" "$left_segment_left_bg_color" "false" "false"
-		_DRAGON_LEFT_PROMPT+="$STYLE_FORMAT$DRAGON__LEFT_SEGMENT_SEPARATOR"
+		# Rounded caps (E0B4–E0B7) fill with fg, unlike the classic
+		# triangles (E0B0–E0B3) which fill with bg. The first cap is a
+		# left-pointing rounded glyph opening from terminal — swap fg/bg
+		# so the pill color fills the rounded edge.
+		if [[ $is_first == 1 && -n "$DRAGON__LEFT_FIRST_SEGMENT_SEPARATOR" ]]; then
+			__get_xterm_style_format "$left_segment_left_bg_color" "$_dragon_left_prev_bg" "false" "false"
+		else
+			__get_xterm_style_format "$_dragon_left_prev_bg" "$left_segment_left_bg_color" "false" "false"
+		fi
+		_DRAGON_LEFT_PROMPT+="$STYLE_FORMAT$sep"
 		_dragon_left_prev_bg="$left_segment_left_bg_color"
 	fi
+	_dragon_left_first_pending=0
 }
 
 __add_separator_between_right_segments()
@@ -59,6 +83,7 @@ __add_separator_between_right_segments()
 
 	local segment_content="$1"
 	local right_segment_right_bg_color="$2"
+	local is_last="${3:-0}"
 
 	[[ -z $segment_content ]] && return
 
@@ -69,12 +94,30 @@ __add_separator_between_right_segments()
 		return
 	fi
 
+	# Positional overrides: empty = fall back to the regular separator.
+	# is_first is tracker-driven — see the left helper for the rationale.
+	local is_first=0
+	[[ $_dragon_right_first_pending == 1 ]] && is_first=1
+	local sep="$DRAGON__RIGHT_SEGMENT_SEPARATOR"
+	local sep_same="$DRAGON__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR"
+	[[ $is_first == 1 && -n "$DRAGON__RIGHT_FIRST_SEGMENT_SEPARATOR" ]] && sep="$DRAGON__RIGHT_FIRST_SEGMENT_SEPARATOR"
+	[[ $is_first == 1 && -n "$DRAGON__RIGHT_FIRST_SEGMENT_SEPARATOR_SAME_COLOR" ]] && sep_same="$DRAGON__RIGHT_FIRST_SEGMENT_SEPARATOR_SAME_COLOR"
+	[[ $is_last == 1 && -n "$DRAGON__RIGHT_LAST_SEGMENT_SEPARATOR" ]] && sep="$DRAGON__RIGHT_LAST_SEGMENT_SEPARATOR"
+	[[ $is_last == 1 && -n "$DRAGON__RIGHT_LAST_SEGMENT_SEPARATOR_SAME_COLOR" ]] && sep_same="$DRAGON__RIGHT_LAST_SEGMENT_SEPARATOR_SAME_COLOR"
+
 	if [[ "$right_segment_right_bg_color" == "$_dragon_right_prev_bg" ]]; then
 		__get_xterm_style_format "$_DRAGON_TERMINAL_BG_CODE" "$_dragon_right_prev_bg" "false" "false"
-		_DRAGON_RIGHT_PROMPT+="$STYLE_FORMAT$DRAGON__RIGHT_SEGMENT_SEPARATOR_SAME_COLOR"
+		_DRAGON_RIGHT_PROMPT+="$STYLE_FORMAT$sep_same"
 	else
-		__get_xterm_style_format "$right_segment_right_bg_color" "$_dragon_right_prev_bg" "false" "false"
-		_DRAGON_RIGHT_PROMPT+="$STYLE_FORMAT$DRAGON__RIGHT_SEGMENT_SEPARATOR"
+		# The last cap is a right-pointing rounded glyph closing to terminal
+		# — swap fg/bg so the pill color fills the rounded edge.
+		if [[ $is_last == 1 && -n "$DRAGON__RIGHT_LAST_SEGMENT_SEPARATOR" ]]; then
+			__get_xterm_style_format "$_dragon_right_prev_bg" "$right_segment_right_bg_color" "false" "false"
+		else
+			__get_xterm_style_format "$right_segment_right_bg_color" "$_dragon_right_prev_bg" "false" "false"
+		fi
+		_DRAGON_RIGHT_PROMPT+="$STYLE_FORMAT$sep"
 		_dragon_right_prev_bg="$right_segment_right_bg_color"
 	fi
+	_dragon_right_first_pending=0
 }

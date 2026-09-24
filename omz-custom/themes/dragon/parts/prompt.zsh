@@ -1,9 +1,30 @@
+__dragon_left_separator_width()
+{
+	! $DRAGON__USE_NERD_FONT && { print 0; return }
+
+	local right_bg="$1"
+	[[ -z "$right_bg" ]] && { print 0; return }
+
+	__get_xterm_color_by_name "$right_bg"
+	right_bg="${_DRAGON_XTERM_COLOR:-$_DRAGON_TERMINAL_BG_CODE}"
+
+	if [[ "$right_bg" == "$_dragon_left_prev_bg" && "$right_bg" == "$_DRAGON_TERMINAL_BG_CODE" ]]; then
+		print 0
+	elif [[ "$right_bg" == "$_dragon_left_prev_bg" ]]; then
+		print ${#DRAGON__LEFT_SEGMENT_SEPARATOR_SAME_COLOR}
+	else
+		print ${#DRAGON__LEFT_SEGMENT_SEPARATOR}
+	fi
+}
+
 __calc_prompt_length()
 {
 	setopt local_options extended_glob
 	local zsh_prompt_length=${(m)#${${(%)PROMPT}//$'\e['[0-9;]#[A-Za-z]/}}
 	local git_prompt_length=${(m)#${${(%)FINAL_GIT_STATUS_CONTENT}//$'\e['[0-9;]#[A-Za-z]/}}
-	FINAL_ONE_LINE_LPROMPT_LEN=$(( zsh_prompt_length + git_prompt_length ))
+	# The dir->git separator is appended after this check, so count it here.
+	local git_separator_length=$(__dragon_left_separator_width "$REAL_DRAGON__GIT_STATUS_BACKGROUND_COLOR")
+	FINAL_ONE_LINE_LPROMPT_LEN=$(( zsh_prompt_length + git_prompt_length + git_separator_length ))
 }
 
 dragon__set_lprompt()
@@ -14,6 +35,7 @@ dragon__set_lprompt()
 	__get_xterm_color_by_name "$TERMINAL_BACKGROUND_COLOR"
 	typeset -g _DRAGON_TERMINAL_BG_CODE="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
 	_dragon_left_prev_bg="$_DRAGON_TERMINAL_BG_CODE"
+	_dragon_left_first_pending=1
 	GIT_SHOULD_BE_ON_NEW_LINE=false
 	_DRAGON_LEFT_PROMPT=""
 	local curr_content
@@ -29,7 +51,7 @@ dragon__set_lprompt()
 	_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__SSH_PREFIX_CONTENT"
 
 	dragon__set_username
-	__add_separator_between_left_segments "$FINAL_DRAGON__USERNAME_CONTENT" "$DRAGON__USERNAME_BACKGROUND_COLOR"
+	__add_separator_between_left_segments "$FINAL_DRAGON__USERNAME_CONTENT" "$REAL_DRAGON__USERNAME_BACKGROUND_COLOR"
 	_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__USERNAME_CONTENT"
 
 	dragon__set_user_host_separator
@@ -37,7 +59,7 @@ dragon__set_lprompt()
 	_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__USER_HOST_SEPARATOR_CONTENT"
 
 	dragon__set_hostname
-	__add_separator_between_left_segments "$FINAL_DRAGON__HOSTNAME_CONTENT" "$DRAGON__HOSTNAME_BACKGROUND_COLOR"
+	__add_separator_between_left_segments "$FINAL_DRAGON__HOSTNAME_CONTENT" "$REAL_DRAGON__HOSTNAME_BACKGROUND_COLOR"
 	_DRAGON_LEFT_PROMPT+="$FINAL_DRAGON__HOSTNAME_CONTENT"
 
 	dragon__set_host_dir_separator
@@ -57,7 +79,7 @@ dragon__set_lprompt()
 		dragon__set_multiline_new_line_prompt
 		curr_content="$FINAL_DRAGON__MULTILINE_NEW_LINE_SEPARATOR_CONTENT"
 		if [[ -n $curr_content ]]; then
-			__add_separator_between_left_segments " " ""
+			__add_separator_between_left_segments " " "" 1
 			PROMPT+="$_DRAGON_LEFT_PROMPT"
 			_DRAGON_LEFT_PROMPT=""
 			__add_separator_between_left_segments "$curr_content" "$DRAGON__PROMPT_SEPARATOR_BACKGROUND_COLOR"
@@ -65,22 +87,40 @@ dragon__set_lprompt()
 $_DRAGON_LEFT_PROMPT$curr_content"
 			_DRAGON_LEFT_PROMPT=""
 		else
-			__add_separator_between_left_segments " " ""
+			__add_separator_between_left_segments " " "" 1
 			PROMPT+="$_DRAGON_LEFT_PROMPT
 "
 			_DRAGON_LEFT_PROMPT=""
 		fi
 	fi
 
-	__add_separator_between_left_segments "$FINAL_GIT_STATUS_CONTENT" "$REAL_DRAGON__GIT_STATUS_BACKGROUND_COLOR"
+	# Which boundary closes the last pill on line 1 (transitions to terminal bg)?
+	# That's where the last-cap glyph must land.
+	local _git_closes_dir=0
+	[[ -n $FINAL_GIT_STATUS_CONTENT ]] && [[ -z $REAL_DRAGON__GIT_STATUS_BACKGROUND_COLOR ]] && _git_closes_dir=1
+	local _git_on_newline=0
+	[[ -n $FINAL_GIT_STATUS_CONTENT ]] && $DRAGON__ENABLE_MULTILINE && $GIT_SHOULD_BE_ON_NEW_LINE && _git_on_newline=1
+	# In multiline mode there is always a pill to close at the last-line
+	# transition: the dir pill (git absent/inline) or the git pill (git on its
+	# own line). The git-on-new-line block already closed the dir pill, but that
+	# leaves the git pill itself unclosed — so this is 1 whenever multiline is on.
+	local _multiline_newline_closes=0
+	$DRAGON__ENABLE_MULTILINE && _multiline_newline_closes=1
+
+	# Git on a new line starts a fresh visual row — reset the first-cap tracker
+	# so the git pill opens with the rounded first-cap instead of the regular
+	# pointy separator (the tracker was consumed by line 1's first pill).
+	[[ $_git_on_newline == 1 ]] && _dragon_left_first_pending=1
+
+	__add_separator_between_left_segments "$FINAL_GIT_STATUS_CONTENT" "$REAL_DRAGON__GIT_STATUS_BACKGROUND_COLOR" "$_git_closes_dir"
 	PROMPT+="$_DRAGON_LEFT_PROMPT$FINAL_GIT_STATUS_CONTENT"
 	_DRAGON_LEFT_PROMPT=""
-	
+
 	if $DRAGON__ENABLE_MULTILINE; then
 		dragon__set_multiline_last_line_prompt
 		curr_content="$FINAL_DRAGON__MULTILINE_LAST_LINE_SEPARATOR_CONTENT"
 		if [[ -n $curr_content ]]; then
-			__add_separator_between_left_segments " " ""
+			__add_separator_between_left_segments " " "" "$_multiline_newline_closes"
 			PROMPT+="$_DRAGON_LEFT_PROMPT"
 			_DRAGON_LEFT_PROMPT=""
 			__add_separator_between_left_segments "$curr_content" "$DRAGON__PROMPT_SEPARATOR_BACKGROUND_COLOR"
@@ -88,7 +128,7 @@ $_DRAGON_LEFT_PROMPT$curr_content"
 $_DRAGON_LEFT_PROMPT$curr_content"
 			_DRAGON_LEFT_PROMPT=""
 		else
-			__add_separator_between_left_segments " " ""
+			__add_separator_between_left_segments " " "" "$_multiline_newline_closes"
 			PROMPT+="$_DRAGON_LEFT_PROMPT
 "
 			_DRAGON_LEFT_PROMPT=""
@@ -96,7 +136,9 @@ $_DRAGON_LEFT_PROMPT$curr_content"
 	fi
 
 	dragon__set_prompt_char
-	__add_separator_between_left_segments "$FINAL_PROMPT_CHAR_CONTENT" "$REAL_DRAGON__PROMPT_CHAR_BACKGROUND_COLOR"
+	local _prompt_char_closes=0
+	[[ $_git_on_newline == 0 && $_git_closes_dir == 0 && $DRAGON__ENABLE_MULTILINE == false ]] && _prompt_char_closes=1
+	__add_separator_between_left_segments "$FINAL_PROMPT_CHAR_CONTENT" "$REAL_DRAGON__PROMPT_CHAR_BACKGROUND_COLOR" "$_prompt_char_closes"
 	_DRAGON_LEFT_PROMPT+="$FINAL_PROMPT_CHAR_CONTENT"
 
 	__add_separator_between_left_segments " " ""
@@ -110,6 +152,7 @@ dragon__set_rprompt()
 	__get_xterm_color_by_name "$TERMINAL_BACKGROUND_COLOR"
 	typeset -g _DRAGON_TERMINAL_BG_CODE="${_DRAGON_XTERM_COLOR:-$DRAGON__TERMINAL_BACKGROUND}"
 	_dragon_right_prev_bg="$_DRAGON_TERMINAL_BG_CODE"
+	_dragon_right_first_pending=1
 	_DRAGON_RIGHT_PROMPT=""
 
 	dragon__set_exit_status
@@ -131,6 +174,13 @@ dragon__set_rprompt()
 	dragon__set_date_time
 	__add_separator_between_right_segments "$FINAL_DRAGON__DATE_TIME_CONTENT" "$DRAGON__DATE_TIME_BACKGROUND_COLOR"
 	_DRAGON_RIGHT_PROMPT+="$FINAL_DRAGON__DATE_TIME_CONTENT"
+
+	# Close the last rprompt pill (date_time → terminal). Only fires when a
+	# last-cap override is set — presets without it keep their existing
+	# unclosed-rightmost-pill behavior.
+	if [[ -n "$FINAL_DRAGON__DATE_TIME_CONTENT" && -n "$DRAGON__DATE_TIME_BACKGROUND_COLOR" && -n "$DRAGON__RIGHT_LAST_SEGMENT_SEPARATOR" ]]; then
+		__add_separator_between_right_segments " " "" 1
+	fi
 
 	RPROMPT="$_DRAGON_RIGHT_PROMPT"
 	_DRAGON_SAVED_RPROMPT="$_DRAGON_RIGHT_PROMPT"  # saved for verbose transient reuse
