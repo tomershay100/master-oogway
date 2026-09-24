@@ -34,11 +34,7 @@ _dragon_load_current_conf_from() {
 
 _dragon_load_current_conf() {
 	# Start from defaults
-	typeset -gA _DRAGON_CURRENT=()
-	local var
-	for var in "${(@k)_DRAGON_DEFAULTS}"; do
-		_DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
-	done
+	_dragon_reset_current_to_defaults
 
 	[[ -f "${_DRAGON_CONF_FILE}" ]] || return
 
@@ -82,13 +78,23 @@ _dragon_load_current_conf() {
 	done
 }
 
-# Reset _DRAGON_CURRENT to defaults, then load overrides from the preset file.
-_dragon_apply_preset() {
-	local preset="$1"
+# Reset _DRAGON_CURRENT to the schema defaults. Single source of truth for the
+# "clear before applying a preset" prologue. Forgetting to reset leaves stale
+# values from a previous apply bleeding into the next one, so every apply path
+# goes through this helper.
+_dragon_reset_current_to_defaults() {
+	(( ${#_DRAGON_DEFAULTS} )) || return 1
+	typeset -gA _DRAGON_CURRENT=()
 	local var
 	for var in "${(@k)_DRAGON_DEFAULTS}"; do
 		_DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
 	done
+}
+
+# Reset _DRAGON_CURRENT to defaults, then load overrides from the preset file.
+_dragon_apply_preset() {
+	local preset="$1"
+	_dragon_reset_current_to_defaults
 	_dragon_load_current_conf_from "${_DRAGON_THEMES_DIR}/presets/${preset}.conf.zsh"
 }
 
@@ -146,10 +152,7 @@ _dragon_apply_and_save() {
 	if [[ -n "${_DRAGON_PRESET_DESC[$preset]:-}" ]]; then
 		_dragon_apply_preset "$preset"
 	else
-		local var
-		for var in "${(@k)_DRAGON_DEFAULTS}"; do
-			_DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
-		done
+		_dragon_reset_current_to_defaults
 		_dragon_load_current_conf_from "$user_file"
 	fi
 
