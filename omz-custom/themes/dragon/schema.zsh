@@ -431,6 +431,7 @@ _dragon_init_presets() {
 		blade prism inferno specter aurora
 		nova razor cosmic ember
 		nord gruvbox onedark monokai light-paper-tty mini-ssh presentation
+		capsule
 	)
 	typeset -gA _DRAGON_PRESET_DESC=(
 		[short]='Minimal. hostname:~$ with git inline. No rprompt extras.'
@@ -476,6 +477,7 @@ _dragon_init_presets() {
 		[light-paper-tty]='8-color light theme. Works in tty1 and serial consoles — zero 256-color.'
 		[mini-ssh]='Compact local; red SSH banner makes remote sessions visually unmistakable.'
 		[presentation]='Screencast/projector mode. Bold, high-contrast, no glyphs, minimal noise.'
+		[capsule]='Rounded first/last segment caps with pointy middle separators. Dark-gray identity panels with pastel accents.'
 	)
 
 	# Both preset registries must stay in sync — a missing desc causes --pick to

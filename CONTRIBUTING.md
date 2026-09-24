@@ -308,7 +308,7 @@ immediately on the next `soursh`.
 
 **3. Update the preset count in `omz-custom/themes/dragon/README.md`**
 
-Search for the line like `26 presets ship in` and increment the number.
+Search for the line like `44 presets ship in` and increment the number.
 
 ---
 

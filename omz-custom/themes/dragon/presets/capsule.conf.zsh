@@ -1,0 +1,97 @@
+# dragon preset: capsule
+# Rounded first/last segment caps with pointy middle separators.
+# Dark-gray identity panels with pastel accents; coral SSH indicator.
+export DRAGON__USE_NERD_FONT='true'
+# Middle separators stay pointy (the schema default) — only the caps differ.
+# First cap uses E0B6/E0B7 (left-pointing rounded) — the helper swaps fg/bg
+# for the first cap so the pill color fills the rounded edge correctly.
+# Right side mirrors: first cap also E0B6 (left-pointing, rounds the left edge
+# of the leftmost rprompt pill), last cap E0B4 (right-pointing, rounds the
+# right edge of the rightmost pill).
+export DRAGON__LEFT_FIRST_SEGMENT_SEPARATOR=$'\uE0B6'
+export DRAGON__LEFT_FIRST_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B7'
+export DRAGON__LEFT_LAST_SEGMENT_SEPARATOR=$'\uE0B4'
+export DRAGON__LEFT_LAST_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B5'
+export DRAGON__RIGHT_FIRST_SEGMENT_SEPARATOR=$'\uE0B6'
+export DRAGON__RIGHT_FIRST_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B7'
+export DRAGON__RIGHT_LAST_SEGMENT_SEPARATOR=$'\uE0B4'
+export DRAGON__RIGHT_LAST_SEGMENT_SEPARATOR_SAME_COLOR=$'\uE0B5'
+export DRAGON__USERNAME_FOREGROUND_COLOR='75'          # pastel blue
+export DRAGON__USERNAME_BACKGROUND_COLOR='235'         # dark gray
+export DRAGON__USERNAME_BOLD='false'
+export DRAGON__USERNAME_PREFIX=' '
+export DRAGON__USERNAME_SUFFIX=' '
+export DRAGON__ENABLE_USERNAME_COLORING_VIA_SSH='false'
+export DRAGON__HOSTNAME_FOREGROUND_COLOR='218'         # pastel pink
+export DRAGON__HOSTNAME_BACKGROUND_COLOR='235'         # dark gray
+export DRAGON__HOSTNAME_BOLD='false'
+export DRAGON__HOSTNAME_PREFIX=' '
+export DRAGON__HOSTNAME_SUFFIX=' '
+export DRAGON__ENABLE_HOSTNAME_COLORING_VIA_SSH='true'
+export DRAGON__HOSTNAME_VIA_SSH_FOREGROUND_COLOR='235'
+export DRAGON__HOSTNAME_VIA_SSH_BACKGROUND_COLOR='218'
+export DRAGON__HOSTNAME_VIA_SSH_BOLD='true'
+export DRAGON__DIRECTORY_FOREGROUND_COLOR='221'
+export DRAGON__DIRECTORY_BACKGROUND_COLOR='235'        # dark gray
+export DRAGON__DIRECTORY_BOLD='true'
+export DRAGON__DIRECTORY_PREFIX=' '
+export DRAGON__DIRECTORY_SUFFIX=' '
+export DRAGON__USER_HOST_SEPARATOR=''
+export DRAGON__HOST_DIR_SEPARATOR=''
+export DRAGON__PROMPT_CHAR='⟶'
+export DRAGON__GIT_PROMPT_CHAR='⟶'
+export DRAGON__PROMPT_CHAR_DEFAULT_FOREGROUND_COLOR='247'
+export DRAGON__PROMPT_CHAR_SUCCESS_FOREGROUND_COLOR='151'
+export DRAGON__PROMPT_CHAR_FAILURE_FOREGROUND_COLOR='210'
+export DRAGON__ENABLE_TRANSIENT_PROMPT='per-dir'
+export DRAGON__TRANSIENT_PROMPT_VERBOSE='true'
+export DRAGON__ENABLE_SSH_PREFIX='true'
+export DRAGON__SSH_PREFIX=' ssh '
+export DRAGON__SSH_PREFIX_FOREGROUND_COLOR='167'
+export DRAGON__SSH_PREFIX_BACKGROUND_COLOR='235'
+export DRAGON__SSH_PREFIX_BOLD='true'
+export DRAGON__GIT_STATUS_PREFIX=' '
+export DRAGON__GIT_BRANCH_SUFFIX='⎇ '
+export DRAGON__GIT_ACTION_COLOR='233'
+export DRAGON__GIT_CLEAN_FOREGROUND_COLOR='238'
+export DRAGON__GIT_CLEAN_BACKGROUND_COLOR='157'         # pastel mint
+export DRAGON__GIT_CLEAN_BOLD='false'
+export DRAGON__GIT_DIRTY_FOREGROUND_COLOR='238'
+export DRAGON__GIT_DIRTY_BACKGROUND_COLOR='223'         # pastel honey
+export DRAGON__GIT_DIRTY_BOLD='false'
+export DRAGON__GIT_DIRTY_SUFFIX=' ✎'
+export DRAGON__ENABLE_GIT_REMOTE_STATE='true'
+export DRAGON__GIT_REMOTE_AHEAD_SYMBOL=' ↑'
+export DRAGON__GIT_REMOTE_BEHIND_SYMBOL=' ↓'
+export DRAGON__GIT_REMOTE_SYNCED_SYMBOL=''
+export DRAGON__ENABLE_GIT_STASH_COUNT='true'
+export DRAGON__GIT_STASH_SYMBOL=' ⚑ '
+export DRAGON__DATE_TIME_FORMAT='%D{%H:%M}'
+export DRAGON__DATE_TIME_FOREGROUND_COLOR='151'        # pastel mint
+export DRAGON__DATE_TIME_BACKGROUND_COLOR='235'        # dark gray
+export DRAGON__DATE_TIME_BOLD='true'
+export DRAGON__DATE_TIME_PREFIX=' '
+export DRAGON__DATE_TIME_SUFFIX=' '
+export DRAGON__ENABLE_EXEC_TIMER='true'
+export DRAGON__EXEC_TIMER_FOREGROUND_COLOR='238'
+export DRAGON__EXEC_TIMER_BACKGROUND_COLOR='229'        # pastel lemon
+export DRAGON__EXEC_TIMER_BOLD='true'
+export DRAGON__EXEC_TIMER_PREFIX=' took '
+export DRAGON__EXEC_TIMER_SUFFIX=' '
+export DRAGON__EXEC_TIMER_THRESHOLD='1'
+export DRAGON__ENABLE_JOB_COUNT='true'
+export DRAGON__JOB_COUNT_FOREGROUND_COLOR='238'
+export DRAGON__JOB_COUNT_BACKGROUND_COLOR='153'        # pastel sky blue
+export DRAGON__JOB_COUNT_PREFIX=' '
+export DRAGON__JOB_COUNT_SUFFIX=' jobs '
+export DRAGON__ENABLE_EXIT_STATUS='true'
+export DRAGON__EXIT_STATUS_FOREGROUND_COLOR='210'       # pastel red
+export DRAGON__EXIT_STATUS_BACKGROUND_COLOR='235'      # dark gray
+export DRAGON__EXIT_STATUS_BOLD='true'
+export DRAGON__EXIT_STATUS_PREFIX=' ✗ '
+export DRAGON__EXIT_STATUS_SUFFIX=' '
+export DRAGON__ENABLE_SSH_CONNECTION_COUNT='true'
+export DRAGON__SSH_CONNECTION_COUNT_FOREGROUND_COLOR='238'
+export DRAGON__SSH_CONNECTION_COUNT_BACKGROUND_COLOR='189'  # light lavender
+export DRAGON__SSH_CONNECTION_COUNT_PREFIX=' '
+export DRAGON__SSH_CONNECTION_COUNT_SUFFIX=' active ssh '
