@@ -114,6 +114,25 @@ _dragon_warn_preset_reset() {
 	return 0
 }
 
+# Re-bake the DRAGON__PAYLOAD at the bottom of conf.zsh from its current visible
+# exports. Hand-editing conf.zsh changes the `export DRAGON__*` lines but leaves
+# the base64 payload stale — so the edits render locally (the payload is only
+# decoded over SSH) but don't travel until something rewrites the payload.
+# dragon-configure --edit / --export call this after touching conf.zsh so the
+# baked snapshot matches what the file currently says.
+#
+# Re-reads conf.zsh into _DRAGON_CURRENT (in case it was just edited) and writes
+# it back through the writer, preserving the `# preset:` header. Requires the
+# schema inits (_DRAGON_DEFAULTS) — both callers run them first. Returns non-zero
+# if the write fails.
+_dragon_rebake_payload() {
+	[[ -n "${_DRAGON_DEFAULTS:-}" ]] || return 1
+	_dragon_load_current_conf
+	local preset
+	preset="$(_dragon_active_preset)"
+	_dragon_write_conf "$preset"
+}
+
 # Apply a preset (built-in or personal) into _DRAGON_CURRENT and persist it.
 # Preserves USE_NERD_FONT (terminal capability, not style). Writes conf.zsh
 # (with the `# preset:` header); returns non-zero if the write fails, so callers

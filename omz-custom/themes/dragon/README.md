@@ -27,6 +27,22 @@ wholesale (a timestamped backup is written first; see Presets below); an update
 regenerates it in place, preserving your values and surfacing any new options as
 commented defaults.
 
+### SSH forwarding and `DRAGON__PAYLOAD`
+
+The bottom of `conf.zsh` holds one baked line:
+`: ${DRAGON__PAYLOAD:='<base64>'}; export DRAGON__PAYLOAD`. It packs every
+resolved `DRAGON__*` value into a single var that `SendEnv DRAGON__PAYLOAD`
+(`master-oogway lan-ssh setup`) ships over SSH — the remote decodes it so your
+prompt travels. The visible `export DRAGON__*` lines above it are what your
+local shell reads; the payload is what the remote reads.
+
+Hand-editing the visible exports changes your **local** prompt immediately, but
+the base64 payload goes stale — so the edits **don't forward over SSH** until
+something rewrites it. `dragon-configure --edit` and `--export` re-bake the
+payload from the current file after they touch it, so hand-edits start
+forwarding. (Picking a preset via `--preset`/the picker also bakes a fresh
+payload, since it regenerates the whole file.)
+
 ## Presets
 
 Recommended starting points:

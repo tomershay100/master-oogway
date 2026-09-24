@@ -33,8 +33,10 @@ Usage: dragon-configure [options]
 Options:
   (none), --pick      TUI preset browser — arrow keys, live preview, Enter to apply
   --preset <name>     Instantly switch to a preset (built-in or personal)
-  --edit              Open conf.zsh in $EDITOR to fine-tune individual settings
-  --export <name>     Save current config as a personal preset
+  --edit              Open conf.zsh in $EDITOR; on save, re-bakes the SSH payload
+                      from the edited file so hand-edits forward over SSH
+  --export <name>     Save current config as a personal preset; also re-bakes
+                      the SSH payload so hand-edits forward over SSH
   --gallery           Print every built-in preset stacked, with a labeled banner
   --help, -h          Show this help
 
@@ -48,17 +50,6 @@ EOF
 		print -P "%F{yellow}[dragon] Warning: ZSH_THEME is '${ZSH_THEME:-<unset>}', not 'dragon' — conf.zsh changes will have no effect until you switch themes.%f"
 	fi
 
-	# ── Edit the config file directly: dragon-configure --edit
-	if [[ "${1-}" == "--edit" ]]; then
-		if [[ ! -f "${_DRAGON_CONF_FILE}" ]]; then
-			print -P "%F{red}✗%f No conf.zsh found — run %Bdragon-configure%b first to pick a preset."
-			return 1
-		fi
-		${EDITOR:-nano} "${_DRAGON_CONF_FILE}"
-		print -P "  %F{245}Reload to apply: %Brezsh%b%f"
-		return 0
-	fi
-
 	# Init all data
 	_dragon_init_defaults
 	_dragon_init_types
@@ -68,6 +59,31 @@ EOF
 
 	# Load existing conf (sets _DRAGON_CURRENT from defaults + active conf values)
 	_dragon_load_current_conf
+
+	# ── Edit the config file directly: dragon-configure --edit
+	# Opens $EDITOR on conf.zsh, then re-bakes the DRAGON__PAYLOAD at the bottom
+	# so hand-edits to the visible exports travel over SSH (the payload is the
+	# only thing SendEnv ships — stale edits render locally but don't forward).
+	if [[ "${1-}" == "--edit" ]]; then
+		if [[ ! -f "${_DRAGON_CONF_FILE}" ]]; then
+			print -P "%F{red}✗%f No conf.zsh found — run %Bdragon-configure%b first to pick a preset."
+			_dragon_cleanup
+			return 1
+		fi
+		if ! ${EDITOR:-nano} "${_DRAGON_CONF_FILE}"; then
+			print -P "%F{red}✗%f ${EDITOR:-nano} exited non-zero — conf.zsh left unchanged, payload not re-baked."
+			_dragon_cleanup
+			return 1
+		fi
+		if _dragon_rebake_payload; then
+			print -P "  %F{green}✓%f Re-baked SSH payload from edited conf.zsh"
+		else
+			print -P "  %F{yellow}[dragon]%f Could not re-bake payload — your edits are saved but won't forward over SSH until the next successful dragon-configure write."
+		fi
+		print -P "  %F{245}Reload to apply: %Brezsh%b%f"
+		_dragon_cleanup
+		return 0
+	fi
 
 	# ── Export current config as a personal preset
 	if [[ "${1-}" == "--export" ]]; then
@@ -112,6 +128,18 @@ EOF
 		print -P "  %F{green}✓ Saved preset '%B${_export_name}%b%F{green}' to:%f"
 		print -P "    %B${_export_dst}%b"
 		print ""
+		# Re-bake conf.zsh's DRAGON__PAYLOAD so any hand-edits made since the last
+		# write are captured into the SSH-forwarding snapshot. --export is a
+		# natural "publish" moment: the user is committing their current look.
+		# Printed after the success block above — a re-bake failure here is a
+		# secondary warning, not a contradiction of the save that already happened.
+		if _dragon_rebake_payload; then
+			print -P "  %F{green}✓%f Re-baked SSH payload in conf.zsh"
+			print ""
+		else
+			print -P "  %F{yellow}[dragon]%f Could not re-bake SSH payload — preset saved, but conf.zsh's payload is unchanged."
+			print ""
+		fi
 		print -P "  %F{245}Reload it any time with: %Bdragon-configure --preset ${_export_name}%f"
 		print ""
 		print -P "  %F{245}Love it? Consider submitting it as a PR to the master-oogway repo.%f"

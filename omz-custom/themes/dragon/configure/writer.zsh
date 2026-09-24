@@ -28,6 +28,10 @@ _dragon_write_conf() {
 # Uncommented lines (export ...) override theme defaults.
 # Commented-out lines (# export ...) show all available options at their defaults.
 #
+# After hand-editing this file, run `dragon-configure --edit` (or `--export`)
+# to re-bake it — otherwise your changes render locally but do NOT forward
+# over SSH; the remote still sees the old settings until you re-bake.
+#
 # SSH forwarding: 'master-oogway lan-ssh setup' adds SendEnv DRAGON__PAYLOAD to
 # ~/.ssh/config so your theme travels to remote machines running dragon. This
 # file bakes all settings into the single DRAGON__PAYLOAD var at the bottom;
