@@ -9,6 +9,7 @@ Shell inspection and utility helpers.
 | `cwhich <cmd>` | print the source of a command (syntax-highlighted via bat if available) |
 | `vwhich <cmd>` | open the source of a command in `$EDITOR` |
 | `clip` | copy stdin to the system clipboard (`echo foo \| clip`) |
+| `clit` | copy arguments to the system clipboard (`clit foo`) |
 | `vizsh` | open `~/.zshrc` in `$EDITOR` |
 | `soursh` | reload `~/.zshrc` |
 | `calc <expr>` | evaluate a math expression via `bc -l` (supports `sqrt`, `s`, `c`, `l`, `e`) |

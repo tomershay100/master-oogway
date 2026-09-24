@@ -45,6 +45,14 @@ clip() {
 	echo "Copied ${chars} ${unit} to clipboard." >&2
 }
 
+clit() {
+	if [[ $# -eq 0 ]]; then
+		echo "Usage: clit <text>  (copy arguments to the clipboard)" >&2
+		return 1
+	fi
+	print -rn -- "$*" | clip
+}
+
 vizsh() { ${EDITOR:-vim} ~/.zshrc; }
 soursh() { source ~/.zshrc; }
 
