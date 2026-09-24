@@ -234,7 +234,7 @@ The template above shows the structure; these are the rules it doesn't.
 
 - **Bypass line** — override plugins only. Use the `\cmd` backslash form. Never document `r<name>` aliases that don't exist in the code.
 - **No prose restating the table** — if the table already says it, don't say it again in a paragraph.
-- **Plugins with no user-facing commands** (like `mo-auto-ls`, `mo-welcome`, `mo-colorize-override`) — two-sentence README maximum: what it does, and how to disable or bypass it.
+- **Plugins with no user-facing commands** (like `mo-welcome`, `mo-colorize-override`) — two-sentence README maximum: what it does, and how to disable or bypass it.
 
 Override plugins (those that shadow system commands) must appear **before** additive
 plugins in `zshrc.master-oogway` so additive plugins inherit the overridden commands.

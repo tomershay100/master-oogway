@@ -132,6 +132,13 @@ HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'      # case-insensitive
 # mo-welcome — space-separated, order preserved. "" to silence.
 : ${MO_WELCOME_FIELDS="host os sys now up"}   # also: ip disk arch shell load mem tmux ssh
 
+# mo-auto-ls — command run after each cd, and the entry count above which only
+# a count is printed. The count always includes dotfiles (it's a glob, not
+# tied to MO_AUTO_LS_COMMAND) — a plain 'ls' can show fewer entries than the
+# printed count.
+MO_AUTO_LS_COMMAND="ls"
+MO_AUTO_LS_THRESHOLD=40
+
 # -- plugins --------------------------------------------------------------------
 # gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info).
 if [[ -f "$ZSH_CUSTOM/plugins/gitstatus/gitstatus.plugin.zsh" ]]; then
