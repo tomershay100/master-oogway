@@ -23,17 +23,24 @@ typeset -g _DRAGON_TERMINAL_BG_CODE=""  # terminal bg resolved to its xterm code
 
 # Decode an SSH-forwarded theme, if any. conf.zsh on the sending machine bakes
 # all settings into base64 DRAGON__PAYLOAD (see writer.zsh); 'lan-ssh setup'
-# forwards that single var. Sourcing it here — before the defaults loop — sets
-# the forwarded DRAGON__* so set_if_unset below treats them as already-set and
-# leaves them. USE_NERD_FONT rides along, so a forwarded font preference wins
-# over the SSH default of false. base64 is required (see writer.zsh); if it is
-# missing we skip silently and fall back to this machine's own theme.
+# forwards that single var. The remote's own conf.zsh re-bakes DRAGON__PAYLOAD
+# for itself, so by theme-load time the var no longer tells forwarded from
+# self-baked — zshenv snapshots the forwarded one into _MO_DRAGON_FORWARDED_
+# PAYLOAD before conf.zsh runs (see zshenv.master-oogway). Sourcing it here —
+# before the defaults loop — sets the forwarded DRAGON__* so set_if_unset below
+# treats them as already-set and leaves them. USE_NERD_FONT rides along, so a
+# forwarded font preference wins over the SSH default of false. base64 is
+# required (see writer.zsh); if it is missing we skip silently and fall back to
+# this machine's own theme.
 #
-# Only apply the payload in an actual SSH session. Locally the same var is still
-# exported by our own conf.zsh (so it re-forwards on outbound SSH), but evaluating
-# it here would override this machine's conf.zsh — breaking dragon-configure edits.
-if __is_via_ssh && [[ -n "${DRAGON__PAYLOAD:-}" ]] && command -v base64 &>/dev/null; then
-	eval "$(printf '%s' "$DRAGON__PAYLOAD" | base64 -d 2>/dev/null)"
+# Only apply the payload in an actual SSH session. Without it (a visitor
+# without master-oogway) the machine's own theme still applies — just with the
+# USE_NERD_FONT=false SSH default, so powerline separators stay stripped.
+if __is_via_ssh \
+	&& [[ -n "${_MO_DRAGON_FORWARDED_PAYLOAD:-}" ]] \
+	&& command -v base64 &>/dev/null; then
+	eval "$(printf '%s' "$_MO_DRAGON_FORWARDED_PAYLOAD" | base64 -d 2>/dev/null)"
+	unset _MO_DRAGON_FORWARDED_PAYLOAD
 fi
 
 # Load defaults from schema and apply them via set_if_unset.
