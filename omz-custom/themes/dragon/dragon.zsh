@@ -73,6 +73,9 @@ unset _dragon_k _dragon_varname
 
 # When Nerd Font is off, strip PUA glyphs (U+E000–U+F8FF) from all string-type
 # DRAGON__ vars so preset values like HOSTNAME_PREFIX don't render as tofu.
+# Non-PUA glyphs outside common fonts (⟶ U+27F6, ⎇ U+2387, ✎ U+270E, ⚑ U+2691)
+# are translated to near-universal equivalents instead of stripped — a prompt
+# char or dirty marker disappearing entirely reads as a broken prompt.
 if [[ "$DRAGON__USE_NERD_FONT" == "false" ]]; then
 	_dragon_init_types
 	typeset _dragon_pua_k _dragon_pua_var _dragon_pua_val _dragon_pua_stripped
@@ -82,6 +85,10 @@ if [[ "$DRAGON__USE_NERD_FONT" == "false" ]]; then
 		_dragon_pua_val="${(P)_dragon_pua_var}"
 		[[ -n "$_dragon_pua_val" ]] || continue
 		_dragon_pua_stripped="${_dragon_pua_val//[$'\uE000'-$'\uF8FF']}"
+		_dragon_pua_stripped="${_dragon_pua_stripped//⟶/→}"
+		_dragon_pua_stripped="${_dragon_pua_stripped//⎇/}"
+		_dragon_pua_stripped="${_dragon_pua_stripped//✎/*}"
+		_dragon_pua_stripped="${_dragon_pua_stripped//⚑/+}"
 		[[ "$_dragon_pua_stripped" == "$_dragon_pua_val" ]] || \
 			export "${_dragon_pua_var}=${_dragon_pua_stripped}"
 	done
