@@ -274,7 +274,7 @@ If a plugin requires a tool that may not be installed:
 ## Adding a preset
 
 A built-in preset is three things in sync: a `.conf.zsh` file, a name in the
-registry array, and a description + example string. All three must be added together.
+registry array, and a description string. All three must be added together.
 
 **1. Create `omz-custom/themes/dragon/presets/<name>.conf.zsh`**
 
@@ -290,7 +290,7 @@ export DRAGON__SOME_VAR='value'   # short comment if the choice isn't obvious
 
 **2. Register the preset in `schema.zsh` — `_dragon_init_presets()`**
 
-Three places inside that function:
+Two places inside that function:
 
 ```zsh
 # (a) append to the names array
@@ -300,16 +300,9 @@ typeset -ga _DRAGON_PRESET_NAMES=(
 
 # (b) add a description (one sentence, ≤ 80 chars, no trailing period)
 [<name>]='Short description of palette and layout style.'
-
-# (c) add an ASCII example showing what the prompt looks like
-[<name>]='user · myhost · ~/projects
-          ❯'
 ```
 
-The example is shown in `--pick` and `--gallery`. Keep it to 1–3 lines; use
-real prompt chars and branch symbols so it looks like an actual prompt.
-
-A parity assertion runs at theme load — if any of the three arrays are out of
+A parity assertion runs at theme load — if the two arrays are out of
 sync, dragon prints an error naming the exact counts and exits. You'll see it
 immediately on the next `soursh`.
 

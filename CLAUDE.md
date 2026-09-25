@@ -81,7 +81,7 @@ Runtime variable name is always `DRAGON__` + schema key.
 ### Adding a preset — 3 things must stay in sync
 
 1. `presets/<name>.conf.zsh` — export **only** values differing from the schema default
-2. `schema.zsh` `_dragon_init_presets()`: append to `_DRAGON_PRESET_NAMES`, add description, add ASCII example (used by `--pick` / `--gallery`)
+2. `schema.zsh` `_dragon_init_presets()`: append to `_DRAGON_PRESET_NAMES`, add description
 3. Bump the preset count in `omz-custom/themes/dragon/README.md`
 
 Separator glyphs in preset files use `$'\uXXXX'` Unicode-escape form (the state-loader evals them on read). Powerline glyphs sit at U+E0B0–U+E0C3.

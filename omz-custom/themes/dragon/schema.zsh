@@ -396,7 +396,7 @@ _dragon_init_groups() {
 
 # Presets — layout only. Add a new preset by:
 #   1. Appending its name to _DRAGON_PRESET_NAMES
-#   2. Adding _DRAGON_PRESET_DESC[<name>] and _DRAGON_PRESET_EXAMPLE[<name>]
+#   2. Adding _DRAGON_PRESET_DESC[<name>]
 #   3. Dropping a presets/<name>.conf.zsh file with export DRAGON__VAR='value' lines
 # configure.zsh discovers all three by name; no changes needed there.
 _dragon_init_presets() {
@@ -454,113 +454,13 @@ _dragon_init_presets() {
 		[mini-ssh]='Compact local; red SSH banner makes remote sessions visually unmistakable.'
 		[presentation]='Screencast/projector mode. Bold, high-contrast, no glyphs, minimal noise.'
 	)
-	typeset -gA _DRAGON_PRESET_EXAMPLE=(
-		[short]='hostname:~/projects ❯'
-		[default]='user@myhost:~/projects on main ✔
-			  ❯'
-		[verbose]='╭ user at myhost in /home/user/projects
-			  │  on ‹main› ✔
-			  ╰╴❯'
-		[tokyonight]='╭ user at myhost in ~/projects
-			  │  on ‹main› ✔
-			  ╰╴❯'
-		[dracula]=' user  myhost  ~/projects  main ✔  ❯'
-		[minimal]='user@myhost:~/projects [main]
-			  $'
-		[corporate]='user@myhost ~/projects (main)
-			  ›'
-		[cyberpunk]=' user  myhost  ~/projects  main ✗  »'
-		[retro-terminal]='user@myhost:/home/user/projects [main]
-			  $'
-		[pastel]='╭─ user · myhost · ~/projects
-			  │  on ❀ main ✓
-			  ╰─ ✿'
-		[high-contrast]=' user @ myhost : ~/projects
-			  [git: CLEAN]
-			  ›'
-		[zen]='myhost ~/projects  main ∙'
-		[focus]=' myhost ~/projects on  main
-			  λ'
-		[catppuccin-mocha]='╭─ user at myhost in ~/projects
-			  │ on ‹main› ✔
-			  ╰─ ❯'
-		[catppuccin-latte]='╭─ user at myhost in ~/projects
-			  │ on ‹main› ✔
-			  ╰─ ❯'
-		[solarized-dark]='user@myhost:~/projects
-			  on ‹main› ✔
-			  ❯'
-		[synthwave]=' user  myhost  ~/projects  main  ▶'
-		[matrix]=' user  myhost  /home/user/projects
-			  git:main
-			  █'
-		[paper]='user • myhost — ~/projects [main] ›'
-		[prod-server]='user@myhost ~/projects (main)
-			  #'
-		[portrait]='myhost ~/projects
-			   main
-			  ❯'
-		[rainbow]=' user  myhost  ~/projects  main  ❯'
-		[kanagawa]='┌─ user · myhost · ~/projects
-			  │  on ⎇ main
-			  └─ ⟶'
-		[ascii]='user@myhost:/home/user/projects [main]
-			  $'
-		[multiplexer]='myhost ~/projects  main ❯   14:32   ⏱ 1s   1 jobs '
-		[everforest]='╭─ user on myhost in ~/projects
-			  │ on  main
-			  ╰─ ❯'
-		[sakura]='user · myhost · ~/projects
-			   main ✔
-			  ⟶'
-		[blade]=' user  myhost  ~/projects
-			   main ✔
-			  ›'
-		[prism]=' user  myhost  ~/projects
-			   main ✔
-			  ›'
-		[inferno]=' user  myhost  ~/projects
-				main ✔
-			   ›'
-		[specter]=' user  myhost  ~/projects
-				main ✔
-			   ›'
-		[aurora]='╭─ user · myhost · ~/projects
-			   on ❀ main ✓
-			  ╰─ ›'
-		[nova]=$'  tomer  oogway  ~/projects
-			   main ✓
-			  ✦'
-		[razor]=$'  tomer  oogway  ~/projects
-			   main ✓
-			  ›'
-		[cosmic]='┌─  tomer · oogway · ~/projects
-			  │   ❀ main ✓
-			  └─ ›'
-		[ember]=' λ tomer ⟩ oogway ⟩ ~/projects ⟩ ⎇ main ✓
-			  λ'
-		[nord]=' tomer  oogway  ~/projects  main ✔
-			  ❯'
-		[gruvbox]=' tomer  oogway  ~/projects  main ✔
-			  ❯'
-		[onedark]='╭ tomer at oogway in ~/projects
-			  │ on main ✔
-			  ╰╴❯'
-		[monokai]=' tomer  oogway  ~/projects  main ✔
-			  ❯'
-		[light-paper-tty]='tomer@oogway:~/projects [main]
-			  $'
-		[mini-ssh]='oogway projects  main ❯'
-		[presentation]='oogway projects (main)
-			  $'
-	)
 
-	# All three preset registries must stay in sync — missing desc or example
-	# causes --pick to render unlabeled/empty entries.
-	local _pn=${#_DRAGON_PRESET_NAMES} _pd=${#_DRAGON_PRESET_DESC} _pe=${#_DRAGON_PRESET_EXAMPLE}
-	if (( _pn != _pd || _pn != _pe )); then
-		print -u2 "dragon: preset registry mismatch — NAMES:${_pn} DESC:${_pd} EXAMPLE:${_pe}"
-		print -u2 "dragon: every preset needs an entry in all three arrays (see CONTRIBUTING.md)"
+	# Both preset registries must stay in sync — a missing desc causes --pick to
+	# render unlabeled entries.
+	local _pn=${#_DRAGON_PRESET_NAMES} _pd=${#_DRAGON_PRESET_DESC}
+	if (( _pn != _pd )); then
+		print -u2 "dragon: preset registry mismatch — NAMES:${_pn} DESC:${_pd}"
+		print -u2 "dragon: every preset needs an entry in both arrays (see CONTRIBUTING.md)"
 		return 1
 	fi
 }
