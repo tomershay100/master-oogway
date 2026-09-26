@@ -18,6 +18,7 @@ zsh -n omz-custom/themes/dragon.zsh-theme \
        omz-custom/themes/dragon/*.zsh \
        omz-custom/themes/dragon/parts/*.zsh \
        omz-custom/themes/dragon/configure/*.zsh \
+       omz-custom/lib/*.zsh \
        omz-custom/plugins/mo-*/mo-*.plugin.zsh
 shellcheck install.sh
 ```

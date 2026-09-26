@@ -354,9 +354,25 @@ _mo_local_ip() {
 # and converts its hex netmask.
 _mo_default_subnet_cidr() {
 	if ! _mo_is_macos; then
-		ip -o -f inet addr show 2>/dev/null | awk '
-			$4 !~ /^127\./ {print $4; exit}'
-		return
+		# Resolve the default route's interface first, the way the macOS
+		# branch does: picking the first non-loopback address instead hands
+		# back a VPN or docker bridge whenever one is up.
+		local iface cidr
+		iface=$(ip -4 route show default 2>/dev/null \
+			| awk '{for (i = 1; i < NF; i++) if ($i == "dev") {print $(i+1); exit}}')
+		[[ -n "$iface" ]] || return 1
+		cidr=$(ip -o -f inet addr show dev "$iface" scope global 2>/dev/null \
+			| awk '{print $4; exit}')
+		[[ -n "$cidr" ]] || return 1
+		# `ip` prints the host address with the mask (192.168.1.147/24); AND
+		# it with the mask to get the network the caller asked for.
+		local addr="${cidr%/*}" prefix="${cidr#*/}"
+		local -a oct=( ${(s:.:)addr} )
+		local -i a=$(( (oct[1] << 24) | (oct[2] << 16) | (oct[3] << 8) | oct[4] ))
+		local -i m=$(( prefix == 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) & 0xFFFFFFFF ))
+		local -i net=$(( a & m ))
+		print -- "$(( (net >> 24) & 255 )).$(( (net >> 16) & 255 )).$(( (net >> 8) & 255 )).$(( net & 255 ))/$prefix"
+		return 0
 	fi
 	local iface addr mask
 	iface=$(route -n get default 2>/dev/null | awk '/interface:/{print $2}')
