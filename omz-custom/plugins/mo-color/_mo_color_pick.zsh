@@ -65,10 +65,13 @@ _mo_pick_read_key() {
 }
 
 # Draw the unchanging UI: title, blank header rows, 16×16 swatch grid, footer.
+# In match mode (anchor set) the title reflects it and the grid starts one row
+# lower to make room for the second preview line.
 _mo_pick_draw_static() {
-	local grid_top=$1 i r g b row col footer
+	local grid_top=$1 i r g b row col footer title='color pick'
+	[[ -n "${_MO_PICK_ANCHOR_R:-}" ]] && title='color match'
 	tput clear
-	printf '\e[1;1H\e[1m── color pick ─────────────────────────────────────────────────\e[0m'
+	printf '\e[1;1H\e[1m── %s ─────────────────────────────────────────────────\e[0m' "$title"
 	for (( i = 0; i < 256; i++ )); do
 		row=$(( grid_top + i / 16 ))
 		col=$(( 3 + (i % 16) * 4 ))
@@ -83,6 +86,8 @@ _mo_pick_draw_static() {
 }
 
 # Repaint rows 2 + 3: the live "Selected: ... #hex name" line and the preview band.
+# When an anchor color is set (match mode), the preview shows the picked color as
+# FG on the anchor BG, then as BG with the anchor as FG — both directions at once.
 _mo_pick_draw_header() {
 	local idx=$1 buffer="$2" r g b name extra=''
 	_mo_xterm_to_rgb "$idx"
@@ -91,8 +96,17 @@ _mo_pick_draw_header() {
 	[[ -n "$buffer" ]] && extra="   (typing: ${buffer})"
 	printf '\e[2;1H\e[2K  Selected:  %3d   #%02x%02x%02x   %s%s' \
 		"$idx" "$r" "$g" "$b" "$name" "$extra"
-	printf '\e[3;1H\e[2K  Preview:   %s            %s  %sThe quick brown fox jumps over the lazy dog%s' \
-		"$(_mo_bg "$r" "$g" "$b" "$idx")" "$(_mo_reset)" "$(_mo_fg "$r" "$g" "$b" "$idx")" "$(_mo_reset)"
+	if [[ -n "${_MO_PICK_ANCHOR_R:-}" ]]; then
+		local ar=$_MO_PICK_ANCHOR_R ag=$_MO_PICK_ANCHOR_G ab=$_MO_PICK_ANCHOR_B ai=$_MO_PICK_ANCHOR_IDX
+		printf '\e[3;1H\e[2K  Preview:   %s%sThe quick brown fox jumps over the lazy dog%s  (picked fg / anchor bg)' \
+			"$(_mo_fg "$r" "$g" "$b" "$idx")" "$(_mo_bg "$ar" "$ag" "$ab" "$ai")" "$(_mo_reset)"
+		printf '\e[4;1H\e[2K             %s%sThe quick brown fox jumps over the lazy dog%s  (anchor fg / picked bg)' \
+			"$(_mo_fg "$ar" "$ag" "$ab" "$ai")" "$(_mo_bg "$r" "$g" "$b" "$idx")" "$(_mo_reset)"
+	else
+		printf '\e[3;1H\e[2K  Preview:   %s            %s  %sThe quick brown fox jumps over the lazy dog%s' \
+			"$(_mo_bg "$r" "$g" "$b" "$idx")" "$(_mo_reset)" "$(_mo_fg "$r" "$g" "$b" "$idx")" "$(_mo_reset)"
+		printf '\e[4;1H\e[2K'
+	fi
 }
 
 # Repaint a single swatch cell. active=1 wraps in bright yellow [brackets].
@@ -112,24 +126,40 @@ _mo_pick_paint_cell() {
 }
 
 _mo_color_pick() {
+	# Optional $1: anchor color spec for match mode. When set, the preview band
+	# shows the picked color as FG on the anchor BG and vice versa, instead of
+	# the default swatch+label. Parse failure here is fatal — no anchor, no match.
+	unset _MO_PICK_ANCHOR_R _MO_PICK_ANCHOR_G _MO_PICK_ANCHOR_B _MO_PICK_ANCHOR_IDX
+	local anchor_spec="${1:-}"
+	if [[ -n "$anchor_spec" ]]; then
+		_mo_parse_color "$anchor_spec" || return 1
+		_MO_PICK_ANCHOR_R=$_MO_COLOR_R
+		_MO_PICK_ANCHOR_G=$_MO_COLOR_G
+		_MO_PICK_ANCHOR_B=$_MO_COLOR_B
+		_MO_PICK_ANCHOR_IDX=$_MO_COLOR_IDX
+	fi
 	# Capture-friendly: UI on /dev/tty (so $(color pick) doesn't swallow it),
 	# result on stdout. Stderr must still be a TTY for our usability checks
 	# (stdout will be a pipe under command substitution).
+	local label='color pick'
+	[[ -n "$anchor_spec" ]] && label='color match'
 	if [[ ! -t 0 || ! -t 2 ]]; then
-		printf 'color pick: needs an interactive terminal\n' >&2
+		printf '%s: needs an interactive terminal\n' "$label" >&2
 		return 1
 	fi
 	local cols rows
 	cols=$(tput cols 2>/dev/null) || cols=80
 	rows=$(tput lines 2>/dev/null) || rows=24
-	# The footer's last row is grid_top + 19, so the check must cover it, not
-	# stop one short of it.
-	if (( cols < 70 || rows < 24 )); then
-		printf 'color pick: terminal too small (need 70×24, got %d×%d)\n' "$cols" "$rows" >&2
+	# Match mode draws a second preview row, so it needs one row more than pick.
+	local min_rows=24
+	[[ -n "$anchor_spec" ]] && min_rows=25
+	if (( cols < 70 || rows < min_rows )); then
+		printf '%s: terminal too small (need 70×%d, got %d×%d)\n' "$label" "$min_rows" "$cols" "$rows" >&2
 		return 1
 	fi
 
 	local idx=0 buffer='' grid_top=5 cancelled=1 prev
+	[[ -n "$anchor_spec" ]] && grid_top=6
 	# Global, not local: zsh tears a function's locals down BEFORE running its
 	# EXIT trap, so a trap referring to a local restores `stty ""` and leaves
 	# the terminal with no echo and no Ctrl+C. Verified:
@@ -143,7 +173,7 @@ _mo_color_pick() {
 		# in the trap as well as at the end, so an unexpected exit cannot leave
 		# the terminal without echo.
 		stty -echo -icanon -isig min 1 time 0 2>/dev/null
-		trap 'stty "$_MO_PICK_STTY" 2>/dev/null; tput cnorm; tput rmcup' EXIT TERM HUP
+		trap 'stty "$_MO_PICK_STTY" 2>/dev/null; tput cnorm; tput rmcup; unset _MO_PICK_ANCHOR_R _MO_PICK_ANCHOR_G _MO_PICK_ANCHOR_B _MO_PICK_ANCHOR_IDX' EXIT TERM HUP
 
 		_mo_pick_draw_static "$grid_top"
 		_mo_pick_draw_header "$idx" ""
@@ -205,6 +235,10 @@ _mo_color_pick() {
 	} always {
 		stty "$_MO_PICK_STTY" 2>/dev/null
 		tput cnorm 2>/dev/null; tput rmcup 2>/dev/null
+		# Runs on every exit path (success included) — the EXIT trap above only
+		# fires on abnormal exit, so this is what actually cleans up match mode's
+		# anchor globals after a normal return.
+		unset _MO_PICK_ANCHOR_R _MO_PICK_ANCHOR_G _MO_PICK_ANCHOR_B _MO_PICK_ANCHOR_IDX
 	} >/dev/tty </dev/tty
 
 	(( cancelled )) && return 130
