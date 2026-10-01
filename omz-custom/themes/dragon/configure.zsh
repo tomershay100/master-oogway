@@ -31,7 +31,7 @@ dragon-configure() {
 Usage: dragon-configure [options]
 
 Options:
-  (none), --pick      TUI preset browser — arrow keys, live preview, Enter to apply
+  (none), --pick      fuzzy-search preset browser (fzf) — type to filter, live preview, Enter to apply
   --preset <name>     Instantly switch to a preset (built-in or personal)
   --edit              Open conf.zsh in $EDITOR; on save, re-bakes the SSH payload
                       from the edited file so hand-edits forward over SSH
@@ -188,8 +188,9 @@ EOF
 		clear
 		print -P "%B%F{cyan}── dragon: Switch to '${_preset}' preset ────────────────────────────%f%b"
 		print ""
-		if $_is_user && ! $_is_builtin; then
+		if $_is_user; then
 			print -P "  Personal preset from: %B${_user_preset_file}%b"
+			$_is_builtin && print -P "  %F{245}(shadows the built-in preset of the same name)%f"
 		fi
 		print -P "  This will reset your theme config to the %B${_preset}%b preset."
 		if ! _dragon_warn_preset_reset "Switch to ${_preset} preset now?"; then
@@ -208,7 +209,7 @@ EOF
 		return 0
 	fi
 
-	# ── Bare / --pick: front door is the TUI preset picker.
+	# ── Bare / --pick: front door is the fzf preset picker.
 	_dragon_pick_preset
 	_dragon_cleanup
 }
@@ -219,3 +220,27 @@ _dragon_cleanup() {
 	unset _DRAGON_PRESET_NAMES _DRAGON_PRESET_DESC
 	unset _DRAGON_PICK_NAMES _DRAGON_PICK_TYPE _DRAGON_PICK_DESC
 }
+
+# -- Completion ----------------------------------------------------------------
+# Bound after compinit — oh-my-zsh sources the theme (and thus this file) after
+# compinit runs, so compdef is available here. Preset names come from
+# _dragon_preset_names (the same _dragon_pick_build_list the picker uses), so
+# completion and the picker share one candidate source. That helper re-inits
+# presets when _dragon_cleanup has unset _DRAGON_PRESET_NAMES after a wizard run.
+_dragon-configure() {
+	local -a presets=( "${(@f)$(_dragon_preset_names)}" )
+
+	_arguments \
+		'--pick[fuzzy-search preset browser (fzf) — type to filter, live preview]' \
+		'--preset[switch to preset]:preset:($presets)' \
+		'--edit[open conf.zsh in $EDITOR and re-bake SSH payload]' \
+		'--export[save current config as a personal preset]:name:' \
+		'--gallery[print every built-in preset stacked]' \
+		'(- :)'{-h,--help}'[show help]'
+}
+
+# compdef exists only after compinit, and the fzf preview subprocess has none.
+(( $+functions[compdef] )) && compdef _dragon-configure dragon-configure
+
+# Keep this file's exit status 0 — callers source it with `|| exit 1`.
+true

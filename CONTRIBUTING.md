@@ -24,7 +24,7 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
       configure/                  configurator implementation
         state.zsh                 conf loading, preset apply, active-preset header read
         preview.zsh               prompt preview + gallery renderer
-        pick.zsh                  TUI preset picker (the front door)
+        pick.zsh                  fzf preset picker (the front door)
         writer.zsh                conf file generator (self-validates with `zsh -n`)
       aliases.zsh                 rezsh, reset_theme_variables
       parts/

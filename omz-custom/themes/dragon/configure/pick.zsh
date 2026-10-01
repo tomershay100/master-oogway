@@ -1,4 +1,14 @@
-# configure/pick.zsh — TUI preset browser (dragon-configure / --pick)
+# configure/pick.zsh — preset picker (dragon-configure / --pick)
+#
+# The picker is fzf-driven: fzf handles fuzzy search, scrolling, and the
+# alternate screen; a standalone invoker (preview_preset.zsh) renders the
+# live preview in its subprocess. The custom TUI that used to live here
+# (stty raw-key loop, viewport math, /-search) is gone.
+
+# zshrc's lib/*.zsh loop normally loads this before the theme does, but that
+# loop is seeded once at install and never rewritten on update — guard-source
+# so _mo_pkg_hint is available even on an install that predates it.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:a:h}/../../../lib/platform.zsh"
 
 # One-question Nerd-Font check. Asked before the picker opens every time so the
 # answer is written to conf.zsh (USE_NERD_FONT) and preserved by every apply
@@ -10,8 +20,8 @@ _dragon_ask_nerd_font() {
 	print -P "  dragon uses special characters for a richer look."
 	# \u escapes so the glyph bytes survive editing: U+E0B0 powerline
 	# right-arrow, U+F07B nerd folder.
-	print "  Powerline arrow:  "$''
-	print "  Nerd Font icon:   "$''
+	print "  Powerline arrow:  "$'\uE0B0'
+	print "  Nerd Font icon:   "$'\uF07B'
 	print ""
 	printf "  Do both characters render as a solid arrow and a folder icon? [y/N] "
 	local _nf_key
@@ -23,99 +33,77 @@ _dragon_ask_nerd_font() {
 	fi
 }
 
-# Build the combined preset list (built-ins, then personal with a divider).
-# Populates three global parallel arrays consumed by the picker:
-#   _DRAGON_PICK_NAMES[i]  — preset name ('' for a divider row)
-#   _DRAGON_PICK_TYPE[i]   — builtin | user | divider
-#   _DRAGON_PICK_DESC[i]   — description ('' for user/divider)
+# Build the preset list — one alphabetical sort across built-ins and personal
+# presets, with personal presets tagged "(personal)" in the description. A
+# personal preset shadowing a built-in name replaces the built-in row
+# (matches apply-time semantics where the personal file wins). fzf has no
+# mid-list divider, so a single merged sort replaces the old two-list layout.
+# Populates three global parallel arrays:
+#   _DRAGON_PICK_NAMES[i]  — preset name
+#   _DRAGON_PICK_TYPE[i]   — builtin | user
+#   _DRAGON_PICK_DESC[i]   — description ("(personal)" for user presets)
 _dragon_pick_build_list() {
+	# (#qN) nullglob qualifier needs extended_glob; set it locally so the
+	# glob works regardless of the caller's options (matches prompt.zsh).
+	setopt local_options extended_glob
 	typeset -ga _DRAGON_PICK_NAMES=() _DRAGON_PICK_TYPE=() _DRAGON_PICK_DESC=()
-	local name
+	local f name desc
+
+	# Collect personal preset names from disk first so a shadowing personal
+	# file can replace its built-in in the merged list.
+	local -a _unames=()
+	local -A _is_user=()
+	for f in "${_DRAGON_STATE_DIR}"/presets/*.conf.zsh(#qN); do
+		name="${f##*/}"; name="${name%.conf.zsh}"
+		# Names created through --export are already restricted to this set;
+		# a file dropped in by hand (or a restored backup) is not — reject
+		# anything else rather than embed it unvalidated into fzf's
+		# tab-delimited input.
+		[[ "$name" =~ ^[a-zA-Z0-9_-]+$ ]] || continue
+		_unames+=("$name")
+		_is_user[$name]=1
+	done
+
+	# Merge built-ins and personal into one name→desc map, then sort by name.
+	# (o) sorts alphabetically. A personal preset shadowing a built-in wins,
+	# so it's added after (overwrites) the built-in entry.
+	local -A _name2desc=() _name2type=()
 	for name in "${_DRAGON_PRESET_NAMES[@]}"; do
+		_name2desc[$name]="${_DRAGON_PRESET_DESC[$name]:-}"
+		_name2type[$name]="builtin"
+	done
+	for name in "${_unames[@]}"; do
+		_name2desc[$name]="(personal)"
+		_name2type[$name]="user"
+	done
+
+	for name in "${(o@k)_name2desc}"; do
 		_DRAGON_PICK_NAMES+=("$name")
-		_DRAGON_PICK_TYPE+=("builtin")
-		_DRAGON_PICK_DESC+=("${_DRAGON_PRESET_DESC[$name]:-}")
+		_DRAGON_PICK_TYPE+=("${_name2type[$name]}")
+		_DRAGON_PICK_DESC+=("${_name2desc[$name]}")
 	done
-	local -a _user=( "${_DRAGON_STATE_DIR}"/presets/*.conf.zsh(#qN) )
-	if (( ${#_user} > 0 )); then
-		_DRAGON_PICK_NAMES+=(""); _DRAGON_PICK_TYPE+=("divider"); _DRAGON_PICK_DESC+=("")
-		local f
-		for f in "${_user[@]}"; do
-			name="${f##*/}"; name="${name%.conf.zsh}"
-			_DRAGON_PICK_NAMES+=("$name")
-			_DRAGON_PICK_TYPE+=("user")
-			_DRAGON_PICK_DESC+=("")
-		done
-	fi
 }
 
-# Draw the header bar. $1 = current preview context label.
-_dragon_pick_draw_frame() {
-	print -P "%B%F{cyan}── dragon: Pick a preset ────────────────────────────────────────────%f%b"
-	print -P "  %F{245}↑↓ navigate   Enter apply   s preview: ${1}   Esc/q cancel%f"
-	print ""
-}
-
-# Print a viewport-clipped preset list.
-# $1 = selected index (1-based)
-# $2 = viewport offset (first visible index, 1-based)
-# $3 = viewport size (number of rows to show)
-# $4 = total count
-_dragon_pick_draw_list() {
-	local sel="$1" voff="$2" vsize="$3" n="$4"
-	local i name desc
-	for (( i = voff; i < voff + vsize && i <= n; i++ )); do
-		if [[ "${_DRAGON_PICK_TYPE[$i]}" == "divider" ]]; then
-			printf "  \033[90m ── Personal ─────────────────────────────────────────────\033[m\n"
-			continue
-		fi
-		name="${_DRAGON_PICK_NAMES[$i]}"
-		desc="${_DRAGON_PICK_DESC[$i]}"
-		if (( i == sel )); then
-			printf "  \033[7m %-24s  %-44s\033[m\n" "$name" "$desc"
-		else
-			printf "  \033[0m %-24s  %-44s\033[m\n" "$name" "$desc"
-		fi
+# Return all preset names (built-ins + personal, deduped — a personal preset
+# shadowing a built-in wins) on stdout. Used by completion (_dragon-configure)
+# so it shares the picker's candidate source. _dragon_cleanup unsets
+# _DRAGON_PRESET_NAMES after a wizard run, so re-init presets when empty —
+# _dragon_init_presets is idempotent.
+_dragon_preset_names() {
+	(( ${#_DRAGON_PRESET_NAMES} == 0 )) && _dragon_init_presets
+	_dragon_pick_build_list
+	local i
+	for (( i = 1; i <= ${#_DRAGON_PICK_NAMES}; i++ )); do
+		print -r -- "${_DRAGON_PICK_NAMES[$i]}"
 	done
-	# Scroll indicator when list is taller than the viewport.
-	if (( n > vsize )); then
-		printf "  \033[90m  %d–%d of %d\033[m\n" "$voff" "$(( voff + vsize - 1 < n ? voff + vsize - 1 : n ))" "$n"
-	fi
-}
-
-# Render the preview section for the entry at index $1, in context $2
-# (plain | ssh | fail). Applies the preset to a local copy so the caller's
-# _DRAGON_CURRENT is never mutated. Personal presets are sourced from file.
-_dragon_pick_draw_preview() {
-	local sel="$1" ctx="$2"
-	local name="${_DRAGON_PICK_NAMES[$sel]}"
-	print ""
-	print -P "  %B%F{cyan}${name}%f%b  %F{245}${_DRAGON_PICK_DESC[$sel]}%f"
-	local -A _pick_saved=( "${(@kv)_DRAGON_CURRENT}" )
-	if [[ "${_DRAGON_PICK_TYPE[$sel]}" == "user" ]]; then
-		local var
-		for var in "${(@k)_DRAGON_DEFAULTS}"; do
-			_DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
-		done
-		_dragon_load_current_conf_from "${_DRAGON_STATE_DIR}/presets/${name}.conf.zsh"
-	else
-		_dragon_apply_preset "$name"
-	fi
-	# Font answer is a terminal capability, not preset style — it must win over
-	# the preset's hardcoded USE_NERD_FONT so the preview honours "I can't see
-	# icons" instead of rendering the preset's nerd glyphs. Mirrors the same
-	# override in _dragon_apply_and_save.
-	_DRAGON_CURRENT[USE_NERD_FONT]="${_pick_saved[USE_NERD_FONT]}"
-	case "$ctx" in
-		ssh)  _dragon_render_preview --ssh ;;
-		fail) _dragon_render_preview --fail ;;
-		*)    _dragon_render_preview ;;
-	esac
-	# Restore
-	_DRAGON_CURRENT=( "${(@kv)_pick_saved}" )
 }
 
 _dragon_pick_preset() {
+	command -v fzf &>/dev/null || {
+		print -P "%F{red}✗%f dragon-configure --pick requires %Bfzf%b (try: $(_mo_pkg_hint fzf))" >&2
+		return 1
+	}
+
 	# Initialise schema if not already done (supports standalone --pick call).
 	(( ${#_DRAGON_PRESET_NAMES} == 0 )) && {
 		_dragon_init_defaults
@@ -126,162 +114,77 @@ _dragon_pick_preset() {
 		_dragon_load_current_conf
 	}
 
-	# Ask the Nerd-Font question before entering the TUI (writes USE_NERD_FONT
-	# into _DRAGON_CURRENT so the apply preserves it).
+	# Ask the Nerd-Font question before entering fzf (writes USE_NERD_FONT
+	# into _DRAGON_CURRENT so the apply preserves it). The answer is passed
+	# to the preview subprocess, which can't see this process's _DRAGON_CURRENT.
 	_dragon_ask_nerd_font
+	local nf="${_DRAGON_CURRENT[USE_NERD_FONT]}"
 
 	_dragon_pick_build_list
 	local n=${#_DRAGON_PICK_NAMES}
 	(( n == 0 )) && { print -P "%F{red}✗%f No presets found."; return 1; }
 
-	# Require a minimum terminal size: 72 cols for the list layout,
-	# 16 rows for header (3) + list (≥3) + preview (≥5) + footer (1).
-	local _pick_cols _pick_rows
-	_pick_cols=$(tput cols  2>/dev/null) || _pick_cols=80
-	_pick_rows=$(tput lines 2>/dev/null) || _pick_rows=24
-	if (( _pick_cols < 72 || _pick_rows < 16 )); then
-		print -P "%F{red}✗%f dragon-configure --pick: terminal too small (need 72×16, got ${_pick_cols}×${_pick_rows})" >&2
-		return 1
-	fi
-
-	# Preview context toggled with 's': plain → ssh → fail → plain.
-	local ctx="plain"
-
-	# Determine starting selection: match the active preset (from conf.zsh's
-	# `# preset:` header), else the first selectable (non-divider) row.
-	local sel=1
-	local cur_preset
-	cur_preset=$(_dragon_active_preset)
-	local i
-	for (( i = 1; i <= n; i++ )); do
-		[[ "${_DRAGON_PICK_TYPE[$i]}" == "divider" ]] && continue
-		[[ "${_DRAGON_PICK_NAMES[$i]}" == "$cur_preset" ]] && { sel=$i; break; }
-	done
-	# If the state preset wasn't found, land on the first selectable row.
-	[[ "${_DRAGON_PICK_TYPE[$sel]}" == "divider" ]] && (( sel++ ))
-
-	local _pick_stty
-	_pick_stty=$(stty -g 2>/dev/null)
-
-	_dragon_pick_cleanup() {
-		tput cnorm 2>/dev/null
-		tput rmcup 2>/dev/null
-		stty "$_pick_stty" 2>/dev/null
-	}
-	# Only use the trap for genuine unexpected exits (TERM, HUP).
-	# INT is handled as \x03 in the key loop so we control the exit path.
-	trap '_dragon_pick_cleanup' TERM HUP EXIT
-
-	# Alternate screen + hide cursor.
-	tput smcup 2>/dev/null
-	tput civis 2>/dev/null
-
-	local last_sel=-1 last_ctx=""
-	local chosen=""
-	local key seq jump
-	# Header = 3 lines (title + hint + blank), preview = ~6 lines, scroll indicator = 1.
-	# Reserve 10 lines for the preview + spacing; rest goes to the list viewport.
-	local term_lines
-	term_lines=$(tput lines 2>/dev/null || echo 24)
-	local reserved=10
-	local vsize=$(( term_lines - reserved ))
-	(( vsize < 3 )) && vsize=3
-	local voff=1   # first visible row (1-based)
-
-	while true; do
-		# Keep selection visible: scroll viewport to follow sel.
-		if (( sel < voff )); then
-			voff=$sel
-		elif (( sel >= voff + vsize )); then
-			voff=$(( sel - vsize + 1 ))
-		fi
-
-		if (( sel != last_sel )) || [[ "$ctx" != "$last_ctx" ]]; then
-			clear
-			_dragon_pick_draw_frame "$ctx"
-			_dragon_pick_draw_list "$sel" "$voff" "$vsize" "$n"
-			_dragon_pick_draw_preview "$sel" "$ctx"
-			last_sel=$sel
-			last_ctx="$ctx"
-		fi
-
-		# Read a full key sequence in one stty block.
-		# -isig prevents Ctrl+C from sending SIGINT so \x03 arrives as a plain
-		# byte — we handle it explicitly in the case below, which lets us run
-		# cleanup and exit cleanly without the interactive shell intercepting INT.
-		key="" seq=""
-		{
-			stty -echo -icanon -isig min 1 time 0 2>/dev/null
-			IFS= read -k1 key
-			if [[ "$key" == $'\e' ]]; then
-				stty min 0 time 1 2>/dev/null
-				IFS= read -k2 seq 2>/dev/null || seq=""
-			fi
-		} always {
-			stty "$_pick_stty" 2>/dev/null
-		}
-
-		# Bare Esc (no following [ or O) = cancel. A real arrow key arrives as
-		# \e[A / \eOA etc.; anything else starting with \e that isn't a known
-		# arrow is treated as cancel too, so a lone Esc always exits even when
-		# the trailing read times out with a stray/partial byte.
-		if [[ "$key" == $'\e' && "$seq" != '['* && "$seq" != 'O'* ]]; then
-			chosen=""; break
-		fi
-
-		case "${key}${seq}" in
-			$'\e[A'|$'\eOA'|k|K)                                # up (skip dividers)
-				(( sel > 1 )) && (( sel-- ))
-				[[ "${_DRAGON_PICK_TYPE[$sel]}" == "divider" ]] && (( sel > 1 )) && (( sel-- ))
-				;;
-			$'\e[B'|$'\eOB'|j|J)                                # down (skip dividers)
-				(( sel < n )) && (( sel++ ))
-				[[ "${_DRAGON_PICK_TYPE[$sel]}" == "divider" ]] && (( sel < n )) && (( sel++ ))
-				;;
-			s|S)                                                # cycle preview context
-				case "$ctx" in
-					plain) ctx="ssh" ;;
-					ssh)   ctx="fail" ;;
-					*)     ctx="plain" ;;
-				esac
-				;;
-			$'\e'*)          ;;                                  # unhandled arrow (\e[C/\e[D) — ignore
-			$'\n'|"")
-				chosen="${_DRAGON_PICK_NAMES[$sel]}"
-				break
-				;;
-			$'\x03'|q|Q)     chosen=""; break ;;               # Ctrl+C or q = cancel
-			[1-9])
-				jump=$(( key ))
-				(( jump >= 1 && jump <= n )) \
-					&& [[ "${_DRAGON_PICK_TYPE[$jump]}" != "divider" ]] \
-					&& sel=$jump
-				;;
-		esac
+	# fzf input: name \t description. {1} in the preview template = the name.
+	# --with-nth=1,2 displays both columns; --nth=1 restricts fuzzy search to
+	# the name only, so descriptions don't pollute matches (e.g. "cap" wouldn't
+	# otherwise narrow to capsule/catppuccin — every desc with c…a…p matches).
+	local i name desc input=""
+	for (( i = 1; i <= ${#_DRAGON_PICK_NAMES}; i++ )); do
+		name="${_DRAGON_PICK_NAMES[$i]}"
+		desc="${_DRAGON_PICK_DESC[$i]}"
+		input+="${name}"$'\t'"${desc}"$'\n'
 	done
 
-	# Restore terminal before any output.
-	trap - INT TERM EXIT
-	_dragon_pick_cleanup
-	unfunction _dragon_pick_cleanup 2>/dev/null
+	local preview="${_DRAGON_THEMES_DIR}/configure/preview_preset.zsh"
+	# Preview context is bound to Alt- combos, not bare letters: fzf binds
+	# consume their keystroke, so binding s/S/p would make those letters
+	# untypeable in the search query (e.g. "capsule" needs the p). Alt- keeps
+	# every printable char free for fzf's fuzzy search.
+	#   Alt-s = SSH preview, Alt-S = fail preview, Alt-p = plain preview.
+	# No --query seed: fzf has no native "highlight without filter", and a
+	# seeded query narrows the list to the active preset's letters, which
+	# hides the other presets the user came to browse.
+	# Pass the preview script path via env to avoid shell-quoting issues when
+	# _DRAGON_THEMES_DIR contains single quotes (fzf --preview is a shell
+	# snippet; env vars sidestep the quoting minefield).
+	local chosen
+	chosen=$(printf '%s' "$input" | DRAGON_PREVIEW="${preview}" fzf \
+		--reverse \
+		--ansi \
+		--delimiter=$'\t' \
+		--with-nth=1,2 \
+		--nth=1 \
+		--preview-window=down:70%:wrap \
+		--height=100% \
+		--header="Enter: apply  Alt-s: ssh preview  Alt-S: fail  Alt-p: plain  Esc: cancel" \
+		--preview='zsh "$DRAGON_PREVIEW" {1} plain '"${(q)nf}" \
+		--bind='alt-s:change-preview(zsh "$DRAGON_PREVIEW" {1} ssh '"${(q)nf}"')' \
+		--bind='alt-S:change-preview(zsh "$DRAGON_PREVIEW" {1} fail '"${(q)nf}"')' \
+		--bind='alt-p:change-preview(zsh "$DRAGON_PREVIEW" {1} plain '"${(q)nf}"')')
+	local rc=$?
 
-	[[ -z "$chosen" ]] && { print -P "  %F{245}Cancelled.%f"; return 0; }
+	# fzf prints the full selected line "name\tdesc"; extract the name.
+	local preset="${chosen%%$'\t'*}"
+
+	# 130 = Esc/Ctrl-C, matching _mo_color_pick's convention for a cancelled
+	# pick; anything else empty (no matches, etc.) stays a plain success exit.
+	[[ -z "$preset" ]] && { print -P "  %F{245}Cancelled.%f"; (( rc == 130 )) && return 130; return 0; }
 
 	# Apply the chosen preset with the same flow as --preset.
 	print ""
-	print -P "%B%F{cyan}── dragon: Switch to '${chosen}' preset ─────────────────────────────%f%b"
+	print -P "%B%F{cyan}── dragon: Switch to '${preset}' preset ─────────────────────────────%f%b"
 	print ""
-	print -P "  This will reset your theme config to the %B${chosen}%b preset."
-	if ! _dragon_warn_preset_reset "Switch to ${chosen} preset now?"; then
+	print -P "  This will reset your theme config to the %B${preset}%b preset."
+	if ! _dragon_warn_preset_reset "Switch to ${preset} preset now?"; then
 		print ""
 		print -P "  %F{245}Aborted. Your conf.zsh is unchanged.%f"
 		return 0
 	fi
 
-	_dragon_apply_and_save "$chosen" || return 1
+	_dragon_apply_and_save "$preset" || return 1
 
 	print ""
-	print -P "  %F{green}✓ Switched to %B${chosen}%b%F{green} preset.%f"
+	print -P "  %F{green}✓ Switched to %B${preset}%b%F{green} preset.%f"
 	print -P "  %F{245}Reload to apply: %Brezsh%b%f"
 	print -P "  %F{245}Fine-tune with:  %Bdragon-configure --edit%b%f"
 	print ""

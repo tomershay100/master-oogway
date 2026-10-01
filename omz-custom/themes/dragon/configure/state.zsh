@@ -91,6 +91,22 @@ _dragon_reset_current_to_defaults() {
 	done
 }
 
+# Resolve a preset name to the file to load. A personal file always shadows the
+# built-in of the same name — the picker labels such a row "(personal)", so apply
+# and preview must agree or the label lies. Single source of truth for that
+# precedence, shared by _dragon_apply_and_save and preview_preset.zsh.
+_dragon_preset_file() {
+	local preset="$1"
+	local user_file="${_DRAGON_STATE_DIR}/presets/${preset}.conf.zsh"
+	if [[ -f "$user_file" ]]; then
+		print -r -- "$user_file"
+	elif [[ -n "${_DRAGON_PRESET_DESC[$preset]:-}" ]]; then
+		print -r -- "${_DRAGON_THEMES_DIR}/presets/${preset}.conf.zsh"
+	else
+		return 1
+	fi
+}
+
 # Reset _DRAGON_CURRENT to defaults, then load overrides from the preset file.
 _dragon_apply_preset() {
 	local preset="$1"
@@ -141,20 +157,16 @@ _dragon_rebake_payload() {
 
 # Apply a preset (built-in or personal) into _DRAGON_CURRENT and persist it.
 # Preserves USE_NERD_FONT (terminal capability, not style). Writes conf.zsh
-# (with the `# preset:` header); returns non-zero if the write fails, so callers
-# skip their success message. Assumes the preset name is already validated as an
-# existing built-in or personal preset.
+# (with the `# preset:` header); returns non-zero if the preset name resolves to
+# no file or the write fails, so callers skip their success message.
 _dragon_apply_and_save() {
 	local preset="$1"
-	local user_file="${_DRAGON_STATE_DIR}/presets/${preset}.conf.zsh"
+	local preset_file
+	preset_file="$(_dragon_preset_file "$preset")" || return 1
 	local saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]-}"
 
-	if [[ -n "${_DRAGON_PRESET_DESC[$preset]:-}" ]]; then
-		_dragon_apply_preset "$preset"
-	else
-		_dragon_reset_current_to_defaults
-		_dragon_load_current_conf_from "$user_file"
-	fi
+	_dragon_reset_current_to_defaults
+	_dragon_load_current_conf_from "$preset_file"
 
 	[[ -n "$saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$saved_nerd_font"
 	_dragon_write_conf "$preset" || return 1

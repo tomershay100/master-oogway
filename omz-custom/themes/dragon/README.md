@@ -8,7 +8,7 @@ picker, and a self-documenting config file.
 Two actions: **pick a look**, then **fine-tune the file**.
 
 ```bash
-dragon-configure                   # TUI preset picker — arrows, live preview, Enter to apply
+dragon-configure                   # fuzzy-search preset picker (fzf) — live preview, Enter to apply
 dragon-configure --preset <name>   # switch to a preset instantly (built-in or personal)
 dragon-configure --edit            # open conf.zsh in $EDITOR to tweak individual settings
 dragon-configure --export <name>   # save the current config as a personal preset
@@ -16,9 +16,12 @@ dragon-configure --gallery         # print every built-in preset stacked with a 
 dragon-configure --help            # show all options
 ```
 
-The picker asks a one-question Nerd-Font check, then lists every built-in preset
-(plus your personal ones under a `── Personal ──` divider). Press `s` to cycle
-the preview between plain, SSH, and failed-command contexts.
+Tab completion is available for all options and `--preset` names. The picker
+is fzf-driven: it asks a one-question Nerd-Font check, then lists all presets
+in one alphabetical list (personal presets tagged `(personal)`, shadowing
+any built-in of the same name). Type to fuzzy-search; press `Alt-s`/`Alt-S`/`Alt-p` to
+preview the prompt in SSH / failed-command / plain contexts (bare `s`/`p`
+stay typeable in the query).
 
 Settings live in `~/.config/master-oogway/conf.zsh`. The file **is** the variable
 editor: every `DRAGON__*` var, grouped with hints, defaults commented out. Edit
@@ -82,6 +85,8 @@ cp ~/.config/master-oogway/conf.zsh.bak.<ts> ~/.config/master-oogway/conf.zsh &&
 ## Dependencies
 
 Dragon requires the [gitstatus](../../plugins/gitstatus/) submodule for git segment display. If the submodule is missing (e.g. before running `install.sh`), the git segment is silently omitted and all other prompt segments render normally.
+
+The `dragon-configure` preset picker (`--pick` / bare) requires [fzf](https://github.com/junegunn/fzf); without it, `--pick` exits with a clear "requires fzf" message (`sudo apt install fzf`). The prompt itself does not need fzf.
 
 ## All variables
 
