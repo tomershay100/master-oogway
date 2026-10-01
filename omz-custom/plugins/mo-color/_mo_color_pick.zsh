@@ -122,8 +122,10 @@ _mo_color_pick() {
 	local cols rows
 	cols=$(tput cols 2>/dev/null) || cols=80
 	rows=$(tput lines 2>/dev/null) || rows=24
-	if (( cols < 70 || rows < 23 )); then
-		printf 'color pick: terminal too small (need 70×23, got %d×%d)\n' "$cols" "$rows" >&2
+	# The footer's last row is grid_top + 19, so the check must cover it, not
+	# stop one short of it.
+	if (( cols < 70 || rows < 24 )); then
+		printf 'color pick: terminal too small (need 70×24, got %d×%d)\n' "$cols" "$rows" >&2
 		return 1
 	fi
 

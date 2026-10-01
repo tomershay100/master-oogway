@@ -22,7 +22,7 @@ Terminal color preview, palette, and text colorizer.
 | `Enter` | confirm |
 | `q` / `Esc` | cancel |
 
-`color pick` requires a terminal at least **70 columns × 23 rows**. If the
+`color pick` requires a terminal at least **70 columns × 24 rows**. If the
 terminal is smaller it prints an error and exits. Resize the window or zoom
 out the font before running it.
 
