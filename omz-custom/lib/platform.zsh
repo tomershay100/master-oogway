@@ -115,8 +115,18 @@ _mo_date_to_epoch() {
 		# and disagreed with GNU date. Supply the time explicitly. The strict
 		# full-datetime attempt comes first so a malformed string still fails.
 		date $flags -j -f '%Y-%m-%d %H:%M:%S' "$input" '+%s' 2>/dev/null && return
-		[[ "$input" =~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' ]] || return 1
-		date $flags -j -f '%Y-%m-%d %H:%M:%S' "$input 00:00:00" '+%s' 2>/dev/null
+		if [[ "$input" =~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' ]]; then
+			date $flags -j -f '%Y-%m-%d %H:%M:%S' "$input 00:00:00" '+%s' 2>/dev/null
+			return
+		fi
+		# `who -u` prints a login time, never a date: who.c formats it with
+		# strftime(d_first ? "%e %b %R" : "%b %e %R") and has no year branch at
+		# any age, so the year has to come from the clock — which is what BSD
+		# date does for a component the format omits. Both field orders are
+		# tried because d_first follows the locale, not the platform.
+		date $flags -j -f '%b %e %H:%M' "$input" '+%s' 2>/dev/null && return
+		date $flags -j -f '%e %b %H:%M' "$input" '+%s' 2>/dev/null && return
+		return 1
 	else
 		date $flags -d "$input" '+%s' 2>/dev/null
 	fi
@@ -306,6 +316,10 @@ _mo_kernel() {
 }
 
 _mo_arch() { command uname -m }
+
+# ps -o column keyword for "full command": GNU/procps spells it cmd, BSD/macOS
+# spells it command. Same field, different name — pass the result to ps -o.
+_mo_ps_cmd_col() { _mo_is_macos && print -- command || print -- cmd }
 
 # -- network --------------------------------------------------------------------
 # Primary outbound address. On Linux `ip route get` asks the kernel which source

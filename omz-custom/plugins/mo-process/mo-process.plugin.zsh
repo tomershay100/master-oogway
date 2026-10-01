@@ -50,13 +50,18 @@ port() {
 
 connected() {
 	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-		echo "Usage: connected [-v]"
+		echo "Usage: connected [-v|-vv]"
 		echo "  List machines currently SSH-ed INTO this host (inbound sessions)."
 		echo "  -v / --verbose — add TTY, source IP:port, PID and login time."
+		echo "  -vv            — everything -v shows, plus connection duration,"
+		echo "                   plus a process listing per session TTY."
 		return
 	fi
-	local verbose=false
-	[[ "${1:-}" == "-v" || "${1:-}" == "--verbose" ]] && verbose=true
+	local verbosity=0
+	case "${1:-}" in
+		-v|--verbose) verbosity=1 ;;
+		-vv)          verbosity=2 ;;
+	esac
 
 	# _mo_who_sessions normalises `who -u` to TSV, because the two platforms
 	# disagree on field count: GNU prints one ISO date token ("2026-09-08
@@ -73,21 +78,64 @@ connected() {
 		return 1
 	fi
 
-	if [[ "$verbose" == false ]]; then
+	if (( verbosity == 0 )); then
 		echo "$rows" | awk -F'\t' '{ printf "%-12s from %-18s %s\n", $1, $6, $3 }'
 		return
 	fi
 
-	local user tty login idle pid host peer
+	if (( verbosity == 2 )); then
+		command -v ps &>/dev/null || { echo "connected: ps not installed" >&2; return 1; }
+	fi
+
+	local user tty login idle pid host peer duration
 	{
-		echo "USER TTY FROM PID LOGIN"
+		if (( verbosity == 2 )); then
+			echo "USER TTY FROM PID LOGIN DURATION"
+		else
+			echo "USER TTY FROM PID LOGIN"
+		fi
 		while IFS=$'\t' read -r user tty login idle pid host; do
 			# Upgrade the bare source IP to IP:port from the matching socket.
 			peer=$(_mo_ssh_peer "$host" 2>/dev/null)
 			[[ -n "$peer" ]] && host="$peer"
-			echo "$user $tty $host ${pid:--} ${login// /_}"
+			if (( verbosity == 2 )); then
+				duration=$(_mo_connected_duration "$login")
+				echo "$user $tty $host ${pid:--} ${login// /_} $duration"
+			else
+				echo "$user $tty $host ${pid:--} ${login// /_}"
+			fi
 		done <<< "$rows"
 	} | column -t
+
+	if (( verbosity == 2 )); then
+		local cmd_col; cmd_col=$(_mo_ps_cmd_col)
+		while IFS=$'\t' read -r user tty login idle pid host; do
+			echo
+			echo "── $tty ──"
+			ps -t "$tty" -o pid,user,etime,"$cmd_col"
+		done <<< "$rows"
+	fi
+}
+
+# Login-timestamp -> "3h 12m" / "2d 1h". who -u's login field is ambiguous on
+# some platforms/locales; fall back to "-" rather than letting a parse
+# failure abort the caller.
+_mo_connected_duration() {
+	local login="$1"
+	local epoch now
+	epoch=$(_mo_date_to_epoch "$login") || { echo "-"; return; }
+	[[ -n "$epoch" ]] || { echo "-"; return; }
+	now=$(date '+%s')
+	local -i secs=$(( now - epoch ))
+	(( secs < 0 )) && secs=0
+	local -i days=$(( secs / 86400 ))
+	local -i hours=$(( (secs % 86400) / 3600 ))
+	local -i mins=$(( (secs % 3600) / 60 ))
+	local out=""
+	(( days > 0 )) && out+="${days}d"
+	(( hours > 0 || days > 0 )) && out+="${hours}h"
+	out+="${mins}m"
+	echo "$out"
 }
 
 fkill() {

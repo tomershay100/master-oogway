@@ -43,6 +43,9 @@ assert_eq "2023-11-14 22:13:20" "$(_mo_epoch_to_date 1700000000 --utc)" "epoch_t
 		"date_to_epoch reads a bare datetime as local time"
 	assert_eq 1700000000 "$(_mo_date_to_epoch "$(_mo_epoch_to_date 1700000000 --utc)" --utc)" \
 		"epoch -> date -> epoch round-trips in UTC"
+	# who -u prints a year-less BSD datetime, which must still reach an epoch.
+	assert_match "$(_mo_date_to_epoch 'Sep 8 21:38')" '^[0-9]+$' \
+		"date_to_epoch parses the login time who -u prints"
 )
 
 # Relative expressions: GNU date parses them natively, BSD date needs the
