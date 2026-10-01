@@ -1,0 +1,14 @@
+#compdef min
+
+_min() {
+    local -a devices
+    local d
+
+    for d in /dev/ttyUSB*(N) /dev/ttyACM*(N) /dev/cu.*(N) /dev/tty.usb*(N); do
+        devices+=("${d#/dev/}")
+    done
+
+    (( ${#devices} )) && compadd -X 'serial devices' -a devices
+}
+
+_min "$@"

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This directory is a **standalone, separately-published git repo** (`github.com/tomershay100/master-oogway`) that is also vendored inside the parent `custum-linux-configs/` dotfiles repo. It has its own `.git/`, its own remote, and its own submodules. Treat it as the project root — git commands here operate on master-oogway, not the parent. The parent's `CLAUDE.md` covers umbrella dotfile conventions; this file covers master-oogway specifics.
 
-The repo ships a complete zsh environment: the **dragon** prompt theme (~130 tunable vars, fzf preset picker, 44 presets) plus 23 `mo-*` plugins (5 override + 18 additive) on top of oh-my-zsh.
+The repo ships a complete zsh environment: the **dragon** prompt theme (~130 tunable vars, fzf preset picker, 44 presets) plus 24 `mo-*` plugins (5 override + 19 additive) on top of oh-my-zsh.
 
 End-user docs live in `README.md`. Contributor mechanics (adding plugins/presets/variables, plugin README structure) live in `CONTRIBUTING.md` — read it before substantive theme or plugin work; this file does not duplicate it.
 
@@ -107,7 +107,7 @@ Plugin usage: `command -v <tool> &>/dev/null` per-function — lazy check, only 
 
 ## Plugin system
 
-23 master-oogway plugins live in `omz-custom/plugins/mo-*/`. Each is `mo-<name>/mo-<name>.plugin.zsh` plus optional `requirements.zsh`, `optional-deps.zsh`, `README.md`.
+24 master-oogway plugins live in `omz-custom/plugins/mo-*/`. Each is `mo-<name>/mo-<name>.plugin.zsh` plus optional `requirements.zsh`, `optional-deps.zsh`, `README.md`.
 
 ### Plugin ordering in `zshrc.master-oogway` (`plugins=(…)`)
 

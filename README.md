@@ -1,6 +1,6 @@
 # master-oogway
 
-A complete zsh environment — dragon prompt theme, git aliases, fuzzy-finder functions, and 23 opt-in plugins — distributed as a standalone git repo.
+A complete zsh environment — dragon prompt theme, git aliases, fuzzy-finder functions, and 24 opt-in plugins — distributed as a standalone git repo.
 
 Runs on **Linux and macOS**. Everything platform-specific lives in
 [`omz-custom/lib/platform.zsh`](omz-custom/lib/platform.zsh); no plugin branches
@@ -67,6 +67,7 @@ Additive plugins add new commands and never change existing behavior.
 | [mo-files](omz-custom/plugins/mo-files/README.md) | `extract`, `compress`, `bak`, `sizeof`, `fp` |
 | [mo-search](omz-custom/plugins/mo-search/README.md) | `grep` aliases, `f`, `fhist`, `fman`, `frg` |
 | [mo-process](omz-custom/plugins/mo-process/README.md) | `psgrep`, `port`, `fkill` |
+| [mo-serial](omz-custom/plugins/mo-serial/README.md) | `min <device>` — minicom wrapper, tab-completes `/dev/ttyUSB*` and `/dev/ttyACM*` |
 | [mo-docs](omz-custom/plugins/mo-docs/README.md) | `md2pdf` — Markdown to PDF |
 | [mo-projects](omz-custom/plugins/mo-projects/README.md) | `<project-name>` aliases + `p` (fzf picker) for every dir in `~/projects` |
 | [mo-mkscript](omz-custom/plugins/mo-mkscript/README.md) | `mkscript` — scaffold a new shell script from template |

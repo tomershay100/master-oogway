@@ -40,7 +40,7 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
   lib/
     colors.zsh                    named xterm-256 color table — shared by dragon theme and mo-color plugin
   plugins/
-    mo-*/mo-*.plugin.zsh          23 master-oogway plugins (5 override + 18 additive)
+    mo-*/mo-*.plugin.zsh          24 master-oogway plugins (5 override + 19 additive)
 test/
   run.zsh                         sources every test/**/*_test.zsh and reports pass/fail/skip
   assert.zsh                      assert_eq, assert_contains, assert_match, t_skip
