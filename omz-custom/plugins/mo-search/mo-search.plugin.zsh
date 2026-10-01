@@ -1,3 +1,4 @@
+autoload -Uz is-at-least
 
 # oh-my-zsh does not source $ZSH_CUSTOM/lib; nor does a zshrc seeded before it.
 [[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:h}/../../lib/platform.zsh"
@@ -5,6 +6,10 @@
 source "${0:h}/requirements.zsh" || return
 
 # -- fzf environment ------------------------------------------------------------
+# := only sets a default — a value the user already set in their own zshrc
+# wins instead of being clobbered on every load.
+: "${FZF_CTRL_R_OPTS:=--exact --no-sort --bind=ctrl-r:down,ctrl-s:toggle-sort}"
+export FZF_CTRL_R_OPTS
 # Append-once: guard against re-sourcing this file (unguarded appends would grow
 # the variable on every reload).
 if [[ "${FZF_DEFAULT_OPTS:-}" != *'--height 40% --layout=reverse --border'* ]]; then
@@ -36,6 +41,12 @@ unset _mo_search_fd
 
 # -- CTRL-R override: add date+elapsed when EXTENDED_HISTORY is set ------------
 if [[ -o extendedhistory ]]; then
+	# --scheme=history requires fzf >= 0.43.0; older fzf rejects it and the
+	# widget silently fails. Check once at load; the widget reads this at keystroke time.
+	typeset -g _mo_search_fzf_scheme=""
+	if is-at-least 0.43.0 "${${(s: :)"$(fzf --version)"}[1]:-0}" 2>/dev/null; then
+		_mo_search_fzf_scheme="--scheme=history"
+	fi
 	fzf-history-widget() {
 		local selected num
 		setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2>/dev/null
@@ -53,7 +64,7 @@ if [[ -o extendedhistory ]]; then
 				print num "\t" f[1] " " f[2] "\t" cmd
 			}' \
 			| FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} ${FZF_DEFAULT_OPTS-} \
-				--scheme=history --bind=ctrl-r:toggle-sort,ctrl-z:ignore \
+				${_mo_search_fzf_scheme:+--scheme=history} --bind=ctrl-r:down,ctrl-s:toggle-sort,ctrl-z:ignore \
 				${FZF_CTRL_R_OPTS-} --query=${(qqq)LBUFFER} +m" \
 				fzf --delimiter $'\t' --nth='2..' --with-nth='2,3..')
 		local ret=$?
