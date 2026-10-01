@@ -88,17 +88,25 @@ _mo_lan_ssh_server() {
 	echo "master-oogway: added $dropin and reloaded sshd"
 }
 
-# Daily crontab line running the scan. Idempotent (marker-matched).
+# Daily crontab line running the scan. Idempotent on the marker, but
+# rewrites the line every call so a later `refresh` can re-bake a changed
+# subnet — cron runs with none of the shell's environment, so an unbaked
+# line falls back to scan_hosts.py's 192.168.1 default and silently
+# refreshes the wrong network for the rest of time.
 _mo_lan_cron() {
+	local subnets="${1:-}"
 	local script; script=$(_mo_lan_scan_script)
 	local marker="# master-oogway:lan-scan"
+	local prefix=""
+	[[ -n "$subnets" ]] && prefix="MO_LAN_SUBNETS=${(q)subnets} "
+	local line; line=$(printf '17 4 * * * %s%s >/dev/null 2>&1 %s' "$prefix" "$script" "$marker")
 	if crontab -l 2>/dev/null | grep -qF "$marker"; then
-		echo "master-oogway: lan-scan cron already installed"
-		return 0
+		{ crontab -l 2>/dev/null | grep -vF "$marker"; echo "$line"; } | crontab -
+		echo "master-oogway: updated lan-scan cron (04:17)${subnets:+ for $subnets}"
+	else
+		{ crontab -l 2>/dev/null; echo "$line"; } | crontab -
+		echo "master-oogway: installed daily lan-scan cron (04:17)${subnets:+ for $subnets}"
 	fi
-	{ crontab -l 2>/dev/null; printf '17 4 * * * %s >/dev/null 2>&1 %s\n' "$script" "$marker"; } \
-		| crontab -
-	echo "master-oogway: installed daily lan-scan cron (04:17)"
 }
 
 master-oogway() {
@@ -129,29 +137,37 @@ master-oogway() {
 			# rather than cron, ships no /etc/ssh/sshd_config.d, and would
 			# raise TCC prompts on the scan. All three were wrong: macOS has
 			# /usr/sbin/cron and a working crontab, /etc/ssh/sshd_config.d
-			# exists with its Include already active, and nmap -sL is a list
-			# scan that sends no packets to the hosts. The one real difference
-			# was subnet detection, which is now a primitive.
+			# exists with its Include already active, and the scan is a
+			# reverse-DNS lookup (scan_hosts.py) that sends no packets to
+			# the hosts either. The one real difference was subnet
+			# detection, which is now a primitive.
 			local action="${2:-help}"
 			local script; script=$(_mo_lan_scan_script)
 			case "$action" in
-				setup)
-					if ! command -v nmap &>/dev/null; then
-						if command -v dig &>/dev/null; then
-							echo "master-oogway: nmap not found — using slower dig fallback (/24 only). Install nmap for full scans: $(_mo_pkg_hint nmap)" >&2
-						else
-							echo "master-oogway: lan-ssh needs nmap to scan the LAN — install it first: $(_mo_pkg_hint nmap)" >&2
+				setup|refresh)
+					# MO_LAN_SUBNETS left to the user if already set; otherwise
+					# derive it from this machine's own LAN so a fresh install
+					# scans the network it's actually on instead of a guess.
+					# The primitive reports a real CIDR, so a non-/24 LAN is
+					# swept at its true width rather than as an assumed /24.
+					local subnets="${MO_LAN_SUBNETS:-}"
+					[[ -n "$subnets" ]] || subnets=$(_mo_default_subnet_cidr 2>/dev/null)
+					if [[ "$action" == setup ]]; then
+						if ! command -v python3 &>/dev/null; then
+							echo "master-oogway: lan-ssh needs python3 to scan the LAN — install it first: $(_mo_pkg_hint python3)" >&2
 							return 1
 						fi
+						_mo_lan_ssh_client
+						_mo_lan_ssh_server
+						_mo_lan_cron "$subnets"
+						echo "master-oogway: running first scan..."
 					fi
-					_mo_lan_ssh_client
-					_mo_lan_ssh_server
-					_mo_lan_cron
-					echo "master-oogway: running first scan..."
-					"$script" || echo "master-oogway: scan failed — check subnet/nmap, retry with 'master-oogway lan-ssh refresh'" >&2
-					;;
-				refresh)
-					"$script"
+					if [[ -n "$subnets" ]]; then
+						MO_LAN_SUBNETS="$subnets" "$script" \
+							|| echo "master-oogway: scan failed — check MO_LAN_SUBNETS/python3, retry with 'master-oogway lan-ssh refresh'" >&2
+					else
+						"$script" || echo "master-oogway: scan failed — could not detect this machine's subnet; set MO_LAN_SUBNETS and retry" >&2
+					fi
 					;;
 				status)
 					local alias_file="${MO_CONFIG_DIR:-$HOME/.config/master-oogway}/custom-zsh/lan-hosts.zsh"

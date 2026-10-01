@@ -128,6 +128,99 @@ _MO_GUI_CLI=$(command grep -o 'opendiff|[a-z0-9|]*' \
 assert_contains "$_MO_GUI_GIT" "meld" "the GUI list was actually found"
 assert_eq "$_MO_GUI_GIT" "$_MO_GUI_CLI" "mo-git and mo-cli agree on which tools are GUIs"
 
+# ── lan_scan alias quoting ───────────────────────────────────────────────────
+# MO_LAN_SSH_FLAGS/MO_LAN_SSH_USER are interpolated into a single-quoted alias
+# body that the custom-zsh/ seam auto-sources on every shell start. A single
+# quote in either used to close that quoting, so config turned into a permanent
+# code-execution line. Assert the generated file is inert: the canary must not
+# fire, and the alias must still survive being sourced.
+_mo_lan_render() {
+	MO_LAN_SSH_USER="$1" MO_LAN_SSH_FLAGS="$2" bash -c '
+		SSH_USER="${MO_LAN_SSH_USER:-}"
+		SSH_FLAGS="${MO_LAN_SSH_FLAGS:--o StrictHostKeyChecking=accept-new}"
+		'"$(command sed -n '/^render_aliases()/,/^}$/p' \
+			"$MO_ROOT/omz-custom/plugins/mo-cli/lan_scan.sh")"'
+		printf "nas\n" | render_aliases | command grep "^alias"
+	'
+}
+() {
+	local canary="${TMPDIR:-/tmp}/mo-lan-canary-$$"
+	local rendered
+	command rm -f "$canary"
+	rendered=$(_mo_lan_render "" "-o foo='; touch $canary; '")
+	zsh -f -c "source /dev/stdin" <<< "$rendered" >/dev/null 2>&1
+	assert_fail "a quote in MO_LAN_SSH_FLAGS does not execute on source" \
+		test -f "$canary"
+	command rm -f "$canary"
+	rendered=$(_mo_lan_render "bob'; touch $canary; '" "-o X=1")
+	zsh -f -c "source /dev/stdin" <<< "$rendered" >/dev/null 2>&1
+	assert_fail "a quote in MO_LAN_SSH_USER does not execute on source" \
+		test -f "$canary"
+	command rm -f "$canary"
+	# And the benign path must still hand ssh separate arguments, not one blob.
+	# Written to a real file rather than `<<< $'...'` — that form re-quotes the
+	# rendered alias body through a third layer and mangles the embedded quotes.
+	local benign_file; benign_file=$(mktemp)
+	_mo_lan_render "" "" > "$benign_file"
+	assert_eq "-o StrictHostKeyChecking=accept-new ${USER}@nas" \
+		"$(zsh -f -c "
+			setopt aliases
+			ssh() { print -rn -- \"\$*\"; }
+			source '$benign_file'
+			eval nas
+		" 2>/dev/null)" \
+		"benign ssh flags still word-split into separate arguments"
+	command rm -f "$benign_file"
+}
+
+# ── scan_hosts subnet validation ─────────────────────────────────────────────
+# A malformed MO_LAN_SUBNETS entry used to build strings like "garbage.1" and
+# burn 254 forward-DNS lookups per entry resolving them.
+_mo_subnets() {
+	MO_LAN_SUBNETS="$1" python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('sh', '$MO_ROOT/omz-custom/plugins/mo-cli/scan_hosts.py')
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+print(','.join(str(n) for n in m.subnets()))
+" 2>/dev/null
+}
+_mo_sweep_size() {
+	MO_LAN_SUBNETS="$1" python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('sh', '$MO_ROOT/omz-custom/plugins/mo-cli/scan_hosts.py')
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+print(sum(1 for n in m.subnets() for _ in n.hosts()))
+" 2>/dev/null
+}
+if command -v python3 &>/dev/null; then
+	# The legacy 3-octet form is normalized to /24, not dropped — existing
+	# configs must keep working.
+	assert_eq "192.168.1.0/24" "$(_mo_subnets '192.168.1')"         "a 3-octet prefix is read as /24"
+	assert_eq "192.168.1.0/24" "$(_mo_subnets 'garbage,192.168.1')" "a malformed entry is dropped, valid ones kept"
+	assert_eq ""               "$(_mo_subnets '192.168')"           "a 2-octet prefix is rejected"
+	assert_eq ""               "$(_mo_subnets '1.2.3.4')"           "a full address without a prefix is rejected"
+	assert_eq ""               "$(_mo_subnets '999.999.999')"       "out-of-range octets are rejected"
+	assert_eq ""               "$(_mo_subnets '; rm -rf ~')"        "a shell-ish entry is rejected"
+
+	# CIDR form, and the /20 sweep cap.
+	assert_eq "192.168.1.0/24" "$(_mo_subnets '192.168.1.0/24')"    "an explicit /24 CIDR is accepted"
+	assert_eq "10.0.0.0/22"    "$(_mo_subnets '10.0.0.0/22')"       "a /22 CIDR is accepted"
+	assert_eq "10.0.0.0/20"    "$(_mo_subnets '10.0.0.0/20')"       "/20 is the widest accepted sweep"
+	assert_eq ""               "$(_mo_subnets '10.0.0.0/19')"       "/19 is one step past the cap and rejected"
+	assert_eq ""               "$(_mo_subnets '10.0.0.0/8')"        "a typo'd /8 is rejected, not truncated"
+	assert_eq ""               "$(_mo_subnets '10.0.0.0/33')"       "an out-of-range prefix length is rejected"
+	assert_eq ""               "$(_mo_subnets 'garbage/24')"        "a CIDR with a garbage address is rejected"
+	assert_eq "192.168.1.0/24,10.0.0.0/22" "$(_mo_subnets '192.168.1,10.0.0.0/22')" \
+		"old and new forms mix in one list"
+	# What `ip addr` prints, pasted verbatim — host bits get masked off.
+	assert_eq "192.168.1.0/24" "$(_mo_subnets '192.168.1.147/24')"  "host bits in a CIDR are normalized away"
+
+	assert_eq "254"  "$(_mo_sweep_size '192.168.1')"   "a /24 sweeps 254 hosts, not the network or broadcast"
+	assert_eq "4094" "$(_mo_sweep_size '10.0.0.0/20')" "the /20 cap is 4094 hosts"
+else
+	t_skip "scan_hosts validates MO_LAN_SUBNETS" "no python3"
+fi
+
 # ── mo-eza-override: what actually reaches eza ───────────────────────────────
 # `ls` had no test of any kind, unit or e2e, despite carrying the workaround for
 # two upstream eza changes whose failure modes are both silent. 0.18 gave
@@ -182,11 +275,10 @@ if _mo_is_macos; then
 		"lan-ssh help renders"
 	# The one genuinely platform-specific piece: deriving the LAN CIDR without
 	# iproute2. Format only — the value depends on the tester's network.
-	assert_match "$(MO_LAN_SUBNET= bash -c '
-		'"$(sed -n '/^detect_subnet()/,/^}$/p' "$MO_ROOT/omz-custom/plugins/mo-cli/lan_scan.sh")"'
-		SUBNET=""; detect_subnet' 2>/dev/null)" \
+	# Lives in lib/platform.zsh since 7c938a5 retired lan_scan.sh's own copy.
+	assert_match "$(_mo_default_subnet_cidr)" \
 		'^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+$' \
-		"lan_scan derives a CIDR subnet without iproute2"
+		"the LAN CIDR is derived without iproute2"
 	assert_contains "$(_mo_t mo-brew 'type bup')" "bup" "mo-brew loads on macOS"
 else
 	# whence -w, not `type`: zsh's `type` writes "bup not found" to STDOUT, so
