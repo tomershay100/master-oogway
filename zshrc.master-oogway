@@ -215,6 +215,9 @@ plugins=(
 
 source "$ZSH/oh-my-zsh.sh"
 
+# dedup fpath after compinit ran — oh-my-zsh prepends dirs every source
+typeset -U fpath
+
 setopt MENU_COMPLETE  # first Tab inserts the first match (must follow omz — it unsets this)
 
 # zstyle configures the completion system — see `man zshcompsys`.
