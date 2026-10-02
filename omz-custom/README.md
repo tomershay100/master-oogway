@@ -1,8 +1,10 @@
 # omz-custom — `$ZSH_CUSTOM` directory
 
-This directory is master-oogway's `$ZSH_CUSTOM`. oh-my-zsh sources files
-from here at shell startup. There is no need to interact with this
-directory directly — everything is wired up by [`zshrc.master-oogway`](../zshrc.master-oogway).
+This directory is master-oogway's `$ZSH_CUSTOM`. oh-my-zsh sources theme
+shims and plugin files from here at shell startup. `lib/` is not auto-sourced
+— each consumer sources the lib files it needs explicitly. There is no need
+to interact with this directory directly — everything is wired up by
+[`zshrc.master-oogway`](../zshrc.master-oogway).
 
 ## Layout
 
