@@ -14,6 +14,7 @@ else
 fi
 
 # -- History --------------------------------------------------------------------
+HISTFILE="${HISTFILE:-$HOME/.zsh_history}"   # explicit so auto-read is reliable across zsh builds
 HISTSIZE=100000               # commands kept in memory during the session
 SAVEHIST=100000               # commands written to the history file on exit
 HIST_STAMPS="yyyy-mm-dd"      # prefix each history entry with a date
@@ -25,6 +26,10 @@ unsetopt HIST_FIND_NO_DUPS    # duplicates ARE shown when searching history (Ctr
 setopt   HIST_VERIFY          # `!!` and `!$` expand on the prompt before running — saves you from disaster
 setopt   HIST_REDUCE_BLANKS   # strip extra whitespace from each command before storing
 setopt   EXTENDED_HISTORY     # record timestamps in $HISTFILE
+
+# Some zsh builds (5.8.1 on Ubuntu) don't auto-read $HISTFILE at interactive
+# start even with SHARE_HISTORY — force it so Ctrl+R / fc have history to search.
+[[ -r "$HISTFILE" ]] && fc -R "$HISTFILE" 2>/dev/null
 setopt   AUTO_CD              # type a directory name alone to cd into it (no need for 'cd')
 
 # -- Shell behavior -------------------------------------------------------------
