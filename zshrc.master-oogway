@@ -109,14 +109,22 @@ ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(forward-word emacs-forward-word vi-forwa
 # zsh-syntax-highlighting — green=valid, red=invalid commands as you type.
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)  # main=command colors, brackets=matching pairs, pattern=user rules
 typeset -A ZSH_HIGHLIGHT_PATTERNS
+# ZSH_HIGHLIGHT_PATTERNS is an associative array, so the highlighter iterates
+# it in hash order, not the order written here — a later entry does NOT paint
+# over an earlier one just by being listed after it. Every matching entry adds
+# its own span, so overlapping entries co-match and hash order decides which
+# color lands on top. The two '--force' entries carry (#e) to pin the match to
+# end-of-buffer, which is what keeps the red 'git push --force' off the safer
+# 'git push --force-with-lease'; the rest match mid-line on purpose.
 ZSH_HIGHLIGHT_PATTERNS+=(
     'sudo'             'fg=yellow,bold'
-    '--force'          'fg=white,bg=yellow,bold'
+    '*--force(#e)'     'fg=white,bg=yellow,bold'
     'rm -rf'           'fg=white,bg=red,bold'
     'rm -fr'           'fg=white,bg=red,bold'
     'shred'            'fg=white,bg=yellow,bold'
     'wipefs'           'fg=white,bg=yellow,bold'
-    'git push --force' 'fg=white,bg=yellow,bold'
+    'git push --force-with-lease' 'fg=white,bg=yellow,bold'
+    'git push --force(#e)' 'fg=white,bg=red,bold'
     'git reset --hard' 'fg=white,bg=yellow,bold'
 )
 typeset -A ZSH_HIGHLIGHT_STYLES
@@ -124,7 +132,7 @@ ZSH_HIGHLIGHT_STYLES[comment]='fg=8'    # default fg=black,bold is invisible on 
 
 # you-should-use — nags you when you type a command that has an alias defined.
 YSU_MESSAGE_POSITION="after"      # show hint AFTER the command output (less interruptive)
-YSU_MODE="ALL"                    # show ALL matching aliases, not just the best one
+YSU_MODE="BESTMATCH"              # show only the single best-matching alias, not every match
 # YSU_HARDCORE=1                  # uncomment to REFUSE to run when an alias exists
 # YSU_IGNORED_ALIASES=("g" "ll")  # aliases you intentionally don't use — never warn
 
