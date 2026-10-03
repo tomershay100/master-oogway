@@ -145,10 +145,17 @@ jobs:
             # xvfb and xclip so the sweep's clipboard check runs under a
             # display rather than skipping; mandb for the same reason the unit
             # job builds it — apt leaves the index rebuilding in the background
-            # and `man -k .` finds nothing while it does.
+            # and `man -k .` finds nothing while it does. fzf is now a default
+            # plugin (zshrc.master-oogway enables it): the upstream oh-my-zsh
+            # fzf plugin prints its "FZF_BASE" warning to stdout on every shell
+            # start when the binary is missing, and the sweep's command
+            # substitutions were capturing that warning as a bogus prefix on
+            # unrelated output.
             sudo apt-get install -y -qq zsh bc trash-cli zstd xz-utils unzip zip util-linux \
-              xvfb xclip
+              xvfb xclip fzf
             sudo mandb -q 2>/dev/null || true
+          else
+            brew install --quiet fzf || true
           fi
 
       - name: Install oh-my-zsh
