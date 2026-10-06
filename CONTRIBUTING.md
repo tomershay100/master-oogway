@@ -24,7 +24,7 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
       configure/                  configurator implementation
         state.zsh                 conf loading, preset apply, active-preset header read
         preview.zsh               prompt preview + gallery renderer
-        pick.zsh                  TUI preset picker (the front door)
+        pick.zsh                  fzf preset picker (the front door)
         writer.zsh                conf file generator (self-validates with `zsh -n`)
       aliases.zsh                 rezsh, reset_theme_variables
       parts/
@@ -40,7 +40,7 @@ omz-custom/                       ZSH_CUSTOM directory (sourced by oh-my-zsh)
   lib/
     colors.zsh                    named xterm-256 color table — shared by dragon theme and mo-color plugin
   plugins/
-    mo-*/mo-*.plugin.zsh          23 master-oogway plugins (5 override + 18 additive)
+    mo-*/mo-*.plugin.zsh          24 master-oogway plugins (5 override + 19 additive)
 test/
   run.zsh                         sources every test/**/*_test.zsh and reports pass/fail/skip
   assert.zsh                      assert_eq, assert_contains, assert_match, t_skip
@@ -234,7 +234,7 @@ The template above shows the structure; these are the rules it doesn't.
 
 - **Bypass line** — override plugins only. Use the `\cmd` backslash form. Never document `r<name>` aliases that don't exist in the code.
 - **No prose restating the table** — if the table already says it, don't say it again in a paragraph.
-- **Plugins with no user-facing commands** (like `mo-auto-ls`, `mo-welcome`, `mo-colorize-override`) — two-sentence README maximum: what it does, and how to disable or bypass it.
+- **Plugins with no user-facing commands** (like `mo-welcome`, `mo-colorize-override`) — two-sentence README maximum: what it does, and how to disable or bypass it.
 
 Override plugins (those that shadow system commands) must appear **before** additive
 plugins in `zshrc.master-oogway` so additive plugins inherit the overridden commands.
@@ -274,7 +274,7 @@ If a plugin requires a tool that may not be installed:
 ## Adding a preset
 
 A built-in preset is three things in sync: a `.conf.zsh` file, a name in the
-registry array, and a description + example string. All three must be added together.
+registry array, and a description string. All three must be added together.
 
 **1. Create `omz-custom/themes/dragon/presets/<name>.conf.zsh`**
 
@@ -290,7 +290,7 @@ export DRAGON__SOME_VAR='value'   # short comment if the choice isn't obvious
 
 **2. Register the preset in `schema.zsh` — `_dragon_init_presets()`**
 
-Three places inside that function:
+Two places inside that function:
 
 ```zsh
 # (a) append to the names array
@@ -300,22 +300,15 @@ typeset -ga _DRAGON_PRESET_NAMES=(
 
 # (b) add a description (one sentence, ≤ 80 chars, no trailing period)
 [<name>]='Short description of palette and layout style.'
-
-# (c) add an ASCII example showing what the prompt looks like
-[<name>]='user · myhost · ~/projects
-          ❯'
 ```
 
-The example is shown in `--pick` and `--gallery`. Keep it to 1–3 lines; use
-real prompt chars and branch symbols so it looks like an actual prompt.
-
-A parity assertion runs at theme load — if any of the three arrays are out of
+A parity assertion runs at theme load — if the two arrays are out of
 sync, dragon prints an error naming the exact counts and exits. You'll see it
 immediately on the next `soursh`.
 
 **3. Update the preset count in `omz-custom/themes/dragon/README.md`**
 
-Search for the line like `26 presets ship in` and increment the number.
+Search for the line like `44 presets ship in` and increment the number.
 
 ---
 

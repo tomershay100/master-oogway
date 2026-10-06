@@ -115,8 +115,18 @@ _mo_date_to_epoch() {
 		# and disagreed with GNU date. Supply the time explicitly. The strict
 		# full-datetime attempt comes first so a malformed string still fails.
 		date $flags -j -f '%Y-%m-%d %H:%M:%S' "$input" '+%s' 2>/dev/null && return
-		[[ "$input" =~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' ]] || return 1
-		date $flags -j -f '%Y-%m-%d %H:%M:%S' "$input 00:00:00" '+%s' 2>/dev/null
+		if [[ "$input" =~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' ]]; then
+			date $flags -j -f '%Y-%m-%d %H:%M:%S' "$input 00:00:00" '+%s' 2>/dev/null
+			return
+		fi
+		# `who -u` prints a login time, never a date: who.c formats it with
+		# strftime(d_first ? "%e %b %R" : "%b %e %R") and has no year branch at
+		# any age, so the year has to come from the clock — which is what BSD
+		# date does for a component the format omits. Both field orders are
+		# tried because d_first follows the locale, not the platform.
+		date $flags -j -f '%b %e %H:%M' "$input" '+%s' 2>/dev/null && return
+		date $flags -j -f '%e %b %H:%M' "$input" '+%s' 2>/dev/null && return
+		return 1
 	else
 		date $flags -d "$input" '+%s' 2>/dev/null
 	fi
@@ -307,6 +317,10 @@ _mo_kernel() {
 
 _mo_arch() { command uname -m }
 
+# ps -o column keyword for "full command": GNU/procps spells it cmd, BSD/macOS
+# spells it command. Same field, different name — pass the result to ps -o.
+_mo_ps_cmd_col() { _mo_is_macos && print -- command || print -- cmd }
+
 # -- network --------------------------------------------------------------------
 # Primary outbound address. On Linux `ip route get` asks the kernel which source
 # address it would use, without sending anything; on macOS the default route's
@@ -340,9 +354,25 @@ _mo_local_ip() {
 # and converts its hex netmask.
 _mo_default_subnet_cidr() {
 	if ! _mo_is_macos; then
-		ip -o -f inet addr show 2>/dev/null | awk '
-			$4 !~ /^127\./ {print $4; exit}'
-		return
+		# Resolve the default route's interface first, the way the macOS
+		# branch does: picking the first non-loopback address instead hands
+		# back a VPN or docker bridge whenever one is up.
+		local iface cidr
+		iface=$(ip -4 route show default 2>/dev/null \
+			| awk '{for (i = 1; i < NF; i++) if ($i == "dev") {print $(i+1); exit}}')
+		[[ -n "$iface" ]] || return 1
+		cidr=$(ip -o -f inet addr show dev "$iface" scope global 2>/dev/null \
+			| awk '{print $4; exit}')
+		[[ -n "$cidr" ]] || return 1
+		# `ip` prints the host address with the mask (192.168.1.147/24); AND
+		# it with the mask to get the network the caller asked for.
+		local addr="${cidr%/*}" prefix="${cidr#*/}"
+		local -a oct=( ${(s:.:)addr} )
+		local -i a=$(( (oct[1] << 24) | (oct[2] << 16) | (oct[3] << 8) | oct[4] ))
+		local -i m=$(( prefix == 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) & 0xFFFFFFFF ))
+		local -i net=$(( a & m ))
+		print -- "$(( (net >> 24) & 255 )).$(( (net >> 16) & 255 )).$(( (net >> 8) & 255 )).$(( net & 255 ))/$prefix"
+		return 0
 	fi
 	local iface addr mask
 	iface=$(route -n get default 2>/dev/null | awk '/interface:/{print $2}')

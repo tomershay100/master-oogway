@@ -2,7 +2,7 @@ __set_git_status_content()
 {
 	REAL_DRAGON__GIT_STATUS_CONTENT=${${VCS_STATUS_LOCAL_BRANCH:-@${VCS_STATUS_COMMIT[1,8]}}//\%/%%}
 	[[ -n "${VCS_STATUS_ACTION:-}" ]] && \
-		REAL_DRAGON__GIT_STATUS_CONTENT+="%F{$DRAGON__GIT_ACTION_COLOR} ($VCS_STATUS_ACTION)%f"
+		REAL_DRAGON__GIT_STATUS_CONTENT+="%F{$DRAGON__GIT_ACTION_COLOR} ($VCS_STATUS_ACTION)%F{${REAL_DRAGON__GIT_STATUS_FOREGROUND_COLOR}}"
 }
 
 __set_git_status_color()
@@ -66,8 +66,8 @@ dragon__set_git_prompt()
 	! $DRAGON__ENABLE_GIT_STATUS && return
 	[[ $VCS_STATUS_RESULT != ok-sync && $VCS_STATUS_RESULT != ok-async ]] && return
 
-	__set_git_status_content
 	__set_git_status_color
+	__set_git_status_content
 	__set_git_status_prefix_and_suffix
 
 	__dragon__show "GIT_STATUS"

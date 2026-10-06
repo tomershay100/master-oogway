@@ -6,6 +6,7 @@ Terminal color preview, palette, and text colorizer.
 |---------|-------------|
 | `color palette` | print all 16 named colors + all 256 xterm swatches |
 | `color pick` | interactive 16×16 swatch picker; prints `idx\t#hex\tname` on Enter, exits 130 on cancel |
+| `color match <c>` | like `pick`, but the preview band shows the selected color as FG on `<c>` BG and vice versa |
 | `color <c>` | print a background swatch and foreground label for color `<c>` |
 | `color <fg>` | stream piped text in `<fg>` foreground |
 | `color <fg> <bg>` | stream piped text with `<fg>` foreground on `<bg>` background; no pipe → prints `hello world` |
@@ -22,9 +23,10 @@ Terminal color preview, palette, and text colorizer.
 | `Enter` | confirm |
 | `q` / `Esc` | cancel |
 
-`color pick` requires a terminal at least **70 columns × 23 rows**. If the
+`color pick` requires a terminal at least **70 columns × 24 rows**. If the
 terminal is smaller it prints an error and exits. Resize the window or zoom
-out the font before running it.
+out the font before running it. `color match` needs one extra preview row
+(**70 × 25**).
 
 Output is tab-separated so you can pipe it:
 
@@ -44,6 +46,7 @@ color navy
 color 200
 echo "danger" | color white red
 color 0x00ff88 0x1a1a2e
+color match navy      # pick a color, see it as fg on navy bg and vice versa
 ```
 
 **Dependencies:** 24-bit truecolor terminal for accurate hex colors (`COLORTERM=truecolor`); gracefully falls back to 256-color ANSI codes in non-truecolor terminals — named colors and the palette display still work.

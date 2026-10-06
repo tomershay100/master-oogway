@@ -5,8 +5,8 @@
 source "${0:h}/requirements.zsh" || return
 
 alias ga="git add"
-alias gaa="git add --all"
-alias gac="git add ."
+alias gaa="ga --all"
+alias gac="ga ."
 alias gs="git status"
 gd() {
 	# Upstream is `alias gd="git difftool -y"`, and opening a GUI is the point:

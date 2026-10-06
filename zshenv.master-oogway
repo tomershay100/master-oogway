@@ -14,6 +14,14 @@
 #   - Desktop environment launchers that spawn zsh
 # ------------------------------------------------------------------------------
 
+# Snapshot a forwarded dragon theme payload before conf.zsh re-bakes
+# DRAGON__PAYLOAD for this machine's own outbound forwarding. At zshenv time
+# the var can only come from sshd (SendEnv), so this is the one point where
+# "forwarded" is distinguishable from "self-baked". dragon.zsh consumes it.
+if [[ -n "${DRAGON__PAYLOAD:-}" ]]; then
+    _MO_DRAGON_FORWARDED_PAYLOAD="$DRAGON__PAYLOAD"
+fi
+
 # Preferred editor: nvim > vim > vi (only when not already set)
 if [[ -z "${EDITOR:-}" ]]; then
     if (( $+commands[nvim] )); then

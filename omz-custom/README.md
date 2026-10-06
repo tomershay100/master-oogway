@@ -1,8 +1,10 @@
 # omz-custom — `$ZSH_CUSTOM` directory
 
-This directory is master-oogway's `$ZSH_CUSTOM`. oh-my-zsh sources files
-from here at shell startup. There is no need to interact with this
-directory directly — everything is wired up by [`zshrc.master-oogway`](../zshrc.master-oogway).
+This directory is master-oogway's `$ZSH_CUSTOM`. oh-my-zsh sources theme
+shims and plugin files from here at shell startup. `lib/` is not auto-sourced
+— each consumer sources the lib files it needs explicitly. There is no need
+to interact with this directory directly — everything is wired up by
+[`zshrc.master-oogway`](../zshrc.master-oogway).
 
 ## Layout
 
@@ -19,7 +21,7 @@ themes/
 lib/
   colors.zsh             named xterm-256 color table (shared by dragon theme and mo-color plugin)
 plugins/
-  mo-*/                  23 master-oogway plugins (5 overrides + 18 additive)
+  mo-*/                  24 master-oogway plugins (5 overrides + 19 additive)
   gitstatus/             vendored: gitstatus (submodule)
   you-should-use/        vendored: you-should-use (submodule)
   zsh-autosuggestions/   vendored: zsh-autosuggestions (submodule)

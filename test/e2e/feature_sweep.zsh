@@ -2,6 +2,11 @@
 typeset -gi PASS=0 FAIL=0 SKIP=0
 typeset -ga FAILED=()
 
+# The guards below (subnet CIDR, local ip, pkg hint) call _mo_* primitives
+# directly in this script's own shell, not through check()'s nested `zsh -ic`
+# — so this script needs its own copy of platform.zsh, same as any plugin.
+[[ -n ${_MO_PLATFORM_LOADED-} ]] || source "${0:A:h:h:h}/omz-custom/lib/platform.zsh"
+
 # macOS has no timeout(1); perl's alarm is always present.
 #
 # MO_WELCOME_FIELDS= in the child's ENVIRONMENT, not in the command: mo-welcome
@@ -95,7 +100,11 @@ checkrc() {
 	[[ "$rc" == "$want" ]] && ok "$label" || bad "$label" "rc=$rc want=$want"
 }
 
-SB=$(mktemp -d); trap 'command rm -rf "$SB"' EXIT
+# Under $HOME, not the system /tmp: trash-put refuses to trash a file across
+# filesystem volumes, and a /tmp sandbox is routinely a separate volume from
+# ~/.local/share/Trash — which silently failed every mo-trash check below.
+command mkdir -p "${HOME}/.cache"
+SB=$(mktemp -d "${HOME}/.cache/e2e-sweep-XXXXXX"); trap 'command rm -rf "$SB"' EXIT
 
 print -r -- "\n\e[1m── theme & shell ──\e[0m"
 check "dragon theme loaded"        "dragon"  'print -- $ZSH_THEME'

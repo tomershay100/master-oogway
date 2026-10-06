@@ -8,7 +8,7 @@ picker, and a self-documenting config file.
 Two actions: **pick a look**, then **fine-tune the file**.
 
 ```bash
-dragon-configure                   # TUI preset picker — arrows, live preview, Enter to apply
+dragon-configure                   # fuzzy-search preset picker (fzf) — live preview, Enter to apply
 dragon-configure --preset <name>   # switch to a preset instantly (built-in or personal)
 dragon-configure --edit            # open conf.zsh in $EDITOR to tweak individual settings
 dragon-configure --export <name>   # save the current config as a personal preset
@@ -16,9 +16,12 @@ dragon-configure --gallery         # print every built-in preset stacked with a 
 dragon-configure --help            # show all options
 ```
 
-The picker asks a one-question Nerd-Font check, then lists every built-in preset
-(plus your personal ones under a `── Personal ──` divider). Press `s` to cycle
-the preview between plain, SSH, and failed-command contexts.
+Tab completion is available for all options and `--preset` names. The picker
+is fzf-driven: it asks a one-question Nerd-Font check, then lists all presets
+in one alphabetical list (personal presets tagged `(personal)`, shadowing
+any built-in of the same name). Type to fuzzy-search; press `Alt-s`/`Alt-S`/`Alt-p` to
+preview the prompt in SSH / failed-command / plain contexts (bare `s`/`p`
+stay typeable in the query).
 
 Settings live in `~/.config/master-oogway/conf.zsh`. The file **is** the variable
 editor: every `DRAGON__*` var, grouped with hints, defaults commented out. Edit
@@ -26,6 +29,22 @@ it directly (`--edit`), then `rezsh`. Applying a preset regenerates the file
 wholesale (a timestamped backup is written first; see Presets below); an update
 regenerates it in place, preserving your values and surfacing any new options as
 commented defaults.
+
+### SSH forwarding and `DRAGON__PAYLOAD`
+
+The bottom of `conf.zsh` holds one baked line:
+`: ${DRAGON__PAYLOAD:='<base64>'}; export DRAGON__PAYLOAD`. It packs every
+resolved `DRAGON__*` value into a single var that `SendEnv DRAGON__PAYLOAD`
+(`master-oogway lan-ssh setup`) ships over SSH — the remote decodes it so your
+prompt travels. The visible `export DRAGON__*` lines above it are what your
+local shell reads; the payload is what the remote reads.
+
+Hand-editing the visible exports changes your **local** prompt immediately, but
+the base64 payload goes stale — so the edits **don't forward over SSH** until
+something rewrites it. `dragon-configure --edit` and `--export` re-bake the
+payload from the current file after they touch it, so hand-edits start
+forwarding. (Picking a preset via `--preset`/the picker also bakes a fresh
+payload, since it regenerates the whole file.)
 
 ## Presets
 
@@ -41,12 +60,12 @@ Recommended starting points:
 dragon-configure --preset default
 ```
 
-43 presets ship in [`presets/`](presets/), grouped into four flavours:
+44 presets ship in [`presets/`](presets/), grouped into four flavours:
 
 - **Layouts.** `short` `default` `verbose` `minimal` `portrait` `multiplexer`
 - **Themed palettes.** `tokyonight` `dracula` `catppuccin-mocha` `catppuccin-latte`
   `solarized-dark` `kanagawa` `everforest` `paper` `sakura` `blade` `prism` `inferno`
-  `specter` `aurora` `nova` `razor` `cosmic` `ember`
+  `specter` `aurora` `nova` `razor` `cosmic` `ember` `capsule`
 - **Moods.** `cyberpunk` `retro-terminal` `pastel` `zen` `focus`
   `synthwave` `matrix` `rainbow`
 - **Special-purpose.** `high-contrast` (WCAG) `ascii` (no glyphs)
@@ -66,6 +85,8 @@ cp ~/.config/master-oogway/conf.zsh.bak.<ts> ~/.config/master-oogway/conf.zsh &&
 ## Dependencies
 
 Dragon requires the [gitstatus](../../plugins/gitstatus/) submodule for git segment display. If the submodule is missing (e.g. before running `install.sh`), the git segment is silently omitted and all other prompt segments render normally.
+
+The `dragon-configure` preset picker (`--pick` / bare) requires [fzf](https://github.com/junegunn/fzf); without it, `--pick` exits with a clear "requires fzf" message (`sudo apt install fzf`). The prompt itself does not need fzf.
 
 ## All variables
 

@@ -9,7 +9,7 @@ _mo_build_jobs=$(_mo_build_jobs_value)
 _mo_build_has_colormake=false
 command -v colormake &>/dev/null && _mo_build_has_colormake=true
 
-m() {
+function m() {
 	if $_mo_build_has_colormake; then
 		colormake -j"$_mo_build_jobs" "$@"
 	else
@@ -25,3 +25,4 @@ m() {
 }
 
 alias mc="make clean"
+alias mca="mc && m all"

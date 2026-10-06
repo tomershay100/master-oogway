@@ -14,6 +14,7 @@ else
 fi
 
 # -- History --------------------------------------------------------------------
+HISTFILE="${HISTFILE:-$HOME/.zsh_history}"   # explicit so auto-read is reliable across zsh builds
 HISTSIZE=100000               # commands kept in memory during the session
 SAVEHIST=100000               # commands written to the history file on exit
 HIST_STAMPS="yyyy-mm-dd"      # prefix each history entry with a date
@@ -25,6 +26,10 @@ unsetopt HIST_FIND_NO_DUPS    # duplicates ARE shown when searching history (Ctr
 setopt   HIST_VERIFY          # `!!` and `!$` expand on the prompt before running — saves you from disaster
 setopt   HIST_REDUCE_BLANKS   # strip extra whitespace from each command before storing
 setopt   EXTENDED_HISTORY     # record timestamps in $HISTFILE
+
+# Some zsh builds (5.8.1 on Ubuntu) don't auto-read $HISTFILE at interactive
+# start even with SHARE_HISTORY — force it so Ctrl+R / fc have history to search.
+[[ -r "$HISTFILE" ]] && fc -R "$HISTFILE" 2>/dev/null
 setopt   AUTO_CD              # type a directory name alone to cd into it (no need for 'cd')
 
 # -- Shell behavior -------------------------------------------------------------
@@ -104,14 +109,22 @@ ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(forward-word emacs-forward-word vi-forwa
 # zsh-syntax-highlighting — green=valid, red=invalid commands as you type.
 ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)  # main=command colors, brackets=matching pairs, pattern=user rules
 typeset -A ZSH_HIGHLIGHT_PATTERNS
+# ZSH_HIGHLIGHT_PATTERNS is an associative array, so the highlighter iterates
+# it in hash order, not the order written here — a later entry does NOT paint
+# over an earlier one just by being listed after it. Every matching entry adds
+# its own span, so overlapping entries co-match and hash order decides which
+# color lands on top. The two '--force' entries carry (#e) to pin the match to
+# end-of-buffer, which is what keeps the red 'git push --force' off the safer
+# 'git push --force-with-lease'; the rest match mid-line on purpose.
 ZSH_HIGHLIGHT_PATTERNS+=(
     'sudo'             'fg=yellow,bold'
-    '--force'          'fg=white,bg=yellow,bold'
+    '*--force(#e)'     'fg=white,bg=yellow,bold'
     'rm -rf'           'fg=white,bg=red,bold'
     'rm -fr'           'fg=white,bg=red,bold'
     'shred'            'fg=white,bg=yellow,bold'
     'wipefs'           'fg=white,bg=yellow,bold'
-    'git push --force' 'fg=white,bg=yellow,bold'
+    'git push --force-with-lease' 'fg=white,bg=yellow,bold'
+    'git push --force(#e)' 'fg=white,bg=red,bold'
     'git reset --hard' 'fg=white,bg=yellow,bold'
 )
 typeset -A ZSH_HIGHLIGHT_STYLES
@@ -119,7 +132,7 @@ ZSH_HIGHLIGHT_STYLES[comment]='fg=8'    # default fg=black,bold is invisible on 
 
 # you-should-use — nags you when you type a command that has an alias defined.
 YSU_MESSAGE_POSITION="after"      # show hint AFTER the command output (less interruptive)
-YSU_MODE="ALL"                    # show ALL matching aliases, not just the best one
+YSU_MODE="BESTMATCH"              # show only the single best-matching alias, not every match
 # YSU_HARDCORE=1                  # uncomment to REFUSE to run when an alias exists
 # YSU_IGNORED_ALIASES=("g" "ll")  # aliases you intentionally don't use — never warn
 
@@ -131,6 +144,13 @@ HISTORY_SUBSTRING_SEARCH_GLOBBING_FLAGS='i'      # case-insensitive
 
 # mo-welcome — space-separated, order preserved. "" to silence.
 : ${MO_WELCOME_FIELDS="host os sys now up"}   # also: ip disk arch shell load mem tmux ssh
+
+# mo-auto-ls — command run after each cd, and the entry count above which only
+# a count is printed. The count always includes dotfiles (it's a glob, not
+# tied to MO_AUTO_LS_COMMAND) — a plain 'ls' can show fewer entries than the
+# printed count.
+MO_AUTO_LS_COMMAND="ls"
+MO_AUTO_LS_THRESHOLD=40
 
 # -- plugins --------------------------------------------------------------------
 # gitstatus must be sourced before oh-my-zsh (it replaces the built-in vcs_info).
@@ -148,7 +168,7 @@ plugins=(
     colored-man-pages         # colorizes man pages for easier reading
     colorize                  # syntax-highlight file contents via 'ccat' / 'cless'
     command-not-found         # suggests packages to install when a command is not found
-    # fzf                     # enables Ctrl+R (history), Ctrl+T (file), Alt+C (cd) fuzzy finders
+    fzf                       # enables Ctrl+R (history), Ctrl+T (file), Alt+C (cd) fuzzy finders
 
     # ── master-oogway plugins ──────────────────────────────────────────────────
     # Override plugins must come before additive ones so additive plugins
@@ -156,22 +176,26 @@ plugins=(
 
     # Override plugins (replace system commands).
     # mo-eza-override          # ls/ll/l/la/tree  → eza
-    # mo-bat-override          # cat/less         → bat (syntax-highlighted viewer)
+    mo-bat-override            # cat/less         → bat (syntax-highlighted viewer)
     # mo-nvim-override         # vim              → nvim
     mo-safety-override         # cp/mv/mkdir/reboot with confirmation prompts
     mo-colorize-override       # ip/diff           → colorized output
     # mo-trash                 # rm                → trash-put (restorable); \rm bypasses
 
     # Additive plugins (safe to disable individually).
-    # mo-projects is first so its aliases lose gracefully to conflicting names below.
+    # mo-projects loads early and skips registering any alias that collides
+    # with an already-defined command, so its <project-name> aliases lose
+    # gracefully to conflicting names below rather than shadowing them.
+    mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path
     mo-projects                # <project-name> aliases + p (fzf picker) for every dir in ~/projects
     mo-auto-ls                 # run ls automatically after every cd
     mo-git                     # git aliases (ga, gs, gp, ...) + gsum, fbranch, flog
     mo-dirs                    # mkcd, up, tmpcd, fcd (fuzzy cd)
     mo-files                   # extract, compress, bak, sizeof, fp (fuzzy file picker)
-    # mo-search                # grep aliases, f (find shortcut), fhist, fman, frg
+    mo-search                  # grep aliases, f (find shortcut), fhist, fman, frg
     mo-process                 # psgrep, port, fkill (fuzzy process kill)
-    # mo-build                 # m (parallel make), mc (make clean)
+    mo-serial                  # min <device> — minicom wrapper, tab-completes /dev/ttyUSB* and /dev/ttyACM*
+    mo-build                   # m (parallel make), mc (make clean)
     mo-docs                    # md2pdf — Markdown to PDF via pandoc + xelatex
     mo-env                     # fenv (fuzzy environment variable browser)
     mo-mkscript                # mkscript — scaffold a new shell script from template
@@ -179,7 +203,6 @@ plugins=(
     mo-brew                    # bup, bi, bun, bs, bl, bout — Homebrew helpers (macOS only; no-op on Linux)
     mo-man                     # mo-man <plugin> — view a mo-* plugin README (bat/less)
     mo-shell-tools             # h, ?, cwhich, vwhich, clip, vizsh, soursh, calc, epoch, mo-where
-    mo-cli                     # `master-oogway` CLI: update, uninstall, version, configure, edit, diff-zshrc, path
     # mo-welcome               # startup banner — fields controlled by MO_WELCOME_FIELDS above
 
     # zsh-syntax-highlighting wraps every ZLE widget defined above; new plugins
@@ -191,6 +214,9 @@ plugins=(
 )
 
 source "$ZSH/oh-my-zsh.sh"
+
+# dedup fpath after compinit ran — oh-my-zsh prepends dirs every source
+typeset -U fpath
 
 setopt MENU_COMPLETE  # first Tab inserts the first match (must follow omz — it unsets this)
 

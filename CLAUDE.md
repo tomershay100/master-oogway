@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This directory is a **standalone, separately-published git repo** (`github.com/tomershay100/master-oogway`) that is also vendored inside the parent `custum-linux-configs/` dotfiles repo. It has its own `.git/`, its own remote, and its own submodules. Treat it as the project root — git commands here operate on master-oogway, not the parent. The parent's `CLAUDE.md` covers umbrella dotfile conventions; this file covers master-oogway specifics.
 
-The repo ships a complete zsh environment: the **dragon** prompt theme (~130 tunable vars, TUI preset picker, 43 presets) plus 23 `mo-*` plugins (5 override + 18 additive) on top of oh-my-zsh.
+The repo ships a complete zsh environment: the **dragon** prompt theme (~130 tunable vars, fzf preset picker, 44 presets) plus 24 `mo-*` plugins (5 override + 19 additive) on top of oh-my-zsh.
 
 End-user docs live in `README.md`. Contributor mechanics (adding plugins/presets/variables, plugin README structure) live in `CONTRIBUTING.md` — read it before substantive theme or plugin work; this file does not duplicate it.
 
@@ -18,6 +18,7 @@ zsh -n omz-custom/themes/dragon.zsh-theme \
        omz-custom/themes/dragon/*.zsh \
        omz-custom/themes/dragon/parts/*.zsh \
        omz-custom/themes/dragon/configure/*.zsh \
+       omz-custom/lib/*.zsh \
        omz-custom/plugins/mo-*/mo-*.plugin.zsh
 shellcheck install.sh
 ```
@@ -57,10 +58,10 @@ configure.zsh        entry for `dragon-configure`
 configure/           configurator implementation
   state.zsh            conf I/O, preset apply, active-preset header read, glyph loader ($'\uXXXX' eval)
   preview.zsh          prompt preview + gallery renderer
-  pick.zsh             TUI preset picker — the front door (bare / --pick)
+  pick.zsh             fzf preset picker — the front door (bare / --pick)
   writer.zsh           generates conf.zsh w/ `# preset:` header (validates via `zsh -n` before writing)
 parts/                 segment + prompt assembly (9 files)
-presets/               43 *.conf.zsh presets — only override values that differ from defaults
+presets/               44 *.conf.zsh presets — only override values that differ from defaults
 aliases.zsh            rezsh, reset_theme_variables
 ```
 
@@ -81,7 +82,7 @@ Runtime variable name is always `DRAGON__` + schema key.
 ### Adding a preset — 3 things must stay in sync
 
 1. `presets/<name>.conf.zsh` — export **only** values differing from the schema default
-2. `schema.zsh` `_dragon_init_presets()`: append to `_DRAGON_PRESET_NAMES`, add description, add ASCII example (used by `--pick` / `--gallery`)
+2. `schema.zsh` `_dragon_init_presets()`: append to `_DRAGON_PRESET_NAMES`, add description
 3. Bump the preset count in `omz-custom/themes/dragon/README.md`
 
 Separator glyphs in preset files use `$'\uXXXX'` Unicode-escape form (the state-loader evals them on read). Powerline glyphs sit at U+E0B0–U+E0C3.
@@ -107,7 +108,7 @@ Plugin usage: `command -v <tool> &>/dev/null` per-function — lazy check, only 
 
 ## Plugin system
 
-23 master-oogway plugins live in `omz-custom/plugins/mo-*/`. Each is `mo-<name>/mo-<name>.plugin.zsh` plus optional `requirements.zsh`, `optional-deps.zsh`, `README.md`.
+24 master-oogway plugins live in `omz-custom/plugins/mo-*/`. Each is `mo-<name>/mo-<name>.plugin.zsh` plus optional `requirements.zsh`, `optional-deps.zsh`, `README.md`.
 
 ### Plugin ordering in `zshrc.master-oogway` (`plugins=(…)`)
 

@@ -156,6 +156,7 @@ color() {
 Usage:
   color palette                     print named colors + all 256 xterm swatches
   color pick                        interactive picker — prints "idx\t#hex\tname" on Enter
+  color match <c>                   like pick, but previews the selected color as FG on <c> BG and vice versa
   color <c>                         print <c> as a BG swatch and a FG label
   color <fg> [<bg>]                 print piped text (or "hello world") in <fg> on <bg>
 
@@ -173,6 +174,16 @@ EOF
 	# interactive picker
 	if [[ "${1:-}" == "pick" ]]; then
 		_mo_color_pick
+		return
+	fi
+
+	# match: pick a color against an anchor, previewing both fg/bg combos
+	if [[ "${1:-}" == "match" ]]; then
+		if [[ $# -lt 2 ]]; then
+			echo "color match: needs a color argument (e.g. 'color match navy')" >&2
+			return 1
+		fi
+		_mo_color_pick "$2"
 		return
 	fi
 

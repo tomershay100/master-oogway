@@ -3,19 +3,19 @@
 # lan_scan.sh - Scan the LAN for hostnames, write per-host ssh aliases.
 #
 # Run by the daily cron installed via `master-oogway lan-ssh setup`, or by hand
-# via `master-oogway lan-ssh refresh`. Resolves every IP in the subnet to a
-# hostname (parallel reverse-DNS) and writes an alias file that is auto-sourced
-# by the custom-zsh/ seam in zshrc.master-oogway on the next shell start.
+# via `master-oogway lan-ssh refresh`. Calls scan_hosts.py (reverse-DNS over the
+# configured subnets) and writes an alias file that is auto-sourced by the
+# custom-zsh/ seam in zshrc.master-oogway on the next shell start.
 #
-# This file IS the config file: edit the vars below to tune subnet, ssh user,
-# and ssh flags. SSH_FLAGS is baked into each alias when written.
+# Pass --list to print discovered hostnames instead of writing the alias file.
+#
+# This file IS the config file: edit the vars below to tune ssh user and ssh
+# flags. SSH_FLAGS is baked into each alias when written. Subnets are
+# configured separately — see MO_LAN_SUBNETS in scan_hosts.py.
 # ------------------------------------------------------------------------------
 set -Eeuo pipefail
 
 # -- Config (edit these) -------------------------------------------------------
-
-# Subnet in CIDR. Empty = auto-detect from the default route.
-SUBNET="${MO_LAN_SUBNET:-}"
 
 # User baked into each alias. Empty = keep literal $USER (resolved at ssh time).
 SSH_USER="${MO_LAN_SSH_USER:-}"
@@ -25,144 +25,101 @@ SSH_FLAGS="${MO_LAN_SSH_FLAGS:--o StrictHostKeyChecking=accept-new}"
 
 # -- Paths ---------------------------------------------------------------------
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCAN_PY="${SCRIPT_DIR}/scan_hosts.py"
+
 MO_CONFIG_DIR="${MO_CONFIG_DIR:-$HOME/.config/master-oogway}"
 readonly ALIAS_FILE="${MO_CONFIG_DIR}/custom-zsh/lan-hosts.zsh"
 
-# -- Subnet detection ----------------------------------------------------------
-
-# The CIDR of the default route's network. Linux reads it straight out of
-# `ip route`; macOS has no iproute2, so the default interface is resolved with
-# route(8) and its hex netmask converted to a prefix length.
-detect_subnet() {
-	[[ -n "$SUBNET" ]] && { echo "$SUBNET"; return; }
-
-	# platform-lint: allow — this is a standalone bash script run by cron, so
-	# it cannot source the zsh lib/platform.zsh; the branch is the primitive.
-	if [[ "$(uname -s)" != Darwin ]]; then
-		local iface
-		# platform-lint: allow — Linux half of the branch above.
-		iface=$(ip route show default 2>/dev/null | awk '/default/ { print $5; exit }')
-		[[ -z "$iface" ]] && return 1
-		# platform-lint: allow — Linux half of the branch above.
-		ip -o -f inet addr show "$iface" 2>/dev/null | awk '{ print $4; exit }'
-		return
-	fi
-
-	local iface addr mask
-	iface=$(route -n get default 2>/dev/null | awk '/interface:/ { print $2; exit }')
-	[[ -z "$iface" ]] && return 1
-	# By keyword, not position: a point-to-point interface prints
-	# "inet A --> B netmask 0x...", so $4 is the peer address, and the
-	# arithmetic below then dies with an invalid-operator error.
-	read -r addr mask <<< "$(ifconfig "$iface" 2>/dev/null | awk '/inet /{
-			for (i = 1; i <= NF; i++) {
-				if ($i == "inet")    a = $(i+1)
-				if ($i == "netmask") m = $(i+1)
-			}
-			if (a != "" && m != "") { print a, m; exit }
-		}')"
-	[[ -z "$addr" || -z "$mask" ]] && return 1
-	[[ "$mask" =~ ^0x[0-9a-fA-F]+$ ]] || return 1
-	# ifconfig prints the mask as 0xffffff00. Done in shell arithmetic, which
-	# understands the 0x prefix directly — awk's strtonum() is a gawk
-	# extension that the awk macOS ships does not have.
-	local m=$(( mask )) prefix=0 i
-	for (( i = 31; i >= 0; i-- )); do
-		if (( (m >> i) & 1 )); then prefix=$(( prefix + 1 )); else break; fi
-	done
-	local o1 o2 o3 o4
-	IFS=. read -r o1 o2 o3 o4 <<< "$addr"
-	local a=$(( (o1 << 24) | (o2 << 16) | (o3 << 8) | o4 ))
-	local net=$(( a & m ))
-	printf '%d.%d.%d.%d/%d\n' \
-		$(( (net >> 24) & 255 )) $(( (net >> 16) & 255 )) \
-		$(( (net >> 8) & 255 ))  $(( net & 255 )) "$prefix"
-}
-
 # -- Discovery -----------------------------------------------------------------
-# nmap -sL is a pure list scan: parallel reverse-DNS over the range, no probe,
-# no root. Fastest path to "hostnames on the subnet". Falls back to a parallel
-# dig loop when nmap is absent.
-
-scan_nmap() {
-	nmap -sL "$1" 2>/dev/null \
-		| awk '/Nmap scan report for/ && /\(/ { print $5 }'
-}
-
-scan_dig() {
-	# ponytail: /24 only. Wider ranges need nmap; add CIDR expansion if a
-	# non-/24 LAN ever shows up here.
-	local base="${1%/*}" prefix="${1#*/}"
-	[[ "$prefix" == "24" ]] || { echo "lan_scan: dig fallback only handles /24 (got /$prefix)" >&2; return 1; }
-	local net="${base%.*}"
-	seq 1 254 | xargs -P 64 -I{} sh -c \
-		'dig +short +time=1 +tries=1 -x '"$net"'.{} 2>/dev/null | sed "s/\.$//" | head -1' \
-		2>/dev/null
-}
+# scan_hosts.py does reverse-DNS via gethostbyaddr, first-dot-segment stripping,
+# regex validation, and dedup. Prints one bare hostname per line on stdout.
 
 discover() {
-	local subnet="$1"
-	if command -v nmap &>/dev/null; then
-		scan_nmap "$subnet"
-	elif command -v dig &>/dev/null; then
-		scan_dig "$subnet"
-	else
-		# Linux-only script: lan-ssh refuses to run on macOS.
-		if [[ "$(uname -s)" == Darwin ]]; then   # platform-lint: allow — see detect_subnet
-			echo "lan_scan: need nmap or dig (brew install nmap)" >&2
+	command -v python3 &>/dev/null || {
+		# This is a standalone bash script run by cron — it cannot source the
+		# zsh lib/platform.zsh, so it can't reach _mo_is_macos or _mo_pkg_hint.
+		# platform-lint: allow
+		if [[ "$(uname -s)" == Darwin ]]; then
+			echo "lan_scan: need python3 (brew install python3)" >&2
 		else
-			# platform-lint: allow — Linux half of the branch above.
-			echo "lan_scan: need nmap or dig (sudo apt install nmap)" >&2
+			# platform-lint: allow — see above
+			echo "lan_scan: need python3 (sudo apt install python3)" >&2
 		fi
 		return 1
-	fi
+	}
+	python3 "$SCAN_PY"
 }
 
-# -- Filter — keep short, valid, non-local hostnames ---------------------------
+# -- Filter — drop names colliding with existing commands ----------------------
+# A LAN host controls its own reverse-DNS name, so a hostile host could name
+# itself `ls`/`sudo`/`git` and the generated alias would shadow that command.
+# scan_hosts.py already validated + deduped; this pass only does the shell-side
+# collision check (needs `command -v`).
 
 filter_names() {
-	local me name
-	me=$(hostname -s 2>/dev/null || hostname)
-	awk -F. 'NF { print $1 }' \
-		| grep -E '^[A-Za-z0-9_-]+$' \
-		| grep -vixF "$me" \
-		| sort -u \
-		| while read -r name; do
-			# A LAN host controls its own reverse-DNS name, so a hostile host
-			# could name itself `ls`/`sudo`/`git` and the generated alias would
-			# shadow that command. Drop any name that collides with an existing
-			# command (PATH binary, builtin, alias, function).
-			command -v "$name" &>/dev/null && continue
-			echo "$name"
-		done
+	local name
+	while read -r name; do
+		[[ -z "$name" ]] && continue
+		command -v "$name" &>/dev/null && continue
+		echo "$name"
+	done
 }
 
 # -- Alias file ----------------------------------------------------------------
 
 render_aliases() {
-	local user_prefix
+	# SSH_FLAGS/SSH_USER are user config interpolated into a single-quoted alias
+	# body that gets auto-sourced on every shell start, so a single quote in
+	# either would close the quoting and execute the remainder. %q emits a
+	# shell-safe token; the flags still word-split into separate ssh arguments.
+	local flags_q user_q
+	printf -v flags_q '%q' "$SSH_FLAGS"
 	if [[ -n "$SSH_USER" ]]; then
-		user_prefix="${SSH_USER}@"
+		printf -v user_q '%q@' "$SSH_USER"
 	else
 		# shellcheck disable=SC2016  # literal $USER: resolves in the user's shell at ssh time
-		user_prefix='$USER@'
+		user_q='$USER@'
 	fi
 	echo "# autogenerated by mo-cli lan_scan.sh — do not edit by hand"
 	echo "# Refreshed: $(date -Iseconds 2>/dev/null || date)"
 	local host
 	while read -r host; do
 		[[ -z "$host" ]] && continue
-		printf "alias %s='ssh %s %s%s'\n" "$host" "$SSH_FLAGS" "$user_prefix" "$host"
+		printf "alias %s='ssh '%s' '%s%s''\n" "$host" "$flags_q" "$user_q" "$host"
 	done
 }
 
 main() {
-	local subnet
-	subnet=$(detect_subnet) || { echo "lan_scan: could not detect subnet" >&2; exit 1; }
+	local list_only=false
+	case "${1:-}" in
+		--list) list_only=true ;;
+		-h|--help)
+			echo "Usage: lan_scan.sh [--list]"
+			echo "  Reverse-resolve the configured LAN subnets and write host aliases."
+			echo "  --list  print discovered hostnames only; skip the alias-file write."
+			exit 0
+			;;
+	esac
 
-	local hosts
-	hosts=$(discover "$subnet" | filter_names) || true
-	[[ -z "$hosts" ]] && { echo "lan_scan: no hosts found on $subnet" >&2; exit 1; }
+	local hosts status=0
+	hosts=$(discover | filter_names) || status=$?
+	if (( status != 0 )); then
+		echo "lan_scan: discovery failed (see error above) — check python3 and DNS" >&2
+		exit 1
+	fi
+	if [[ -z "$hosts" ]]; then
+		if $list_only; then
+			exit 0
+		fi
+		echo "lan_scan: no hosts found" >&2
+		exit 1
+	fi
+
+	if $list_only; then
+		printf '%s\n' "$hosts"
+		exit 0
+	fi
 
 	local new
 	new=$(printf '%s\n' "$hosts" | render_aliases)

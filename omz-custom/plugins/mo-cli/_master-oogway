@@ -1,0 +1,54 @@
+#compdef master-oogway
+
+_master-oogway() {
+    local curcontext="$curcontext" state line
+    _arguments -C \
+        '(- :)'{-h,--help}'[show help]' \
+        '1: :->subcommand' \
+        '*::arg:->args'
+
+    case "$state" in
+        subcommand)
+            local -a subs=(
+                'update:pull latest master-oogway and re-run install.sh'
+                'uninstall:run install.sh --uninstall'
+                'version:print the installed version'
+                'configure:open dragon-configure (forwards args)'
+                'edit:open ~/.zshrc in $EDITOR'
+                'diff-zshrc:diff your ~/.zshrc against the template snapshot'
+                'path:print the master-oogway install dir'
+                'lan-ssh:LAN SSH forwarding + host aliases'
+                'help:show help'
+            )
+            _describe 'command' subs
+            ;;
+        args)
+            case "${line[1]}" in
+                configure)
+                    # Delegate to dragon-configure's completion if available.
+                    if (( $+functions[_dragon-configure] )); then
+                        _dragon-configure
+                    else
+                        _values 'option' \
+                            '--pick[fuzzy-search preset browser (fzf)]' \
+                            '--preset[switch to preset]' \
+                            '--edit[open conf.zsh in $EDITOR]' \
+                            '--export[save config as a personal preset]' \
+                            '--gallery[print every built-in preset]'
+                    fi
+                    ;;
+                lan-ssh)
+                    _values 'action' \
+                        'setup[configure SendEnv + AcceptEnv + cron + first scan]' \
+                        'refresh[re-scan the LAN now]' \
+                        'status[show cron + alias-file state]'
+                    ;;
+                diff-zshrc)
+                    _message 'diff tool [e.g. code --diff]'
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+_master-oogway "$@"

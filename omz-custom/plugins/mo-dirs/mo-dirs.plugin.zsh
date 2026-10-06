@@ -91,3 +91,8 @@ fcd() {
 function n() {
 	_mo_open .
 }
+
+alias downloads='cd "${HOME}/Downloads"'
+
+alias home-mo='cd "${HOME}"/.master-oogway'
+alias cuso-mo='cd "$HOME/.config/master-oogway/custom-zsh"'

@@ -34,11 +34,7 @@ _dragon_load_current_conf_from() {
 
 _dragon_load_current_conf() {
 	# Start from defaults
-	typeset -gA _DRAGON_CURRENT=()
-	local var
-	for var in "${(@k)_DRAGON_DEFAULTS}"; do
-		_DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
-	done
+	_dragon_reset_current_to_defaults
 
 	[[ -f "${_DRAGON_CONF_FILE}" ]] || return
 
@@ -82,13 +78,39 @@ _dragon_load_current_conf() {
 	done
 }
 
-# Reset _DRAGON_CURRENT to defaults, then load overrides from the preset file.
-_dragon_apply_preset() {
-	local preset="$1"
+# Reset _DRAGON_CURRENT to the schema defaults. Single source of truth for the
+# "clear before applying a preset" prologue. Forgetting to reset leaves stale
+# values from a previous apply bleeding into the next one, so every apply path
+# goes through this helper.
+_dragon_reset_current_to_defaults() {
+	(( ${#_DRAGON_DEFAULTS} )) || return 1
+	typeset -gA _DRAGON_CURRENT=()
 	local var
 	for var in "${(@k)_DRAGON_DEFAULTS}"; do
 		_DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
 	done
+}
+
+# Resolve a preset name to the file to load. A personal file always shadows the
+# built-in of the same name — the picker labels such a row "(personal)", so apply
+# and preview must agree or the label lies. Single source of truth for that
+# precedence, shared by _dragon_apply_and_save and preview_preset.zsh.
+_dragon_preset_file() {
+	local preset="$1"
+	local user_file="${_DRAGON_STATE_DIR}/presets/${preset}.conf.zsh"
+	if [[ -f "$user_file" ]]; then
+		print -r -- "$user_file"
+	elif [[ -n "${_DRAGON_PRESET_DESC[$preset]:-}" ]]; then
+		print -r -- "${_DRAGON_THEMES_DIR}/presets/${preset}.conf.zsh"
+	else
+		return 1
+	fi
+}
+
+# Reset _DRAGON_CURRENT to defaults, then load overrides from the preset file.
+_dragon_apply_preset() {
+	local preset="$1"
+	_dragon_reset_current_to_defaults
 	_dragon_load_current_conf_from "${_DRAGON_THEMES_DIR}/presets/${preset}.conf.zsh"
 }
 
@@ -114,25 +136,37 @@ _dragon_warn_preset_reset() {
 	return 0
 }
 
+# Re-bake the DRAGON__PAYLOAD at the bottom of conf.zsh from its current visible
+# exports. Hand-editing conf.zsh changes the `export DRAGON__*` lines but leaves
+# the base64 payload stale — so the edits render locally (the payload is only
+# decoded over SSH) but don't travel until something rewrites the payload.
+# dragon-configure --edit / --export call this after touching conf.zsh so the
+# baked snapshot matches what the file currently says.
+#
+# Re-reads conf.zsh into _DRAGON_CURRENT (in case it was just edited) and writes
+# it back through the writer, preserving the `# preset:` header. Requires the
+# schema inits (_DRAGON_DEFAULTS) — both callers run them first. Returns non-zero
+# if the write fails.
+_dragon_rebake_payload() {
+	[[ -n "${_DRAGON_DEFAULTS:-}" ]] || return 1
+	_dragon_load_current_conf
+	local preset
+	preset="$(_dragon_active_preset)"
+	_dragon_write_conf "$preset"
+}
+
 # Apply a preset (built-in or personal) into _DRAGON_CURRENT and persist it.
 # Preserves USE_NERD_FONT (terminal capability, not style). Writes conf.zsh
-# (with the `# preset:` header); returns non-zero if the write fails, so callers
-# skip their success message. Assumes the preset name is already validated as an
-# existing built-in or personal preset.
+# (with the `# preset:` header); returns non-zero if the preset name resolves to
+# no file or the write fails, so callers skip their success message.
 _dragon_apply_and_save() {
 	local preset="$1"
-	local user_file="${_DRAGON_STATE_DIR}/presets/${preset}.conf.zsh"
+	local preset_file
+	preset_file="$(_dragon_preset_file "$preset")" || return 1
 	local saved_nerd_font="${_DRAGON_CURRENT[USE_NERD_FONT]-}"
 
-	if [[ -n "${_DRAGON_PRESET_DESC[$preset]:-}" ]]; then
-		_dragon_apply_preset "$preset"
-	else
-		local var
-		for var in "${(@k)_DRAGON_DEFAULTS}"; do
-			_DRAGON_CURRENT[$var]="${_DRAGON_DEFAULTS[$var]}"
-		done
-		_dragon_load_current_conf_from "$user_file"
-	fi
+	_dragon_reset_current_to_defaults
+	_dragon_load_current_conf_from "$preset_file"
 
 	[[ -n "$saved_nerd_font" ]] && _DRAGON_CURRENT[USE_NERD_FONT]="$saved_nerd_font"
 	_dragon_write_conf "$preset" || return 1
